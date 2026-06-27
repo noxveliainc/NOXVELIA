@@ -13,6 +13,85 @@ const TIPOLOGIAS = ['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'];
 const COMBUSTIVEIS = ['Gasolina', 'Diesel', 'Eléctrico', 'Híbrido', 'GPL'];
 const TRANSMISSAO = ['Manual', 'Automático'];
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 🎯 BANNER CTA — convida utilizadores não autenticados a registarem-se
+// Adapta-se automaticamente ao tipo de divisão (carro / imóvel)
+// Para mostrar apenas a utilizadores não autenticados, envolve com: {!user && <BannerCTA ... />}
+// ─────────────────────────────────────────────────────────────────────────────
+const BannerCTA = ({ tipo }) => {
+  const navigate = useNavigate();
+  const isCarro = tipo === 'carro';
+  const accent = isCarro ? 'var(--nx-accent-car)' : 'var(--nx-accent-estate)';
+  const emoji = isCarro ? '🚗' : '🏠';
+  const textoAnuncio = isCarro ? 'carro' : 'imóvel';
+  const textoPrincipal = isCarro
+    ? 'Tens um carro para vender? Publica o teu primeiro anúncio'
+    : 'Tens um imóvel para arrendar ou vender? Publica o teu primeiro anúncio';
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, var(--nx-bg-2) 0%, var(--nx-bg-3) 100%)',
+      border: `1px solid ${accent}33`,
+      borderLeft: `3px solid ${accent}`,
+      borderRadius: 'var(--nx-radius-md)',
+      padding: '16px 20px',
+      marginBottom: '24px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: '16px',
+      flexWrap: 'wrap',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <span style={{ fontSize: '22px', lineHeight: 1 }}>{emoji}</span>
+        <div>
+          <p style={{
+            margin: 0,
+            fontSize: '13px',
+            fontWeight: 700,
+            color: 'var(--nx-text)',
+            lineHeight: 1.4,
+          }}>
+            {textoPrincipal}{' '}
+            <span style={{ color: accent }}>100% grátis.</span>
+          </p>
+          <p style={{
+            margin: '3px 0 0 0',
+            fontSize: '12px',
+            color: 'var(--nx-text-sub)',
+            lineHeight: 1.4,
+          }}>
+            Regista-te agora e chega a milhares de compradores em Portugal. Sem comissões, sem surpresas.
+          </p>
+        </div>
+      </div>
+      <button
+        onClick={() => navigate('/registo')}
+        style={{
+          background: accent,
+          color: '#020617',
+          border: 'none',
+          borderRadius: 'var(--nx-radius-sm)',
+          padding: '10px 18px',
+          fontFamily: 'var(--nx-font-body)',
+          fontWeight: 700,
+          fontSize: '12px',
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+          flexShrink: 0,
+          transition: 'opacity 0.2s ease',
+        }}
+        onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+      >
+        Anunciar {textoAnuncio} grátis →
+      </button>
+    </div>
+  );
+};
+
 export default function Pesquisa({ tipoPadrao = 'imovel' }) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
@@ -31,7 +110,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
   const [temMais, setTemMais] = useState(false);
 
   const [sidebarMobileAberta, setSidebarMobileAberta] = useState(false);
-  // Controla o colapso da sidebar em DESKTOP (substitui o espaço fixo permanente)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [vistaAtiva, setVistaAtiva] = useState('grelha');
 
@@ -53,26 +131,18 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
   useEffect(() => { filtrosRef.current = filtros; }, [filtros]);
   useEffect(() => { sortRef.current = sort; }, [sort]);
 
-  // Mantido para compatibilidade — caso algum outro componente dispare este evento
   useEffect(() => {
     const toggleSidebar = () => setSidebarMobileAberta(prev => !prev);
     window.addEventListener('toggle-filtros', toggleSidebar);
     return () => window.removeEventListener('toggle-filtros', toggleSidebar);
   }, []);
 
-  // Só força a vista de "grelha" quando se sai de "imóveis" (ex: para "carro"),
-  // que é o único tipo sem botão para alternar para mapa. Assim, enquanto o
-  // utilizador estiver em "imóveis", a escolha de vista (grelha/mapa)
-  // mantém-se persistente entre filtros e pesquisas.
   useEffect(() => {
     if (tipoSeguro !== 'imovel') {
       setVistaAtiva('grelha');
     }
   }, [tipoSeguro]);
 
-  // ──────────────────────────────────────────────
-  // 🆕 Carregamento do MAPA — totalmente independente da lista de anúncios
-  // ──────────────────────────────────────────────
   const carregarDadosMapa = useCallback(async () => {
     if (tipoSeguro !== 'imovel') {
       setDadosMapa([]);
@@ -150,15 +220,10 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
       setTemMais(maisDisponivel);
       if (maisDisponivel) paginaRef.current = paginaAlvo;
 
-      // ❌ Removido daqui: o carregamento do mapa já não vive dentro do
-      // puxarDadosServidor. Passa a ser tratado exclusivamente pelo
-      // carregarDadosMapa(), disparado pelo useEffect dedicado abaixo.
-
     } catch (err) { setError('Falha ao atualizar dados.'); setTemMais(false);
     } finally { setLoading(false); setLoadingMais(false); isFetchingRef.current = false; }
   }, [tipoPadrao, location.pathname]);
 
-  // useEffect de inicialização/troca de tipo — agora só trata da LISTA
   useEffect(() => {
     setFiltros(f => ({ ...f, tipo: tipoSeguro, marca: '', modelo: '', cidade: '', tipologias: [], combustiveis: [], transmissao: [] }));
     setSidebarMobileAberta(false); setTemMais(false); setResultados([]); setSearchQuery(''); buscaRef.current = ''; paginaRef.current = 1;
@@ -173,19 +238,12 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQuery]);
 
-  // ──────────────────────────────────────────────
-  // 🆕 useEffect dedicado ao MAPA
-  // Corre sempre que: o tipo muda, os filtros relevantes mudam, ou a
-  // pesquisa (debounced) muda — incluindo no arranque do componente.
-  // Como o setFiltros do efeito acima só reseta marca/modelo/cidade/etc
-  // do tipo "carro", não há corrida de dados quando se troca para "imovel".
-  // ──────────────────────────────────────────────
   useEffect(() => {
     if (tipoSeguro !== 'imovel') return;
 
     const timer = setTimeout(() => {
       carregarDadosMapa();
-    }, 60); // ligeiro atraso para correr depois do reset de filtros
+    }, 60);
 
     return () => clearTimeout(timer);
   }, [
@@ -395,6 +453,10 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
             </div>
 
             {error && <div style={{ color: 'var(--nx-danger)', padding: '16px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', fontSize: '14px', fontWeight: 500, border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '24px' }}>{error}</div>}
+
+            {/* ── BANNER CTA ── */}
+            {/* Remove esta linha e substitui por {!user && <BannerCTA tipo={tipoSeguro} />} se tiveres contexto de autenticação */}
+            <BannerCTA tipo={tipoSeguro} />
 
             <div className="pesquisa-topbar">
               <div className="pesquisa-results-count">{loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} registos`}</div>
