@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import AnuncioCard from '../../pages/shared/AnuncioCard';
-import { BadgeCheck, BarChart2, Share2, Building2, X, Crown } from 'lucide-react';
+import { BadgeCheck, BarChart2, Share2, Building2, X, Crown, Settings } from 'lucide-react';
 
 export default function Perfil() {
-  // 🌟 NOVO: Importamos também o atualizarUser
   const { user, signed, atualizarAvatar, atualizarUser, logout: limparSessaoGlobal } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -29,9 +28,10 @@ export default function Perfil() {
   const [mostrarModalEvolucao, setMostrarModalEvolucao] = useState(false);
   const [dadosEvolucao, setDadosEvolucao] = useState({ nomeEmpresa: '', nif: '', website: '' });
 
-  // 🌟 NOVO: Estados para a edição de contactos
-  const [mostrarModalContactos, setMostrarModalContactos] = useState(false);
-  const [dadosContactos, setDadosContactos] = useState({ email: '', telefone: '' });
+  // 🌟 NOVO: Modal Unificado "Informações Pessoais"
+  const [mostrarModalInfo, setMostrarModalInfo] = useState(false);
+  const [dadosInfo, setDadosInfo] = useState({ email: '', telefone: '' });
+  const [dadosPassword, setDadosPassword] = useState({ atual: '', nova: '', confirmar: '' });
 
   const rotaVoltar = abaActiva === 'carro' ? '/carros' : '/imoveis';
   const labelVoltar = abaActiva === 'carro' ? 'Automóveis' : 'Imóveis';
@@ -49,8 +49,9 @@ export default function Perfil() {
         ]);
         if (!isMounted) return;
         setUtilizador(resUser.data);
-        // 🌟 NOVO: Preenchemos o estado dos contactos quando carregamos o utilizador
-        setDadosContactos({ email: resUser.data.email || '', telefone: resUser.data.telefone || '' });
+        
+        // Preenchemos os dados base para o Modal unificado
+        setDadosInfo({ email: resUser.data.email || '', telefone: resUser.data.telefone || '' });
         
         setAnuncios(resAnuncios.data);
         setLoading(false);
@@ -117,21 +118,45 @@ export default function Perfil() {
     }
   };
 
-  // 🌟 NOVO: Função para gravar os novos contactos
-  const gravarContactos = async (e) => {
+  // 🌟 NOVO: Função central que guarda Email/Telefone e Password se preenchida
+  const guardarInformacoesPessoais = async (e) => {
     e.preventDefault();
+    setIsDeleting(true);
+
     try {
-      setIsDeleting(true);
+      // 1. Atualizar Password (se o utilizador preencheu os campos)
+      if (dadosPassword.atual || dadosPassword.nova || dadosPassword.confirmar) {
+        if (dadosPassword.nova !== dadosPassword.confirmar) {
+          alert("A nova password e a confirmação não coincidem.");
+          setIsDeleting(false);
+          return;
+        }
+        if (dadosPassword.nova.length < 9) {
+          alert("A nova password tem de ter pelo menos 9 caracteres.");
+          setIsDeleting(false);
+          return;
+        }
+        await api.put('/users/me/password', { 
+          passwordAtual: dadosPassword.atual, 
+          novaPassword: dadosPassword.nova 
+        });
+      }
+
+      // 2. Atualizar Dados Base (Email, Telefone)
       const res = await api.put('/users/me', { 
-        email: dadosContactos.email, 
-        telefone: dadosContactos.telefone 
+        email: dadosInfo.email, 
+        telefone: dadosInfo.telefone 
       });
+      
       setUtilizador(res.data);
       if (atualizarUser) atualizarUser(res.data);
-      setMostrarModalContactos(false);
-      alert('Contactos atualizados com sucesso!');
+      
+      // Limpa os campos da password
+      setDadosPassword({ atual: '', nova: '', confirmar: '' });
+      setMostrarModalInfo(false);
+      alert('Informações atualizadas com sucesso!');
     } catch (err) {
-      alert(err.response?.data?.erro || 'Erro ao atualizar contactos. O email pode já estar em uso.');
+      alert(err.response?.data?.erro || 'Erro ao atualizar informações. Verifica se a password atual está correta ou se o email já está em uso.');
     } finally {
       setIsDeleting(false);
     }
@@ -201,10 +226,6 @@ export default function Perfil() {
         .perfil-name { font-family: var(--nx-font-display, sans-serif); font-size: 28px; font-weight: 800; color: #f8fafc; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
         .perfil-email { font-size: 13px; color: #94a3b8; margin: 0 0 20px; display: flex; align-items: center; }
         
-        /* 🌟 NOVO: Estilo para o botão de editar contactos ao lado do email */
-        .btn-edit-contact { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #94a3b8; border-radius: 4px; font-size: 10px; font-weight: 700; padding: 2px 8px; margin-left: 12px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
-        .btn-edit-contact:hover { color: #f8fafc; border-color: rgba(255,255,255,0.5); }
-        
         .perfil-stats { display: flex; gap: 32px; }
         .perfil-stat-val { font-family: var(--nx-font-display); font-size: 24px; font-weight: 700; color: #f8fafc; line-height: 1; }
         .perfil-stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #64748b; margin-top: 3px; }
@@ -213,14 +234,15 @@ export default function Perfil() {
         .perfil-actions { display: flex; flex-direction: column; gap: 10px; width: 200px; }
         @media (max-width: 768px) { .perfil-actions { width: 100%; } }
 
-        .btn-share { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: rgba(42, 193, 180, 0.1); color: #2ac1b4; border: 1px solid rgba(42, 193, 180, 0.2); border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all .2s; }
-        .btn-share:hover { background: rgba(42, 193, 180, 0.2); }
+        .btn-action-primary { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: rgba(42, 193, 180, 0.1); color: #2ac1b4; border: 1px solid rgba(42, 193, 180, 0.2); border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+        .btn-action-primary:hover { background: rgba(42, 193, 180, 0.2); }
 
-        .btn-publish { padding: 12px; background: #f8fafc; color: #040711; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: opacity .2s; }
-        .btn-publish:hover { opacity: 0.85; }
+        .btn-action-solid { padding: 12px; background: #f8fafc; color: #040711; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: opacity .2s; }
+        .btn-action-solid:hover { opacity: 0.85; }
         
-        .btn-logout { padding: 12px; background: transparent; color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all .2s; }
-        .btn-logout:hover { border-color: #ef4444; color: #ef4444; }
+        .btn-action-outline { padding: 12px; background: transparent; color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
+        .btn-action-outline:hover { border-color: #f8fafc; color: #f8fafc; }
+        .btn-action-outline.danger:hover { border-color: #ef4444; color: #ef4444; }
         
         .tabs-row { display: flex; gap: 4px; margin-bottom: 28px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 4px; width: fit-content; }
         .tab-btn { padding: 9px 22px; border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; background: transparent; color: #94a3b8; }
@@ -250,17 +272,21 @@ export default function Perfil() {
         
         .perfil-loading-overlay { position: absolute; inset: 0; background: rgba(4, 7, 17, 0.85); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; border-radius: 32px; }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(4, 7, 17, 0.9); backdrop-filter: blur(10px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
-        .modal-card { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; width: 100%; max-width: 480px; padding: 40px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(4, 7, 17, 0.9); backdrop-filter: blur(10px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto;}
+        .modal-card { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; width: 100%; max-width: 480px; padding: 40px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); margin: auto; }
         .modal-close { position: absolute; top: 24px; right: 24px; background: transparent; border: none; color: #94a3b8; cursor: pointer; transition: color 0.2s; }
         .modal-close:hover { color: #f8fafc; }
         .modal-title { font-family: var(--nx-font-display); font-size: 24px; font-weight: 800; color: #f8fafc; margin: 0 0 8px; display: flex; align-items: center; gap: 10px; }
         .modal-desc { font-size: 14px; color: #94a3b8; margin: 0 0 24px; line-height: 1.5; }
+        
         .modal-form-group { margin-bottom: 20px; }
         .modal-form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 8px; }
         .modal-input { width: 100%; padding: 14px 16px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #f8fafc; outline: none; font-size: 14px; transition: all 0.2s; box-sizing: border-box; }
         .modal-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
         .modal-input::placeholder { color: #475569; }
+        
+        .modal-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 32px 0; }
+        
         .modal-btn-submit { width: 100%; padding: 16px; background: #3b82f6; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: opacity 0.2s; margin-top: 12px; }
         .modal-btn-submit:hover { opacity: 0.9; }
       `}</style>
@@ -320,25 +346,27 @@ export default function Perfil() {
         </div>
       )}
 
-      {/* 🌟 NOVO: MODAL DE EDIÇÃO DE CONTACTOS */}
-      {mostrarModalContactos && (
+      {/* 🌟 NOVO: MODAL UNIFICADO DE INFORMAÇÕES PESSOAIS */}
+      {mostrarModalInfo && (
         <div className="modal-overlay">
           <div className="modal-card">
-            <button className="modal-close" onClick={() => setMostrarModalContactos(false)}>
+            <button className="modal-close" onClick={() => setMostrarModalInfo(false)}>
               <X size={24} />
             </button>
-            <h2 className="modal-title">Atualizar Contactos</h2>
-            <p className="modal-desc">Os teus anúncios ativos passarão a usar imediatamente estes novos dados para receber mensagens e contactos.</p>
+            <h2 className="modal-title"><Settings size={26} color="#2ac1b4" /> Informações Pessoais</h2>
+            <p className="modal-desc">Atualiza os teus contactos ou altera a tua palavra-passe.</p>
 
-            <form onSubmit={gravarContactos}>
+            <form onSubmit={guardarInformacoesPessoais}>
+              {/* Secção de Contactos */}
               <div className="modal-form-group">
                 <label>Email da Conta</label>
                 <input 
                   className="modal-input" 
                   type="email" 
-                  value={dadosContactos.email} 
-                  onChange={e => setDadosContactos({...dadosContactos, email: e.target.value})} 
+                  value={dadosInfo.email} 
+                  onChange={e => setDadosInfo({...dadosInfo, email: e.target.value})} 
                   required 
+                  style={{ borderColor: 'rgba(42, 193, 180, 0.4)' }}
                 />
               </div>
               <div className="modal-form-group">
@@ -346,16 +374,57 @@ export default function Perfil() {
                 <input 
                   className="modal-input" 
                   type="tel" 
-                  value={dadosContactos.telefone} 
+                  value={dadosInfo.telefone} 
                   onChange={e => {
                     const apenasNumeros = e.target.value.replace(/\D/g, ''); 
-                    if (apenasNumeros.length <= 9) setDadosContactos({...dadosContactos, telefone: apenasNumeros});
+                    if (apenasNumeros.length <= 9) setDadosInfo({...dadosInfo, telefone: apenasNumeros});
                   }} 
                   required 
+                  style={{ borderColor: 'rgba(42, 193, 180, 0.4)' }}
                 />
               </div>
-              <button className="modal-btn-submit" type="submit" style={{ background: '#2ac1b4', color: '#040711' }}>
-                Guardar Alterações
+
+              <div className="modal-divider" />
+
+              {/* Secção de Password */}
+              <p className="modal-desc" style={{ marginBottom: '16px', fontSize: '13px' }}>
+                Para alterares a palavra-passe, preenche os campos abaixo. Caso contrário, deixa-os em branco.
+              </p>
+              
+              <div className="modal-form-group">
+                <label>Palavra-passe Atual</label>
+                <input 
+                  className="modal-input" 
+                  type="password" 
+                  placeholder="Deixa em branco se não quiseres alterar"
+                  value={dadosPassword.atual} 
+                  onChange={e => setDadosPassword({...dadosPassword, atual: e.target.value})} 
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="modal-form-group">
+                  <label>Nova Password</label>
+                  <input 
+                    className="modal-input" 
+                    type="password" 
+                    placeholder="Mínimo 9 char"
+                    value={dadosPassword.nova} 
+                    onChange={e => setDadosPassword({...dadosPassword, nova: e.target.value})} 
+                  />
+                </div>
+                <div className="modal-form-group">
+                  <label>Confirmar Nova</label>
+                  <input 
+                    className="modal-input" 
+                    type="password" 
+                    value={dadosPassword.confirmar} 
+                    onChange={e => setDadosPassword({...dadosPassword, confirmar: e.target.value})} 
+                  />
+                </div>
+              </div>
+
+              <button className="modal-btn-submit" type="submit" style={{ background: '#2ac1b4', color: '#040711', marginTop: '8px' }}>
+                Guardar Informações Pessoais
               </button>
             </form>
           </div>
@@ -423,11 +492,7 @@ export default function Perfil() {
                 )}
               </h1>
 
-              {/* 🌟 NOVO: O email tem agora um botão editar ao lado */}
-              <p className="perfil-email">
-                {utilizador?.email}
-                <button className="btn-edit-contact" onClick={() => setMostrarModalContactos(true)}>Editar</button>
-              </p>
+              <p className="perfil-email">{utilizador?.email}</p>
               
               <div className="perfil-stats">
                 <div><div className="perfil-stat-val">{totalImoveis}</div><div className="perfil-stat-label">Imóveis</div></div>
@@ -437,13 +502,19 @@ export default function Perfil() {
             </div>
 
             <div className="perfil-actions">
-              <button className="btn-share" onClick={copiarLinkMontra}>
+              <button className="btn-action-primary" onClick={copiarLinkMontra}>
                 <Share2 size={16} /> 
                 {linkCopiado ? 'Link Copiado!' : 'Partilhar Montra'}
               </button>
               
-              <button className="btn-publish" onClick={() => navigate('/publicar')}>+ Criar Anúncio</button>
-              <button className="btn-logout" onClick={handleLogout}>Terminar Sessão</button>
+              <button className="btn-action-solid" onClick={() => navigate('/publicar')}>+ Criar Anúncio</button>
+              
+              {/* 🌟 O BOTÃO DE INFORMAÇÕES PESSOAIS */}
+              <button className="btn-action-outline" onClick={() => setMostrarModalInfo(true)}>
+                <Settings size={14} /> Info. Pessoais
+              </button>
+
+              <button className="btn-action-outline danger" onClick={handleLogout}>Terminar Sessão</button>
             </div>
           </div>
 
