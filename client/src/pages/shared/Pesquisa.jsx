@@ -14,7 +14,7 @@ const COMBUSTIVEIS = ['Gasolina', 'Diesel', 'Eléctrico', 'Híbrido', 'GPL'];
 const TRANSMISSAO = ['Manual', 'Automático'];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 🎯 BANNER CTA — convida utilizadores não autenticados a registarem-se
+// BANNER CTA — convida utilizadores não autenticados a publicar um anúncio
 // Adapta-se automaticamente ao tipo de divisão (carro / imóvel)
 // Para mostrar apenas a utilizadores não autenticados, envolve com: {!user && <BannerCTA ... />}
 // ─────────────────────────────────────────────────────────────────────────────
@@ -22,71 +22,73 @@ const BannerCTA = ({ tipo }) => {
   const navigate = useNavigate();
   const isCarro = tipo === 'carro';
   const accent = isCarro ? 'var(--nx-accent-car)' : 'var(--nx-accent-estate)';
-  const emoji = isCarro ? '🚗' : '🏠';
-  const textoAnuncio = isCarro ? 'carro' : 'imóvel';
-  const textoPrincipal = isCarro
-    ? 'Tens um carro para vender? Publica o teu primeiro anúncio'
-    : 'Tens um imóvel para arrendar ou vender? Publica o teu primeiro anúncio';
+  const textoAnuncio = isCarro ? 'veículo' : 'imóvel';
+  const divisao = isCarro ? 'NOXVELIA Drive' : 'NOXVELIA Estate';
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, var(--nx-bg-2) 0%, var(--nx-bg-3) 100%)',
-      border: `1px solid ${accent}33`,
+      background: 'var(--nx-bg-2)',
+      border: `1px solid var(--nx-border)`,
       borderLeft: `3px solid ${accent}`,
       borderRadius: 'var(--nx-radius-md)',
-      padding: '16px 20px',
+      padding: '18px 24px',
       marginBottom: '24px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: '16px',
+      gap: '24px',
       flexWrap: 'wrap',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <span style={{ fontSize: '22px', lineHeight: 1 }}>{emoji}</span>
-        <div>
-          <p style={{
-            margin: 0,
-            fontSize: '13px',
-            fontWeight: 700,
-            color: 'var(--nx-text)',
-            lineHeight: 1.4,
-          }}>
-            {textoPrincipal}{' '}
-            <span style={{ color: accent }}>100% grátis.</span>
-          </p>
-          <p style={{
-            margin: '3px 0 0 0',
-            fontSize: '12px',
-            color: 'var(--nx-text-sub)',
-            lineHeight: 1.4,
-          }}>
-            Regista-te agora e chega a milhares de compradores em Portugal. Sem comissões, sem surpresas.
-          </p>
-        </div>
+      <div>
+        <p style={{
+          margin: 0,
+          fontSize: '13px',
+          fontWeight: 700,
+          color: 'var(--nx-text)',
+          lineHeight: 1.5,
+          letterSpacing: '0.01em',
+        }}>
+          Publica o teu {textoAnuncio} em {divisao}{' '}
+          <span style={{ color: accent }}>gratuitamente.</span>
+        </p>
+        <p style={{
+          margin: '4px 0 0 0',
+          fontSize: '12px',
+          color: 'var(--nx-text-sub)',
+          lineHeight: 1.5,
+          fontWeight: 400,
+        }}>
+          Acede à tua conta e chega a milhares de compradores em Portugal. Sem comissões.
+        </p>
       </div>
       <button
-        onClick={() => navigate('/registo')}
+        onClick={() => navigate('/login')}
         style={{
-          background: accent,
-          color: '#020617',
-          border: 'none',
+          background: 'transparent',
+          color: accent,
+          border: `1px solid ${accent}`,
           borderRadius: 'var(--nx-radius-sm)',
-          padding: '10px 18px',
+          padding: '9px 20px',
           fontFamily: 'var(--nx-font-body)',
           fontWeight: 700,
           fontSize: '12px',
           cursor: 'pointer',
           whiteSpace: 'nowrap',
-          letterSpacing: '0.04em',
+          letterSpacing: '0.05em',
           textTransform: 'uppercase',
           flexShrink: 0,
-          transition: 'opacity 0.2s ease',
+          transition: 'background 0.2s ease, color 0.2s ease',
         }}
-        onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+        onMouseEnter={e => {
+          e.currentTarget.style.background = accent;
+          e.currentTarget.style.color = '#020617';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = 'transparent';
+          e.currentTarget.style.color = accent;
+        }}
       >
-        Anunciar {textoAnuncio} grátis →
+        Entrar na conta
       </button>
     </div>
   );
