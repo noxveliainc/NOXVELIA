@@ -18,7 +18,7 @@ const TRANSMISSAO = ['Manual', 'Automático'];
 // Adapta-se automaticamente ao tipo de divisão (carro / imóvel)
 // Para mostrar apenas a utilizadores não autenticados, envolve com: {!user && <BannerCTA ... />}
 // ─────────────────────────────────────────────────────────────────────────────
-const BannerCTA = ({ tipo }) => {
+const BannerCTA = ({ tipo, origem }) => {
   const navigate = useNavigate();
   const isCarro = tipo === 'carro';
   const accent = isCarro ? 'var(--nx-accent-car)' : 'var(--nx-accent-estate)';
@@ -62,7 +62,7 @@ const BannerCTA = ({ tipo }) => {
         </p>
       </div>
       <button
-        onClick={() => navigate('/login')}
+        onClick={() => navigate('/login', { state: { from: origem } })}
         style={{
           background: 'transparent',
           color: accent,
@@ -457,8 +457,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
             {error && <div style={{ color: 'var(--nx-danger)', padding: '16px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', fontSize: '14px', fontWeight: 500, border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '24px' }}>{error}</div>}
 
             {/* ── BANNER CTA ── */}
-            {/* Remove esta linha e substitui por {!user && <BannerCTA tipo={tipoSeguro} />} se tiveres contexto de autenticação */}
-            <BannerCTA tipo={tipoSeguro} />
+            {/* Remove esta linha e substitui por {!user && <BannerCTA tipo={tipoSeguro} origem={location.pathname} />} se tiveres contexto de autenticação */}
+            <BannerCTA tipo={tipoSeguro} origem={location.pathname} />
 
             <div className="pesquisa-topbar">
               <div className="pesquisa-results-count">{loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} registos`}</div>
