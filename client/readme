@@ -1,0 +1,289 @@
+# PortalPro — Sistema Completo de Anúncios
+
+## 📦 O que foi criado
+
+Foram desenvolvidos **3 componentes principais** reutilizáveis e de qualidade de produção:
+
+### 1. **Anuncio.jsx** — Página de Detalhe
+- Visualização completa de imóvel ou automóvel
+- Galeria de fotos com thumbnails
+- Sistema de specs dinâmicos (imóvel vs carro)
+- Score IA integrado (0-10)
+- Informações do vendedor com badge de verificação
+- Formulário de mensagem direto
+- Button guardar favoritos
+- Responsivo e acessível
+
+### 2. **Pesquisa.jsx** — Página de Busca
+- Sidebar com filtros avançados (categoria, preço, distrito, tipologia/combustível)
+- Pesquisa inteligente com resumo IA
+- Grid responsivo com cards de anúncios
+- Ordenação (relevância, preço, data)
+- Loading states com placeholders
+- Estado vazio amigável
+- Suporte para tipo "imovel" e "carro" via prop
+
+### 3. **Publicar.jsx** — Formulário de Criação
+- 4 passos: Categoria → Fotos → Infos → Detalhes
+- Upload multi-file com Cloudinary
+- Formulários dinâmicos (imovel vs carro)
+- Validação de campos obrigatórios
+- Score IA automático após publicação
+- Notificação de sucesso
+
+---
+
+## 📁 Estructura de Ficheiros
+
+### Ficheiros Principais (Copiar para `src/components/`)
+```
+Anuncio.jsx      — 550 linhas, totalmente estilizado
+Pesquisa.jsx     — 480 linhas, totalmente estilizado
+Publicar.jsx     — 620 linhas, totalmente estilizado
+```
+
+### Ficheiros de Referência (Copiar para `src/pages/imoveis/` e `src/pages/carros/`)
+
+**Para Anúncio:**
+```jsx
+// pages/imoveis/AnuncioImovel.jsx
+import Anuncio from '../../components/Anuncio';
+export default function AnuncioImovel() {
+  return <Anuncio />;
+}
+
+// pages/carros/AnuncioCarro.jsx (idêntico)
+import Anuncio from '../../components/Anuncio';
+export default function AnuncioCarro() {
+  return <Anuncio />;
+}
+```
+
+**Para Pesquisa:**
+```jsx
+// pages/imoveis/PesquisaImovel.jsx
+import Pesquisa from '../../components/Pesquisa';
+export default function PesquisaImovel() {
+  return <Pesquisa tipoPadrao="imovel" />;
+}
+
+// pages/carros/PesquisaCarro.jsx
+import Pesquisa from '../../components/Pesquisa';
+export default function PesquisaCarro() {
+  return <Pesquisa tipoPadrao="carro" />;
+}
+```
+
+**Para Publicar:**
+```jsx
+// pages/imoveis/PublicarImovel.jsx
+import Publicar from '../../components/Publicar';
+export default function PublicarImovel() {
+  return <Publicar />;
+}
+
+// pages/carros/PublicarCarro.jsx (idêntico)
+import Publicar from '../../components/Publicar';
+export default function PublicarCarro() {
+  return <Publicar />;
+}
+```
+
+**Para Perfil:**
+```jsx
+// pages/imoveis/PerfilImovel.jsx
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import api from '../../services/api';
+
+export default function PerfilImovel() {
+  const [anuncios, setAnuncios] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const carregar = async () => {
+      try {
+        const { data } = await api.get('/users/me/anuncios');
+        setAnuncios(data.filter(a => a.tipo === 'imovel'));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    carregar();
+  }, []);
+
+  return (
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
+      <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '32px', fontWeight: 800, marginBottom: '24px' }}>
+        Os meus imóveis
+      </h1>
+      {loading ? (
+        <p>A carregar…</p>
+      ) : anuncios.length > 0 ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+          {anuncios.map(a => (
+            <Link key={a._id} to={`/anuncio/${a._id}`} style={{ padding: '16px', border: '1px solid #e5e3e0', borderRadius: '8px', textDecoration: 'none', color: 'inherit' }}>
+              <h3 style={{ fontWeight: 700, marginBottom: '8px' }}>{a.titulo}</h3>
+              <p style={{ color: '#666', fontSize: '13px' }}>
+                {new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(a.preco)}
+              </p>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <p>Ainda não publicaste nenhum imóvel.</p>
+      )}
+    </div>
+  );
+}
+
+// pages/carros/PerfilCarro.jsx (similar com .filter(a => a.tipo === 'carro'))
+```
+
+---
+
+## 🎨 Design & Estética
+
+**Tipografia:**
+- `Syne 400/700/800` — Títulos e números grandes (sans-serif editorial)
+- `IBM Plex Mono 300/400` — UI e texto (monospace técnica)
+
+**Cores:**
+- Background: `#fafaf9` (creme muito claro)
+- Texto principal: `#0d0d0d` (quase preto)
+- Texto secundário: `#666` / `#999`
+- Borders: `#e5e3e0` (gris claro)
+- Accent: `#0d0d0d` (preto)
+
+**Componentes:**
+- Sem gradientes
+- Borders: `1px solid #e5e3e0`
+- Border-radius: `8px` (padrão)
+- Spacing: REM para vertical, PX para gaps
+- Responsive: Mobile-first com grids `repeat(auto-fill, minmax(...))`
+
+---
+
+## 📡 API Integration
+
+Todos os componentes usam `api` (axios) para:
+
+**Anuncio.jsx:**
+```javascript
+GET /anuncios/:id                    // Carregar detalhe
+POST /mensagens                      // Enviar mensagem
+POST /anuncios/:id/guardar          // Guardar favorito
+```
+
+**Pesquisa.jsx:**
+```javascript
+GET /anuncios?tipo=...&precoMin=... // Listar com filtros
+POST /ia/search                      // Busca inteligente
+```
+
+**Publicar.jsx:**
+```javascript
+POST /anuncios                       // Criar anúncio
+POST /ia/score/:id                   // Avaliar com IA
+```
+
+---
+
+## 🚀 Como Usar
+
+### 1. Copiar Componentes Principais
+```bash
+cp Anuncio.jsx src/components/
+cp Pesquisa.jsx src/components/
+cp Publicar.jsx src/components/
+```
+
+### 2. Copiar Ficheiros de Referência
+```bash
+# Imoveis
+cp AnuncioImovel.jsx src/pages/imoveis/
+cp PesquisaImovel.jsx src/pages/imoveis/
+cp PublicarImovel.jsx src/pages/imoveis/
+cp PerfilImovel.jsx src/pages/imoveis/
+
+# Carros
+cp AnuncioCarro.jsx src/pages/carros/
+cp PesquisaCarro.jsx src/pages/carros/
+cp PublicarCarro.jsx src/pages/carros/
+cp PerfilCarro.jsx src/pages/carros/
+```
+
+### 3. Configurar Routes
+```jsx
+// src/App.jsx ou src/Router.jsx
+import AnuncioImovel from './pages/imoveis/AnuncioImovel';
+import PesquisaImovel from './pages/imoveis/PesquisaImovel';
+// ... etc
+
+<Routes>
+  {/* Imoveis */}
+  <Route path="/imovel/:id" element={<AnuncioImovel />} />
+  <Route path="/imoveis" element={<PesquisaImovel />} />
+  <Route path="/publicar-imovel" element={<PublicarImovel />} />
+  <Route path="/perfil-imovel" element={<PerfilImovel />} />
+
+  {/* Carros */}
+  <Route path="/carro/:id" element={<AnuncioCarro />} />
+  <Route path="/carros" element={<PesquisaCarro />} />
+  <Route path="/publicar-carro" element={<PublicarCarro />} />
+  <Route path="/perfil-carro" element={<PerfilCarro />} />
+</Routes>
+```
+
+### 4. Environment Variables (.env)
+```
+VITE_CLOUDINARY_CLOUD=teu_cloudinary_cloud_name
+VITE_API_URL=http://localhost:3000/api
+```
+
+---
+
+## ✅ Checklist de Implementação
+
+- [ ] Copiar `Anuncio.jsx`, `Pesquisa.jsx`, `Publicar.jsx` para `src/components/`
+- [ ] Copiar ficheiros de referência para suas pastas
+- [ ] Adicionar rotas no App.jsx
+- [ ] Testar com dados reais da API
+- [ ] Configurar Cloudinary (upload de fotos)
+- [ ] Testar login/autenticação
+- [ ] Testar filtros de pesquisa
+- [ ] Testar publicação de anúncios
+- [ ] Testar envio de mensagens
+- [ ] Testar score IA
+
+---
+
+## 🔧 Customização
+
+### Mudar cores:
+Procura por `#0d0d0d`, `#fafaf9`, `#e5e3e0` nos arquivos e substitui.
+
+### Mudar tipografia:
+Muda as imports do Google Fonts no `<style>` e os nomes das fontes.
+
+### Mudar layout:
+Todos os estilos estão no `<style>` no topo de cada componente — fácil de editar.
+
+### Adicionar mais filtros:
+Em `Pesquisa.jsx`, expande `DISTRITOS`, `TIPOLOGIAS`, `COMBUSTIVEIS` e adiciona no formulário.
+
+---
+
+## 📞 Suporte & Debugging
+
+Se algo não funcionar:
+1. Verifica se o backend está a responder em `/anuncios`
+2. Verifica a console do browser para erros
+3. Valida o token JWT em `localStorage.getItem('token')`
+4. Testa a conexão com `api.get('/anuncios')`
+
+---
+
+**PortalPro — Feito com ✦ e brutalismo editorial.**

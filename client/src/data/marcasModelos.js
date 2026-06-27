@@ -1,0 +1,1781 @@
+// src/data/marcasModelos.js  –  v2.0
+//
+// Base de dados de marcas e modelos de automóveis disponíveis na NOXVELIA.
+//
+// Novidades v2:
+//   • Estrutura enriquecida por modelo (segmentos, combustíveis, gerações)
+//   • Aliases de marca e de modelo (tolerância a erros e variações ortográficas)
+//   • Normalização avançada: remoção de acentos, case-insensitive, abreviaturas
+//   • Pesquisa fuzzy sem dependências externas (Levenshtein embutido)
+//   • Pesquisa global  pesquisarCarro("golf") → [{ marca, modelo }]
+//   • Novas marcas: Lucid, Rivian, Fisker, Lynk & Co, Aiways, Voyah,
+//                   Hongqi, Morgan, Caterham, Pagani, Koenigsegg, Seres
+//   • Novos modelos em Toyota, Renault, Kia, Mercedes-Benz, BMW, VW e outros
+//
+// ---------------------------------------------------------------------------
+// ESTRUTURA DE CADA ENTRADA DE MODELO
+// ---------------------------------------------------------------------------
+// {
+//   modelo     : string   – nome canónico
+//   segmentos  : string[] – ex: ['Sedan','SUV','Carrinha','Coupé','Cabrio','Monovolume','Pickup']
+//   combustiveis: string[]– ex: ['Gasolina','Diesel','Híbrido','Plug-in Híbrido','Elétrico','Hidrogénio']
+//   geracoes   : string[] – ex: ['E90','F30','G20']   (opcional)
+// }
+// ---------------------------------------------------------------------------
+
+// ─── Helpers internos ──────────────────────────────────────────────────────
+
+function sem_acentos(str) {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+// Distância de Levenshtein simplificada (máx. 50 chars para performance)
+function levenshtein(a, b) {
+  const la = a.length, lb = b.length;
+  if (la === 0) return lb;
+  if (lb === 0) return la;
+  if (la > 50 || lb > 50) return Math.abs(la - lb) + 10; // fallback rápido
+  const dp = Array.from({ length: la + 1 }, (_, i) =>
+    Array.from({ length: lb + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+  );
+  for (let i = 1; i <= la; i++) {
+    for (let j = 1; j <= lb; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[la][lb];
+}
+
+// ─── ALIASES DE MARCA ──────────────────────────────────────────────────────
+
+const ALIASES_MARCA = {
+  // Volkswagen
+  'vw': 'Volkswagen',
+  'volkswagen': 'Volkswagen',
+  // Mercedes-Benz
+  'mercedes': 'Mercedes-Benz',
+  'mercedes-benz': 'Mercedes-Benz',
+  'mercedes benz': 'Mercedes-Benz',
+  'mercedez': 'Mercedes-Benz',
+  'merceds': 'Mercedes-Benz',
+  'mercede': 'Mercedes-Benz',
+  'merc': 'Mercedes-Benz',
+  'amg': 'Mercedes-Benz',
+  'benz': 'Mercedes-Benz',
+  // Citroën
+  'citroen': 'Citroën',
+  'citroën': 'Citroën',
+  // Škoda
+  'skoda': 'Škoda',
+  'skoda auto': 'Škoda',
+  // BMW
+  'bmw': 'BMW',
+  'bavarian motor works': 'BMW',
+  // Alfa Romeo
+  'alfa': 'Alfa Romeo',
+  'alfaromeo': 'Alfa Romeo',
+  'alfa-romeo': 'Alfa Romeo',
+  // Aston Martin
+  'aston': 'Aston Martin',
+  'astonmartin': 'Aston Martin',
+  'aston-martin': 'Aston Martin',
+  // Land Rover
+  'land-rover': 'Land Rover',
+  'landrover': 'Land Rover',
+  'range rover': 'Land Rover',
+  // Rolls-Royce
+  'rolls royce': 'Rolls-Royce',
+  'rolls-royce': 'Rolls-Royce',
+  'rolls': 'Rolls-Royce',
+  // Mini
+  'mini cooper': 'Mini',
+  // DS Automobiles
+  'ds': 'DS Automobiles',
+  'ds automobiles': 'DS Automobiles',
+  // GWM / Haval
+  'great wall': 'GWM',
+  'great wall motors': 'GWM',
+  'haval': 'GWM',
+  'gwm': 'GWM',
+  // MG
+  'mg motor': 'MG',
+  'morris garages': 'MG',
+  // BYD
+  'byd': 'BYD',
+  'build your dreams': 'BYD',
+  // Lynk & Co
+  'lynk': 'Lynk & Co',
+  'lynk and co': 'Lynk & Co',
+  'lynk&co': 'Lynk & Co',
+  // Koenigsegg
+  'koenigsegg': 'Koenigsegg',
+  // Caterham
+  'caterham': 'Caterham',
+  // Pagani
+  'pagani': 'Pagani',
+  // SsangYong
+  'ssangyong': 'SsangYong',
+  'ssang yong': 'SsangYong',
+  // Outros
+  'opel': 'Opel',
+  'vauxhall': 'Opel',
+  'seat': 'Seat',
+  'renault': 'Renault',
+  'peugeot': 'Peugeot',
+  'toyota': 'Toyota',
+  'honda': 'Honda',
+  'hyundai': 'Hyundai',
+  'kia': 'Kia',
+  'ford': 'Ford',
+  'fiat': 'Fiat',
+  'nissan': 'Nissan',
+  'mazda': 'Mazda',
+  'volvo': 'Volvo',
+  'subaru': 'Subaru',
+  'suzuki': 'Suzuki',
+  'tesla': 'Tesla',
+  'porsche': 'Porsche',
+  'ferrari': 'Ferrari',
+  'lamborghini': 'Lamborghini',
+  'audi': 'Audi',
+  'dacia': 'Dacia',
+  'mitsubishi': 'Mitsubishi',
+  'jeep': 'Jeep',
+  'lexus': 'Lexus',
+  'jaguar': 'Jaguar',
+  'chevrolet': 'Chevrolet',
+  'chevy': 'Chevrolet',
+  'dodge': 'Dodge',
+  'chrysler': 'Chrysler',
+  'genesis': 'Genesis',
+  'infiniti': 'Infiniti',
+  'cupra': 'Cupra',
+  'daihatsu': 'Daihatsu',
+  'isuzu': 'Isuzu',
+  'lucid': 'Lucid',
+  'rivian': 'Rivian',
+  'fisker': 'Fisker',
+  'aiways': 'Aiways',
+  'voyah': 'Voyah',
+  'seres': 'Seres',
+  'hongqi': 'Hongqi',
+  'morgan': 'Morgan',
+  'mclaren': 'McLaren',
+  'maserati': 'Maserati',
+  'bentley': 'Bentley',
+  'bugatti': 'Bugatti',
+  'polestar': 'Polestar',
+  'xpeng': 'XPeng',
+  'leapmotor': 'Leapmotor',
+};
+
+// ─── ALIASES DE MODELO ─────────────────────────────────────────────────────
+
+const ALIASES_MODELO = {
+  // Volkswagen Golf
+  'golf 7': 'Golf',
+  'golf vii': 'Golf',
+  'golf 8': 'Golf',
+  'golf viii': 'Golf',
+  'golf gti': 'Golf',
+  'golf r': 'Golf',
+  // VW Polo
+  'polo 6': 'Polo',
+  'polo vi': 'Polo',
+  // VW Passat
+  'passat b8': 'Passat',
+  'passat b7': 'Passat',
+  // BMW Séries
+  'serie 1': 'Série 1',
+  'series 1': 'Série 1',
+  '1 serie': 'Série 1',
+  'serie 2': 'Série 2',
+  'series 2': 'Série 2',
+  'serie 3': 'Série 3',
+  'series 3': 'Série 3',
+  '3 serie': 'Série 3',
+  'serie 4': 'Série 4',
+  'series 4': 'Série 4',
+  'serie 5': 'Série 5',
+  'series 5': 'Série 5',
+  '5 serie': 'Série 5',
+  'serie 6': 'Série 6',
+  'series 6': 'Série 6',
+  'serie 7': 'Série 7',
+  'series 7': 'Série 7',
+  'serie 8': 'Série 8',
+  'series 8': 'Série 8',
+  // Mercedes Classes
+  'a classe': 'Classe A',
+  'a class': 'Classe A',
+  'classe a': 'Classe A',
+  'b classe': 'Classe B',
+  'b class': 'Classe B',
+  'classe b': 'Classe B',
+  'c classe': 'Classe C',
+  'c class': 'Classe C',
+  'classe c': 'Classe C',
+  'e classe': 'Classe E',
+  'e class': 'Classe E',
+  'classe e': 'Classe E',
+  's classe': 'Classe S',
+  's class': 'Classe S',
+  'classe s': 'Classe S',
+  'g classe': 'Classe G',
+  'g class': 'Classe G',
+  'g wagon': 'Classe G',
+  'g wagen': 'Classe G',
+  'g63': 'Classe G',
+  'v classe': 'Classe V',
+  'v class': 'Classe V',
+  'classe v': 'Classe V',
+  // Toyota
+  'c hr': 'C-HR',
+  'chr': 'C-HR',
+  'rav 4': 'RAV4',
+  'land cruiser prado': 'Land Cruiser',
+  'prius plus': 'Prius',
+  'yaris cross': 'Yaris Cross',
+  'gr yaris': 'GR Yaris',
+  'gr86': 'GR86',
+  'corolla cross': 'Corolla Cross',
+  'urban cruiser': 'Urban Cruiser',
+  // Mazda
+  'cx5': 'CX-5',
+  'cx 5': 'CX-5',
+  'cx3': 'CX-3',
+  'cx 3': 'CX-3',
+  'cx30': 'CX-30',
+  'cx 30': 'CX-30',
+  'cx60': 'CX-60',
+  'cx 60': 'CX-60',
+  'mx5': 'MX-5',
+  'mx 5': 'MX-5',
+  'miata': 'MX-5',
+  'mx30': 'MX-30',
+  'mx 30': 'MX-30',
+  // Nissan
+  'qashkai': 'Qashqai',
+  'quasqai': 'Qashqai',
+  'quashqai': 'Qashqai',
+  'qasqai': 'Qashqai',
+  'x trail': 'X-Trail',
+  'xtrail': 'X-Trail',
+  // Hyundai
+  'ioniq 5': 'IONIQ 5',
+  'ioniq 6': 'IONIQ 6',
+  // Kia
+  'ev 6': 'EV6',
+  'ev 9': 'EV9',
+  'ev 3': 'EV3',
+  'ev 5': 'EV5',
+  // Peugeot
+  'e 208': 'e-208',
+  'e208': 'e-208',
+  'e 2008': 'e-2008',
+  'e2008': 'e-2008',
+  '2008 e': 'e-2008',
+  // Renault
+  'zoe': 'Zoe',
+  'megane': 'Mégane',
+  'megane e-tech': 'Mégane E-Tech',
+  'scenic e-tech': 'Scenic E-Tech',
+  'rafale e-tech': 'Rafale',
+  'r5': 'R5 E-Tech',
+  'renault 5': 'R5 E-Tech',
+  // Citroën
+  'c4 e': 'ë-C4',
+  'ec4': 'ë-C4',
+  // Škoda
+  'enyaq iv': 'Enyaq',
+  'octavia combi': 'Octavia',
+  // Tesla
+  'model3': 'Model 3',
+  'model s': 'Model S',
+  'model x': 'Model X',
+  'model y': 'Model Y',
+  // Audi e-tron
+  'e tron': 'e-tron',
+  'etron': 'e-tron',
+  'e tron gt': 'e-tron GT',
+  'q4 etron': 'Q4 e-tron',
+  'q6 etron': 'Q6 e-tron',
+  'q8 etron': 'Q8 e-tron',
+  // Porsche
+  '911 carrera': '911',
+  '911 turbo': '911',
+  '911 gt3': '911',
+  'cayenne coupe': 'Cayenne',
+  'macan ev': 'Macan',
+  // Ferrari
+  '296 gtb': '296',
+  '296 gts': '296',
+  // Mini
+  'jcw': 'JCW',
+  'john cooper works': 'JCW',
+  // Mitsubishi
+  'eclipse cross': 'Eclipse Cross',
+  'outlander phev': 'Outlander',
+  // Subaru
+  'wrx sti': 'WRX',
+  'xv': 'XV',
+  // Honda
+  'e ny1': 'e:Ny1',
+  // Ford
+  'mustang mach e': 'Mustang Mach-E',
+  'mach e': 'Mustang Mach-E',
+  'tourneo': 'Tourneo Custom',
+  // Jeep
+  'grand cherokee 4xe': 'Grand Cherokee',
+  'wrangler 4xe': 'Wrangler',
+};
+
+// ─── BASE DE DADOS PRINCIPAL ────────────────────────────────────────────────
+// Estrutura:  MARCAS_CARROS[marca] = [ { modelo, segmentos, combustiveis, geracoes? }, … ]
+
+export const MARCAS_CARROS = {
+
+  'Abarth': [
+    { modelo: '500',          segmentos: ['Hatchback'],          combustiveis: ['Gasolina'] },
+    { modelo: '595',          segmentos: ['Hatchback'],          combustiveis: ['Gasolina'] },
+    { modelo: '695',          segmentos: ['Hatchback'],          combustiveis: ['Gasolina'] },
+    { modelo: 'Grande Punto', segmentos: ['Hatchback'],          combustiveis: ['Gasolina'] },
+    { modelo: 'Punto Evo',    segmentos: ['Hatchback'],          combustiveis: ['Gasolina'] },
+    { modelo: '124 Spider',   segmentos: ['Cabrio'],             combustiveis: ['Gasolina'] },
+  ],
+
+  'Alfa Romeo': [
+    { modelo: 'MiTo',      segmentos: ['Hatchback'],         combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '147',       segmentos: ['Hatchback'],         combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '156',       segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '159',       segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '166',       segmentos: ['Sedan'],             combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '33',        segmentos: ['Hatchback'],         combustiveis: ['Gasolina'] },
+    { modelo: '75',        segmentos: ['Sedan'],             combustiveis: ['Gasolina'] },
+    { modelo: 'Giulietta', segmentos: ['Hatchback'],         combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Giulia',    segmentos: ['Sedan'],             combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Stelvio',   segmentos: ['SUV'],               combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Tonale',    segmentos: ['SUV'],               combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'GT',        segmentos: ['Coupé'],             combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'GTV',       segmentos: ['Coupé'],             combustiveis: ['Gasolina'] },
+    { modelo: 'Brera',     segmentos: ['Coupé'],             combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Spider',    segmentos: ['Cabrio'],            combustiveis: ['Gasolina'] },
+    { modelo: '4C',        segmentos: ['Coupé'],             combustiveis: ['Gasolina'] },
+  ],
+
+  'Alpine': [
+    { modelo: 'A110',  segmentos: ['Coupé'],  combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'A110 E-terna', segmentos: ['Coupé'], combustiveis: ['Elétrico'] },
+    { modelo: 'A310',  segmentos: ['Coupé'],  combustiveis: ['Gasolina'] },
+    { modelo: 'GTA',   segmentos: ['Coupé'],  combustiveis: ['Gasolina'] },
+  ],
+
+  'Aston Martin': [
+    { modelo: 'Vantage',  segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'DB9',      segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'DB11',     segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'DB12',     segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'DBS',      segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'DBX',      segmentos: ['SUV'],             combustiveis: ['Gasolina'] },
+    { modelo: 'DBX707',   segmentos: ['SUV'],             combustiveis: ['Gasolina'] },
+    { modelo: 'Rapide',   segmentos: ['Sedan'],           combustiveis: ['Gasolina'] },
+    { modelo: 'Vanquish', segmentos: ['Coupé'],           combustiveis: ['Gasolina'] },
+  ],
+
+  'Audi': [
+    { modelo: 'A1',       segmentos: ['Hatchback'],              combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'A2',       segmentos: ['Hatchback'],              combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'A3',       segmentos: ['Hatchback', 'Sedan'],     combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'A4',       segmentos: ['Sedan', 'Carrinha'],      combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'A5',       segmentos: ['Coupé', 'Cabrio', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'A6',       segmentos: ['Sedan', 'Carrinha'],      combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'A7',       segmentos: ['Coupé', 'Carrinha'],      combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'A8',       segmentos: ['Sedan'],                  combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: '80',       segmentos: ['Sedan', 'Carrinha'],      combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '100',      segmentos: ['Sedan', 'Carrinha'],      combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Cabriolet',segmentos: ['Cabrio'],                 combustiveis: ['Gasolina'] },
+    { modelo: 'Q2',       segmentos: ['SUV'],                    combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Q3',       segmentos: ['SUV'],                    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Q4 e-tron',segmentos: ['SUV'],                    combustiveis: ['Elétrico'] },
+    { modelo: 'Q5',       segmentos: ['SUV'],                    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Q6 e-tron',segmentos: ['SUV'],                    combustiveis: ['Elétrico'] },
+    { modelo: 'Q7',       segmentos: ['SUV'],                    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Q8',       segmentos: ['SUV'],                    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Q8 e-tron',segmentos: ['SUV'],                    combustiveis: ['Elétrico'] },
+    { modelo: 'TT',       segmentos: ['Coupé', 'Cabrio'],        combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'R8',       segmentos: ['Coupé', 'Cabrio'],        combustiveis: ['Gasolina'] },
+    { modelo: 'e-tron',   segmentos: ['SUV'],                    combustiveis: ['Elétrico'] },
+    { modelo: 'e-tron GT',segmentos: ['Sedan'],                  combustiveis: ['Elétrico'] },
+    { modelo: 'RS3',      segmentos: ['Hatchback', 'Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: 'RS4',      segmentos: ['Sedan', 'Carrinha'],      combustiveis: ['Gasolina'] },
+    { modelo: 'RS5',      segmentos: ['Coupé', 'Carrinha'],      combustiveis: ['Gasolina'] },
+    { modelo: 'RS6',      segmentos: ['Carrinha'],               combustiveis: ['Gasolina'] },
+    { modelo: 'RS7',      segmentos: ['Coupé'],                  combustiveis: ['Gasolina'] },
+    { modelo: 'RS Q3',    segmentos: ['SUV'],                    combustiveis: ['Gasolina'] },
+    { modelo: 'RS Q8',    segmentos: ['SUV'],                    combustiveis: ['Gasolina'] },
+    { modelo: 'S3',       segmentos: ['Hatchback', 'Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: 'S4',       segmentos: ['Sedan', 'Carrinha'],      combustiveis: ['Gasolina'] },
+    { modelo: 'S5',       segmentos: ['Coupé', 'Cabrio'],        combustiveis: ['Gasolina'] },
+    { modelo: 'S6',       segmentos: ['Sedan', 'Carrinha'],      combustiveis: ['Gasolina'] },
+    { modelo: 'S7',       segmentos: ['Coupé'],                  combustiveis: ['Gasolina'] },
+    { modelo: 'S8',       segmentos: ['Sedan'],                  combustiveis: ['Gasolina'] },
+    { modelo: 'SQ2',      segmentos: ['SUV'],                    combustiveis: ['Gasolina'] },
+    { modelo: 'SQ5',      segmentos: ['SUV'],                    combustiveis: ['Gasolina'] },
+    { modelo: 'SQ7',      segmentos: ['SUV'],                    combustiveis: ['Gasolina'] },
+    { modelo: 'SQ8',      segmentos: ['SUV'],                    combustiveis: ['Gasolina'] },
+  ],
+
+  'Bentley': [
+    { modelo: 'Continental GT',          segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'Continental Flying Spur', segmentos: ['Sedan'],           combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'Flying Spur',             segmentos: ['Sedan'],           combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'Bentayga',                segmentos: ['SUV'],             combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'Mulsanne',                segmentos: ['Sedan'],           combustiveis: ['Gasolina'] },
+    { modelo: 'Arnage',                  segmentos: ['Sedan'],           combustiveis: ['Gasolina'] },
+    { modelo: 'Azure',                   segmentos: ['Cabrio'],          combustiveis: ['Gasolina'] },
+    { modelo: 'Brooklands',              segmentos: ['Coupé'],           combustiveis: ['Gasolina'] },
+  ],
+
+  'BMW': [
+    { modelo: 'Série 1', segmentos: ['Hatchback'],         combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'], geracoes: ['E87', 'F20', 'F40'] },
+    { modelo: 'Série 2', segmentos: ['Coupé', 'Cabrio', 'Monovolume'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido', 'Elétrico'] },
+    { modelo: 'Série 3', segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'], geracoes: ['E36', 'E46', 'E90', 'F30', 'G20'] },
+    { modelo: 'Série 4', segmentos: ['Coupé', 'Cabrio', 'Gran Coupé'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Série 5', segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido', 'Elétrico'], geracoes: ['E60', 'F10', 'G30', 'G60'] },
+    { modelo: 'Série 6', segmentos: ['Coupé', 'Cabrio', 'Gran Coupé'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Série 7', segmentos: ['Sedan'],             combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido', 'Elétrico'], geracoes: ['E38', 'E65', 'F01', 'G11', 'G70'] },
+    { modelo: 'Série 8', segmentos: ['Coupé', 'Cabrio', 'Gran Coupé'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'X1',  segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'X2',  segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'X3',  segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'X4',  segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'X5',  segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'X6',  segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'X7',  segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'XM',  segmentos: ['SUV'],    combustiveis: ['Plug-in Híbrido'] },
+    { modelo: 'Z3',  segmentos: ['Cabrio', 'Coupé'], combustiveis: ['Gasolina'] },
+    { modelo: 'Z4',  segmentos: ['Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'Z8',  segmentos: ['Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'i3',  segmentos: ['Hatchback'], combustiveis: ['Elétrico'] },
+    { modelo: 'i4',  segmentos: ['Sedan'],  combustiveis: ['Elétrico'] },
+    { modelo: 'i5',  segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Elétrico', 'Plug-in Híbrido'] },
+    { modelo: 'i7',  segmentos: ['Sedan'],  combustiveis: ['Elétrico', 'Plug-in Híbrido'] },
+    { modelo: 'i8',  segmentos: ['Coupé'],  combustiveis: ['Plug-in Híbrido'] },
+    { modelo: 'iX',  segmentos: ['SUV'],    combustiveis: ['Elétrico'] },
+    { modelo: 'iX1', segmentos: ['SUV'],    combustiveis: ['Elétrico'] },
+    { modelo: 'iX2', segmentos: ['SUV'],    combustiveis: ['Elétrico'] },
+    { modelo: 'iX3', segmentos: ['SUV'],    combustiveis: ['Elétrico'] },
+    { modelo: 'M2',  segmentos: ['Coupé'],  combustiveis: ['Gasolina'] },
+    { modelo: 'M3',  segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina'] },
+    { modelo: 'M4',  segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'M5',  segmentos: ['Sedan'],  combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'M6',  segmentos: ['Coupé'],  combustiveis: ['Gasolina'] },
+    { modelo: 'M8',  segmentos: ['Coupé', 'Cabrio', 'Gran Coupé'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Bugatti': [
+    { modelo: 'Veyron',  segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Chiron',  segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Divo',    segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'EB110',   segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Tourbillon', segmentos: ['Supercar'], combustiveis: ['Plug-in Híbrido'] },
+  ],
+
+  'BYD': [
+    { modelo: 'Atto 3',    segmentos: ['SUV'],      combustiveis: ['Elétrico'] },
+    { modelo: 'Dolphin',   segmentos: ['Hatchback'],combustiveis: ['Elétrico'] },
+    { modelo: 'Dolphin Surf', segmentos: ['Hatchback'], combustiveis: ['Elétrico'] },
+    { modelo: 'Seal',      segmentos: ['Sedan'],    combustiveis: ['Elétrico'] },
+    { modelo: 'Seal U',    segmentos: ['SUV'],      combustiveis: ['Elétrico', 'Plug-in Híbrido'] },
+    { modelo: 'Sealion 6', segmentos: ['SUV'],      combustiveis: ['Plug-in Híbrido'] },
+    { modelo: 'Tang',      segmentos: ['SUV'],      combustiveis: ['Elétrico', 'Plug-in Híbrido'] },
+    { modelo: 'Han',       segmentos: ['Sedan'],    combustiveis: ['Elétrico', 'Plug-in Híbrido'] },
+    { modelo: 'Yuan Plus', segmentos: ['SUV'],      combustiveis: ['Elétrico'] },
+    { modelo: 'Song Plus', segmentos: ['SUV'],      combustiveis: ['Elétrico', 'Plug-in Híbrido'] },
+  ],
+
+  'Cadillac': [
+    { modelo: 'CTS',      segmentos: ['Sedan'],        combustiveis: ['Gasolina'] },
+    { modelo: 'BLS',      segmentos: ['Sedan'],        combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'SRX',      segmentos: ['SUV'],          combustiveis: ['Gasolina'] },
+    { modelo: 'Escalade', segmentos: ['SUV'],          combustiveis: ['Gasolina'] },
+    { modelo: 'XT4',      segmentos: ['SUV'],          combustiveis: ['Gasolina'] },
+    { modelo: 'XT5',      segmentos: ['SUV'],          combustiveis: ['Gasolina'] },
+    { modelo: 'XT6',      segmentos: ['SUV'],          combustiveis: ['Gasolina'] },
+    { modelo: 'Lyriq',    segmentos: ['SUV'],          combustiveis: ['Elétrico'] },
+    { modelo: 'Optiq',    segmentos: ['SUV'],          combustiveis: ['Elétrico'] },
+  ],
+
+  'Caterham': [
+    { modelo: 'Seven 160',   segmentos: ['Desportivo'], combustiveis: ['Gasolina'] },
+    { modelo: 'Seven 360',   segmentos: ['Desportivo'], combustiveis: ['Gasolina'] },
+    { modelo: 'Seven 420',   segmentos: ['Desportivo'], combustiveis: ['Gasolina'] },
+    { modelo: 'Seven 620',   segmentos: ['Desportivo'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Chery': [
+    { modelo: 'Tiggo 4',   segmentos: ['SUV'], combustiveis: ['Gasolina'] },
+    { modelo: 'Tiggo 7',   segmentos: ['SUV'], combustiveis: ['Gasolina'] },
+    { modelo: 'Tiggo 8',   segmentos: ['SUV'], combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'Arrizo 5',  segmentos: ['Sedan'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Chevrolet': [
+    { modelo: 'Matiz',    segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Spark',    segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Aveo',     segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina'] },
+    { modelo: 'Kalos',    segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina'] },
+    { modelo: 'Lacetti',  segmentos: ['Hatchback', 'Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Cruze',    segmentos: ['Sedan', 'Carrinha'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Epica',    segmentos: ['Sedan'],              combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Captiva',  segmentos: ['SUV'],                combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Orlando',  segmentos: ['Monovolume'],         combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Trax',     segmentos: ['SUV'],                combustiveis: ['Gasolina'] },
+    { modelo: 'Camaro',   segmentos: ['Coupé', 'Cabrio'],    combustiveis: ['Gasolina'] },
+    { modelo: 'Corvette', segmentos: ['Coupé', 'Cabrio'],    combustiveis: ['Gasolina'] },
+  ],
+
+  'Chrysler': [
+    { modelo: '300C',         segmentos: ['Sedan'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Sebring',      segmentos: ['Sedan', 'Cabrio'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Voyager',      segmentos: ['Monovolume'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Grand Voyager',segmentos: ['Monovolume'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'PT Cruiser',   segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Crossfire',    segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'Neon',         segmentos: ['Sedan'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Citroën': [
+    { modelo: 'AX',               segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'ZX',               segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Saxo',             segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Xsara',            segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Xsara Picasso',    segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'C1',               segmentos: ['Hatchback'],   combustiveis: ['Gasolina'] },
+    { modelo: 'C2',               segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'C3',               segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'C3 Aircross',      segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'C3 Picasso',       segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'C4',               segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'C4 Cactus',        segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'C4 Picasso',       segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'C4 Grand Picasso', segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'C4 SpaceTourer',   segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'C4 X',             segmentos: ['Sedan'],       combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'C5',               segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'C5 Aircross',      segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'C5 X',             segmentos: ['Sedan', 'SUV'],combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'C6',               segmentos: ['Sedan'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'C8',               segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Berlingo',         segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Nemo',             segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Jumpy',            segmentos: ['Comercial'],   combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Jumper',           segmentos: ['Comercial'],   combustiveis: ['Diesel', 'Elétrico'] },
+    { modelo: 'ë-C4',             segmentos: ['Hatchback'],   combustiveis: ['Elétrico'] },
+    { modelo: 'AMI',              segmentos: ['Elétrico'],    combustiveis: ['Elétrico'] },
+    { modelo: 'Basalt',           segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Elétrico'] },
+  ],
+
+  'Cupra': [
+    { modelo: 'Formentor', segmentos: ['SUV'],      combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'Leon',      segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'Ateca',     segmentos: ['SUV'],      combustiveis: ['Gasolina'] },
+    { modelo: 'Born',      segmentos: ['Hatchback'],combustiveis: ['Elétrico'] },
+    { modelo: 'Tavascan',  segmentos: ['SUV'],      combustiveis: ['Elétrico'] },
+    { modelo: 'Terramar',  segmentos: ['SUV'],      combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+  ],
+
+  'Dacia': [
+    { modelo: 'Sandero',         segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'GPL'] },
+    { modelo: 'Sandero Stepway', segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'GPL'] },
+    { modelo: 'Logan',           segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'GPL'] },
+    { modelo: 'Logan MCV',       segmentos: ['Carrinha'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Duster',          segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'GPL', 'Híbrido'] },
+    { modelo: 'Lodgy',           segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Dokker',          segmentos: ['Comercial'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Spring',          segmentos: ['Hatchback'], combustiveis: ['Elétrico'] },
+    { modelo: 'Jogger',          segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Bigster',         segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Híbrido'] },
+  ],
+
+  'Daewoo': [
+    { modelo: 'Matiz',   segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Kalos',   segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Lanos',   segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina'] },
+    { modelo: 'Nubira',  segmentos: ['Sedan', 'Carrinha'],  combustiveis: ['Gasolina'] },
+    { modelo: 'Leganza', segmentos: ['Sedan'],    combustiveis: ['Gasolina'] },
+    { modelo: 'Tacuma',  segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Nexia',   segmentos: ['Sedan'],    combustiveis: ['Gasolina'] },
+  ],
+
+  'Daihatsu': [
+    { modelo: 'Cuore',    segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Sirion',   segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Terios',   segmentos: ['SUV'],       combustiveis: ['Gasolina'] },
+    { modelo: 'Materia',  segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Charade',  segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'YRV',      segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Dodge': [
+    { modelo: 'Caliber',    segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Avenger',    segmentos: ['Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: 'Journey',    segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Charger',    segmentos: ['Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: 'Challenger', segmentos: ['Coupé'],     combustiveis: ['Gasolina'] },
+    { modelo: 'Nitro',      segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Durango',    segmentos: ['SUV'],       combustiveis: ['Gasolina'] },
+  ],
+
+  'DS Automobiles': [
+    { modelo: 'DS3',  segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'DS4',  segmentos: ['Hatchback', 'SUV'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido', 'Elétrico'] },
+    { modelo: 'DS5',  segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'DS7',  segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'DS8',  segmentos: ['Sedan'],     combustiveis: ['Plug-in Híbrido', 'Elétrico'] },
+    { modelo: 'DS9',  segmentos: ['Sedan'],     combustiveis: ['Plug-in Híbrido'] },
+  ],
+
+  'Ferrari': [
+    { modelo: '360',         segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: '430',         segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'F430',        segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: '458',         segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: '488',         segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: '296',         segmentos: ['Supercar'], combustiveis: ['Plug-in Híbrido'] },
+    { modelo: 'F8',          segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Roma',        segmentos: ['Coupé'],    combustiveis: ['Gasolina'] },
+    { modelo: 'Portofino',   segmentos: ['Cabrio'],   combustiveis: ['Gasolina'] },
+    { modelo: 'California',  segmentos: ['Cabrio'],   combustiveis: ['Gasolina'] },
+    { modelo: 'SF90',        segmentos: ['Supercar'], combustiveis: ['Plug-in Híbrido'] },
+    { modelo: '812',         segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: '550',         segmentos: ['Coupé'],    combustiveis: ['Gasolina'] },
+    { modelo: '612',         segmentos: ['Coupé'],    combustiveis: ['Gasolina'] },
+    { modelo: 'FF',          segmentos: ['Coupé'],    combustiveis: ['Gasolina'] },
+    { modelo: 'GTC4Lusso',   segmentos: ['Coupé'],    combustiveis: ['Gasolina'] },
+    { modelo: 'Purosangue',  segmentos: ['SUV'],      combustiveis: ['Gasolina'] },
+    { modelo: '12Cilindri',  segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Fiat': [
+    { modelo: 'Seicento',    segmentos: ['Hatchback'],   combustiveis: ['Gasolina'] },
+    { modelo: 'Punto',       segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel', 'GPL'] },
+    { modelo: 'Grande Punto',segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Punto Evo',   segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '500',         segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: '500C',        segmentos: ['Cabrio'],      combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: '500L',        segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '500X',        segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: '600',         segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Panda',       segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel', 'GPL', 'Híbrido'] },
+    { modelo: 'Pandina',     segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Topolino',    segmentos: ['Elétrico'],    combustiveis: ['Elétrico'] },
+    { modelo: 'Bravo',       segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Brava',       segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Marea',       segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Tipo',        segmentos: ['Hatchback', 'Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Stilo',       segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Croma',       segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Doblo',       segmentos: ['Monovolume', 'Comercial'], combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Idea',        segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Multipla',    segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel', 'GPL'] },
+    { modelo: 'Sedici',      segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Ulysse',      segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Grande Panda',segmentos: ['Hatchback', 'SUV'], combustiveis: ['Gasolina', 'Elétrico'] },
+  ],
+
+  'Fisker': [
+    { modelo: 'Ocean',   segmentos: ['SUV'], combustiveis: ['Elétrico'] },
+    { modelo: 'Pear',    segmentos: ['Hatchback'], combustiveis: ['Elétrico'] },
+    { modelo: 'Alaska',  segmentos: ['Pickup'],    combustiveis: ['Elétrico'] },
+  ],
+
+  'Ford': [
+    { modelo: 'Ka',               segmentos: ['Hatchback'],   combustiveis: ['Gasolina'] },
+    { modelo: 'Ka+',              segmentos: ['Hatchback'],   combustiveis: ['Gasolina'] },
+    { modelo: 'Fiesta',           segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Escort',           segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Orion',            segmentos: ['Sedan'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Focus',            segmentos: ['Hatchback', 'Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Mondeo',           segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Sierra',           segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Cougar',           segmentos: ['Coupé'],       combustiveis: ['Gasolina'] },
+    { modelo: 'Puma',             segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Streetka',         segmentos: ['Cabrio'],      combustiveis: ['Gasolina'] },
+    { modelo: 'Maverick',         segmentos: ['SUV', 'Pickup'],combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Kuga',             segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido', 'Híbrido'] },
+    { modelo: 'EcoSport',         segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Edge',             segmentos: ['SUV'],         combustiveis: ['Diesel'] },
+    { modelo: 'Explorer',         segmentos: ['SUV'],         combustiveis: ['Plug-in Híbrido'] },
+    { modelo: 'S-Max',            segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Galaxy',           segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'B-Max',            segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'C-Max',            segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Grand C-Max',      segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Mustang',          segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'Mustang Mach-E',   segmentos: ['SUV'],         combustiveis: ['Elétrico'] },
+    { modelo: 'Ranger',           segmentos: ['Pickup'],      combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Tourneo Connect',  segmentos: ['Comercial'],   combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Tourneo Custom',   segmentos: ['Comercial'],   combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Transit Connect',  segmentos: ['Comercial'],   combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Transit Custom',   segmentos: ['Comercial'],   combustiveis: ['Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Capri',            segmentos: ['SUV', 'Coupé'],combustiveis: ['Elétrico'] },
+  ],
+
+  'Genesis': [
+    { modelo: 'G70',  segmentos: ['Sedan'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'G80',  segmentos: ['Sedan'], combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'G90',  segmentos: ['Sedan'], combustiveis: ['Gasolina'] },
+    { modelo: 'GV60', segmentos: ['SUV'],   combustiveis: ['Elétrico'] },
+    { modelo: 'GV70', segmentos: ['SUV'],   combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'GV80', segmentos: ['SUV'],   combustiveis: ['Gasolina', 'Diesel'] },
+  ],
+
+  'GWM': [
+    { modelo: 'Ora 03',  segmentos: ['Hatchback'], combustiveis: ['Elétrico'] },
+    { modelo: 'Ora 07',  segmentos: ['Sedan'],     combustiveis: ['Elétrico'] },
+    { modelo: 'Wey 03',  segmentos: ['SUV'],       combustiveis: ['Plug-in Híbrido'] },
+    { modelo: 'Wey 05',  segmentos: ['SUV'],       combustiveis: ['Plug-in Híbrido'] },
+  ],
+
+  'Honda': [
+    { modelo: 'Civic',  segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Accord', segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'CR-V',   segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'HR-V',   segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Jazz',   segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Insight',segmentos: ['Sedan'],     combustiveis: ['Híbrido'] },
+    { modelo: 'Legend', segmentos: ['Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: 'FR-V',   segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Logo',   segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Stream', segmentos: ['Monovolume'],combustiveis: ['Gasolina'] },
+    { modelo: 'Prelude',segmentos: ['Coupé'],     combustiveis: ['Gasolina'] },
+    { modelo: 'S2000',  segmentos: ['Cabrio'],    combustiveis: ['Gasolina'] },
+    { modelo: 'e',      segmentos: ['Hatchback'], combustiveis: ['Elétrico'] },
+    { modelo: 'ZR-V',   segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'e:Ny1',  segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+  ],
+
+  'Hongqi': [
+    { modelo: 'H9',   segmentos: ['Sedan'], combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'E-HS9',segmentos: ['SUV'],   combustiveis: ['Elétrico'] },
+    { modelo: 'EH7',  segmentos: ['Sedan'], combustiveis: ['Elétrico'] },
+  ],
+
+  'Hummer': [
+    { modelo: 'H1', segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'H2', segmentos: ['SUV'], combustiveis: ['Gasolina'] },
+    { modelo: 'H3', segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel'] },
+  ],
+
+  'Hyundai': [
+    { modelo: 'Atos',    segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Getz',    segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Accent',  segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'i10',     segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'i20',     segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'i30',     segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'i40',     segmentos: ['Sedan', 'Carrinha'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'ix20',    segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'ix35',    segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Matrix',  segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Elantra', segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Sonata',  segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Coupe',   segmentos: ['Coupé'],     combustiveis: ['Gasolina'] },
+    { modelo: 'Veloster', segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Trajet',  segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Terracan',segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Santa Fe',segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Tucson',  segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'Kona',    segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Híbrido', 'Elétrico'] },
+    { modelo: 'Bayon',   segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'IONIQ',   segmentos: ['Hatchback'], combustiveis: ['Híbrido', 'Plug-in Híbrido', 'Elétrico'] },
+    { modelo: 'IONIQ 5', segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+    { modelo: 'IONIQ 6', segmentos: ['Sedan'],     combustiveis: ['Elétrico'] },
+    { modelo: 'IONIQ 9', segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+    { modelo: 'Nexo',    segmentos: ['SUV'],       combustiveis: ['Hidrogénio'] },
+  ],
+
+  'Infiniti': [
+    { modelo: 'Q30',  segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Q50',  segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Q60',  segmentos: ['Coupé'],     combustiveis: ['Gasolina'] },
+    { modelo: 'QX30', segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'QX50', segmentos: ['SUV'],       combustiveis: ['Gasolina'] },
+    { modelo: 'QX55', segmentos: ['SUV'],       combustiveis: ['Gasolina'] },
+    { modelo: 'QX70', segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'EX',   segmentos: ['SUV'],       combustiveis: ['Gasolina'] },
+    { modelo: 'FX',   segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+  ],
+
+  'Isuzu': [
+    { modelo: 'D-Max',   segmentos: ['Pickup'], combustiveis: ['Diesel'] },
+    { modelo: 'Trooper', segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Rodeo',   segmentos: ['Pickup'], combustiveis: ['Diesel'] },
+  ],
+
+  'Iveco': [
+    { modelo: 'Daily', segmentos: ['Comercial'], combustiveis: ['Diesel', 'Elétrico', 'GPL'] },
+  ],
+
+  'Jaecoo': [
+    { modelo: 'Jaecoo 7',  segmentos: ['SUV'], combustiveis: ['Gasolina'] },
+    { modelo: 'Jaecoo 8',  segmentos: ['SUV'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Jaguar': [
+    { modelo: 'X-Type', segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'S-Type', segmentos: ['Sedan'],             combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'XE',     segmentos: ['Sedan'],             combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'XF',     segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'XJ',     segmentos: ['Sedan'],             combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'XK',     segmentos: ['Coupé', 'Cabrio'],   combustiveis: ['Gasolina'] },
+    { modelo: 'XKR',    segmentos: ['Coupé', 'Cabrio'],   combustiveis: ['Gasolina'] },
+    { modelo: 'F-Type', segmentos: ['Coupé', 'Cabrio'],   combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'F-Pace', segmentos: ['SUV'],               combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'E-Pace', segmentos: ['SUV'],               combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'I-Pace', segmentos: ['SUV'],               combustiveis: ['Elétrico'] },
+  ],
+
+  'Jeep': [
+    { modelo: 'Patriot',       segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Compass',       segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Renegade',      segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido', 'Elétrico'] },
+    { modelo: 'Cherokee',      segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Grand Cherokee',segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Wrangler',      segmentos: ['SUV', 'Cabrio'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Commander',     segmentos: ['SUV'], combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'Gladiator',     segmentos: ['Pickup'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Avenger',       segmentos: ['SUV'], combustiveis: ['Gasolina', 'Elétrico'] },
+  ],
+
+  'Kia': [
+    { modelo: 'Pride',    segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Sephia',   segmentos: ['Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: 'Shuma',    segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Picanto',  segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Rio',      segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Cerato',   segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Ceed',     segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'ProCeed',  segmentos: ['Coupé'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'XCeed',    segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Soul',     segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Venga',    segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Carens',   segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Carnival', segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Optima',   segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'Stinger',  segmentos: ['Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: 'Stonic',   segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Niro',     segmentos: ['SUV'],       combustiveis: ['Híbrido', 'Plug-in Híbrido', 'Elétrico'] },
+    { modelo: 'Sportage', segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'Sorento',  segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'EV3',      segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+    { modelo: 'EV4',      segmentos: ['Sedan'],     combustiveis: ['Elétrico'] },
+    { modelo: 'EV5',      segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+    { modelo: 'EV6',      segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+    { modelo: 'EV9',      segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+  ],
+
+  'Koenigsegg': [
+    { modelo: 'Agera',   segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Regera',  segmentos: ['Supercar'], combustiveis: ['Plug-in Híbrido'] },
+    { modelo: 'Jesko',   segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Gemera',  segmentos: ['Supercar'], combustiveis: ['Plug-in Híbrido'] },
+    { modelo: 'CC850',   segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Lada': [
+    { modelo: 'Riva',   segmentos: ['Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: '2105',   segmentos: ['Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: '2107',   segmentos: ['Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: 'Samara', segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Niva',   segmentos: ['SUV'],       combustiveis: ['Gasolina'] },
+    { modelo: 'Granta', segmentos: ['Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: 'Vesta',  segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Lamborghini': [
+    { modelo: 'Diablo',      segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Murciélago',  segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Gallardo',    segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Huracán',     segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Aventador',   segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Urus',        segmentos: ['SUV'],      combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'Revuelto',    segmentos: ['Supercar'], combustiveis: ['Plug-in Híbrido'] },
+    { modelo: 'Temerario',   segmentos: ['Supercar'], combustiveis: ['Plug-in Híbrido'] },
+  ],
+
+  'Lancia': [
+    { modelo: 'Delta',  segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Dedra',  segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Kappa',  segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Thema',  segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Lybra',  segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Thesis', segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Musa',   segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Ypsilon', segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Phedra', segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+  ],
+
+  'Land Rover': [
+    { modelo: 'Freelander',       segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Discovery',        segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Discovery Sport',  segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Defender',         segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Range Rover',      segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Range Rover Sport',segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Range Rover Evoque',segmentos: ['SUV'],combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Range Rover Velar',segmentos: ['SUV'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+  ],
+
+  'Leapmotor': [
+    { modelo: 'T03', segmentos: ['Hatchback'], combustiveis: ['Elétrico'] },
+    { modelo: 'C10', segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+    { modelo: 'B10', segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+  ],
+
+  'Lexus': [
+    { modelo: 'IS',  segmentos: ['Sedan'],   combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'ES',  segmentos: ['Sedan'],   combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'GS',  segmentos: ['Sedan'],   combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'LS',  segmentos: ['Sedan'],   combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'CT',  segmentos: ['Hatchback'],combustiveis: ['Híbrido'] },
+    { modelo: 'NX',  segmentos: ['SUV'],     combustiveis: ['Gasolina', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'RX',  segmentos: ['SUV'],     combustiveis: ['Gasolina', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'UX',  segmentos: ['SUV'],     combustiveis: ['Gasolina', 'Híbrido', 'Elétrico'] },
+    { modelo: 'LC',  segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'RC',  segmentos: ['Coupé'],   combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'LBX', segmentos: ['SUV'],     combustiveis: ['Híbrido'] },
+    { modelo: 'RZ',  segmentos: ['SUV'],     combustiveis: ['Elétrico'] },
+    { modelo: 'LM',  segmentos: ['Monovolume'],combustiveis: ['Híbrido'] },
+    { modelo: 'GX',  segmentos: ['SUV'],     combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'TX',  segmentos: ['SUV'],     combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+  ],
+
+  'Lotus': [
+    { modelo: 'Elise',  segmentos: ['Desportivo'], combustiveis: ['Gasolina'] },
+    { modelo: 'Exige',  segmentos: ['Desportivo'], combustiveis: ['Gasolina'] },
+    { modelo: 'Evora',  segmentos: ['Coupé'],      combustiveis: ['Gasolina'] },
+    { modelo: 'Emira',  segmentos: ['Coupé'],      combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Eletre', segmentos: ['SUV'],         combustiveis: ['Elétrico'] },
+    { modelo: 'Emeya',  segmentos: ['Sedan'],       combustiveis: ['Elétrico'] },
+  ],
+
+  'Lucid': [
+    { modelo: 'Air',     segmentos: ['Sedan'], combustiveis: ['Elétrico'] },
+    { modelo: 'Gravity', segmentos: ['SUV'],   combustiveis: ['Elétrico'] },
+  ],
+
+  'Lynk & Co': [
+    { modelo: '01',  segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: '02',  segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: '03',  segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: '05',  segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: '06',  segmentos: ['SUV'],       combustiveis: ['Gasolina'] },
+    { modelo: 'Z10', segmentos: ['Sedan'],     combustiveis: ['Elétrico'] },
+    { modelo: 'EM-F',segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+  ],
+
+  'Maserati': [
+    { modelo: 'Ghibli',       segmentos: ['Sedan'],   combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Quattroporte', segmentos: ['Sedan'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Coupe',        segmentos: ['Coupé'],   combustiveis: ['Gasolina'] },
+    { modelo: 'Spyder',       segmentos: ['Cabrio'],  combustiveis: ['Gasolina'] },
+    { modelo: 'GranTurismo',  segmentos: ['Coupé'],   combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'GranCabrio',   segmentos: ['Cabrio'],  combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Levante',      segmentos: ['SUV'],     combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'MC20',         segmentos: ['Supercar'],combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Grecale',      segmentos: ['SUV'],     combustiveis: ['Gasolina', 'Híbrido', 'Elétrico'] },
+  ],
+
+  'Maxus': [
+    { modelo: 'T60',        segmentos: ['Pickup'],    combustiveis: ['Diesel'] },
+    { modelo: 'Deliver 9',  segmentos: ['Comercial'], combustiveis: ['Diesel'] },
+    { modelo: 'eDeliver 3', segmentos: ['Comercial'], combustiveis: ['Elétrico'] },
+    { modelo: 'eDeliver 9', segmentos: ['Comercial'], combustiveis: ['Elétrico'] },
+    { modelo: 'Mifa 9',     segmentos: ['Monovolume'],combustiveis: ['Elétrico'] },
+  ],
+
+  'Maybach': [
+    { modelo: '57',              segmentos: ['Sedan'], combustiveis: ['Gasolina'] },
+    { modelo: '62',              segmentos: ['Sedan'], combustiveis: ['Gasolina'] },
+    { modelo: 'Classe S Maybach',segmentos: ['Sedan'], combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+  ],
+
+  'Mazda': [
+    { modelo: '121',    segmentos: ['Hatchback'],     combustiveis: ['Gasolina'] },
+    { modelo: '323',    segmentos: ['Hatchback'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '626',    segmentos: ['Sedan', 'Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Premacy',segmentos: ['Monovolume'],    combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Tribute',segmentos: ['SUV'],           combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Demio',  segmentos: ['Hatchback'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '2',      segmentos: ['Hatchback'],     combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: '3',      segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: '5',      segmentos: ['Monovolume'],    combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '6',      segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'CX-3',  segmentos: ['SUV'],            combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'CX-30', segmentos: ['SUV'],            combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'CX-5',  segmentos: ['SUV'],            combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'CX-60', segmentos: ['SUV'],            combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'CX-80', segmentos: ['SUV'],            combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'CX-7',  segmentos: ['SUV'],            combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'CX-9',  segmentos: ['SUV'],            combustiveis: ['Gasolina'] },
+    { modelo: 'MX-5',  segmentos: ['Cabrio'],         combustiveis: ['Gasolina'] },
+    { modelo: 'MX-30', segmentos: ['SUV'],            combustiveis: ['Elétrico', 'Híbrido'] },
+    { modelo: 'RX-8',  segmentos: ['Coupé'],          combustiveis: ['Gasolina'] },
+    { modelo: 'BT-50', segmentos: ['Pickup'],         combustiveis: ['Diesel'] },
+  ],
+
+  'McLaren': [
+    { modelo: 'MP4-12C', segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: '650S',    segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: '540C',    segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: '570S',    segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: '600LT',   segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: '720S',    segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: '765LT',   segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'GT',      segmentos: ['Coupé'],    combustiveis: ['Gasolina'] },
+    { modelo: 'Artura',  segmentos: ['Supercar'], combustiveis: ['Plug-in Híbrido'] },
+    { modelo: 'P1',      segmentos: ['Supercar'], combustiveis: ['Plug-in Híbrido'] },
+    { modelo: 'W1',      segmentos: ['Supercar'], combustiveis: ['Plug-in Híbrido'] },
+  ],
+
+  'Mercedes-Benz': [
+    { modelo: '190',       segmentos: ['Sedan'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Classe A',  segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Classe B',  segmentos: ['Monovolume'], combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Classe C',  segmentos: ['Sedan', 'Carrinha', 'Coupé', 'Cabrio'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Classe E',  segmentos: ['Sedan', 'Carrinha', 'Coupé', 'Cabrio'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Classe S',  segmentos: ['Sedan', 'Coupé', 'Cabrio'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Classe G',  segmentos: ['SUV'],     combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Classe V',  segmentos: ['Monovolume', 'Comercial'], combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'CLA',       segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'CLE',       segmentos: ['Coupé', 'Cabrio'],   combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'CLK',       segmentos: ['Coupé', 'Cabrio'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'CLS',       segmentos: ['Sedan'],  combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'GLA',       segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'GLB',       segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'GLC',       segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'GLE',       segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'GLK',       segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'GLS',       segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'ML',        segmentos: ['SUV'],    combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'SL',        segmentos: ['Cabrio'], combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'SLC',       segmentos: ['Cabrio'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'SLK',       segmentos: ['Cabrio'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'EQA',       segmentos: ['SUV'],    combustiveis: ['Elétrico'] },
+    { modelo: 'EQB',       segmentos: ['SUV'],    combustiveis: ['Elétrico'] },
+    { modelo: 'EQC',       segmentos: ['SUV'],    combustiveis: ['Elétrico'] },
+    { modelo: 'EQE',       segmentos: ['Sedan', 'SUV'], combustiveis: ['Elétrico'] },
+    { modelo: 'EQE SUV',   segmentos: ['SUV'],    combustiveis: ['Elétrico'] },
+    { modelo: 'EQS',       segmentos: ['Sedan', 'SUV'], combustiveis: ['Elétrico'] },
+    { modelo: 'EQS SUV',   segmentos: ['SUV'],    combustiveis: ['Elétrico'] },
+    { modelo: 'EQV',       segmentos: ['Monovolume'], combustiveis: ['Elétrico'] },
+    { modelo: 'Vito',      segmentos: ['Comercial'],  combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Sprinter',  segmentos: ['Comercial'],  combustiveis: ['Diesel', 'Elétrico'] },
+    { modelo: 'Citan',     segmentos: ['Comercial'],  combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'AMG GT',    segmentos: ['Coupé', 'Sedan'], combustiveis: ['Gasolina'] },
+  ],
+
+  'MG': [
+    { modelo: 'ZR',       segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'ZT',       segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'TF',       segmentos: ['Cabrio'],    combustiveis: ['Gasolina'] },
+    { modelo: 'MG3',      segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'MG4',      segmentos: ['Hatchback'], combustiveis: ['Elétrico'] },
+    { modelo: 'MG5',      segmentos: ['Carrinha'],  combustiveis: ['Elétrico'] },
+    { modelo: 'MG6',      segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'ZS',       segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'HS',       segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'EHS',      segmentos: ['SUV'],       combustiveis: ['Plug-in Híbrido'] },
+    { modelo: 'Marvel R', segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+    { modelo: 'Cyberster',segmentos: ['Cabrio'],    combustiveis: ['Elétrico'] },
+    { modelo: 'MG7',      segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+  ],
+
+  'Mini': [
+    { modelo: 'One',        segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Cooper',     segmentos: ['Hatchback', 'Cabrio'], combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Cooper S',   segmentos: ['Hatchback', 'Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'Cooper SE',  segmentos: ['Hatchback'], combustiveis: ['Elétrico'] },
+    { modelo: 'Clubman',    segmentos: ['Carrinha'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Countryman', segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido', 'Elétrico'] },
+    { modelo: 'Paceman',    segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Coupe',      segmentos: ['Coupé'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Roadster',   segmentos: ['Cabrio'],    combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Cabrio',     segmentos: ['Cabrio'],    combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Aceman',     segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'JCW',        segmentos: ['Hatchback', 'Cabrio', 'SUV'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Mitsubishi': [
+    { modelo: 'Colt',         segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Carisma',      segmentos: ['Sedan', 'Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Galant',       segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Lancer',       segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Space Star',   segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Grandis',      segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'ASX',          segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'Outlander',    segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Eclipse Cross',segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'Pajero',       segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Pajero Pinin', segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'L200',         segmentos: ['Pickup'],    combustiveis: ['Diesel'] },
+  ],
+
+  'Morgan': [
+    { modelo: 'Plus Four',   segmentos: ['Desportivo'], combustiveis: ['Gasolina'] },
+    { modelo: 'Plus Six',    segmentos: ['Desportivo'], combustiveis: ['Gasolina'] },
+    { modelo: 'Super 3',     segmentos: ['Desportivo'], combustiveis: ['Gasolina'] },
+    { modelo: 'Midsummer',   segmentos: ['Desportivo'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Nissan': [
+    { modelo: 'Micra',   segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Almera',  segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Primera', segmentos: ['Hatchback', 'Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Note',    segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Cube',    segmentos: ['Monovolume'],combustiveis: ['Gasolina'] },
+    { modelo: 'Pixo',    segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Juke',    segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Qashqai', segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'X-Trail', segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'Murano',  segmentos: ['SUV'],       combustiveis: ['Gasolina'] },
+    { modelo: 'Patrol',  segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Navara',  segmentos: ['Pickup'],    combustiveis: ['Diesel'] },
+    { modelo: 'Pulsar',  segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Leaf',    segmentos: ['Hatchback'], combustiveis: ['Elétrico'] },
+    { modelo: 'Ariya',   segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+    { modelo: '370Z',    segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'GT-R',    segmentos: ['Coupé'],     combustiveis: ['Gasolina'] },
+    { modelo: 'NV200',   segmentos: ['Comercial'], combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Z',       segmentos: ['Coupé'],     combustiveis: ['Gasolina'] },
+  ],
+
+  'Omoda': [
+    { modelo: 'Omoda 5',  segmentos: ['SUV'], combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Omoda E5', segmentos: ['SUV'], combustiveis: ['Elétrico'] },
+  ],
+
+  'Opel': [
+    { modelo: 'Corsa',     segmentos: ['Hatchback'],  combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Astra',     segmentos: ['Hatchback', 'Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Vectra',    segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Omega',     segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Signum',    segmentos: ['Hatchback'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Insignia',  segmentos: ['Sedan', 'Carrinha', 'Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Tigra',     segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Frontera',  segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Antara',    segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Mokka',     segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Crossland', segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Grandland', segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido', 'Elétrico'] },
+    { modelo: 'Meriva',    segmentos: ['Monovolume'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Zafira',    segmentos: ['Monovolume'], combustiveis: ['Gasolina', 'Diesel', 'GPL'] },
+    { modelo: 'Combo',     segmentos: ['Monovolume', 'Comercial'], combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Vivaro',    segmentos: ['Comercial'],  combustiveis: ['Diesel', 'Elétrico'] },
+    { modelo: 'Agila',     segmentos: ['Hatchback'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Adam',      segmentos: ['Hatchback'],  combustiveis: ['Gasolina'] },
+    { modelo: 'Karl',      segmentos: ['Hatchback'],  combustiveis: ['Gasolina'] },
+  ],
+
+  'Pagani': [
+    { modelo: 'Zonda',  segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Huayra', segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+    { modelo: 'Utopia', segmentos: ['Supercar'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Peugeot': [
+    { modelo: '106',            segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '107',            segmentos: ['Hatchback'],   combustiveis: ['Gasolina'] },
+    { modelo: '108',            segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: '205',            segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '206',            segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '207',            segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '208',            segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: '301',            segmentos: ['Sedan'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '305',            segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '306',            segmentos: ['Hatchback', 'Sedan', 'Cabrio'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '307',            segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '308',            segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: '309',            segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '405',            segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '406',            segmentos: ['Sedan', 'Carrinha', 'Coupé'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '407',            segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '508',            segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: '605',            segmentos: ['Sedan'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '806',            segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '807',            segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '2008',           segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: '3008',           segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido', 'Elétrico'] },
+    { modelo: '5008',           segmentos: ['SUV', 'Monovolume'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido', 'Elétrico'] },
+    { modelo: 'RCZ',            segmentos: ['Coupé'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Partner',        segmentos: ['Comercial'],   combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Rifter',         segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Bipper',         segmentos: ['Comercial'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Ion',            segmentos: ['Hatchback'],   combustiveis: ['Elétrico'] },
+    { modelo: 'e-208',          segmentos: ['Hatchback'],   combustiveis: ['Elétrico'] },
+    { modelo: 'e-2008',         segmentos: ['SUV'],         combustiveis: ['Elétrico'] },
+    { modelo: 'E-3008',         segmentos: ['SUV'],         combustiveis: ['Elétrico'] },
+    { modelo: 'E-5008',         segmentos: ['SUV'],         combustiveis: ['Elétrico'] },
+  ],
+
+  'Polestar': [
+    { modelo: '1', segmentos: ['Coupé'],   combustiveis: ['Plug-in Híbrido'] },
+    { modelo: '2', segmentos: ['Sedan'],   combustiveis: ['Elétrico'] },
+    { modelo: '3', segmentos: ['SUV'],     combustiveis: ['Elétrico'] },
+    { modelo: '4', segmentos: ['SUV'],     combustiveis: ['Elétrico'] },
+  ],
+
+  'Pontiac': [
+    { modelo: 'Firebird',   segmentos: ['Coupé'], combustiveis: ['Gasolina'] },
+    { modelo: 'Trans Am',   segmentos: ['Coupé'], combustiveis: ['Gasolina'] },
+    { modelo: 'GTO',        segmentos: ['Coupé'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Porsche': [
+    { modelo: '911',      segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina'], geracoes: ['993', '996', '997', '991', '992'] },
+    { modelo: '924',      segmentos: ['Coupé'],   combustiveis: ['Gasolina'] },
+    { modelo: '928',      segmentos: ['Coupé'],   combustiveis: ['Gasolina'] },
+    { modelo: '944',      segmentos: ['Coupé'],   combustiveis: ['Gasolina'] },
+    { modelo: '968',      segmentos: ['Coupé'],   combustiveis: ['Gasolina'] },
+    { modelo: 'Boxster',  segmentos: ['Cabrio'],  combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Cayman',   segmentos: ['Coupé'],   combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Cayenne',  segmentos: ['SUV'],     combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Macan',    segmentos: ['SUV'],     combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Panamera', segmentos: ['Sedan'],   combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: '718',      segmentos: ['Coupé', 'Cabrio'], combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Taycan',   segmentos: ['Sedan', 'Carrinha', 'SUV'], combustiveis: ['Elétrico'] },
+  ],
+
+  'Proton': [
+    { modelo: 'Wira',    segmentos: ['Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: 'Satria',  segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Gen-2',   segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Persona', segmentos: ['Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: 'Savvy',   segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+  ],
+
+  'Renault': [
+    { modelo: 'Twingo',       segmentos: ['Hatchback'],  combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Clio',         segmentos: ['Hatchback'],  combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Mégane',       segmentos: ['Hatchback', 'Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Mégane E-Tech',segmentos: ['Hatchback'],  combustiveis: ['Elétrico'] },
+    { modelo: 'Scenic',       segmentos: ['Monovolume'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Scenic E-Tech',segmentos: ['SUV'],        combustiveis: ['Elétrico'] },
+    { modelo: 'Grand Scenic', segmentos: ['Monovolume'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Laguna',       segmentos: ['Sedan', 'Carrinha', 'Coupé'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Vel Satis',    segmentos: ['Hatchback'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Avantime',     segmentos: ['Coupé'],      combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Espace',       segmentos: ['Monovolume', 'SUV'], combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Symbol',       segmentos: ['Sedan'],      combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Fluence',      segmentos: ['Sedan'],      combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Captur',       segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Diesel', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'Kadjar',       segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Koleos',       segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Talisman',     segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Austral',      segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'Arkana',       segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Rafale',       segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+    { modelo: 'Symbioz',      segmentos: ['SUV'],        combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'R5 E-Tech',    segmentos: ['Hatchback'],  combustiveis: ['Elétrico'] },
+    { modelo: 'Zoe',          segmentos: ['Hatchback'],  combustiveis: ['Elétrico'] },
+    { modelo: 'Twizy',        segmentos: ['Elétrico'],   combustiveis: ['Elétrico'] },
+    { modelo: 'Express',      segmentos: ['Comercial'],  combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Kangoo',       segmentos: ['Comercial', 'Monovolume'], combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Trafic',       segmentos: ['Comercial'],  combustiveis: ['Diesel', 'Elétrico'] },
+    { modelo: 'Master',       segmentos: ['Comercial'],  combustiveis: ['Diesel', 'Elétrico'] },
+    { modelo: 'Modus',        segmentos: ['Monovolume'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Wind',         segmentos: ['Cabrio'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Mobilize Duo', segmentos: ['Elétrico'],   combustiveis: ['Elétrico'] },
+  ],
+
+  'Rivian': [
+    { modelo: 'R1T', segmentos: ['Pickup'], combustiveis: ['Elétrico'] },
+    { modelo: 'R1S', segmentos: ['SUV'],    combustiveis: ['Elétrico'] },
+    { modelo: 'R2',  segmentos: ['SUV'],    combustiveis: ['Elétrico'] },
+  ],
+
+  'Rolls-Royce': [
+    { modelo: 'Silver Seraph', segmentos: ['Sedan'], combustiveis: ['Gasolina'] },
+    { modelo: 'Phantom',       segmentos: ['Sedan', 'Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: 'Ghost',         segmentos: ['Sedan'], combustiveis: ['Gasolina'] },
+    { modelo: 'Wraith',        segmentos: ['Coupé'], combustiveis: ['Gasolina'] },
+    { modelo: 'Dawn',          segmentos: ['Cabrio'],combustiveis: ['Gasolina'] },
+    { modelo: 'Cullinan',      segmentos: ['SUV'],   combustiveis: ['Gasolina'] },
+    { modelo: 'Spectre',       segmentos: ['Coupé'], combustiveis: ['Elétrico'] },
+  ],
+
+  'Rover': [
+    { modelo: 'Mini',  segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Metro', segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '200',   segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '400',   segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '600',   segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '800',   segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '25',    segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '45',    segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '75',    segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+  ],
+
+  'Saab': [
+    { modelo: '900',  segmentos: ['Hatchback', 'Cabrio'], combustiveis: ['Gasolina'] },
+    { modelo: '9000', segmentos: ['Hatchback', 'Sedan'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '9-3',  segmentos: ['Hatchback', 'Sedan', 'Cabrio', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '9-5',  segmentos: ['Sedan', 'Carrinha'],   combustiveis: ['Gasolina', 'Diesel'] },
+  ],
+
+  'Seat': [
+    { modelo: 'Marbella', segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Ibiza',    segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel', 'GPL'] },
+    { modelo: 'Cordoba',  segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Toledo',   segmentos: ['Sedan', 'Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Arosa',    segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Alhambra', segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Altea',    segmentos: ['Hatchback', 'Monovolume'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Leon',     segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Exeo',     segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Mii',      segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Ateca',    segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Arona',    segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Tarraco',  segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+  ],
+
+  'Seres': [
+    { modelo: '3',  segmentos: ['SUV'], combustiveis: ['Elétrico'] },
+    { modelo: '5',  segmentos: ['SUV'], combustiveis: ['Elétrico', 'Plug-in Híbrido'] },
+    { modelo: 'SF5',segmentos: ['SUV'], combustiveis: ['Plug-in Híbrido'] },
+  ],
+
+  'Škoda': [
+    { modelo: 'Felicia',  segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'GPL'] },
+    { modelo: 'Citigo',   segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Fabia',    segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Octavia',  segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Superb',   segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Rapid',    segmentos: ['Sedan', 'Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Roomster', segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Yeti',     segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Kodiaq',   segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Karoq',    segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Kamiq',    segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Scala',    segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Enyaq',    segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+    { modelo: 'Elroq',    segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+  ],
+
+  'Smart': [
+    { modelo: 'Crossblade', segmentos: ['Cabrio'],    combustiveis: ['Gasolina'] },
+    { modelo: 'Fortwo',     segmentos: ['Hatchback', 'Cabrio'], combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Forfour',    segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Roadster',   segmentos: ['Cabrio'],    combustiveis: ['Gasolina'] },
+    { modelo: '#1',         segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+    { modelo: '#3',         segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+  ],
+
+  'SsangYong': [
+    { modelo: 'Korando',  segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Musso',    segmentos: ['Pickup', 'SUV'], combustiveis: ['Diesel'] },
+    { modelo: 'Kyron',    segmentos: ['SUV'],       combustiveis: ['Diesel'] },
+    { modelo: 'Actyon',   segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Rexton',   segmentos: ['SUV'],       combustiveis: ['Diesel', 'GPL'] },
+    { modelo: 'Rodius',   segmentos: ['Monovolume'],combustiveis: ['Diesel'] },
+    { modelo: 'Tivoli',   segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+  ],
+
+  'Subaru': [
+    { modelo: 'Justy',    segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Impreza',  segmentos: ['Sedan', 'Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Legacy',   segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Forester', segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Outback',  segmentos: ['Carrinha'],  combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'XV',       segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Tribeca',  segmentos: ['SUV'],       combustiveis: ['Gasolina'] },
+    { modelo: 'Levorg',   segmentos: ['Carrinha'],  combustiveis: ['Gasolina'] },
+    { modelo: 'WRX',      segmentos: ['Sedan'],     combustiveis: ['Gasolina'] },
+    { modelo: 'BRZ',      segmentos: ['Coupé'],     combustiveis: ['Gasolina'] },
+    { modelo: 'Solterra', segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+    { modelo: 'Crosstrek',segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Plug-in Híbrido'] },
+  ],
+
+  'Suzuki': [
+    { modelo: 'Alto',        segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Swift',       segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Wagon R+',    segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Ignis',       segmentos: ['Hatchback', 'SUV'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Splash',      segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Baleno',      segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'SX4',         segmentos: ['Hatchback', 'SUV'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'S-Cross',     segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Vitara',      segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Grand Vitara',segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Jimny',       segmentos: ['SUV'],       combustiveis: ['Gasolina'] },
+    { modelo: 'Celerio',     segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Across',      segmentos: ['SUV'],       combustiveis: ['Plug-in Híbrido'] },
+  ],
+
+  'Tesla': [
+    { modelo: 'Model 3', segmentos: ['Sedan'],    combustiveis: ['Elétrico'] },
+    { modelo: 'Model S', segmentos: ['Sedan'],    combustiveis: ['Elétrico'] },
+    { modelo: 'Model X', segmentos: ['SUV'],      combustiveis: ['Elétrico'] },
+    { modelo: 'Model Y', segmentos: ['SUV'],      combustiveis: ['Elétrico'] },
+    { modelo: 'Cybertruck', segmentos: ['Pickup'],combustiveis: ['Elétrico'] },
+  ],
+
+  'Toyota': [
+    { modelo: 'Celica',        segmentos: ['Coupé'],     combustiveis: ['Gasolina'] },
+    { modelo: 'MR2',           segmentos: ['Coupé'],     combustiveis: ['Gasolina'] },
+    { modelo: 'Previa',        segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Picnic',        segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Corolla',       segmentos: ['Hatchback', 'Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Corolla Cross', segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Avensis',       segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Camry',         segmentos: ['Sedan'],     combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Aygo',          segmentos: ['Hatchback'], combustiveis: ['Gasolina'] },
+    { modelo: 'Aygo X',        segmentos: ['SUV'],       combustiveis: ['Gasolina'] },
+    { modelo: 'Yaris',         segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'Yaris Cross',   segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'Auris',         segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Diesel', 'Híbrido'] },
+    { modelo: 'Verso',         segmentos: ['Monovolume'],combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'C-HR',          segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'RAV4',          segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel', 'Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'Land Cruiser',  segmentos: ['SUV'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Hilux',         segmentos: ['Pickup'],    combustiveis: ['Diesel'] },
+    { modelo: 'Prius',         segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Híbrido', 'Plug-in Híbrido'] },
+    { modelo: 'Mirai',         segmentos: ['Sedan'],     combustiveis: ['Hidrogénio'] },
+    { modelo: 'Proace',        segmentos: ['Comercial'], combustiveis: ['Diesel', 'Elétrico'] },
+    { modelo: 'Highlander',    segmentos: ['SUV'],       combustiveis: ['Híbrido'] },
+    { modelo: 'Urban Cruiser',  segmentos: ['SUV'],      combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Supra',         segmentos: ['Coupé'],     combustiveis: ['Gasolina'] },
+    { modelo: 'GR Yaris',      segmentos: ['Hatchback'], combustiveis: ['Gasolina', 'Híbrido'] },
+    { modelo: 'GR86',          segmentos: ['Coupé'],     combustiveis: ['Gasolina'] },
+    { modelo: 'GT86',          segmentos: ['Coupé'],     combustiveis: ['Gasolina'] },
+    { modelo: 'bZ4X',          segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+    { modelo: 'bZ3C',          segmentos: ['SUV'],       combustiveis: ['Elétrico'] },
+  ],
+
+  'Volkswagen': [
+    { modelo: 'Fox',        segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Lupo',       segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Polo',       segmentos: ['Hatchback', 'Sedan'], combustiveis: ['Gasolina', 'Diesel', 'GPL'] },
+    { modelo: 'Golf',       segmentos: ['Hatchback', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido', 'Elétrico'], geracoes: ['Mk3', 'Mk4', 'Mk5', 'Mk6', 'Mk7', 'Mk8'] },
+    { modelo: 'Bora',       segmentos: ['Sedan'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Jetta',      segmentos: ['Sedan'],       combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Beetle',     segmentos: ['Hatchback', 'Cabrio'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Passat',     segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'CC',         segmentos: ['Sedan'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Arteon',     segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Phaeton',    segmentos: ['Sedan'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Eos',        segmentos: ['Cabrio'],      combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Scirocco',   segmentos: ['Coupé'],       combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Sharan',     segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Touran',     segmentos: ['Monovolume'],  combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Tiguan',     segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Touareg',    segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'Amarok',     segmentos: ['Pickup'],      combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'T-Roc',      segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'T-Cross',    segmentos: ['SUV'],         combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'Taigo',      segmentos: ['SUV'],         combustiveis: ['Gasolina'] },
+    { modelo: 'Caddy',      segmentos: ['Comercial', 'Monovolume'], combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Transporter',segmentos: ['Comercial'],   combustiveis: ['Gasolina', 'Diesel', 'Elétrico'] },
+    { modelo: 'Multivan',   segmentos: ['Comercial', 'Monovolume'], combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'ID. Buzz',   segmentos: ['Monovolume'],  combustiveis: ['Elétrico'] },
+    { modelo: 'ID.3',       segmentos: ['Hatchback'],   combustiveis: ['Elétrico'] },
+    { modelo: 'ID.4',       segmentos: ['SUV'],         combustiveis: ['Elétrico'] },
+    { modelo: 'ID.5',       segmentos: ['SUV'],         combustiveis: ['Elétrico'] },
+    { modelo: 'ID.7',       segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Elétrico'] },
+    { modelo: 'Up!',        segmentos: ['Hatchback'],   combustiveis: ['Gasolina', 'Elétrico'] },
+    { modelo: 'Crafter',    segmentos: ['Comercial'],   combustiveis: ['Diesel', 'Elétrico'] },
+  ],
+
+  'Volvo': [
+    { modelo: '440',  segmentos: ['Hatchback'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '460',  segmentos: ['Sedan'],         combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: '480',  segmentos: ['Coupé'],         combustiveis: ['Gasolina'] },
+    { modelo: '850',  segmentos: ['Sedan', 'Carrinha'], combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'S40',  segmentos: ['Sedan'],         combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'S60',  segmentos: ['Sedan'],         combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'S80',  segmentos: ['Sedan'],         combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'S90',  segmentos: ['Sedan'],         combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'V40',  segmentos: ['Hatchback'],     combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'V50',  segmentos: ['Carrinha'],      combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'V60',  segmentos: ['Carrinha'],      combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'V70',  segmentos: ['Carrinha'],      combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'V90',  segmentos: ['Carrinha'],      combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'C30',  segmentos: ['Hatchback'],     combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'C40',  segmentos: ['SUV'],           combustiveis: ['Elétrico'] },
+    { modelo: 'XC40', segmentos: ['SUV'],           combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido', 'Elétrico'] },
+    { modelo: 'XC60', segmentos: ['SUV'],           combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'XC70', segmentos: ['Carrinha'],      combustiveis: ['Gasolina', 'Diesel'] },
+    { modelo: 'XC90', segmentos: ['SUV'],           combustiveis: ['Gasolina', 'Diesel', 'Plug-in Híbrido'] },
+    { modelo: 'EX30', segmentos: ['SUV'],           combustiveis: ['Elétrico'] },
+    { modelo: 'EX40', segmentos: ['SUV'],           combustiveis: ['Elétrico'] },
+    { modelo: 'EX90', segmentos: ['SUV'],           combustiveis: ['Elétrico'] },
+    { modelo: 'ES90', segmentos: ['Sedan'],         combustiveis: ['Elétrico', 'Plug-in Híbrido'] },
+  ],
+
+  'Voyah': [
+    { modelo: 'Free',   segmentos: ['SUV'],   combustiveis: ['Elétrico', 'Plug-in Híbrido'] },
+    { modelo: 'Dream',  segmentos: ['Monovolume'], combustiveis: ['Elétrico', 'Plug-in Híbrido'] },
+    { modelo: 'Courage',segmentos: ['SUV'],   combustiveis: ['Elétrico'] },
+  ],
+
+  'XPeng': [
+    { modelo: 'G6',  segmentos: ['SUV'],   combustiveis: ['Elétrico'] },
+    { modelo: 'G9',  segmentos: ['SUV'],   combustiveis: ['Elétrico'] },
+    { modelo: 'P7',  segmentos: ['Sedan'], combustiveis: ['Elétrico'] },
+    { modelo: 'X9',  segmentos: ['Monovolume'], combustiveis: ['Elétrico'] },
+  ],
+
+  'Aiways': [
+    { modelo: 'U5',  segmentos: ['SUV'],   combustiveis: ['Elétrico'] },
+    { modelo: 'U6',  segmentos: ['SUV'],   combustiveis: ['Elétrico'] },
+  ],
+};
+
+// ─── LISTAS DERIVADAS ───────────────────────────────────────────────────────
+
+/** Lista ordenada de marcas */
+export const MARCAS = Object.keys(MARCAS_CARROS).sort((a, b) =>
+  sem_acentos(a).localeCompare(sem_acentos(b), 'pt')
+);
+
+// ─── FUNÇÕES UTILITÁRIAS ────────────────────────────────────────────────────
+
+/**
+ * Devolve o array de objetos de modelo para uma dada marca.
+ */
+export function getModelosPorMarca(marca) {
+  return MARCAS_CARROS[marca] || [];
+}
+
+/**
+ * Devolve apenas os nomes canónicos dos modelos de uma marca.
+ */
+export function getNomesModelosPorMarca(marca) {
+  return (MARCAS_CARROS[marca] || []).map(m => m.modelo);
+}
+
+/**
+ * Verifica se a combinação marca/modelo é válida.
+ */
+export function combinacaoValida(marca, modelo) {
+  const lista = MARCAS_CARROS[marca];
+  return Array.isArray(lista) && lista.some(m => m.modelo === modelo);
+}
+
+/**
+ * Normaliza uma string de marca para o nome canónico.
+ * Suporta aliases, variações de maiúsculas e diacríticos.
+ */
+export function normalizarMarca(valor) {
+  if (!valor) return '';
+  const limpo = valor.trim();
+
+  // Correspondência exacta
+  if (MARCAS_CARROS[limpo]) return limpo;
+
+  // Alias directo (case-insensitive, sem acentos)
+  const chave = sem_acentos(limpo);
+  const viaAlias = ALIASES_MARCA[chave];
+  if (viaAlias) return viaAlias;
+
+  // Correspondência exacta sem acentos nas marcas canónicas
+  const exacta = MARCAS.find(m => sem_acentos(m) === chave);
+  if (exacta) return exacta;
+
+  // Pesquisa fuzzy (tolerância a gralhas)
+  const candidatos = MARCAS.map(m => ({
+    marca: m,
+    dist: levenshtein(chave, sem_acentos(m)),
+  })).sort((a, b) => a.dist - b.dist);
+
+  // Só aceita se a distância for pequena face ao comprimento da query
+  const melhor = candidatos[0];
+  if (melhor && melhor.dist <= Math.max(2, Math.floor(chave.length * 0.3))) {
+    return melhor.marca;
+  }
+
+  return '';
+}
+
+/**
+ * Normaliza uma string de modelo para o nome canónico de uma dada marca.
+ */
+export function normalizarModelo(marca, valor) {
+  if (!valor) return '';
+  const nomes = getNomesModelosPorMarca(marca);
+  if (nomes.includes(valor)) return valor;
+
+  const chave = sem_acentos(valor.trim());
+
+  // Alias de modelo
+  const viaAlias = ALIASES_MODELO[chave];
+  if (viaAlias && nomes.includes(viaAlias)) return viaAlias;
+
+  // Correspondência exacta sem acentos
+  const exacto = nomes.find(m => sem_acentos(m) === chave);
+  if (exacto) return exacto;
+
+  // Fuzzy
+  const candidatos = nomes.map(m => ({
+    modelo: m,
+    dist: levenshtein(chave, sem_acentos(m)),
+  })).sort((a, b) => a.dist - b.dist);
+
+  const melhor = candidatos[0];
+  if (melhor && melhor.dist <= Math.max(2, Math.floor(chave.length * 0.3))) {
+    return melhor.modelo;
+  }
+
+  return '';
+}
+
+/**
+ * Pesquisa global de modelo e/ou marca.
+ *
+ * @param {string} query – ex: "golf", "classe c", "ev6"
+ * @param {object} opcoes
+ * @param {number} [opcoes.limite=10]        – máx. de resultados
+ * @param {number} [opcoes.distanciaMax=3]   – tolerância fuzzy
+ * @returns {{ marca: string, modelo: string, segmentos: string[], combustiveis: string[] }[]}
+ *
+ * @example
+ * pesquisarCarro("golf")
+ * // [{ marca: "Volkswagen", modelo: "Golf", segmentos: [...], combustiveis: [...] }]
+ *
+ * pesquisarCarro("classe c")
+ * // [{ marca: "Mercedes-Benz", modelo: "Classe C", ... }]
+ */
+export function pesquisarCarro(query, { limite = 10, distanciaMax = 3 } = {}) {
+  if (!query || query.trim().length < 1) return [];
+
+  const q = sem_acentos(query.trim());
+  const resultados = [];
+
+  for (const marca of MARCAS) {
+    const marcaN = sem_acentos(marca);
+    const modelos = MARCAS_CARROS[marca];
+
+    for (const entrada of modelos) {
+      const modeloN = sem_acentos(entrada.modelo);
+
+      // Correspondência directa (substring)
+      const matchModelo = modeloN.includes(q) || q.includes(modeloN);
+      const matchMarca  = marcaN.includes(q)  || q.includes(marcaN);
+
+      // Correspondência fuzzy
+      const distModelo = levenshtein(q, modeloN);
+      const distMarca  = levenshtein(q, marcaN);
+
+      const score = Math.min(
+        matchModelo ? 0 : distModelo,
+        matchMarca  ? 0 : distMarca,
+        // Combinar marca+modelo (ex: "vw golf")
+        levenshtein(q, `${marcaN} ${modeloN}`),
+        levenshtein(q, modeloN.replace(/[-\s]/g, '')),
+      );
+
+      if (score <= distanciaMax) {
+        resultados.push({
+          marca,
+          modelo: entrada.modelo,
+          segmentos: entrada.segmentos,
+          combustiveis: entrada.combustiveis,
+          geracoes: entrada.geracoes || [],
+          _score: score,
+        });
+      }
+    }
+  }
+
+  return resultados
+    .sort((a, b) => a._score - b._score)
+    .slice(0, limite)
+    .map(({ _score, ...resto }) => resto); // remove campo interno
+}
+
+/**
+ * Filtra modelos de uma marca por segmento e/ou combustível.
+ *
+ * @example
+ * filtrarModelos("BMW", { segmento: "SUV", combustivel: "Elétrico" })
+ */
+export function filtrarModelos(marca, { segmento, combustivel } = {}) {
+  return (MARCAS_CARROS[marca] || []).filter(m => {
+    const okSeg  = !segmento   || m.segmentos.includes(segmento);
+    const okComb = !combustivel || m.combustiveis.includes(combustivel);
+    return okSeg && okComb;
+  });
+}
+
+/**
+ * Lista todas as marcas que têm pelo menos um modelo elétrico.
+ */
+export function marcasComEletrico() {
+  return MARCAS.filter(marca =>
+    MARCAS_CARROS[marca].some(m => m.combustiveis.includes('Elétrico'))
+  );
+}
+
+/**
+ * Lista todos os modelos elétricos disponíveis, agrupados por marca.
+ */
+export function todosOsEletricos() {
+  const resultado = {};
+  for (const marca of MARCAS) {
+    const eletricos = MARCAS_CARROS[marca]
+      .filter(m => m.combustiveis.includes('Elétrico'))
+      .map(m => m.modelo);
+    if (eletricos.length > 0) resultado[marca] = eletricos;
+  }
+  return resultado;
+}
+
+/**
+ * Devolve todos os segmentos únicos presentes na base de dados.
+ */
+export function todosOsSegmentos() {
+  const set = new Set();
+  for (const marca of MARCAS) {
+    for (const m of MARCAS_CARROS[marca]) {
+      for (const s of m.segmentos) set.add(s);
+    }
+  }
+  return [...set].sort();
+}
+
+/**
+ * Devolve todos os tipos de combustível únicos.
+ */
+export function todosOsCombustiveis() {
+  const set = new Set();
+  for (const marca of MARCAS) {
+    for (const m of MARCAS_CARROS[marca]) {
+      for (const c of m.combustiveis) set.add(c);
+    }
+  }
+  return [...set].sort();
+}
+
+// ─── RETROCOMPATIBILIDADE (v1 → v2) ────────────────────────────────────────
+// Para não partir código existente que usa a estrutura antiga { marca: ['Modelo1', ...] }
+
+/**
+ * Versão flat da base de dados no formato v1 (string[]).
+ * Útil para validações legadas.
+ */
+export const MARCAS_CARROS_FLAT = Object.fromEntries(
+  Object.entries(MARCAS_CARROS).map(([marca, modelos]) => [
+    marca,
+    modelos.map(m => m.modelo),
+  ])
+);
+
+export default MARCAS_CARROS;

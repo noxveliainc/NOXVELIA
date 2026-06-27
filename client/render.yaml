@@ -1,0 +1,12 @@
+services:
+  - type: static
+    name: noxvelia-frontend
+    buildCommand: npm run build
+    staticPublishPath: client/dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+    rewrites:
+      - source: /*
+        destination: /index.html

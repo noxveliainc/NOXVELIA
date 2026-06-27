@@ -1,0 +1,17 @@
+# Dependências do Node (é uma pasta muito pesada gerada pelo npm install)
+node_modules/
+
+# Variáveis de Ambiente (MUITO IMPORTANTE: guarda as tuas passwords e chaves de API)
+.env
+
+# Ficheiros de Log de erros
+logs
+*.log
+npm-debug.log*
+
+# Ficheiros de sistema operativo (Mac/Windows) que não interessam ao projeto
+.DS_Store
+Thumbs.db
+
+node_modules
+.env

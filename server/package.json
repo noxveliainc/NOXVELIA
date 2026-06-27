@@ -1,0 +1,45 @@
+{
+  "name": "api-anuncios",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Backend Plataforma Anuncios IA",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.99.0",
+    "@google/genai": "^2.7.0",
+    "@react-leaflet/core": "^2.1.0",
+    "argon2": "^0.44.0",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "install": "^0.13.0",
+    "ioredis": "^5.11.1",
+    "jsonwebtoken": "^9.0.2",
+    "leaflet": "^1.9.4",
+    "mongo-sanitize": "^1.1.0",
+    "mongoose": "^8.4.0",
+    "morgan": "^1.11.0",
+    "multer": "^2.1.1",
+    "multer-storage-cloudinary": "^4.0.0",
+    "node-cron": "^4.5.0",
+    "nodemailer": "^8.0.10",
+    "piscina": "^5.1.4",
+    "react-leaflet": "^4.2.1",
+    "socket.io": "^4.8.3",
+    "stripe": "^22.2.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
