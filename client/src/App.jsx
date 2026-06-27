@@ -17,6 +17,7 @@ const Login          = lazy(() => import('./pages/shared/Login'));
 const Registo        = lazy(() => import('./pages/shared/Registo'));
 const ForgotPassword = lazy(() => import('./pages/shared/ForgotPassword'));
 const ResetPassword  = lazy(() => import('./pages/auth/ResetPassword'));
+const VerificarEmail = lazy(() => import('./pages/shared/VerificarEmail')); // 🌟 NOVO
 
 const PesquisaCarro  = lazy(() => import('./pages/carros/PesquisaCarro'));
 const PesquisaImovel = lazy(() => import('./pages/imoveis/PesquisaImovel'));
@@ -55,7 +56,8 @@ function AppShell() {
   }, [location.pathname]);
 
   const rotasSemNavbar = ['/', '/login', '/registo', '/forgot-password'];
-  const isAuthRoute = location.pathname.startsWith('/reset-password');
+  // 🌟 NOVO: /verificar-email também entra na lista de rotas "auth" sem navbar/footer
+  const isAuthRoute = location.pathname.startsWith('/reset-password') || location.pathname.startsWith('/verificar-email');
   const esconderNavbar = rotasSemNavbar.includes(location.pathname) || isAuthRoute;
   const esconderFooter = rotasSemNavbar.includes(location.pathname) || isAuthRoute || location.pathname.startsWith('/admin');
 
@@ -77,6 +79,7 @@ function AppShell() {
             <Route path="/registo" element={<Registo />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/verificar-email/:token" element={<VerificarEmail />} /> {/* 🌟 NOVO */}
             <Route path="/anuncio/:id" element={<Anuncio />} />
             <Route path="/vendedor/:id" element={<PerfilPublico />} />
             

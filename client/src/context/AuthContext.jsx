@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 
@@ -15,9 +16,6 @@ export const AuthProvider = ({ children }) => {
         try {
           setUser(JSON.parse(userLocal));
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-          // 🌟 Refresca em segundo plano com os dados reais do servidor.
-          // Garante que premiumAtivo nunca fica "preso" desatualizado
-          // (ex: se cancelou a subscrição no Billing Portal noutra sessão).
           sincronizarUser();
         } catch (e) {
           console.error("Erro ao ler localStorage no arranque", e);
@@ -28,21 +26,27 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     };
     carregarDadosArmazenados();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
-    const { token, user: userData, utilizador } = response.data;
-    const dadosUtilizador = userData || utilizador;
-    if (!token || !dadosUtilizador) {
-      throw new Error('Resposta do servidor inválida.');
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      const { token, user: userData, utilizador } = response.data;
+      const dadosUtilizador = userData || utilizador;
+      
+      if (!token || !dadosUtilizador) {
+        throw new Error('Resposta do servidor inválida.');
+      }
+      
+      localStorage.setItem('@App:token', token);
+      localStorage.setItem('@App:user', JSON.stringify(dadosUtilizador));
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(dadosUtilizador);
+      return response.data;
+    } catch (err) {
+      // 🌟 CORREÇÃO: Lança o erro para o Login.jsx conseguir ler o setErro
+      throw err; 
     }
-    localStorage.setItem('@App:token', token);
-    localStorage.setItem('@App:user', JSON.stringify(dadosUtilizador));
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setUser(dadosUtilizador);
-    return response.data;
   };
 
   const logout = () => {
@@ -69,7 +73,6 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  // 🔄 Atualiza qualquer campo do user (ex: premiumAtivo) e persiste no localStorage
   const atualizarUser = (novosDados) => {
     setUser((prev) => {
       if (!prev) return novosDados;
@@ -79,8 +82,6 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  // 🔄 Vai buscar o estado mais recente do utilizador ao backend
-  // Útil depois de voltar do Stripe Checkout, para a Navbar saber que já é Premium
   const sincronizarUser = async () => {
     try {
       const { data } = await api.get('/users/me');

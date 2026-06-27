@@ -2,22 +2,16 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import argon2 from 'argon2';
 import User from '../models/User.js';
-import { enviarEmailReset } from '../services/emailService.js';
+import { enviarEmailReset, enviarEmailVerificacao } from '../services/emailService.js';
 
 // ─────────────────────────────────────────────────────────────
 // 1. REGISTO DE UTILIZADOR
 // ─────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
-// 1. REGISTO DE UTILIZADOR (VERSÃO DE DIAGNÓSTICO)
-// ─────────────────────────────────────────────────────────────
 export const register = async (req, res) => {
   try {
-    // 🕵️ RASTREADOR 1: O que é que o Frontend enviou?
     console.log("\n--- INÍCIO DE REGISTO ---");
-    console.log("1. DADOS RECEBIDOS DO FRONTEND:", req.body);
-
     const { nome, email, password, telefone, localidade, tipo, tipoConta, nif, website } = req.body;
-    const emailLower = email.toLowerCase().trim(); 
+    const emailLower = email.toLowerCase().trim();
 
     const userExists = await User.findOne({ email: emailLower });
     if (userExists) {
@@ -34,44 +28,30 @@ export const register = async (req, res) => {
       email: emailLower,
       password,
       telefone,
-      localidade, 
+      localidade,
       tipo: tipo || 'cliente',
       tipoConta: tipoConta || 'particular',
       nif: tipoConta === 'profissional' ? nif : undefined,
-      website: tipoConta === 'profissional' ? website : undefined
+      website: tipoConta === 'profissional' ? website : undefined,
+      verificado: false // Garante que entra como não verificado
     });
 
-    // 🕵️ RASTREADOR 2: O que é que o Mongoose construiu?
-    console.log("2. OBJETO MONGOOSE ANTES DE GRAVAR:", novoUtilizador);
+    const tokenPlano = crypto.randomBytes(32).toString('hex');
+    novoUtilizador.tokenVerificacao = crypto.createHash('sha256').update(tokenPlano).digest('hex');
+    novoUtilizador.expiracaoToken = Date.now() + 24 * 60 * 60 * 1000;
 
     const utilizadorGuardado = await novoUtilizador.save();
-    
-    // 🕵️ RASTREADOR 3: O que ficou na Base de Dados?
-    console.log("3. GRAVADO NA BD COM SUCESSO:", utilizadorGuardado);
-    console.log("-------------------------\n");
-    
-    const token = jwt.sign(
-      { 
-        id: utilizadorGuardado._id, 
-        tipo: utilizadorGuardado.tipo,
-        tipoConta: utilizadorGuardado.tipoConta
-      }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: '7d' }
-    );
 
-    res.status(201).json({ 
-      token, 
-      utilizador: { 
-        id: utilizadorGuardado._id, 
-        nome: utilizadorGuardado.nome,
-        email: utilizadorGuardado.email,
-        tipo: utilizadorGuardado.tipo,
-        tipoConta: utilizadorGuardado.tipoConta,
-        website: utilizadorGuardado.website
-      } 
+    const urlFrontend = process.env.CLIENT_URL || 'https://www.noxvelia.com';
+    const linkVerificacao = `${urlFrontend}/verificar-email/${tokenPlano}`;
+    enviarEmailVerificacao(utilizadorGuardado.email, utilizadorGuardado.nome, linkVerificacao)
+      .catch(e => console.error('Falha ao enviar email de verificação:', e));
+
+    // 🌟 CORREÇÃO 1: Em vez de enviar o Token JWT (que faz auto-login), envia apenas a mensagem
+    res.status(201).json({
+      mensagem: 'Registo criado com sucesso. Por favor, verifica o teu e-mail para ativar a conta.'
     });
-    
+
   } catch (error) {
     console.error('Erro no registo:', error);
     res.status(500).json({ erro: 'Erro interno no servidor ao tentar registar.' });
@@ -84,39 +64,41 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    // 🛡️ LIMPEZA DE ESPAÇOS: Evita o erro 400 por espaços acidentais
     const emailLimpo = email.trim().toLowerCase();
-    
+
     const utilizador = await User.findOne({ email: emailLimpo }).select('+password');
 
     if (!utilizador) {
-      console.log(`[LOGIN ERRO] Email não encontrado: ${emailLimpo}`);
       return res.status(400).json({ erro: 'Este email não está registado na plataforma.' });
     }
 
     const passwordValida = await argon2.verify(utilizador.password, password);
     if (!passwordValida) {
-      console.log(`[LOGIN ERRO] Password errada para: ${emailLimpo}`);
       return res.status(400).json({ erro: 'A palavra-passe está incorreta.' });
     }
 
+    if (!utilizador.verificado && utilizador.tipo !== 'admin') {
+      return res.status(403).json({
+        erro: 'Confirma o teu email antes de iniciar sessão. Verifica a tua caixa de entrada (e o spam).'
+      });
+    }
+
     const token = jwt.sign(
-      { 
-        id: utilizador._id, 
+      {
+        id: utilizador._id,
         tipo: utilizador.tipo,
         tipoConta: utilizador.tipoConta
-      }, 
-      process.env.JWT_SECRET, 
+      },
+      process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
     res.json({
       token,
-      utilizador: { 
-        id: utilizador._id, 
-        nome: utilizador.nome, 
-        email: utilizador.email, 
+      utilizador: {
+        id: utilizador._id,
+        nome: utilizador.nome,
+        email: utilizador.email,
         tipo: utilizador.tipo,
         tipoConta: utilizador.tipoConta,
         website: utilizador.website
@@ -129,7 +111,36 @@ export const login = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// 3. PEDIDO DE RECUPERAÇÃO DE PASSWORD
+// 3. CONFIRMAÇÃO DE EMAIL
+// ─────────────────────────────────────────────────────────────
+export const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    const utilizador = await User.findOne({
+      tokenVerificacao: tokenHash,
+      expiracaoToken: { $gt: Date.now() }
+    }).select('+tokenVerificacao +expiracaoToken');
+
+    if (!utilizador) {
+      return res.status(400).json({ erro: 'Link de verificação inválido ou expirado.' });
+    }
+
+    utilizador.verificado = true;
+    utilizador.tokenVerificacao = undefined;
+    utilizador.expiracaoToken = undefined;
+    await utilizador.save({ validateBeforeSave: false });
+
+    res.json({ mensagem: 'Email verificado com sucesso! Já podes iniciar sessão.' });
+  } catch (erro) {
+    console.error('Erro no verifyEmail:', erro);
+    res.status(500).json({ erro: 'Erro ao verificar o email.' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// 4. PEDIDO DE RECUPERAÇÃO DE PASSWORD
 // ─────────────────────────────────────────────────────────────
 export const forgotPassword = async (req, res) => {
   try {
@@ -147,45 +158,50 @@ export const forgotPassword = async (req, res) => {
     }
 
     const token = crypto.randomBytes(20).toString('hex');
-    const expira = Date.now() + 3600000; 
-
     user.passwordResetToken = crypto.createHash('sha256').update(token).digest('hex');
-    user.passwordResetExpires = expira;
-    
+    user.passwordResetExpires = Date.now() + 3600000;
+
     await user.save({ validateBeforeSave: false });
 
-    const urlFrontend = process.env.CLIENT_URL || 'http://localhost:5173';
+    const urlFrontend = process.env.CLIENT_URL || 'https://www.noxvelia.com';
     const linkRecuperacao = `${urlFrontend}/reset-password/${token}`;
 
     try {
-        await enviarEmailReset(user.email, user.nome, linkRecuperacao);
+      await enviarEmailReset(user.email, user.nome, linkRecuperacao);
     } catch (emailError) {
-        console.error('Falha ao enviar e-mail:', emailError);
-        user.passwordResetToken = undefined;
-        user.passwordResetExpires = undefined;
-        await user.save({ validateBeforeSave: false });
-
-        return res.status(500).json({ erro: 'Erro ao enviar o e-mail de recuperação.' });
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      return res.status(500).json({ erro: 'Erro ao enviar o e-mail de recuperação.' });
     }
 
     res.json({ mensagem: 'Se o e-mail existir no nosso sistema, receberás um link de redefinição.' });
-
   } catch (erro) {
-    console.error('Erro no forgotPassword:', erro);
     res.status(500).json({ erro: 'Ocorreu um erro ao processar o pedido de recuperação.' });
   }
 };
 
 // ─────────────────────────────────────────────────────────────
-// 4. APLICAÇÃO DA NOVA PASSWORD
+// 5. APLICAÇÃO DA NOVA PASSWORD
 // ─────────────────────────────────────────────────────────────
 export const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
     const { password } = req.body;
 
-    if (!password || password.length < 6) {
-      return res.status(400).json({ erro: 'A nova palavra-passe deve ter pelo menos 6 caracteres.' });
+    // 🌟 CORREÇÃO 2: Garantir a mesma segurança de password do Registo.jsx
+    const validarPassword = (pwd) => {
+      const temTamanho = pwd.length >= 9;
+      const temMaiuscula = /[A-Z]/.test(pwd);
+      const temNumero = /\d/.test(pwd);
+      const temEspecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+      return temTamanho && temMaiuscula && temNumero && temEspecial;
+    };
+
+    if (!validarPassword(password)) {
+      return res.status(400).json({ 
+        erro: 'A palavra-passe tem de ter pelo menos 9 caracteres, 1 maiúscula, 1 número e 1 carácter especial.' 
+      });
     }
 
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
@@ -199,14 +215,12 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ erro: 'O link de recuperação é inválido ou já expirou.' });
     }
 
-    user.password = password; 
+    user.password = password;
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
-
     await user.save();
 
     res.json({ mensagem: 'Palavra-passe atualizada com sucesso. Já podes iniciar sessão.' });
-
   } catch (erro) {
     console.error('Erro no resetPassword:', erro);
     res.status(500).json({ erro: 'Ocorreu um erro ao redefinir a palavra-passe.' });

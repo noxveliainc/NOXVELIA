@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
-import Icon from '@mdi/react';
-import { mdiLockOutline, mdiEyeOutline, mdiEyeOffOutline, mdiCheckCircleOutline, mdiAlertCircleOutline, mdiArrowLeft } from '@mdi/js';
 
 export default function ResetPassword() {
-  const { token } = useParams(); // Extrai o token misterioso do link
+  const { token } = useParams();
   const navigate = useNavigate();
 
   const [password, setPassword] = useState('');
@@ -16,144 +14,129 @@ export default function ResetPassword() {
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState(false);
 
+  const validarPassword = (pwd) => {
+    const temTamanho = pwd.length >= 9;
+    const temMaiuscula = /[A-Z]/.test(pwd);
+    const temNumero = /\d/.test(pwd);
+    const temEspecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+    return temTamanho && temMaiuscula && temNumero && temEspecial;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErro('');
 
-    if (password.length < 6) {
-      return setErro('A palavra-passe tem de ter pelo menos 6 caracteres.');
-    }
     if (password !== confirmPassword) {
-      return setErro('As palavras-passe não coincidem. Verifica e tenta novamente.');
+      return setErro('As palavras-passe não coincidem.');
+    }
+
+    if (!validarPassword(password)) {
+      return setErro('A palavra-passe tem de ter pelo menos 9 caracteres, 1 maiúscula, 1 número e 1 carácter especial.');
     }
 
     setLoading(true);
-
     try {
-      // Dispara a nova palavra-passe para a rota do backend que criaste no authController
       await api.post(`/auth/reset-password/${token}`, { password });
       setSucesso(true);
-      
-      // Redireciona para o login passado 3 segundos
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
-
     } catch (err) {
-      setErro(err.response?.data?.erro || 'Ocorreu um erro ou o link expirou. Tenta pedir um novo link.');
+      setErro(err.response?.data?.erro || 'Link de recuperação inválido ou expirado.');
     } finally {
       setLoading(false);
     }
   };
 
-  const theme = {
-    bg: '#060b13',
-    card: '#0a0f1e',
-    border: 'rgba(255,255,255,0.08)',
-    text: '#f8fafc',
-    textDim: '#94a3b8',
-    inputBg: 'rgba(15, 23, 42, 0.6)',
-    primary: '#3ecf8e'
-  };
-
   return (
-    <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: "'Inter', sans-serif", color: theme.text }}>
-      <div style={{ width: '100%', maxWidth: '420px' }}>
-        
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '28px', fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px 0' }}>
-            NOXVELIA
+    <>
+      <style>{`
+        .auth-root { background-color: #040711; background-image: radial-gradient(circle at top right, rgba(42, 193, 180, 0.05), transparent 45%), radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.05), transparent 45%); --nx-text: #f8fafc; --nx-text-sub: #94a3b8; --nx-text-muted: #64748b; --nx-card-bg: rgba(15, 23, 42, 0.6); --nx-card-border: rgba(255, 255, 255, 0.08); --nx-input-bg: rgba(15, 23, 42, 0.5); --nx-input-border: rgba(255, 255, 255, 0.1); height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; color: var(--nx-text); font-family: var(--nx-font-body, 'Inter', sans-serif); overflow: hidden; box-sizing: border-box; }
+        .auth-card { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: var(--nx-radius-lg, 20px); padding: 48px; width: 100%; max-width: 460px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        .auth-title { font-family: var(--nx-font-display, 'Plus Jakarta Sans', sans-serif); font-size: 32px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em; }
+        .auth-subtitle { font-size: 14px; color: var(--nx-text-sub); margin-bottom: 32px; line-height: 1.5; }
+        .auth-form-group { margin-bottom: 20px; }
+        .auth-form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--nx-text-muted); margin-bottom: 8px; }
+        .auth-input-wrapper { position: relative; display: flex; align-items: center; }
+        .auth-input { width: 100%; padding: 14px 16px; background: var(--nx-input-bg); border: 1px solid var(--nx-input-border); border-radius: var(--nx-radius-sm, 8px); color: var(--nx-text); outline: none; font-family: inherit; font-size: 14px; transition: all 0.2s; box-sizing: border-box; }
+        .auth-input:focus { border-color: var(--nx-accent-car, #2ac1b4); box-shadow: 0 0 0 3px rgba(42, 193, 180, 0.12); }
+        .auth-input-wrapper .auth-input { padding-right: 48px; }
+        .auth-toggle-pwd { position: absolute; right: 12px; background: transparent; border: none; color: var(--nx-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; transition: color 0.2s; }
+        .auth-toggle-pwd:hover { color: var(--nx-text); }
+        .auth-btn { width: 100%; padding: 16px; background: var(--nx-text); color: #040711; border: none; border-radius: var(--nx-radius-sm, 8px); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; font-family: inherit; transition: opacity 0.2s; margin-top: 12px; text-decoration: none; display: inline-block; text-align: center; box-sizing: border-box;}
+        .auth-btn:hover { opacity: 0.85; }
+        .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .auth-error { color: #ef4444; font-size: 13px; font-weight: 500; margin-bottom: 24px; background: rgba(239, 68, 68, 0.08); padding: 14px; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--nx-radius-sm, 8px); line-height: 1.4; }
+        .auth-hint { display: block; font-size: 11px; color: var(--nx-text-muted); margin-top: -10px; margin-bottom: 24px; }
+        .auth-success { text-align: center; padding: 20px 0; }
+        .auth-success h2 { font-family: var(--nx-font-display); font-size: 24px; color: #2ac1b4; margin-bottom: 12px; }
+      `}</style>
 
-          </h1>
-          <p style={{ color: theme.textDim, fontSize: '15px', margin: 0 }}>
-            Cria uma nova palavra-passe segura.
-          </p>
-        </div>
+      <div className="auth-root">
+        <div className="auth-card">
+          
+          <div style={{ marginBottom: '24px' }}>
+            <img src="/logo-noxvelia.png" alt="NOXVELIA" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
+          </div>
 
-        <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '16px', padding: '32px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
           {sucesso ? (
-            <div style={{ textAlign: 'center', animation: 'fadeIn 0.5s ease' }}>
-              <Icon path={mdiCheckCircleOutline} size={2.5} color={theme.primary} style={{ marginBottom: '16px' }} />
-              <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 8px 0' }}>Palavra-passe atualizada!</h2>
-              <p style={{ color: theme.textDim, fontSize: '14px', marginBottom: '24px' }}>
-                A tua conta está novamente segura. Vais ser redirecionado para o login.
+            <div className="auth-success">
+              <h2>Palavra-passe Atualizada!</h2>
+              <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: 1.6, margin: '0 0 24px' }}>
+                A tua conta está novamente segura. Já podes iniciar sessão com as tuas novas credenciais.
               </p>
-              <Link to="/login" style={{ display: 'inline-block', width: '100%', padding: '12px', background: theme.primary, color: '#04140f', textDecoration: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '14px', transition: 'all 0.2s' }}>
-                Ir para o Login Agora
-              </Link>
+              <Link to="/login" className="auth-btn">Ir para o Login</Link>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <>
+              <h1 className="auth-title">Nova Palavra-passe</h1>
+              <p className="auth-subtitle">Cria uma nova palavra-passe forte e segura para a tua conta.</p>
               
-              {erro && (
-                <div style={{ padding: '12px 16px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '8px', color: '#ef4444', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Icon path={mdiAlertCircleOutline} size={0.8} /> {erro}
-                </div>
-              )}
-
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: theme.textDim, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Nova Palavra-Passe
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#64748b', display: 'flex' }}>
-                    <Icon path={mdiLockOutline} size={0.8} />
+              {erro && <div className="auth-error">{erro}</div>}
+              
+              <form onSubmit={handleSubmit}>
+                <div className="auth-form-group">
+                  <label>Nova Palavra-passe</label>
+                  <div className="auth-input-wrapper">
+                    <input 
+                      className="auth-input" 
+                      type={mostrarPassword ? 'text' : 'password'}
+                      placeholder="•••••••••" 
+                      value={password}
+                      onChange={e => setPassword(e.target.value)} 
+                      required 
+                    />
+                    <button type="button" className="auth-toggle-pwd" onClick={() => setMostrarPassword(!mostrarPassword)}>
+                      {mostrarPassword ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      )}
+                    </button>
                   </div>
-                  <input
-                    type={mostrarPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                    style={{ width: '100%', padding: '12px 40px', background: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '8px', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setMostrarPassword(!mostrarPassword)}
-                    style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', padding: 0 }}
-                  >
-                    <Icon path={mostrarPassword ? mdiEyeOffOutline : mdiEyeOutline} size={0.8} />
-                  </button>
                 </div>
-              </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: theme.textDim, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Confirmar Palavra-Passe
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#64748b', display: 'flex' }}>
-                    <Icon path={mdiLockOutline} size={0.8} />
-                  </div>
-                  <input
+                <div className="auth-form-group">
+                  <label>Confirmar Nova Palavra-passe</label>
+                  <input 
+                    className="auth-input" 
                     type={mostrarPassword ? 'text' : 'password'}
-                    required
+                    placeholder="•••••••••" 
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repete a nova palavra-passe"
-                    style={{ width: '100%', padding: '12px 14px 12px 40px', background: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '8px', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                    onChange={e => setConfirmPassword(e.target.value)} 
+                    required 
                   />
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                style={{ marginTop: '8px', width: '100%', padding: '14px', background: theme.primary, color: '#04140f', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, transition: 'all 0.2s' }}
-              >
-                {loading ? 'A Guardar Segurança...' : 'Guardar Nova Palavra-passe'}
-              </button>
-            </form>
+                <span className="auth-hint">
+                  Mín. 9 caracteres, 1 maiúscula, 1 número e 1 especial (!@#$...).
+                </span>
+
+                <button className="auth-btn" type="submit" disabled={loading}>
+                  {loading ? 'A guardar...' : 'Atualizar Palavra-passe'}
+                </button>
+              </form>
+            </>
           )}
         </div>
-
-        <div style={{ textAlign: 'center', marginTop: '24px' }}>
-          <Link to="/login" style={{ color: theme.textDim, fontSize: '13px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 500 }}>
-            <Icon path={mdiArrowLeft} size={0.6} /> Voltar ao Login
-          </Link>
-        </div>
-
       </div>
-    </div>
+    </>
   );
 }

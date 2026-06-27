@@ -25,8 +25,11 @@ export default function Registo() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
   
-  // 🌟 NOVO: Estado para controlar o modal de dupla verificação
+  // 🌟 Estado para controlar o modal de dupla verificação
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
+
+  // 🌟 NOVO: obriga o utilizador a confirmar explicitamente os contactos
+  const [contactoConfirmado, setContactoConfirmado] = useState(false);
   
   const navigate = useNavigate();
 
@@ -45,7 +48,7 @@ export default function Registo() {
     return temTamanho && temMaiuscula && temNumero && temEspecial;
   };
 
-  // 🌟 NOVO: Interceta o clique em Registar para validar e abrir o modal
+  // Interceta o clique em Registar para validar e abrir o modal
   const handlePreSubmit = (e) => {
     e.preventDefault();
     setErro('');
@@ -71,12 +74,15 @@ export default function Registo() {
       return;
     }
 
-    // Se tudo estiver bem, abre o modal de confirmação
+    // 🌟 Reinicia a confirmação sempre que o modal é aberto de novo
+    setContactoConfirmado(false);
     setMostrarConfirmacao(true);
   };
 
-  // 🌟 NOVO: Função que efetivamente faz o POST para a API
+  // Função que efetivamente faz o POST para a API
   const handleFinalSubmit = async () => {
+    if (!contactoConfirmado) return; // 🌟 trava de segurança extra
+
     setMostrarConfirmacao(false);
     setLoading(true);
     setErro('');
@@ -86,7 +92,11 @@ export default function Registo() {
       const dadosParaSubmeter = { ...dadosReais, tipo: 'cliente', tipoConta: 'particular' };
       
       await api.post('/auth/register', dadosParaSubmeter);
-      navigate('/login');
+
+      // 🌟 Como a conta fica por verificar até o utilizador clicar no link
+      // do email, mandamos diretamente para o login com uma mensagem,
+      // em vez de assumir sessão automática.
+      navigate('/login', { state: { mensagemRegisto: 'Conta criada! Verifica o teu email para ativares o acesso.' } });
     } catch (err) {
       const erroBackend = err.response?.data?.erro || err.response?.data?.message || err.response?.data?.detalhes;
       
@@ -301,6 +311,33 @@ export default function Registo() {
         @media (max-width: 500px) {
           .password-grid { grid-template-columns: 1fr; gap: 0; }
         }
+
+        /* 🌟 NOVO: checkbox de confirmação de contacto */
+        .auth-confirm-check {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          text-align: left;
+          background: rgba(42, 193, 180, 0.06);
+          border: 1px solid rgba(42, 193, 180, 0.25);
+          border-radius: 10px;
+          padding: 14px;
+          margin-bottom: 24px;
+          cursor: pointer;
+        }
+        .auth-confirm-check input {
+          margin-top: 2px;
+          width: 16px;
+          height: 16px;
+          accent-color: #2ac1b4;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+        .auth-confirm-check span {
+          font-size: 13px;
+          color: #cbd5e1;
+          line-height: 1.4;
+        }
       `}</style>
 
       {/* 🌟 MODAL DE CONFIRMAÇÃO DE DADOS */}
@@ -312,19 +349,48 @@ export default function Registo() {
             </div>
             <h2 style={{ fontFamily: 'var(--nx-font-display)', fontSize: '22px', fontWeight: 800, color: '#fff', marginBottom: '12px' }}>Verifica os teus contactos</h2>
             <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px', lineHeight: 1.5 }}>
-              Para garantirmos a segurança da plataforma, não enviamos emails de verificação. É crucial que os teus dados estejam corretos para que os compradores te consigam contactar.
+              Vamos enviar um email de confirmação para o endereço abaixo — vais precisar de clicar no link
+              para ativar a tua conta antes de poderes iniciar sessão. Confirma que os teus contactos estão corretos.
             </p>
             
-            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '12px', padding: '16px', marginBottom: '32px', textAlign: 'left', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '12px', padding: '16px', marginBottom: '20px', textAlign: 'left', border: '1px solid rgba(255,255,255,0.05)' }}>
               <div style={{ marginBottom: '8px', color: '#f8fafc', fontSize: '15px' }}><strong style={{color: '#64748b'}}>Email:</strong> {formData.email}</div>
               <div style={{ color: '#f8fafc', fontSize: '15px' }}><strong style={{color: '#64748b'}}>Telefone:</strong> {formData.telefone}</div>
             </div>
 
+            {/* 🌟 NOVO: checkbox obrigatória antes de poder confirmar */}
+            <label className="auth-confirm-check">
+              <input
+                type="checkbox"
+                checked={contactoConfirmado}
+                onChange={e => setContactoConfirmado(e.target.checked)}
+              />
+              <span>Confirmo que o email e o telefone indicados acima estão corretos e que tenho acesso a este email.</span>
+            </label>
+
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={() => setMostrarConfirmacao(false)} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>
+              <button
+                onClick={() => { setMostrarConfirmacao(false); setContactoConfirmado(false); }}
+                style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
+              >
                 Corrigir Dados
               </button>
-              <button onClick={handleFinalSubmit} style={{ flex: 1, padding: '14px', background: '#2ac1b4', color: '#040711', border: 'none', borderRadius: '10px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}>
+              <button
+                onClick={handleFinalSubmit}
+                disabled={!contactoConfirmado}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  background: contactoConfirmado ? '#2ac1b4' : 'rgba(42, 193, 180, 0.3)',
+                  color: '#040711',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontWeight: 800,
+                  cursor: contactoConfirmado ? 'pointer' : 'not-allowed',
+                  opacity: contactoConfirmado ? 1 : 0.6,
+                  transition: 'all 0.2s'
+                }}
+              >
                 Tudo Correto!
               </button>
             </div>
@@ -345,7 +411,6 @@ export default function Registo() {
           
           {erro && <div className="auth-error">{erro}</div>}
 
-          {/* 🌟 MUDANÇA: O form agora dispara o handlePreSubmit */}
           <form onSubmit={handlePreSubmit}>
             
             <div className="auth-form-group">

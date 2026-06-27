@@ -21,9 +21,13 @@ const userSchema = new mongoose.Schema({
   limiteAnuncios:       { type: Number,  default: 10 },
 
   // ── STRIPE (subscrição mensal) ─────────────────────────────
-  // Necessário para: Customer Portal, cancelamento, renovação, reembolso
   stripeCustomerId:     { type: String, default: null },
   stripeSubscriptionId: { type: String, default: null },
+
+  // ── VERIFICAÇÃO DE EMAIL (NOVO) ────────────────────────────
+  verificado:       { type: Boolean, default: false },
+  tokenVerificacao: { type: String, select: false },
+  expiracaoToken:   { type: Date, select: false },
 
   // ── RESET DE PASSWORD ──────────────────────────────────────
   passwordResetToken:   { type: String, select: false },

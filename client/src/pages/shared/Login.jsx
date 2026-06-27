@@ -14,6 +14,9 @@ export default function Login() {
   const location = useLocation();
   const { login: sincronizarContexto } = useAuth();
 
+  // 🌟 NOVO: mensagem que chega depois de um registo bem-sucedido
+  const mensagemRegisto = location.state?.mensagemRegisto;
+
   // Destino de retorno: vem do state (passado pelo BannerCTA),
   // ou do localStorage como fallback, ou /imoveis como último recurso
   const destinoVoltar =
@@ -225,6 +228,19 @@ export default function Login() {
           border-radius: var(--nx-radius-sm, 8px);
         }
 
+        /* 🌟 NOVO: banner de sucesso (mensagem pós-registo) */
+        .auth-info-banner {
+          color: #2ac1b4;
+          font-size: 13px;
+          font-weight: 500;
+          margin-bottom: 24px;
+          background: rgba(42, 193, 180, 0.08);
+          padding: 14px;
+          border: 1px solid rgba(42, 193, 180, 0.25);
+          border-radius: var(--nx-radius-sm, 8px);
+          line-height: 1.4;
+        }
+
         .auth-success {
           text-align: center;
           padding: 40px 0;
@@ -244,7 +260,6 @@ export default function Login() {
       <div className="auth-root">
         <div className="auth-card">
 
-          {/* ← Voltar: usa o state passado pelo BannerCTA, ou fallback para /carros ou /imoveis */}
           <Link to={destinoVoltar} className="auth-back">← Voltar</Link>
 
           <div style={{ marginBottom: '24px' }}>
@@ -260,6 +275,11 @@ export default function Login() {
             <>
               <h1 className="auth-title">Iniciar Sessão</h1>
               <p className="auth-subtitle">Acede à tua conta na NOXVELIA.</p>
+
+              {/* 🌟 NOVO: mostra a mensagem vinda do registo, se existir */}
+              {mensagemRegisto && !erro && (
+                <div className="auth-info-banner">{mensagemRegisto}</div>
+              )}
 
               {erro && <div className="auth-error">{erro}</div>}
 
@@ -315,6 +335,10 @@ export default function Login() {
               </form>
 
               <div className="auth-links-group">
+                <Link to="/forgot-password" className="auth-link" style={{ color: '#2ac1b4', fontWeight: '700' }}>
+                  Esqueceste-te da palavra-passe?
+                </Link>
+
                 <Link
                   to="/registo"
                   state={{ from: location.state?.from || destinoVoltar }}
