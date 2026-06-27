@@ -18,10 +18,10 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const inicial = anuncio?.utilizador?.nome?.charAt(0).toUpperCase() || '?';
 
   const statusConfig = {
-    ativo:    { bg: 'rgba(16,185,129,.12)', color: '#34d399', border: 'rgba(16,185,129,.3)', label: 'Activo' },
-    pausado:  { bg: 'rgba(239,68,68,.12)',  color: '#f87171', border: 'rgba(239,68,68,.3)',  label: 'Pausado' },
-    expirado: { bg: 'rgba(245,158,11,.12)', color: '#fbbf24', border: 'rgba(245,158,11,.3)', label: 'A expirar' },
-    pendente: { bg: 'rgba(59,130,246,.12)', color: '#60a5fa', border: 'rgba(59,130,246,.3)', label: 'Pendente' },
+    ativo:    { bg: 'rgba(16,185,129,.1)',  color: '#10b981', border: 'rgba(16,185,129,.25)', label: 'Activo' },
+    pausado:  { bg: 'rgba(239,68,68,.1)',   color: '#ef4444', border: 'rgba(239,68,68,.25)',  label: 'Pausado' },
+    expirado: { bg: 'rgba(245,158,11,.1)',  color: '#f59e0b', border: 'rgba(245,158,11,.25)', label: 'A expirar' },
+    pendente: { bg: 'rgba(59,130,246,.1)',  color: '#3b82f6', border: 'rgba(59,130,246,.25)', label: 'Pendente' },
   };
   const status = statusConfig[anuncio?.estado] || statusConfig.pendente;
 
@@ -29,8 +29,6 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const idLogado = user?._id || user?.id;
   const eMeuAnuncio = signed && ((idDono && idLogado && String(idDono) === String(idLogado)) || !!onAnuncioEliminado);
   const isPremium   = anuncio?.destacado === true;
-
-  // 🌟 LÓGICA DO VENDEDOR VERIFICADO
   const isVerificado = anuncio?.utilizador?.tipo === 'admin' || anuncio?.utilizador?.premiumAtivo === true;
 
   const handleAbrirModal = e => { e.preventDefault(); e.stopPropagation(); setMostrarModal(true); };
@@ -56,55 +54,305 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   return (
     <>
       <style>{`
-        .nxc-wrap { display: flex; flex-direction: column; text-decoration: none; background: #0b0f19; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease; color: #ffffff; position: relative; }
-        .nxc-wrap:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,0.4); border-color: var(--nx-accent-car, #2ac1b4); }
-        .nxc-wrap.premium { border-color: var(--nx-gold, #eab308); box-shadow: 0 6px 20px rgba(234,179,8,0.15); }
-        .nxc-wrap.premium:hover { box-shadow: 0 12px 30px rgba(234,179,8,0.25); border-color: #ca8a04; }
+        /* ── CARD BASE ── */
+        .nxc-wrap {
+          display: flex;
+          flex-direction: column;
+          text-decoration: none;
+          background: #111827;
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 14px;
+          overflow: hidden;
+          transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+          color: #ffffff;
+          position: relative;
+        }
+        .nxc-wrap:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+          border-color: rgba(255,255,255,0.14);
+        }
+        .nxc-wrap.premium {
+          border-color: rgba(234,179,8,0.35);
+          box-shadow: 0 4px 16px rgba(234,179,8,0.1);
+        }
+        .nxc-wrap.premium:hover {
+          border-color: rgba(234,179,8,0.55);
+          box-shadow: 0 10px 24px rgba(234,179,8,0.18);
+        }
 
-        .nxc-img { position: relative; aspect-ratio: 16/10; overflow: hidden; background: #060a14; }
-        .nxc-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; display: block; }
-        .nxc-wrap:hover .nxc-img img { transform: scale(1.04); }
-        .nxc-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 32px; opacity: .2; }
+        /* ── IMAGEM ── */
+        .nxc-img {
+          position: relative;
+          aspect-ratio: 3/2;
+          overflow: hidden;
+          background: #0d1117;
+        }
+        .nxc-img img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform .45s ease;
+          display: block;
+        }
+        .nxc-wrap:hover .nxc-img img { transform: scale(1.03); }
+        .nxc-placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 28px;
+          opacity: .15;
+        }
 
-        .nxc-badge-premium { position: absolute; top: 8px; left: 8px; background: var(--nx-gold, #eab308); color: #000; font-size: 9px; font-weight: 800; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: .06em; display: flex; align-items: center; gap: 4px; z-index: 5; }
-        .nxc-badge-status { position: absolute; top: 8px; left: 8px; font-size: 9px; font-weight: 800; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: .06em; z-index: 5; }
+        /* ── BADGES ── */
+        .nxc-badge-premium {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          background: linear-gradient(135deg, #eab308, #ca8a04);
+          color: #000;
+          font-size: 9px;
+          font-weight: 800;
+          padding: 3px 8px;
+          border-radius: 5px;
+          text-transform: uppercase;
+          letter-spacing: .07em;
+          display: flex;
+          align-items: center;
+          gap: 3px;
+          z-index: 5;
+          box-shadow: 0 2px 8px rgba(234,179,8,0.3);
+        }
+        .nxc-badge-status {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          font-size: 9px;
+          font-weight: 800;
+          padding: 3px 8px;
+          border-radius: 5px;
+          text-transform: uppercase;
+          letter-spacing: .06em;
+          z-index: 5;
+        }
+        .nxc-delete-btn {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: rgba(0,0,0,0.6);
+          backdrop-filter: blur(6px);
+          border: 1px solid rgba(239,68,68,0.35);
+          color: #f87171;
+          font-size: 9px;
+          font-weight: 800;
+          padding: 4px 8px;
+          border-radius: 5px;
+          cursor: pointer;
+          z-index: 10;
+          text-transform: uppercase;
+          letter-spacing: .04em;
+          transition: all .2s;
+          display: flex;
+          align-items: center;
+          gap: 3px;
+          font-family: var(--nx-font-body, 'Inter', sans-serif);
+        }
+        .nxc-delete-btn:hover {
+          background: #ef4444;
+          color: #fff;
+          border-color: #ef4444;
+        }
+        .nxc-photo-count {
+          position: absolute;
+          bottom: 9px;
+          right: 9px;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(4px);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: rgba(255,255,255,0.85);
+          font-size: 10px;
+          font-weight: 700;
+          padding: 3px 7px;
+          border-radius: 5px;
+          display: flex;
+          align-items: center;
+          gap: 3px;
+        }
 
-        .nxc-delete-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); border: 1px solid rgba(239,68,68,0.4); color: #f87171; font-size: 9px; font-weight: 800; padding: 4px 8px; border-radius: 4px; cursor: pointer; z-index: 10; text-transform: uppercase; letter-spacing: .04em; transition: all .2s; display: flex; align-items: center; gap: 4px; font-family: var(--nx-font-body, 'Inter', sans-serif); }
-        .nxc-delete-btn:hover { background: var(--nx-danger, #ef4444); color: #fff; border-color: var(--nx-danger, #ef4444); }
+        /* ── BODY ── */
+        .nxc-body {
+          padding: 12px 14px 10px;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          background: #111827;
+          gap: 6px;
+        }
+        .nxc-price {
+          font-family: var(--nx-font-display, 'Plus Jakarta Sans', sans-serif);
+          font-size: 17px;
+          font-weight: 800;
+          color: #ffffff;
+          letter-spacing: -.02em;
+          line-height: 1;
+        }
+        .nxc-wrap.premium .nxc-price { color: #eab308; }
 
-        .nxc-photo-count { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 6px; border-radius: 4px; display: flex; align-items: center; gap: 3px; }
+        .nxc-title {
+          font-size: 12px;
+          font-weight: 500;
+          color: #9ca3af;
+          line-height: 1.45;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
 
-        .nxc-body { padding: 12px 14px; display: flex; flex-direction: column; flex: 1; background: #0b0f19; }
-        .nxc-price { font-family: var(--nx-font-display, 'Plus Jakarta Sans', sans-serif); font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -.02em; line-height: 1; margin-bottom: 4px; }
-        .nxc-wrap.premium .nxc-price { color: var(--nx-gold, #eab308); }
+        .nxc-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
+          margin-top: 2px;
+        }
+        .nxc-tag {
+          font-size: 10px;
+          font-weight: 600;
+          padding: 3px 7px;
+          border-radius: 5px;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.08);
+          color: #6b7280;
+          white-space: nowrap;
+        }
 
-        .nxc-title { font-size: 12px; font-weight: 500; color: #94a3b8; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 34px; margin-bottom: 10px; }
-
-        .nxc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
-        .nxc-tag { font-size: 10px; font-weight: 700; padding: 3px 6px; border-radius: 4px; background: #060a14; border: 1px solid rgba(255,255,255,0.08); color: #64748b; }
-
-        .nxc-footer { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; border-top: 1px solid rgba(255,255,255,0.06); background: #060a14; }
-        .nxc-user { display: flex; align-items: center; gap: 6px; }
-        .nxc-avatar { width: 20px; height: 20px; border-radius: 50%; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; overflow: hidden; flex-shrink: 0; }
+        /* ── FOOTER ── */
+        .nxc-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 8px 14px;
+          border-top: 1px solid rgba(255,255,255,0.05);
+          background: #0d1117;
+        }
+        .nxc-user {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+        }
+        .nxc-avatar {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: #1f2937;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 9px;
+          font-weight: 800;
+          color: #9ca3af;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
         .nxc-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .nxc-username { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #475569; font-weight: 700; }
+        .nxc-username {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 11px;
+          color: #4b5563;
+          font-weight: 600;
+        }
 
-        .nxc-modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.85); backdrop-filter: blur(12px); z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .nxc-modal-box { background: #0b0f19; border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 36px 28px; max-width: 420px; width: 100%; text-align: center; box-shadow: 0 24px 48px rgba(0,0,0,0.6); animation: nxc-pop .25s cubic-bezier(.175,.885,.32,1.275); }
-        @keyframes nxc-pop { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .nxc-modal-icon { width: 70px; height: 70px; border-radius: 50%; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; }
-        .nxc-modal-title { font-family: var(--nx-font-display, 'Plus Jakarta Sans', sans-serif); font-size: 21px; font-weight: 800; color: #fff; margin: 0 0 10px; }
-        .nxc-modal-text { font-size: 14px; color: #94a3b8; line-height: 1.7; margin: 0 0 28px; }
+        /* ── MODAL ── */
+        .nxc-modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(2,6,23,0.82);
+          backdrop-filter: blur(12px);
+          z-index: 100000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+        }
+        .nxc-modal-box {
+          background: #111827;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 20px;
+          padding: 36px 28px;
+          max-width: 400px;
+          width: 100%;
+          text-align: center;
+          box-shadow: 0 24px 48px rgba(0,0,0,0.6);
+          animation: nxc-pop .22s cubic-bezier(.175,.885,.32,1.275);
+        }
+        @keyframes nxc-pop {
+          from { transform: scale(.93); opacity: 0; }
+          to   { transform: scale(1);   opacity: 1; }
+        }
+        .nxc-modal-icon {
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          background: rgba(239,68,68,0.1);
+          border: 1px solid rgba(239,68,68,0.2);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 18px;
+        }
+        .nxc-modal-title {
+          font-family: var(--nx-font-display, 'Plus Jakarta Sans', sans-serif);
+          font-size: 20px;
+          font-weight: 800;
+          color: #fff;
+          margin: 0 0 8px;
+        }
+        .nxc-modal-text {
+          font-size: 14px;
+          color: #9ca3af;
+          line-height: 1.7;
+          margin: 0 0 26px;
+        }
         .nxc-modal-text strong { color: #fff; }
-        .nxc-modal-actions { display: flex; gap: 12px; }
-        .nxc-modal-cancel { flex: 1; padding: 13px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: transparent; color: #94a3b8; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; font-family: var(--nx-font-body, 'Inter', sans-serif); }
-        .nxc-modal-cancel:hover { background: rgba(255,255,255,0.05); color: #fff; border-color: rgba(255,255,255,0.2); }
-        .nxc-modal-delete { flex: 1; padding: 13px; border-radius: 10px; border: none; background: var(--nx-danger, #ef4444); color: #fff; font-size: 14px; font-weight: 800; cursor: pointer; transition: opacity .2s; box-shadow: 0 4px 14px rgba(239,68,68,0.3); font-family: var(--nx-font-body, 'Inter', sans-serif); }
+        .nxc-modal-actions { display: flex; gap: 10px; }
+        .nxc-modal-cancel {
+          flex: 1;
+          padding: 12px;
+          border-radius: 10px;
+          border: 1px solid rgba(255,255,255,0.1);
+          background: transparent;
+          color: #9ca3af;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all .2s;
+          font-family: var(--nx-font-body, 'Inter', sans-serif);
+        }
+        .nxc-modal-cancel:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nxc-modal-delete {
+          flex: 1;
+          padding: 12px;
+          border-radius: 10px;
+          border: none;
+          background: #ef4444;
+          color: #fff;
+          font-size: 13px;
+          font-weight: 800;
+          cursor: pointer;
+          transition: opacity .2s;
+          font-family: var(--nx-font-body, 'Inter', sans-serif);
+        }
         .nxc-modal-delete:hover { opacity: .88; }
         .nxc-modal-delete:disabled { opacity: .45; cursor: not-allowed; }
       `}</style>
 
       <Link to={`/anuncio/${anuncio?._id}`} className={`nxc-wrap${isPremium ? ' premium' : ''}`}>
+
+        {/* ── IMAGEM ── */}
         <div className="nxc-img">
           {anuncio?.fotos?.[0]
             ? <img src={anuncio.fotos[0]} alt={anuncio.titulo} loading="lazy" />
@@ -113,7 +361,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
           {isPremium && (
             <span className="nxc-badge-premium">
-              <Icon path={mdiStarCircle} size={0.5} /> Destaque
+              <Icon path={mdiStarCircle} size={0.45} /> Destaque
             </span>
           )}
 
@@ -125,17 +373,18 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
           {eMeuAnuncio && (
             <button type="button" className="nxc-delete-btn" onClick={handleAbrirModal}>
-              <Icon path={mdiTrashCanOutline} size={0.5} /> Apagar
+              <Icon path={mdiTrashCanOutline} size={0.45} /> Apagar
             </button>
           )}
 
           {anuncio?.fotos?.length > 1 && (
             <div className="nxc-photo-count">
-              <Icon path={mdiCameraOutline} size={0.5} /> {anuncio.fotos.length}
+              <Icon path={mdiCameraOutline} size={0.45} /> {anuncio.fotos.length}
             </div>
           )}
         </div>
 
+        {/* ── BODY ── */}
         <div className="nxc-body">
           <div className="nxc-price">{preco}</div>
           <div className="nxc-title">{anuncio?.titulo}</div>
@@ -149,30 +398,44 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           </div>
         </div>
 
+        {/* ── FOOTER ── */}
         <div className="nxc-footer">
           <div className="nxc-user">
             <div className="nxc-avatar">
-              {anuncio?.utilizador?.avatarUrl ? <img src={anuncio.utilizador.avatarUrl} alt="" /> : inicial}
+              {anuncio?.utilizador?.avatarUrl
+                ? <img src={anuncio.utilizador.avatarUrl} alt="" />
+                : inicial
+              }
             </div>
-            
-            {/* 🌟 SELO DE VERIFICADO AQUI */}
             <span className="nxc-username">
               {eMeuAnuncio ? 'O teu anúncio' : (anuncio?.utilizador?.nome || 'Anunciante')}
-              {isVerificado && <Icon path={mdiCheckDecagram} size={0.5} color="#3b82f6" title="Vendedor Verificado" style={{ flexShrink: 0 }} />}
+              {isVerificado && (
+                <Icon path={mdiCheckDecagram} size={0.45} color="#3b82f6" title="Vendedor Verificado" style={{ flexShrink: 0 }} />
+              )}
             </span>
           </div>
         </div>
+
       </Link>
 
+      {/* ── MODAL ELIMINAR ── */}
       {mostrarModal && (
         <div className="nxc-modal-overlay" onClick={handleFecharModal}>
           <div className="nxc-modal-box" onClick={e => e.stopPropagation()}>
-            <div className="nxc-modal-icon"><Icon path={mdiTrashCanOutline} size={1.4} color="#ef4444" /></div>
+            <div className="nxc-modal-icon">
+              <Icon path={mdiTrashCanOutline} size={1.3} color="#ef4444" />
+            </div>
             <h3 className="nxc-modal-title">Eliminar Anúncio?</h3>
-            <p className="nxc-modal-text">Tens a certeza absoluta? Esta ação é <strong>irreversível</strong>.</p>
+            <p className="nxc-modal-text">
+              Tens a certeza absoluta? Esta ação é <strong>irreversível</strong>.
+            </p>
             <div className="nxc-modal-actions">
-              <button type="button" className="nxc-modal-cancel" onClick={handleFecharModal} disabled={eliminando}>Cancelar</button>
-              <button type="button" className="nxc-modal-delete" onClick={confirmarEliminacao} disabled={eliminando}>{eliminando ? 'A apagar...' : 'Sim, apagar'}</button>
+              <button type="button" className="nxc-modal-cancel" onClick={handleFecharModal} disabled={eliminando}>
+                Cancelar
+              </button>
+              <button type="button" className="nxc-modal-delete" onClick={confirmarEliminacao} disabled={eliminando}>
+                {eliminando ? 'A apagar...' : 'Sim, apagar'}
+              </button>
             </div>
           </div>
         </div>
