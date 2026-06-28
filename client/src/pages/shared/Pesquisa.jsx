@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useContext } from 'react';
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { AuthContext } from '../../context/AuthContext';
 import AnuncioCard from './AnuncioCard';
 import MapaResultados from '../../components/imoveis/MapaResultados';
 import useDebounce from '../../hooks/useDebounce';
@@ -16,7 +17,7 @@ const TRANSMISSAO = ['Manual', 'Automático'];
 // ─────────────────────────────────────────────────────────────────────────────
 // BANNER CTA — convida utilizadores não autenticados a publicar um anúncio
 // Adapta-se automaticamente ao tipo de divisão (carro / imóvel)
-// Para mostrar apenas a utilizadores não autenticados, envolve com: {!user && <BannerCTA ... />}
+// A condição !user é aplicada onde este componente é usado, dentro de <Pesquisa>
 // ─────────────────────────────────────────────────────────────────────────────
 const BannerCTA = ({ tipo, origem }) => {
   const navigate = useNavigate();
@@ -97,6 +98,7 @@ const BannerCTA = ({ tipo, origem }) => {
 export default function Pesquisa({ tipoPadrao = 'imovel' }) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const { user } = useContext(AuthContext);
 
   const tipoSeguro = location.pathname.includes('carro') ? 'carro' : (tipoPadrao || 'imovel');
   const tipoInicial = searchParams.get('tipo') || tipoSeguro;
@@ -456,9 +458,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
 
             {error && <div style={{ color: 'var(--nx-danger)', padding: '16px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', fontSize: '14px', fontWeight: 500, border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '24px' }}>{error}</div>}
 
-            {/* ── BANNER CTA ── */}
-            {/* Remove esta linha e substitui por {!user && <BannerCTA tipo={tipoSeguro} origem={location.pathname} />} se tiveres contexto de autenticação */}
-            <BannerCTA tipo={tipoSeguro} origem={location.pathname} />
+            {/* ── BANNER CTA — só aparece se NÃO houver utilizador autenticado ── */}
+            {!user && <BannerCTA tipo={tipoSeguro} origem={location.pathname} />}
 
             <div className="pesquisa-topbar">
               <div className="pesquisa-results-count">{loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} registos`}</div>
