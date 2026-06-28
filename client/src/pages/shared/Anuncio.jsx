@@ -39,11 +39,15 @@ export default function Anuncio() {
   // Estado para guardar as sugestões de anúncios
   const [sugeridos, setSugeridos] = useState([]);
 
-  useEffect(() => {
-    // 🌟 CORREÇÃO: Força o ecrã a subir suavemente para o topo assim que o ID do anúncio mudar
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+useEffect(() => {
+    // 1. Salto instantâneo para o topo (sem animação de scroll)
+    window.scrollTo(0, 0);
 
-    // Faz reset aos estados visuais para o novo anúncio carregar limpo
+    // 2. FORÇAR O LOADING: Isto faz com que o anúncio antigo desapareça 
+    // e mostre o ecrã de carregamento, simulando um "Refresh" perfeito.
+    setLoading(true);
+
+    // Limpa os estados do anúncio antigo
     setFotoActiva(0);
     setAbaAtiva('especificacoes');
     setMostrarTelefone(false);
@@ -54,16 +58,16 @@ export default function Anuncio() {
         setAnuncio(data);
         if (data?.preco) setEntrada(0);
 
-        // O DISPARADOR INVISÍVEL DAS ESTATÍSTICAS
+        // Dispara as visitas
         api.post(`/anuncios/${id}/visita`).catch(() => {});
 
-        // BUSCAR ANÚNCIOS SEMELHANTES (Filtra para o mesmo tipo e exclui o anúncio atual)
+        // Carrega as sugestões
         api.get('/anuncios')
           .then(res => {
             const listaDeAnuncios = Array.isArray(res.data) ? res.data : (res.data.anuncios || []);
             const recomendados = listaDeAnuncios
               .filter(a => a._id !== data._id && a.tipo === data.tipo)
-              .slice(0, 4); // Mostra no máximo 4 anúncios na montra de baixo
+              .slice(0, 4);
             setSugeridos(recomendados);
           })
           .catch(() => console.error("Não foi possível carregar sugestões."));
@@ -74,8 +78,9 @@ export default function Anuncio() {
         setLoading(false);
       }
     };
+    
     carregar();
-  }, [id]); // Executa sempre que o ID mudar no URL
+  }, [id]);
 
   useEffect(() => {
     if (signed && id) {
