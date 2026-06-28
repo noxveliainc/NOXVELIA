@@ -13,6 +13,9 @@ import {
   mdiCamera, mdiStar,
 } from '@mdi/js';
 
+// 🌟 Importante: Garante que o caminho para o teu AnuncioCard está correto
+import AnuncioCard from '../shared/AnuncioCard';
+
 export default function Anuncio() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -33,16 +36,37 @@ export default function Anuncio() {
   const [meses, setMeses] = useState(84);
   const [entrada, setEntrada] = useState(0);
 
+  // Estado para guardar as sugestões de anúncios
+  const [sugeridos, setSugeridos] = useState([]);
+
   useEffect(() => {
+    // 🌟 CORREÇÃO: Força o ecrã a subir suavemente para o topo assim que o ID do anúncio mudar
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Faz reset aos estados visuais para o novo anúncio carregar limpo
+    setFotoActiva(0);
+    setAbaAtiva('especificacoes');
+    setMostrarTelefone(false);
+
     const carregar = async () => {
       try {
         const { data } = await api.get(`/anuncios/${id}`);
         setAnuncio(data);
         if (data?.preco) setEntrada(0);
 
-        // 🌟 NOVO: O DISPARADOR INVISÍVEL DAS ESTATÍSTICAS
-        // Avisa a DB que alguém acabou de carregar a página
+        // O DISPARADOR INVISÍVEL DAS ESTATÍSTICAS
         api.post(`/anuncios/${id}/visita`).catch(() => {});
+
+        // BUSCAR ANÚNCIOS SEMELHANTES (Filtra para o mesmo tipo e exclui o anúncio atual)
+        api.get('/anuncios')
+          .then(res => {
+            const listaDeAnuncios = Array.isArray(res.data) ? res.data : (res.data.anuncios || []);
+            const recomendados = listaDeAnuncios
+              .filter(a => a._id !== data._id && a.tipo === data.tipo)
+              .slice(0, 4); // Mostra no máximo 4 anúncios na montra de baixo
+            setSugeridos(recomendados);
+          })
+          .catch(() => console.error("Não foi possível carregar sugestões."));
 
       } catch (err) {
         setErro(err.response?.data?.erro || 'Erro ao carregar o anúncio.');
@@ -51,7 +75,7 @@ export default function Anuncio() {
       }
     };
     carregar();
-  }, [id]);
+  }, [id]); // Executa sempre que o ID mudar no URL
 
   useEffect(() => {
     if (signed && id) {
@@ -162,7 +186,6 @@ export default function Anuncio() {
   return (
     <>
       <Helmet>
-        {/* 🌟 AGORA DIZ SEMPRE E APENAS NOXVELIA */}
         <title>Noxvelia</title>
         <meta name="description" content={anuncio.descricao?.substring(0, 150)} />
         <meta property="og:title" content={`NOXVELIA | ${anuncio.titulo}`} />
@@ -249,7 +272,7 @@ export default function Anuncio() {
         .contact-email { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-top: 2px; }
 
         .finance-box { background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: 14px; padding: 20px; margin-top: 16px; }
-        .fin-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); margin-bottom: 14px; }
+        .finance-box .fin-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); margin-bottom: 14px; }
         .fin-result-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed var(--nx-border-2); }
         .fin-prestacao { font-family: var(--nx-font-display); font-size: 28px; font-weight: 800; color: ${accent}; letter-spacing: -.02em; }
         .fin-mes { font-size: 12px; color: var(--nx-text-sub); font-weight: 600; margin-left: 3px; }
@@ -287,6 +310,11 @@ export default function Anuncio() {
         .nx-btn-danger { flex: 1; padding: 13px; background: var(--nx-danger); border: none; color: #fff; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; transition: opacity .2s; }
         .nx-btn-danger:hover { opacity: .85; }
         .nx-btn-danger:disabled { opacity: .5; cursor: not-allowed; }
+
+        /* 🌟 CSS DA SECÇÃO DE ANÚNCIOS SUGERIDOS */
+        .sugeridos-section { margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--nx-border); }
+        .sugeridos-title { font-family: var(--nx-font-display); font-size: 22px; font-weight: 800; color: var(--nx-text); margin-bottom: 24px; letter-spacing: -0.02em; }
+        .sugeridos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
       `}</style>
 
       {mostrarModalVendido && (
@@ -328,7 +356,6 @@ export default function Anuncio() {
           </div>
 
           <div className="ano-grid">
-
             <div>
               <div className="gallery-wrap">
                 <div className="gallery-main">
@@ -444,7 +471,6 @@ export default function Anuncio() {
 
             <div>
               <div className="sidebar-sticky">
-
                 <div className="price-panel">
                   <div className="panel-price">{preco}</div>
                   {precoPorM2 && <div className="panel-price-m2">{precoPorM2}/m²</div>}
@@ -530,11 +556,22 @@ export default function Anuncio() {
                   </div>
                   <Icon path={mdiChevronRight} size={0.85} color="var(--nx-text-sub)" />
                 </Link>
-
               </div>
             </div>
-
           </div>
+
+          {/* 🌟 SECÇÃO DE ANÚNCIOS SUGERIDOS */}
+          {sugeridos.length > 0 && (
+            <div className="sugeridos-section">
+              <h3 className="sugeridos-title">Poderá gostar destes anúncios</h3>
+              <div className="sugeridos-grid">
+                {sugeridos.map(sug => (
+                  <AnuncioCard key={sug._id} anuncio={sug} />
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </>
