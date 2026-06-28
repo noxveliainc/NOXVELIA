@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { AuthContext } from '../../context/AuthContext';
 import AnuncioCard from './AnuncioCard';
 import MapaResultados from '../../components/imoveis/MapaResultados';
 import useDebounce from '../../hooks/useDebounce';
@@ -17,7 +16,7 @@ const TRANSMISSAO = ['Manual', 'Automático'];
 // ─────────────────────────────────────────────────────────────────────────────
 // BANNER CTA — convida utilizadores não autenticados a publicar um anúncio
 // Adapta-se automaticamente ao tipo de divisão (carro / imóvel)
-// A condição !user é aplicada onde este componente é usado, dentro de <Pesquisa>
+// Para mostrar apenas a utilizadores não autenticados, envolve com: {!user && <BannerCTA ... />}
 // ─────────────────────────────────────────────────────────────────────────────
 const BannerCTA = ({ tipo, origem }) => {
   const navigate = useNavigate();
@@ -62,35 +61,6 @@ const BannerCTA = ({ tipo, origem }) => {
           Acede à tua conta e chega a milhares de compradores em Portugal. Sem comissões.
         </p>
       </div>
-      <button
-        onClick={() => navigate('/login', { state: { from: origem } })}
-        style={{
-          background: 'transparent',
-          color: accent,
-          border: `1px solid ${accent}`,
-          borderRadius: 'var(--nx-radius-sm)',
-          padding: '9px 20px',
-          fontFamily: 'var(--nx-font-body)',
-          fontWeight: 700,
-          fontSize: '12px',
-          cursor: 'pointer',
-          whiteSpace: 'nowrap',
-          letterSpacing: '0.05em',
-          textTransform: 'uppercase',
-          flexShrink: 0,
-          transition: 'background 0.2s ease, color 0.2s ease',
-        }}
-        onMouseEnter={e => {
-          e.currentTarget.style.background = accent;
-          e.currentTarget.style.color = '#020617';
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.background = 'transparent';
-          e.currentTarget.style.color = accent;
-        }}
-      >
-        Entrar na conta
-      </button>
     </div>
   );
 };
@@ -98,7 +68,6 @@ const BannerCTA = ({ tipo, origem }) => {
 export default function Pesquisa({ tipoPadrao = 'imovel' }) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const { user } = useContext(AuthContext);
 
   const tipoSeguro = location.pathname.includes('carro') ? 'carro' : (tipoPadrao || 'imovel');
   const tipoInicial = searchParams.get('tipo') || tipoSeguro;
@@ -458,8 +427,9 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
 
             {error && <div style={{ color: 'var(--nx-danger)', padding: '16px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', fontSize: '14px', fontWeight: 500, border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '24px' }}>{error}</div>}
 
-            {/* ── BANNER CTA — só aparece se NÃO houver utilizador autenticado ── */}
-            {!user && <BannerCTA tipo={tipoSeguro} origem={location.pathname} />}
+            {/* ── BANNER CTA ── */}
+            {/* Remove esta linha e substitui por {!user && <BannerCTA tipo={tipoSeguro} origem={location.pathname} />} se tiveres contexto de autenticação */}
+            <BannerCTA tipo={tipoSeguro} origem={location.pathname} />
 
             <div className="pesquisa-topbar">
               <div className="pesquisa-results-count">{loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} registos`}</div>
