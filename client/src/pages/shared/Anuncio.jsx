@@ -9,11 +9,10 @@ import {
   mdiCalendarBlank, mdiSpeedometer, mdiGasStation, mdiCarShiftPattern, mdiEngineOutline,
   mdiHomeCityOutline, mdiRulerSquare, mdiBedOutline, mdiShower, mdiCertificateOutline,
   mdiChevronLeft, mdiChevronRight, mdiPhone, mdiMapMarkerOutline, mdiEyeOutline,
-  mdiGarageVariant, mdiBalcony, mdiCurrencyEur, mdiHammerWrench, mdiCar, mdiFileDocumentOutline,
-  mdiCamera, mdiStar,
+  mdiGarageVariant, mdiBalcony, mdiHammerWrench, mdiCar, mdiFileDocumentOutline,
+  mdiCamera, mdiStar, mdiClose, mdiImageMultipleOutline,
 } from '@mdi/js';
 
-// 🌟 Importante: Garante que o caminho para o teu AnuncioCard está correto
 import AnuncioCard from '../shared/AnuncioCard';
 
 export default function Anuncio() {
@@ -26,6 +25,7 @@ export default function Anuncio() {
   const [erro, setErro] = useState('');
   const [fotoActiva, setFotoActiva] = useState(0);
   const [abaAtiva, setAbaAtiva] = useState('especificacoes');
+  const [lightboxAberto, setLightboxAberto] = useState(false);
 
   const [mostrarTelefone, setMostrarTelefone] = useState(false);
   const [guardado, setGuardado] = useState(false);
@@ -36,21 +36,15 @@ export default function Anuncio() {
   const [meses, setMeses] = useState(84);
   const [entrada, setEntrada] = useState(0);
 
-  // Estado para guardar as sugestões de anúncios
   const [sugeridos, setSugeridos] = useState([]);
 
-useEffect(() => {
-    // 1. Salto instantâneo para o topo (sem animação de scroll)
+  useEffect(() => {
     window.scrollTo(0, 0);
-
-    // 2. FORÇAR O LOADING: Isto faz com que o anúncio antigo desapareça 
-    // e mostre o ecrã de carregamento, simulando um "Refresh" perfeito.
     setLoading(true);
-
-    // Limpa os estados do anúncio antigo
     setFotoActiva(0);
     setAbaAtiva('especificacoes');
     setMostrarTelefone(false);
+    setLightboxAberto(false);
 
     const carregar = async () => {
       try {
@@ -58,10 +52,8 @@ useEffect(() => {
         setAnuncio(data);
         if (data?.preco) setEntrada(0);
 
-        // Dispara as visitas
         api.post(`/anuncios/${id}/visita`).catch(() => {});
 
-        // Carrega as sugestões
         api.get('/anuncios')
           .then(res => {
             const listaDeAnuncios = Array.isArray(res.data) ? res.data : (res.data.anuncios || []);
@@ -78,7 +70,7 @@ useEffect(() => {
         setLoading(false);
       }
     };
-    
+
     carregar();
   }, [id]);
 
@@ -157,6 +149,19 @@ useEffect(() => {
   const localizacaoString = `${anuncio.localizacao?.cidade || 'N/A'}${anuncio.localizacao?.distrito ? `, ${anuncio.localizacao.distrito}` : ''}`;
   const temVaranda = anuncio.equipamento?.some(e => e.toLowerCase().includes('varanda') || e.toLowerCase().includes('terraço'));
 
+  // Destaques: leitura rápida, antes da ficha completa
+  const destaques = (isCarro ? [
+    { label: 'Ano', value: anuncio.carro?.ano, icon: mdiCalendarBlank },
+    { label: 'Quilómetros', value: anuncio.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null, icon: mdiSpeedometer },
+    { label: 'Combustível', value: anuncio.carro?.combustivel, icon: mdiGasStation },
+    { label: 'Transmissão', value: anuncio.carro?.transmissao, icon: mdiCarShiftPattern },
+  ] : [
+    { label: 'Área útil', value: anuncio.imovel?.area ? `${anuncio.imovel.area} m²` : null, icon: mdiRulerSquare },
+    { label: 'Quartos', value: anuncio.imovel?.quartos, icon: mdiBedOutline },
+    { label: 'Casas de banho', value: anuncio.imovel?.casasBanho, icon: mdiShower },
+    { label: 'Tipologia', value: anuncio.imovel?.tipologia, icon: mdiHomeCityOutline },
+  ]).filter(d => d.value != null && d.value !== '');
+
   const specs = isCarro ? [
     { label: 'Ano', value: anuncio.carro?.ano, icon: mdiCalendarBlank },
     { label: 'Quilómetros', value: anuncio.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null, icon: mdiSpeedometer },
@@ -188,6 +193,12 @@ useEffect(() => {
   const accent = isCarro ? 'var(--nx-accent-car)' : 'var(--nx-accent-home)';
   const accentShadow = isCarro ? 'rgba(42,193,180,.3)' : 'rgba(124,110,247,.3)';
 
+  // Miniaturas mostradas ao lado da foto principal (excluindo a foto ativa)
+  const outrasFotos = fotos.map((f, i) => ({ f, i })).filter(o => o.i !== fotoActiva).slice(0, 4);
+  const restantes = Math.max(0, fotos.length - 1 - outrasFotos.length);
+
+  const irParaFoto = (i) => setFotoActiva(((i % fotos.length) + fotos.length) % fotos.length);
+
   return (
     <>
       <Helmet>
@@ -200,110 +211,143 @@ useEffect(() => {
       </Helmet>
 
       <style>{`
-        .ano-page { background: var(--nx-bg); color: var(--nx-text); min-height: calc(100vh - 72px); padding: 28px 20px 72px; }
-        .ano-container { max-width: 1240px; margin: 0 auto; }
-        .ano-breadcrumb { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-        .ano-back { display: inline-flex; align-items: center; gap: 6px; color: var(--nx-text-sub); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; text-decoration: none; transition: color .2s; }
-        .ano-back:hover { color: var(--nx-text); }
-        .ano-actions { display: flex; gap: 10px; }
+        .ld-page { background: var(--nx-bg); color: var(--nx-text); min-height: calc(100vh - 72px); padding: 28px 20px 72px; }
+        .ld-container { max-width: 1240px; margin: 0 auto; }
+        .ld-page button:focus-visible, .ld-page a:focus-visible { outline: 2px solid ${accent}; outline-offset: 2px; border-radius: 6px; }
+        @media (prefers-reduced-motion: reduce) { .ld-page * { transition: none !important; animation: none !important; } }
+
+        /* breadcrumb */
+        .ld-breadcrumb { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+        .ld-back { display: inline-flex; align-items: center; gap: 6px; color: var(--nx-text-sub); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; text-decoration: none; transition: color .2s; }
+        .ld-back:hover { color: var(--nx-text); }
+        .ld-actions { display: flex; gap: 10px; }
         .btn-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--nx-bg-2); border: 1px solid var(--nx-border); color: var(--nx-text-sub); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .2s; position: relative; }
         .btn-icon:hover { background: var(--nx-bg-3); border-color: var(--nx-border-2); color: var(--nx-text); transform: translateY(-1px); }
         .btn-icon.saved { color: var(--nx-danger); background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.2); }
         .toast-copy { position: absolute; top: 110%; right: 0; background: var(--nx-text); color: var(--nx-bg); font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 6px; white-space: nowrap; pointer-events: none; animation: nx-fade-in .2s; }
 
-        .ano-grid { display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start; }
-        @media (max-width: 960px) { .ano-grid { grid-template-columns: 1fr; } }
+        .ld-grid { display: grid; grid-template-columns: 1fr 360px; gap: 36px; align-items: start; margin-top: 6px; }
+        @media (max-width: 960px) { .ld-grid { grid-template-columns: 1fr; } }
 
-        .gallery-wrap { border-radius: 18px; overflow: hidden; background: var(--nx-bg-2); border: 1px solid var(--nx-border); margin-bottom: 20px; }
-        .gallery-main { position: relative; aspect-ratio: 16/9; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .gallery-main img { width: 100%; height: 100%; object-fit: cover; transition: opacity .3s; }
-        .gallery-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 45%); pointer-events: none; }
-        .gallery-placeholder { font-size: 64px; opacity: .25; }
-        .gallery-badge { position: absolute; top: 14px; left: 14px; background: rgba(0,0,0,.65); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: ${accent}; display: flex; align-items: center; gap: 5px; z-index: 5; }
-        .gallery-counter { position: absolute; top: 14px; right: 14px; background: rgba(0,0,0,.65); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 5; }
-        .gallery-bottom { position: absolute; bottom: 16px; left: 16px; right: 70px; z-index: 5; }
-        .gallery-title-overlay { font-family: var(--nx-font-display); font-size: clamp(18px, 3vw, 26px); font-weight: 800; color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,.6); letter-spacing: -.02em; line-height: 1.25; margin-bottom: 6px; }
-        .gallery-loc { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,.75); font-size: 13px; font-weight: 600; }
-        .arrow-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.1); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.18); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; transition: all .2s; }
-        .arrow-btn:hover { background: rgba(255,255,255,.25); }
-        .arrow-left { left: 14px; } .arrow-right { right: 14px; }
-        .thumbs-row { display: flex; gap: 8px; padding: 12px; overflow-x: auto; scrollbar-width: none; background: var(--nx-bg-3); border-top: 1px solid var(--nx-border); }
-        .thumbs-row::-webkit-scrollbar { display: none; }
-        .thumb { width: 76px; height: 50px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid transparent; opacity: .45; transition: all .2s; flex-shrink: 0; }
-        .thumb:hover { opacity: .75; }
-        .thumb.active { border-color: ${accent}; opacity: 1; }
-        .thumb img { width: 100%; height: 100%; object-fit: cover; }
+        /* gallery: main photo + 2x2 thumbs beside it */
+        .ld-gallery { display: grid; grid-template-columns: 1fr 168px; gap: 8px; margin-bottom: 26px; }
+        @media (max-width: 960px) { .ld-gallery { grid-template-columns: 1fr; } }
 
-        .title-block { margin-bottom: 22px; }
-        .listing-price { font-family: var(--nx-font-display); font-size: clamp(28px, 4vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 5px; }
-        .listing-subtitle { font-size: 16px; color: var(--nx-text-2); font-weight: 500; margin-bottom: 12px; line-height: 1.4; }
-        .meta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-        .meta-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--nx-text-sub); font-weight: 600; }
+        .ld-gallery-main { position: relative; aspect-ratio: 4/3; border-radius: 16px; overflow: hidden; background: #000; cursor: zoom-in; border: 1px solid var(--nx-border); }
+        .ld-gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .ld-gallery-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 64px; opacity: .25; }
+        .ld-type-badge { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: ${accent}; display: flex; align-items: center; gap: 5px; z-index: 4; }
+        .ld-count-badge { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 4; }
+        .ld-main-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,.4); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.18); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; transition: all .2s; }
+        .ld-main-arrow:hover { background: rgba(0,0,0,.65); }
+        .ld-arrow-left { left: 12px; } .ld-arrow-right { right: 12px; }
+
+        .ld-gallery-thumbs { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; }
+        @media (max-width: 960px) { .ld-gallery-thumbs { grid-template-columns: repeat(4, 1fr); grid-template-rows: 84px; } }
+        .ld-thumb { position: relative; border-radius: 10px; overflow: hidden; cursor: pointer; border: 1px solid var(--nx-border); background: var(--nx-bg-2); }
+        .ld-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s; }
+        .ld-thumb:hover img { transform: scale(1.06); }
+        .ld-thumb-more { position: absolute; inset: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 5px; }
+
+        /* header below gallery */
+        .ld-header { margin-bottom: 22px; }
+        .ld-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
+        .ld-title { font-family: var(--nx-font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 800; letter-spacing: -.02em; line-height: 1.2; color: var(--nx-text); }
+        .ld-price { font-family: var(--nx-font-display); font-size: clamp(24px, 3vw, 30px); font-weight: 800; letter-spacing: -.02em; color: ${accent}; white-space: nowrap; }
+        .ld-loc-row { display: flex; align-items: center; gap: 5px; color: var(--nx-text-sub); font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+        .ld-meta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
         .estado-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
+        .meta-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--nx-text-sub); font-weight: 600; }
         .meta-dot { color: var(--nx-text-sub); font-size: 10px; }
 
-        .tabs-wrap { display: flex; gap: 2px; border-bottom: 1px solid var(--nx-border); margin-bottom: 22px; overflow-x: auto; scrollbar-width: none; }
-        .tabs-wrap::-webkit-scrollbar { display: none; }
-        .tab-btn { padding: 10px 18px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--nx-text-sub); font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all .2s; letter-spacing: .01em; }
-        .tab-btn:hover { color: var(--nx-text-2); }
-        .tab-btn.active { color: ${accent}; border-bottom-color: ${accent}; }
+        /* highlight strip */
+        .ld-highlights { display: flex; gap: 0; border: 1px solid var(--nx-border); border-radius: 14px; background: var(--nx-bg-2); margin-bottom: 28px; overflow-x: auto; scrollbar-width: none; }
+        .ld-highlights::-webkit-scrollbar { display: none; }
+        .ld-highlight { flex: 1; min-width: 130px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; border-right: 1px solid var(--nx-border); }
+        .ld-highlight:last-child { border-right: none; }
+        .ld-highlight-icon { color: ${accent}; }
+        .ld-highlight-value { font-size: 16px; font-weight: 800; color: var(--nx-text); text-transform: capitalize; }
+        .ld-highlight-label { font-size: 11px; font-weight: 700; color: var(--nx-text-sub); text-transform: uppercase; letter-spacing: .06em; }
 
-        .specs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; animation: nx-fade-in .3s; }
-        .spec-card { background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: 12px; padding: 14px 16px; transition: border-color .2s; }
-        .spec-card:hover { border-color: var(--nx-border-2); }
-        .spec-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-        .spec-value { font-size: 15px; font-weight: 700; color: var(--nx-text); text-transform: capitalize; }
+        /* folder-style tabs + document panel */
+        .ld-tabs { display: flex; gap: 4px; padding-left: 6px; }
+        .ld-tab { padding: 11px 20px 13px; border: 1px solid var(--nx-border); border-bottom: none; border-radius: 12px 12px 0 0; background: var(--nx-bg-2); color: var(--nx-text-sub); font-size: 13px; font-weight: 700; cursor: pointer; transform: translateY(2px); transition: all .2s; white-space: nowrap; }
+        .ld-tab:hover { color: var(--nx-text-2); }
+        .ld-tab.active { background: var(--nx-card-bg); color: var(--nx-text); border-color: var(--nx-border-2); transform: translateY(0); box-shadow: 0 -2px 0 ${accent} inset; }
+        .ld-panel { background: var(--nx-card-bg); border: 1px solid var(--nx-border-2); border-radius: 0 14px 14px 14px; padding: 26px 28px; margin-top: -1px; position: relative; animation: nx-fade-in .25s; }
 
-        .extras-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 10px; animation: nx-fade-in .3s; }
-        .extra-item { display: flex; align-items: center; gap: 9px; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: 9px; padding: 11px 14px; font-size: 13px; font-weight: 600; color: var(--nx-text-2); }
-        .extra-check { color: ${accent}; flex-shrink: 0; }
+        .ld-specsheet { display: flex; flex-direction: column; }
+        .ld-spec-row { display: flex; align-items: baseline; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--nx-border); }
+        .ld-spec-row:last-child { border-bottom: none; }
+        .ld-spec-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--nx-text-sub); font-weight: 600; white-space: nowrap; }
+        .ld-spec-label .ld-spec-icon { color: ${accent}; }
+        .ld-spec-fill { flex: 1; border-bottom: 1px dotted var(--nx-border-2); margin: 0 2px 4px; }
+        .ld-spec-value { font-size: 14px; font-weight: 800; color: var(--nx-text); text-transform: capitalize; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-        .desc-box { background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: 16px; padding: 26px; margin-top: 4px; animation: nx-fade-in .3s; }
-        .desc-head { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
-        .desc-text { font-size: 14px; line-height: 1.8; color: var(--nx-text-2); white-space: pre-wrap; }
+        .ld-extras-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+        .ld-extra-item { display: flex; align-items: center; gap: 9px; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: 9px; padding: 11px 14px; font-size: 13px; font-weight: 600; color: var(--nx-text-2); }
+        .ld-extra-check { color: ${accent}; flex-shrink: 0; }
 
-        .sidebar-sticky { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 14px; }
-        .price-panel { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: 20px; padding: 26px; box-shadow: var(--nx-shadow-card); backdrop-filter: blur(16px); }
-        .panel-price { font-family: var(--nx-font-display); font-size: clamp(28px, 3.5vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 4px; }
-        .panel-price-m2 { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-bottom: 22px; }
+        .ld-desc-head { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+        .ld-desc-text { font-size: 14px; line-height: 1.8; color: var(--nx-text-2); white-space: pre-wrap; }
 
-        .btn-contact { width: 100%; padding: 16px; background: ${accent}; color: #fff; border: none; border-radius: 12px; font-family: var(--nx-font-body); font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px ${accentShadow}; }
-        .btn-contact:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 28px ${accentShadow}; }
+        /* sidebar */
+        .ld-sidebar { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 14px; }
+        .ld-price-card { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: 20px; padding: 26px; box-shadow: var(--nx-shadow-card); backdrop-filter: blur(16px); }
+        .ld-panel-price { font-family: var(--nx-font-display); font-size: clamp(26px, 3.5vw, 34px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 4px; }
+        .ld-panel-price-m2 { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-bottom: 20px; }
 
-        .contact-revealed { width: 100%; padding: 16px; background: var(--nx-bg-2); border: 2px dashed var(--nx-border-2); border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; transition: background .2s; cursor: pointer; }
-        .contact-revealed:hover { background: var(--nx-bg-3); }
-        .contact-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); }
-        .contact-phone { font-size: 20px; font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 7px; }
-        .contact-email { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-top: 2px; }
+        .ld-cta { width: 100%; padding: 15px; background: ${accent}; color: #fff; border: none; border-radius: 12px; font-family: var(--nx-font-body); font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px ${accentShadow}; }
+        .ld-cta:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 28px ${accentShadow}; }
 
-        .finance-box { background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: 14px; padding: 20px; margin-top: 16px; }
-        .finance-box .fin-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); margin-bottom: 14px; }
-        .fin-result-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed var(--nx-border-2); }
-        .fin-prestacao { font-family: var(--nx-font-display); font-size: 28px; font-weight: 800; color: ${accent}; letter-spacing: -.02em; }
-        .fin-mes { font-size: 12px; color: var(--nx-text-sub); font-weight: 600; margin-left: 3px; }
-        .fin-taeg { font-size: 11px; color: var(--nx-text-sub); font-weight: 700; }
-        .slider-group { margin-bottom: 12px; }
-        .slider-label-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--nx-text-2); margin-bottom: 6px; }
-        .slider-val { color: ${accent}; }
-        .fin-slider { width: 100%; height: 4px; border-radius: 2px; accent-color: ${accent}; cursor: pointer; -webkit-appearance: none; background: var(--nx-border); outline: none; }
-        .fin-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${accent}; cursor: pointer; }
+        .ld-contact-revealed { width: 100%; padding: 15px; background: var(--nx-bg-2); border: 2px dashed var(--nx-border-2); border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; transition: background .2s; cursor: pointer; }
+        .ld-contact-revealed:hover { background: var(--nx-bg-3); }
+        .ld-contact-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); }
+        .ld-contact-phone { font-size: 19px; font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 7px; }
+        .ld-contact-email { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-top: 2px; }
 
-        .seller-panel { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: 16px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; text-decoration: none; transition: all .2s; }
-        .seller-panel:hover { border-color: var(--nx-border-2); background: var(--nx-bg-2); }
-        .seller-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--nx-bg-3); display: flex; align-items: center; justify-content: center; font-family: var(--nx-font-display); font-size: 18px; font-weight: 800; color: var(--nx-text); flex-shrink: 0; overflow: hidden; }
-        .seller-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .seller-info { flex: 1; }
-        .seller-name { font-size: 15px; font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
-        .seller-sub { font-size: 12px; color: var(--nx-text-sub); font-weight: 600; }
+        .ld-divider { height: 1px; background: var(--nx-border); margin: 20px 0; }
+        .ld-fin-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); margin-bottom: 14px; }
+        .ld-fin-result-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 18px; }
+        .ld-fin-prestacao { font-family: var(--nx-font-display); font-size: 26px; font-weight: 800; color: ${accent}; letter-spacing: -.02em; }
+        .ld-fin-mes { font-size: 12px; color: var(--nx-text-sub); font-weight: 600; margin-left: 3px; }
+        .ld-fin-taeg { font-size: 11px; color: var(--nx-text-sub); font-weight: 700; }
+        .ld-slider-group { margin-bottom: 14px; }
+        .ld-slider-group:last-child { margin-bottom: 0; }
+        .ld-slider-label-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--nx-text-2); margin-bottom: 6px; }
+        .ld-slider-val { color: ${accent}; }
+        .ld-slider { width: 100%; height: 4px; border-radius: 2px; accent-color: ${accent}; cursor: pointer; -webkit-appearance: none; background: var(--nx-border); outline: none; }
+        .ld-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${accent}; cursor: pointer; }
 
-        .owner-box { background: rgba(59,130,246,.05); border: 1px solid rgba(59,130,246,.2); border-radius: 14px; padding: 18px; margin-top: 16px; }
-        .owner-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #60a5fa; margin-bottom: 12px; }
-        .owner-btns { display: flex; gap: 10px; }
-        .btn-owner-edit { flex: 1; padding: 11px; text-align: center; background: var(--nx-bg); border: 1px solid var(--nx-border-2); color: var(--nx-text); border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; transition: all .2s; }
-        .btn-owner-edit:hover { border-color: var(--nx-text); }
-        .btn-owner-sold { flex: 1; padding: 11px; border: none; background: #10b981; color: #fff; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: opacity .2s; }
-        .btn-owner-sold:hover { opacity: .85; }
+        .ld-seller-panel { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: 16px; padding: 17px 20px; display: flex; align-items: center; gap: 14px; text-decoration: none; transition: all .2s; }
+        .ld-seller-panel:hover { border-color: var(--nx-border-2); background: var(--nx-bg-2); }
+        .ld-seller-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--nx-bg-3); display: flex; align-items: center; justify-content: center; font-family: var(--nx-font-display); font-size: 17px; font-weight: 800; color: var(--nx-text); flex-shrink: 0; overflow: hidden; border: 2px solid ${accent}; }
+        .ld-seller-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .ld-seller-info { flex: 1; min-width: 0; }
+        .ld-seller-name { font-size: 15px; font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+        .ld-seller-sub { font-size: 12px; color: var(--nx-text-sub); font-weight: 600; }
 
+        .ld-owner-box { background: rgba(59,130,246,.05); border: 1px solid rgba(59,130,246,.2); border-radius: 14px; padding: 16px; }
+        .ld-owner-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #60a5fa; margin-bottom: 12px; }
+        .ld-owner-btns { display: flex; gap: 10px; }
+        .ld-btn-owner-edit { flex: 1; padding: 11px; text-align: center; background: var(--nx-bg); border: 1px solid var(--nx-border-2); color: var(--nx-text); border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; transition: all .2s; }
+        .ld-btn-owner-edit:hover { border-color: var(--nx-text); }
+        .ld-btn-owner-sold { flex: 1; padding: 11px; border: none; background: #10b981; color: #fff; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: opacity .2s; }
+        .ld-btn-owner-sold:hover { opacity: .85; }
+
+        /* lightbox */
+        .ld-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.92); backdrop-filter: blur(6px); z-index: 9998; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; animation: nx-fade-in .2s; }
+        .ld-lightbox-close { position: absolute; top: 18px; right: 22px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; }
+        .ld-lightbox-counter { position: absolute; top: 26px; left: 26px; color: rgba(255,255,255,.8); font-size: 13px; font-weight: 700; }
+        .ld-lightbox-img-wrap { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; max-width: 1100px; position: relative; }
+        .ld-lightbox-img-wrap img { max-width: 100%; max-height: 78vh; object-fit: contain; border-radius: 8px; }
+        .ld-lightbox-strip { display: flex; gap: 8px; margin-top: 18px; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+        .ld-lightbox-strip::-webkit-scrollbar { display: none; }
+        .ld-lightbox-thumb { width: 64px; height: 44px; border-radius: 6px; overflow: hidden; cursor: pointer; opacity: .45; border: 2px solid transparent; flex-shrink: 0; transition: all .2s; }
+        .ld-lightbox-thumb.active { opacity: 1; border-color: ${accent}; }
+        .ld-lightbox-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* sold modal */
         .nx-modal-overlay { position: fixed; inset: 0; background: var(--nx-overlay); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; animation: nx-fade-in .2s; }
         .nx-modal-box { width: 100%; max-width: 440px; background: var(--nx-bg-2); border: 1px solid var(--nx-border-2); border-radius: 20px; padding: 36px 28px; text-align: center; box-shadow: var(--nx-shadow-card); }
         .nx-modal-icon { font-size: 44px; margin-bottom: 14px; }
@@ -316,7 +360,7 @@ useEffect(() => {
         .nx-btn-danger:hover { opacity: .85; }
         .nx-btn-danger:disabled { opacity: .5; cursor: not-allowed; }
 
-        /* 🌟 CSS DA SECÇÃO DE ANÚNCIOS SUGERIDOS */
+        /* sugeridos */
         .sugeridos-section { margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--nx-border); }
         .sugeridos-title { font-family: var(--nx-font-display); font-size: 22px; font-weight: 800; color: var(--nx-text); margin-bottom: 24px; letter-spacing: -0.02em; }
         .sugeridos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
@@ -340,83 +384,118 @@ useEffect(() => {
         </div>
       )}
 
-      <div className="ano-page">
-        <div className="ano-container">
+      {lightboxAberto && (
+        <div className="ld-lightbox" onClick={() => setLightboxAberto(false)}>
+          <div className="ld-lightbox-counter">{fotoActiva + 1} / {fotos.length}</div>
+          <button type="button" className="ld-lightbox-close" onClick={() => setLightboxAberto(false)} aria-label="Fechar">
+            <Icon path={mdiClose} size={1} />
+          </button>
+          <div className="ld-lightbox-img-wrap" onClick={e => e.stopPropagation()}>
+            {fotos.length > 1 && (
+              <button type="button" className="ld-main-arrow ld-arrow-left" onClick={() => irParaFoto(fotoActiva - 1)} aria-label="Foto anterior">
+                <Icon path={mdiChevronLeft} size={1.1} />
+              </button>
+            )}
+            {fotos[fotoActiva]
+              ? <img src={fotos[fotoActiva]} alt={anuncio.titulo} />
+              : <div style={{ fontSize: '80px', opacity: .3 }}>{isCarro ? '🚗' : '🏠'}</div>
+            }
+            {fotos.length > 1 && (
+              <button type="button" className="ld-main-arrow ld-arrow-right" onClick={() => irParaFoto(fotoActiva + 1)} aria-label="Foto seguinte">
+                <Icon path={mdiChevronRight} size={1.1} />
+              </button>
+            )}
+          </div>
+          {fotos.length > 1 && (
+            <div className="ld-lightbox-strip" onClick={e => e.stopPropagation()}>
+              {fotos.map((f, i) => (
+                <div key={i} className={`ld-lightbox-thumb ${fotoActiva === i ? 'active' : ''}`} onClick={() => irParaFoto(i)}>
+                  {f && <img src={f} alt="" />}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
-          <div className="ano-breadcrumb">
-            <Link to={isCarro ? '/carros' : '/imoveis'} className="ano-back">
+      <div className="ld-page">
+        <div className="ld-container">
+
+          <div className="ld-breadcrumb">
+            <Link to={isCarro ? '/carros' : '/imoveis'} className="ld-back">
               <Icon path={mdiChevronLeft} size={0.75} /> Voltar à Pesquisa
             </Link>
-            <div className="ano-actions">
-              <button className="btn-icon" onClick={handlePartilhar} title="Partilhar">
+            <div className="ld-actions">
+              <button type="button" className="btn-icon" onClick={handlePartilhar} title="Partilhar">
                 <Icon path={mdiShareVariantOutline} size={0.85} />
                 {copiado && <div className="toast-copy">✓ Copiado!</div>}
               </button>
               {!isDono && (
-                <button className={`btn-icon ${guardado ? 'saved' : ''}`} onClick={toggleGuardado} title="Guardar">
+                <button type="button" className={`btn-icon ${guardado ? 'saved' : ''}`} onClick={toggleGuardado} title="Guardar">
                   <Icon path={guardado ? mdiHeart : mdiHeartOutline} size={0.85} />
                 </button>
               )}
             </div>
           </div>
 
-          <div className="ano-grid">
+          <div className="ld-grid">
             <div>
-              <div className="gallery-wrap">
-                <div className="gallery-main">
+              {/* GALERIA */}
+              <div className="ld-gallery">
+                <div className="ld-gallery-main" onClick={() => setLightboxAberto(true)}>
                   {fotos[fotoActiva]
                     ? <img src={fotos[fotoActiva]} alt={anuncio.titulo} />
-                    : <div className="gallery-placeholder">{isCarro ? '🚗' : '🏠'}</div>
+                    : <div className="ld-gallery-placeholder">{isCarro ? '🚗' : '🏠'}</div>
                   }
-                  <div className="gallery-overlay" />
-
-                  <div className="gallery-badge">
+                  <div className="ld-type-badge">
                     <Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={0.7} />
                     {isCarro ? 'Automóvel' : 'Imóvel'}
                   </div>
-
                   {fotos.length > 1 && (
-                    <div className="gallery-counter">
+                    <div className="ld-count-badge">
                       <Icon path={mdiCamera} size={0.65} />
                       {fotoActiva + 1} / {fotos.length}
                     </div>
                   )}
-
-                  <div className="gallery-bottom">
-                    <div className="gallery-title-overlay">{anuncio.titulo}</div>
-                    <div className="gallery-loc">
-                      <Icon path={mdiMapMarkerOutline} size={0.65} />
-                      {localizacaoString}
-                    </div>
-                  </div>
-
                   {fotos.length > 1 && (
                     <>
-                      <button className="arrow-btn arrow-left" onClick={() => setFotoActiva(i => i === 0 ? fotos.length - 1 : i - 1)}>
-                        <Icon path={mdiChevronLeft} size={1.1} />
+                      <button type="button" className="ld-main-arrow ld-arrow-left" onClick={(e) => { e.stopPropagation(); irParaFoto(fotoActiva - 1); }} aria-label="Foto anterior">
+                        <Icon path={mdiChevronLeft} size={1} />
                       </button>
-                      <button className="arrow-btn arrow-right" onClick={() => setFotoActiva(i => i === fotos.length - 1 ? 0 : i + 1)}>
-                        <Icon path={mdiChevronRight} size={1.1} />
+                      <button type="button" className="ld-main-arrow ld-arrow-right" onClick={(e) => { e.stopPropagation(); irParaFoto(fotoActiva + 1); }} aria-label="Foto seguinte">
+                        <Icon path={mdiChevronRight} size={1} />
                       </button>
                     </>
                   )}
                 </div>
 
                 {fotos.length > 1 && (
-                  <div className="thumbs-row">
-                    {fotos.map((f, i) => (
-                      <div key={i} className={`thumb ${fotoActiva === i ? 'active' : ''}`} onClick={() => setFotoActiva(i)}>
-                        {f ? <img src={f} alt="" /> : <div style={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',fontSize:'18px' }}>📷</div>}
+                  <div className="ld-gallery-thumbs">
+                    {outrasFotos.map((o, idx) => (
+                      <div key={o.i} className="ld-thumb" onClick={() => setFotoActiva(o.i)}>
+                        {o.f ? <img src={o.f} alt="" /> : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: '18px' }}>📷</div>}
+                        {idx === outrasFotos.length - 1 && restantes > 0 && (
+                          <div className="ld-thumb-more" onClick={(e) => { e.stopPropagation(); setLightboxAberto(true); }}>
+                            <Icon path={mdiImageMultipleOutline} size={0.6} /> +{restantes}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
-              <div className="title-block">
-                <div className="listing-price">{preco}</div>
-                <div className="listing-subtitle">{anuncio.titulo}</div>
-                <div className="meta-row">
+              {/* CABEÇALHO */}
+              <div className="ld-header">
+                <div className="ld-title-row">
+                  <h1 className="ld-title">{anuncio.titulo}</h1>
+                  <div className="ld-price">{preco}</div>
+                </div>
+                <div className="ld-loc-row">
+                  <Icon path={mdiMapMarkerOutline} size={0.65} />
+                  {localizacaoString}
+                </div>
+                <div className="ld-meta-row">
                   <span className="estado-badge">● {anuncio.estado || 'Disponível'}</span>
                   <span className="meta-item"><Icon path={mdiEyeOutline} size={0.65} /> {anuncio.visitas || 0} visualizações</span>
                   <span className="meta-dot">·</span>
@@ -424,83 +503,101 @@ useEffect(() => {
                 </div>
               </div>
 
-              <div className="tabs-wrap">
-                <button type="button" className={`tab-btn ${abaAtiva === 'especificacoes' ? 'active' : ''}`} onClick={() => setAbaAtiva('especificacoes')}>
+              {/* DESTAQUES RÁPIDOS */}
+              {destaques.length > 0 && (
+                <div className="ld-highlights">
+                  {destaques.map((d, i) => (
+                    <div key={i} className="ld-highlight">
+                      <span className="ld-highlight-icon"><Icon path={d.icon} size={0.85} /></span>
+                      <span className="ld-highlight-value">{d.value}</span>
+                      <span className="ld-highlight-label">{d.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* TABS + FICHA */}
+              <div className="ld-tabs">
+                <button type="button" className={`ld-tab ${abaAtiva === 'especificacoes' ? 'active' : ''}`} onClick={() => setAbaAtiva('especificacoes')}>
                   Ficha Técnica
                 </button>
                 {extrasOpcionais.length > 0 && (
-                  <button type="button" className={`tab-btn ${abaAtiva === 'equipamento' ? 'active' : ''}`} onClick={() => setAbaAtiva('equipamento')}>
+                  <button type="button" className={`ld-tab ${abaAtiva === 'equipamento' ? 'active' : ''}`} onClick={() => setAbaAtiva('equipamento')}>
                     {isCarro ? 'Equipamento' : 'Detalhes'}
                   </button>
                 )}
-                <button type="button" className={`tab-btn ${abaAtiva === 'descricao' ? 'active' : ''}`} onClick={() => setAbaAtiva('descricao')}>
+                <button type="button" className={`ld-tab ${abaAtiva === 'descricao' ? 'active' : ''}`} onClick={() => setAbaAtiva('descricao')}>
                   Descrição
                 </button>
               </div>
 
-              {abaAtiva === 'especificacoes' && (
-                <div className="specs-grid">
-                  {specs.filter(s => s.value != null && s.value !== '').map((s, i) => (
-                    <div key={i} className="spec-card">
-                      <div className="spec-label">
-                        <Icon path={s.icon} size={0.75} />
-                        {s.label}
+              <div className="ld-panel">
+                {abaAtiva === 'especificacoes' && (
+                  <div className="ld-specsheet">
+                    {specs.filter(s => s.value != null && s.value !== '').map((s, i) => (
+                      <div key={i} className="ld-spec-row">
+                        <span className="ld-spec-label">
+                          <span className="ld-spec-icon"><Icon path={s.icon} size={0.7} /></span>
+                          {s.label}
+                        </span>
+                        <span className="ld-spec-fill" />
+                        <span className="ld-spec-value">{s.value}</span>
                       </div>
-                      <div className="spec-value">{s.value}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {abaAtiva === 'equipamento' && extrasOpcionais.length > 0 && (
-                <div className="extras-grid">
-                  {extrasOpcionais.map((extra, i) => (
-                    <div key={i} className="extra-item">
-                      <span className="extra-check"><Icon path={mdiStar} size={0.75} /></span>
-                      {extra}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {abaAtiva === 'descricao' && (
-                <div className="desc-box">
-                  <div className="desc-head">
-                    <Icon path={mdiFileDocumentOutline} size={0.8} />
-                    Descrição do Anunciante
+                    ))}
                   </div>
-                  <div className="desc-text">{anuncio.descricao || 'Nenhuma descrição detalhada providenciada.'}</div>
-                </div>
-              )}
+                )}
+
+                {abaAtiva === 'equipamento' && extrasOpcionais.length > 0 && (
+                  <div className="ld-extras-grid">
+                    {extrasOpcionais.map((extra, i) => (
+                      <div key={i} className="ld-extra-item">
+                        <span className="ld-extra-check"><Icon path={mdiStar} size={0.75} /></span>
+                        {extra}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {abaAtiva === 'descricao' && (
+                  <div>
+                    <div className="ld-desc-head">
+                      <Icon path={mdiFileDocumentOutline} size={0.8} />
+                      Descrição do Anunciante
+                    </div>
+                    <div className="ld-desc-text">{anuncio.descricao || 'Nenhuma descrição detalhada providenciada.'}</div>
+                  </div>
+                )}
+              </div>
             </div>
 
+            {/* SIDEBAR */}
             <div>
-              <div className="sidebar-sticky">
-                <div className="price-panel">
-                  <div className="panel-price">{preco}</div>
-                  {precoPorM2 && <div className="panel-price-m2">{precoPorM2}/m²</div>}
+              <div className="ld-sidebar">
+                <div className="ld-price-card">
+                  <div className="ld-panel-price">{preco}</div>
+                  {precoPorM2 && <div className="ld-panel-price-m2">{precoPorM2}/m²</div>}
 
                   {isDono ? (
-                    <div className="owner-box">
-                      <div className="owner-label">Gestão do Anúncio</div>
-                      <div className="owner-btns">
-                        <Link to={`/editar/${id}`} className="btn-owner-edit">Editar Dados</Link>
-                        <button type="button" className="btn-owner-sold" onClick={() => setMostrarModalVendido(true)}>✓ Vendido</button>
+                    <div className="ld-owner-box">
+                      <div className="ld-owner-label">Gestão do Anúncio</div>
+                      <div className="ld-owner-btns">
+                        <Link to={`/editar/${id}`} className="ld-btn-owner-edit">Editar Dados</Link>
+                        <button type="button" className="ld-btn-owner-sold" onClick={() => setMostrarModalVendido(true)}>✓ Vendido</button>
                       </div>
                     </div>
                   ) : (
                     <>
                       {mostrarTelefone ? (
-                        <a href={`tel:${telefoneContacto}`} className="contact-revealed">
-                          <span className="contact-label">Contactar via</span>
-                          <div className="contact-phone">
+                        <a href={`tel:${telefoneContacto}`} className="ld-contact-revealed">
+                          <span className="ld-contact-label">Contactar via</span>
+                          <div className="ld-contact-phone">
                             <Icon path={mdiPhone} size={0.9} color={accent} />
                             {telefoneContacto}
                           </div>
-                          <div className="contact-email">✉ {emailContacto}</div>
+                          <div className="ld-contact-email">✉ {emailContacto}</div>
                         </a>
                       ) : (
-                        <button type="button" className="btn-contact" onClick={() => setMostrarTelefone(true)}>
+                        <button type="button" className="ld-cta" onClick={() => setMostrarTelefone(true)}>
                           <Icon path={mdiPhone} size={0.85} /> Revelar Contactos
                         </button>
                       )}
@@ -508,54 +605,55 @@ useEffect(() => {
                   )}
 
                   {isCarro && !isDono && (
-                    <div className="finance-box">
-                      <div className="fin-head">Simulação de Crédito</div>
-                      <div className="fin-result-row">
+                    <>
+                      <div className="ld-divider" />
+                      <div className="ld-fin-head">Simulação de Crédito</div>
+                      <div className="ld-fin-result-row">
                         <div>
-                          <span className="fin-prestacao">{prestacaoMensal.toLocaleString('pt-PT')}€</span>
-                          <span className="fin-mes">/mês</span>
+                          <span className="ld-fin-prestacao">{prestacaoMensal.toLocaleString('pt-PT')}€</span>
+                          <span className="ld-fin-mes">/mês</span>
                         </div>
-                        <div className="fin-taeg">TAEG 7.9%</div>
+                        <div className="ld-fin-taeg">TAEG 7.9%</div>
                       </div>
-                      <div className="slider-group">
-                        <div className="slider-label-row">
+                      <div className="ld-slider-group">
+                        <div className="ld-slider-label-row">
                           <span>Entrada inicial</span>
-                          <span className="slider-val">{Number(entrada).toLocaleString('pt-PT')}€</span>
+                          <span className="ld-slider-val">{Number(entrada).toLocaleString('pt-PT')}€</span>
                         </div>
                         <input
-                          type="range" className="fin-slider"
+                          type="range" className="ld-slider"
                           min="0" max={Math.round(precoValor * 0.7)} step="250"
                           value={entrada} onChange={e => setEntrada(Number(e.target.value))}
                         />
                       </div>
-                      <div className="slider-group" style={{ marginBottom: 0 }}>
-                        <div className="slider-label-row">
+                      <div className="ld-slider-group">
+                        <div className="ld-slider-label-row">
                           <span>Prazo</span>
-                          <span className="slider-val">{meses} meses</span>
+                          <span className="ld-slider-val">{meses} meses</span>
                         </div>
                         <input
-                          type="range" className="fin-slider"
+                          type="range" className="ld-slider"
                           min="24" max="120" step="12"
                           value={meses} onChange={e => setMeses(Number(e.target.value))}
                         />
                       </div>
-                    </div>
+                    </>
                   )}
                 </div>
 
-                <Link to={`/vendedor/${donoDoAnuncio?._id}`} className="seller-panel">
-                  <div className="seller-avatar">
+                <Link to={`/vendedor/${donoDoAnuncio?._id}`} className="ld-seller-panel">
+                  <div className="ld-seller-avatar">
                     {donoDoAnuncio?.avatarUrl ? <img src={donoDoAnuncio.avatarUrl} alt="" /> : inicial}
                   </div>
-                  <div className="seller-info">
-                    <div className="seller-name">
+                  <div className="ld-seller-info">
+                    <div className="ld-seller-name">
                       {donoDoAnuncio?.tipo === 'admin'
                         ? (donoDoAnuncio.nome?.toUpperCase().includes('NOXVELIA') ? donoDoAnuncio.nome : `NOXVELIA ${donoDoAnuncio?.nome}`)
                         : (donoDoAnuncio?.nome || 'Utilizador Particular')
                       }
                       {donoDoAnuncio?.tipo === 'admin' && <Icon path={mdiCheckDecagram} size={0.8} color="var(--nx-accent-blue)" />}
                     </div>
-                    <div className="seller-sub">
+                    <div className="ld-seller-sub">
                       {donoDoAnuncio?.tipo === 'admin' ? 'Conta Oficial NOXVELIA' : 'Ver anúncios deste utilizador ›'}
                     </div>
                   </div>
@@ -565,7 +663,6 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* 🌟 SECÇÃO DE ANÚNCIOS SUGERIDOS */}
           {sugeridos.length > 0 && (
             <div className="sugeridos-section">
               <h3 className="sugeridos-title">Poderá gostar destes anúncios</h3>
