@@ -10,7 +10,7 @@ import {
   mdiHomeCityOutline, mdiRulerSquare, mdiBedOutline, mdiShower, mdiCertificateOutline,
   mdiChevronLeft, mdiChevronRight, mdiPhone, mdiMapMarkerOutline, mdiEyeOutline,
   mdiGarageVariant, mdiBalcony, mdiHammerWrench, mdiCar, mdiFileDocumentOutline,
-  mdiCamera, mdiStar, mdiClose, mdiImageMultipleOutline,
+  mdiCamera, mdiStar, mdiClose,
 } from '@mdi/js';
 
 import AnuncioCard from '../shared/AnuncioCard';
@@ -149,7 +149,6 @@ export default function Anuncio() {
   const localizacaoString = `${anuncio.localizacao?.cidade || 'N/A'}${anuncio.localizacao?.distrito ? `, ${anuncio.localizacao.distrito}` : ''}`;
   const temVaranda = anuncio.equipamento?.some(e => e.toLowerCase().includes('varanda') || e.toLowerCase().includes('terraço'));
 
-  // Destaques: leitura rápida, antes da ficha completa
   const destaques = (isCarro ? [
     { label: 'Ano', value: anuncio.carro?.ano, icon: mdiCalendarBlank },
     { label: 'Quilómetros', value: anuncio.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null, icon: mdiSpeedometer },
@@ -193,10 +192,6 @@ export default function Anuncio() {
   const accent = isCarro ? 'var(--nx-accent-car)' : 'var(--nx-accent-home)';
   const accentShadow = isCarro ? 'rgba(42,193,180,.3)' : 'rgba(124,110,247,.3)';
 
-  // Miniaturas mostradas ao lado da foto principal (excluindo a foto ativa)
-  const outrasFotos = fotos.map((f, i) => ({ f, i })).filter(o => o.i !== fotoActiva).slice(0, 4);
-  const restantes = Math.max(0, fotos.length - 1 - outrasFotos.length);
-
   const irParaFoto = (i) => setFotoActiva(((i % fotos.length) + fotos.length) % fotos.length);
 
   return (
@@ -216,7 +211,6 @@ export default function Anuncio() {
         .ld-page button:focus-visible, .ld-page a:focus-visible { outline: 2px solid ${accent}; outline-offset: 2px; border-radius: 6px; }
         @media (prefers-reduced-motion: reduce) { .ld-page * { transition: none !important; animation: none !important; } }
 
-        /* breadcrumb */
         .ld-breadcrumb { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
         .ld-back { display: inline-flex; align-items: center; gap: 6px; color: var(--nx-text-sub); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; text-decoration: none; transition: color .2s; }
         .ld-back:hover { color: var(--nx-text); }
@@ -226,50 +220,64 @@ export default function Anuncio() {
         .btn-icon.saved { color: var(--nx-danger); background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.2); }
         .toast-copy { position: absolute; top: 110%; right: 0; background: var(--nx-text); color: var(--nx-bg); font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 6px; white-space: nowrap; pointer-events: none; animation: nx-fade-in .2s; }
 
-        .ld-grid { display: grid; grid-template-columns: 1fr 360px; gap: 36px; align-items: start; margin-top: 6px; }
-        @media (max-width: 960px) { .ld-grid { grid-template-columns: 1fr; } }
+        /* HERO: foto compacta + informação ao lado */
+        .ld-hero { display: grid; grid-template-columns: 420px 1fr; gap: 36px; align-items: start; margin-bottom: 36px; }
+        @media (max-width: 860px) { .ld-hero { grid-template-columns: 1fr; gap: 22px; } }
 
-        /* gallery: main photo + 2x2 thumbs beside it */
-        .ld-gallery { display: grid; grid-template-columns: 1fr 168px; gap: 8px; margin-bottom: 26px; }
-        @media (max-width: 960px) { .ld-gallery { grid-template-columns: 1fr; } }
-
-        .ld-gallery-main { position: relative; aspect-ratio: 4/3; border-radius: 16px; overflow: hidden; background: #000; cursor: zoom-in; border: 1px solid var(--nx-border); }
-        .ld-gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .ld-gallery-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 64px; opacity: .25; }
-        .ld-type-badge { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: ${accent}; display: flex; align-items: center; gap: 5px; z-index: 4; }
-        .ld-count-badge { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 4; }
-        .ld-main-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,.4); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.18); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; transition: all .2s; }
+        .ld-hero-media { display: flex; flex-direction: column; gap: 10px; }
+        .ld-hero-photo { position: relative; aspect-ratio: 4/3; border-radius: 16px; overflow: hidden; background: #000; cursor: zoom-in; border: 1px solid var(--nx-border); }
+        .ld-hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .ld-hero-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 56px; opacity: .25; }
+        .ld-type-badge { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 4px 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: ${accent}; display: flex; align-items: center; gap: 5px; z-index: 4; }
+        .ld-count-badge { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 4; }
+        .ld-main-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,.4); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.18); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; transition: all .2s; }
         .ld-main-arrow:hover { background: rgba(0,0,0,.65); }
-        .ld-arrow-left { left: 12px; } .ld-arrow-right { right: 12px; }
+        .ld-arrow-left { left: 10px; } .ld-arrow-right { right: 10px; }
 
-        .ld-gallery-thumbs { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; }
-        @media (max-width: 960px) { .ld-gallery-thumbs { grid-template-columns: repeat(4, 1fr); grid-template-rows: 84px; } }
-        .ld-thumb { position: relative; border-radius: 10px; overflow: hidden; cursor: pointer; border: 1px solid var(--nx-border); background: var(--nx-bg-2); }
-        .ld-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s; }
-        .ld-thumb:hover img { transform: scale(1.06); }
-        .ld-thumb-more { position: absolute; inset: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .ld-thumbstrip { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; }
+        .ld-thumbstrip::-webkit-scrollbar { display: none; }
+        .ld-thumb { width: 58px; height: 44px; flex-shrink: 0; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid transparent; opacity: .45; transition: all .2s; }
+        .ld-thumb:hover { opacity: .75; }
+        .ld-thumb.active { opacity: 1; border-color: ${accent}; }
+        .ld-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* header below gallery */
-        .ld-header { margin-bottom: 22px; }
-        .ld-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
-        .ld-title { font-family: var(--nx-font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 800; letter-spacing: -.02em; line-height: 1.2; color: var(--nx-text); }
-        .ld-price { font-family: var(--nx-font-display); font-size: clamp(24px, 3vw, 30px); font-weight: 800; letter-spacing: -.02em; color: ${accent}; white-space: nowrap; }
-        .ld-loc-row { display: flex; align-items: center; gap: 5px; color: var(--nx-text-sub); font-size: 14px; font-weight: 600; margin-bottom: 14px; }
-        .ld-meta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+        .ld-hero-info { display: flex; flex-direction: column; padding-top: 4px; }
+        .ld-hero-title { font-family: var(--nx-font-display); font-size: clamp(22px, 2.6vw, 28px); font-weight: 800; letter-spacing: -.02em; line-height: 1.25; color: var(--nx-text); margin-bottom: 10px; }
+        .ld-hero-price { font-family: var(--nx-font-display); font-size: clamp(26px, 3vw, 32px); font-weight: 800; letter-spacing: -.03em; color: ${accent}; line-height: 1; margin-bottom: 4px; }
+        .ld-hero-price-m2 { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-bottom: 14px; }
+        .ld-loc-row { display: flex; align-items: center; gap: 5px; color: var(--nx-text-sub); font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+        .ld-meta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 22px; }
         .estado-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
         .meta-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--nx-text-sub); font-weight: 600; }
         .meta-dot { color: var(--nx-text-sub); font-size: 10px; }
 
-        /* highlight strip */
-        .ld-highlights { display: flex; gap: 0; border: 1px solid var(--nx-border); border-radius: 14px; background: var(--nx-bg-2); margin-bottom: 28px; overflow-x: auto; scrollbar-width: none; }
-        .ld-highlights::-webkit-scrollbar { display: none; }
-        .ld-highlight { flex: 1; min-width: 130px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; border-right: 1px solid var(--nx-border); }
-        .ld-highlight:last-child { border-right: none; }
-        .ld-highlight-icon { color: ${accent}; }
-        .ld-highlight-value { font-size: 16px; font-weight: 800; color: var(--nx-text); text-transform: capitalize; }
-        .ld-highlight-label { font-size: 11px; font-weight: 700; color: var(--nx-text-sub); text-transform: uppercase; letter-spacing: .06em; }
+        .ld-hero-destaques { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+        .ld-hero-destaque { display: flex; align-items: center; gap: 10px; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: 12px; padding: 11px 14px; }
+        .ld-hd-icon { color: ${accent}; flex-shrink: 0; }
+        .ld-hd-value { font-size: 14px; font-weight: 800; color: var(--nx-text); text-transform: capitalize; line-height: 1.2; }
+        .ld-hd-label { font-size: 10px; font-weight: 700; color: var(--nx-text-sub); text-transform: uppercase; letter-spacing: .05em; }
 
-        /* folder-style tabs + document panel */
+        .ld-hero-action { margin-top: auto; }
+        .ld-cta { width: 100%; padding: 15px; background: ${accent}; color: #fff; border: none; border-radius: 12px; font-family: var(--nx-font-body); font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px ${accentShadow}; }
+        .ld-cta:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 28px ${accentShadow}; }
+        .ld-contact-revealed { width: 100%; padding: 14px 18px; background: var(--nx-bg-2); border: 2px dashed var(--nx-border-2); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; text-decoration: none; transition: background .2s; cursor: pointer; }
+        .ld-contact-revealed:hover { background: var(--nx-bg-3); }
+        .ld-contact-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); display: block; margin-bottom: 2px; }
+        .ld-contact-phone { font-size: 18px; font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 7px; }
+        .ld-contact-email { font-size: 12px; color: var(--nx-text-sub); font-weight: 600; }
+
+        .ld-owner-box { background: rgba(59,130,246,.05); border: 1px solid rgba(59,130,246,.2); border-radius: 14px; padding: 16px; }
+        .ld-owner-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #60a5fa; margin-bottom: 12px; }
+        .ld-owner-btns { display: flex; gap: 10px; }
+        .ld-btn-owner-edit { flex: 1; padding: 11px; text-align: center; background: var(--nx-bg); border: 1px solid var(--nx-border-2); color: var(--nx-text); border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; transition: all .2s; }
+        .ld-btn-owner-edit:hover { border-color: var(--nx-text); }
+        .ld-btn-owner-sold { flex: 1; padding: 11px; border: none; background: #10b981; color: #fff; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: opacity .2s; }
+        .ld-btn-owner-sold:hover { opacity: .85; }
+
+        /* CONTEÚDO PRINCIPAL: ficha técnica + sidebar fina */
+        .ld-main-grid { display: grid; grid-template-columns: 1fr 300px; gap: 32px; align-items: start; }
+        @media (max-width: 860px) { .ld-main-grid { grid-template-columns: 1fr; } }
+
         .ld-tabs { display: flex; gap: 4px; padding-left: 6px; }
         .ld-tab { padding: 11px 20px 13px; border: 1px solid var(--nx-border); border-bottom: none; border-radius: 12px 12px 0 0; background: var(--nx-bg-2); color: var(--nx-text-sub); font-size: 13px; font-weight: 700; cursor: pointer; transform: translateY(2px); transition: all .2s; white-space: nowrap; }
         .ld-tab:hover { color: var(--nx-text-2); }
@@ -291,25 +299,11 @@ export default function Anuncio() {
         .ld-desc-head { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
         .ld-desc-text { font-size: 14px; line-height: 1.8; color: var(--nx-text-2); white-space: pre-wrap; }
 
-        /* sidebar */
         .ld-sidebar { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 14px; }
-        .ld-price-card { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: 20px; padding: 26px; box-shadow: var(--nx-shadow-card); backdrop-filter: blur(16px); }
-        .ld-panel-price { font-family: var(--nx-font-display); font-size: clamp(26px, 3.5vw, 34px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 4px; }
-        .ld-panel-price-m2 { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-bottom: 20px; }
-
-        .ld-cta { width: 100%; padding: 15px; background: ${accent}; color: #fff; border: none; border-radius: 12px; font-family: var(--nx-font-body); font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px ${accentShadow}; }
-        .ld-cta:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 28px ${accentShadow}; }
-
-        .ld-contact-revealed { width: 100%; padding: 15px; background: var(--nx-bg-2); border: 2px dashed var(--nx-border-2); border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; transition: background .2s; cursor: pointer; }
-        .ld-contact-revealed:hover { background: var(--nx-bg-3); }
-        .ld-contact-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); }
-        .ld-contact-phone { font-size: 19px; font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 7px; }
-        .ld-contact-email { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-top: 2px; }
-
-        .ld-divider { height: 1px; background: var(--nx-border); margin: 20px 0; }
+        .ld-finance-card { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: 16px; padding: 22px; box-shadow: var(--nx-shadow-card); }
         .ld-fin-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); margin-bottom: 14px; }
-        .ld-fin-result-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 18px; }
-        .ld-fin-prestacao { font-family: var(--nx-font-display); font-size: 26px; font-weight: 800; color: ${accent}; letter-spacing: -.02em; }
+        .ld-fin-result-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px dashed var(--nx-border-2); }
+        .ld-fin-prestacao { font-family: var(--nx-font-display); font-size: 24px; font-weight: 800; color: ${accent}; letter-spacing: -.02em; }
         .ld-fin-mes { font-size: 12px; color: var(--nx-text-sub); font-weight: 600; margin-left: 3px; }
         .ld-fin-taeg { font-size: 11px; color: var(--nx-text-sub); font-weight: 700; }
         .ld-slider-group { margin-bottom: 14px; }
@@ -321,21 +315,12 @@ export default function Anuncio() {
 
         .ld-seller-panel { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: 16px; padding: 17px 20px; display: flex; align-items: center; gap: 14px; text-decoration: none; transition: all .2s; }
         .ld-seller-panel:hover { border-color: var(--nx-border-2); background: var(--nx-bg-2); }
-        .ld-seller-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--nx-bg-3); display: flex; align-items: center; justify-content: center; font-family: var(--nx-font-display); font-size: 17px; font-weight: 800; color: var(--nx-text); flex-shrink: 0; overflow: hidden; border: 2px solid ${accent}; }
+        .ld-seller-avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--nx-bg-3); display: flex; align-items: center; justify-content: center; font-family: var(--nx-font-display); font-size: 16px; font-weight: 800; color: var(--nx-text); flex-shrink: 0; overflow: hidden; border: 2px solid ${accent}; }
         .ld-seller-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .ld-seller-info { flex: 1; min-width: 0; }
-        .ld-seller-name { font-size: 15px; font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
-        .ld-seller-sub { font-size: 12px; color: var(--nx-text-sub); font-weight: 600; }
+        .ld-seller-name { font-size: 14px; font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+        .ld-seller-sub { font-size: 11px; color: var(--nx-text-sub); font-weight: 600; }
 
-        .ld-owner-box { background: rgba(59,130,246,.05); border: 1px solid rgba(59,130,246,.2); border-radius: 14px; padding: 16px; }
-        .ld-owner-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #60a5fa; margin-bottom: 12px; }
-        .ld-owner-btns { display: flex; gap: 10px; }
-        .ld-btn-owner-edit { flex: 1; padding: 11px; text-align: center; background: var(--nx-bg); border: 1px solid var(--nx-border-2); color: var(--nx-text); border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; transition: all .2s; }
-        .ld-btn-owner-edit:hover { border-color: var(--nx-text); }
-        .ld-btn-owner-sold { flex: 1; padding: 11px; border: none; background: #10b981; color: #fff; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: opacity .2s; }
-        .ld-btn-owner-sold:hover { opacity: .85; }
-
-        /* lightbox */
         .ld-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.92); backdrop-filter: blur(6px); z-index: 9998; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; animation: nx-fade-in .2s; }
         .ld-lightbox-close { position: absolute; top: 18px; right: 22px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; }
         .ld-lightbox-counter { position: absolute; top: 26px; left: 26px; color: rgba(255,255,255,.8); font-size: 13px; font-weight: 700; }
@@ -347,7 +332,6 @@ export default function Anuncio() {
         .ld-lightbox-thumb.active { opacity: 1; border-color: ${accent}; }
         .ld-lightbox-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* sold modal */
         .nx-modal-overlay { position: fixed; inset: 0; background: var(--nx-overlay); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; animation: nx-fade-in .2s; }
         .nx-modal-box { width: 100%; max-width: 440px; background: var(--nx-bg-2); border: 1px solid var(--nx-border-2); border-radius: 20px; padding: 36px 28px; text-align: center; box-shadow: var(--nx-shadow-card); }
         .nx-modal-icon { font-size: 44px; margin-bottom: 14px; }
@@ -360,7 +344,6 @@ export default function Anuncio() {
         .nx-btn-danger:hover { opacity: .85; }
         .nx-btn-danger:disabled { opacity: .5; cursor: not-allowed; }
 
-        /* sugeridos */
         .sugeridos-section { margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--nx-border); }
         .sugeridos-title { font-family: var(--nx-font-display); font-size: 22px; font-weight: 800; color: var(--nx-text); margin-bottom: 24px; letter-spacing: -0.02em; }
         .sugeridos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
@@ -438,85 +421,108 @@ export default function Anuncio() {
             </div>
           </div>
 
-          <div className="ld-grid">
-            <div>
-              {/* GALERIA */}
-              <div className="ld-gallery">
-                <div className="ld-gallery-main" onClick={() => setLightboxAberto(true)}>
-                  {fotos[fotoActiva]
-                    ? <img src={fotos[fotoActiva]} alt={anuncio.titulo} />
-                    : <div className="ld-gallery-placeholder">{isCarro ? '🚗' : '🏠'}</div>
-                  }
-                  <div className="ld-type-badge">
-                    <Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={0.7} />
-                    {isCarro ? 'Automóvel' : 'Imóvel'}
-                  </div>
-                  {fotos.length > 1 && (
-                    <div className="ld-count-badge">
-                      <Icon path={mdiCamera} size={0.65} />
-                      {fotoActiva + 1} / {fotos.length}
-                    </div>
-                  )}
-                  {fotos.length > 1 && (
-                    <>
-                      <button type="button" className="ld-main-arrow ld-arrow-left" onClick={(e) => { e.stopPropagation(); irParaFoto(fotoActiva - 1); }} aria-label="Foto anterior">
-                        <Icon path={mdiChevronLeft} size={1} />
-                      </button>
-                      <button type="button" className="ld-main-arrow ld-arrow-right" onClick={(e) => { e.stopPropagation(); irParaFoto(fotoActiva + 1); }} aria-label="Foto seguinte">
-                        <Icon path={mdiChevronRight} size={1} />
-                      </button>
-                    </>
-                  )}
+          {/* HERO: foto + informação ao lado */}
+          <div className="ld-hero">
+            <div className="ld-hero-media">
+              <div className="ld-hero-photo" onClick={() => setLightboxAberto(true)}>
+                {fotos[fotoActiva]
+                  ? <img src={fotos[fotoActiva]} alt={anuncio.titulo} />
+                  : <div className="ld-hero-placeholder">{isCarro ? '🚗' : '🏠'}</div>
+                }
+                <div className="ld-type-badge">
+                  <Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={0.65} />
+                  {isCarro ? 'Automóvel' : 'Imóvel'}
                 </div>
-
                 {fotos.length > 1 && (
-                  <div className="ld-gallery-thumbs">
-                    {outrasFotos.map((o, idx) => (
-                      <div key={o.i} className="ld-thumb" onClick={() => setFotoActiva(o.i)}>
-                        {o.f ? <img src={o.f} alt="" /> : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: '18px' }}>📷</div>}
-                        {idx === outrasFotos.length - 1 && restantes > 0 && (
-                          <div className="ld-thumb-more" onClick={(e) => { e.stopPropagation(); setLightboxAberto(true); }}>
-                            <Icon path={mdiImageMultipleOutline} size={0.6} /> +{restantes}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                  <div className="ld-count-badge">
+                    <Icon path={mdiCamera} size={0.6} />
+                    {fotoActiva + 1} / {fotos.length}
                   </div>
+                )}
+                {fotos.length > 1 && (
+                  <>
+                    <button type="button" className="ld-main-arrow ld-arrow-left" onClick={(e) => { e.stopPropagation(); irParaFoto(fotoActiva - 1); }} aria-label="Foto anterior">
+                      <Icon path={mdiChevronLeft} size={0.95} />
+                    </button>
+                    <button type="button" className="ld-main-arrow ld-arrow-right" onClick={(e) => { e.stopPropagation(); irParaFoto(fotoActiva + 1); }} aria-label="Foto seguinte">
+                      <Icon path={mdiChevronRight} size={0.95} />
+                    </button>
+                  </>
                 )}
               </div>
 
-              {/* CABEÇALHO */}
-              <div className="ld-header">
-                <div className="ld-title-row">
-                  <h1 className="ld-title">{anuncio.titulo}</h1>
-                  <div className="ld-price">{preco}</div>
+              {fotos.length > 1 && (
+                <div className="ld-thumbstrip">
+                  {fotos.map((f, i) => (
+                    <div key={i} className={`ld-thumb ${fotoActiva === i ? 'active' : ''}`} onClick={() => setFotoActiva(i)}>
+                      {f ? <img src={f} alt="" /> : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: '14px' }}>📷</div>}
+                    </div>
+                  ))}
                 </div>
-                <div className="ld-loc-row">
-                  <Icon path={mdiMapMarkerOutline} size={0.65} />
-                  {localizacaoString}
-                </div>
-                <div className="ld-meta-row">
-                  <span className="estado-badge">● {anuncio.estado || 'Disponível'}</span>
-                  <span className="meta-item"><Icon path={mdiEyeOutline} size={0.65} /> {anuncio.visitas || 0} visualizações</span>
-                  <span className="meta-dot">·</span>
-                  <span className="meta-item">Ref: #{anuncio._id?.slice(-6).toUpperCase()}</span>
-                </div>
+              )}
+            </div>
+
+            <div className="ld-hero-info">
+              <h1 className="ld-hero-title">{anuncio.titulo}</h1>
+              <div className="ld-hero-price">{preco}</div>
+              {precoPorM2 && <div className="ld-hero-price-m2">{precoPorM2}/m²</div>}
+              <div className="ld-loc-row">
+                <Icon path={mdiMapMarkerOutline} size={0.65} />
+                {localizacaoString}
+              </div>
+              <div className="ld-meta-row">
+                <span className="estado-badge">● {anuncio.estado || 'Disponível'}</span>
+                <span className="meta-item"><Icon path={mdiEyeOutline} size={0.65} /> {anuncio.visitas || 0} visualizações</span>
+                <span className="meta-dot">·</span>
+                <span className="meta-item">Ref: #{anuncio._id?.slice(-6).toUpperCase()}</span>
               </div>
 
-              {/* DESTAQUES RÁPIDOS */}
               {destaques.length > 0 && (
-                <div className="ld-highlights">
+                <div className="ld-hero-destaques">
                   {destaques.map((d, i) => (
-                    <div key={i} className="ld-highlight">
-                      <span className="ld-highlight-icon"><Icon path={d.icon} size={0.85} /></span>
-                      <span className="ld-highlight-value">{d.value}</span>
-                      <span className="ld-highlight-label">{d.label}</span>
+                    <div key={i} className="ld-hero-destaque">
+                      <span className="ld-hd-icon"><Icon path={d.icon} size={0.85} /></span>
+                      <div>
+                        <div className="ld-hd-value">{d.value}</div>
+                        <div className="ld-hd-label">{d.label}</div>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* TABS + FICHA */}
+              <div className="ld-hero-action">
+                {isDono ? (
+                  <div className="ld-owner-box">
+                    <div className="ld-owner-label">Gestão do Anúncio</div>
+                    <div className="ld-owner-btns">
+                      <Link to={`/editar/${id}`} className="ld-btn-owner-edit">Editar Dados</Link>
+                      <button type="button" className="ld-btn-owner-sold" onClick={() => setMostrarModalVendido(true)}>✓ Vendido</button>
+                    </div>
+                  </div>
+                ) : mostrarTelefone ? (
+                  <a href={`tel:${telefoneContacto}`} className="ld-contact-revealed">
+                    <div>
+                      <span className="ld-contact-label">Contactar via</span>
+                      <div className="ld-contact-phone">
+                        <Icon path={mdiPhone} size={0.85} color={accent} />
+                        {telefoneContacto}
+                      </div>
+                    </div>
+                    <div className="ld-contact-email">✉ {emailContacto}</div>
+                  </a>
+                ) : (
+                  <button type="button" className="ld-cta" onClick={() => setMostrarTelefone(true)}>
+                    <Icon path={mdiPhone} size={0.85} /> Revelar Contactos
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* CONTEÚDO PRINCIPAL */}
+          <div className="ld-main-grid">
+            <div>
               <div className="ld-tabs">
                 <button type="button" className={`ld-tab ${abaAtiva === 'especificacoes' ? 'active' : ''}`} onClick={() => setAbaAtiva('especificacoes')}>
                   Ficha Técnica
@@ -570,96 +576,60 @@ export default function Anuncio() {
               </div>
             </div>
 
-            {/* SIDEBAR */}
-            <div>
-              <div className="ld-sidebar">
-                <div className="ld-price-card">
-                  <div className="ld-panel-price">{preco}</div>
-                  {precoPorM2 && <div className="ld-panel-price-m2">{precoPorM2}/m²</div>}
-
-                  {isDono ? (
-                    <div className="ld-owner-box">
-                      <div className="ld-owner-label">Gestão do Anúncio</div>
-                      <div className="ld-owner-btns">
-                        <Link to={`/editar/${id}`} className="ld-btn-owner-edit">Editar Dados</Link>
-                        <button type="button" className="ld-btn-owner-sold" onClick={() => setMostrarModalVendido(true)}>✓ Vendido</button>
-                      </div>
+            <div className="ld-sidebar">
+              {isCarro && !isDono && (
+                <div className="ld-finance-card">
+                  <div className="ld-fin-head">Simulação de Crédito</div>
+                  <div className="ld-fin-result-row">
+                    <div>
+                      <span className="ld-fin-prestacao">{prestacaoMensal.toLocaleString('pt-PT')}€</span>
+                      <span className="ld-fin-mes">/mês</span>
                     </div>
-                  ) : (
-                    <>
-                      {mostrarTelefone ? (
-                        <a href={`tel:${telefoneContacto}`} className="ld-contact-revealed">
-                          <span className="ld-contact-label">Contactar via</span>
-                          <div className="ld-contact-phone">
-                            <Icon path={mdiPhone} size={0.9} color={accent} />
-                            {telefoneContacto}
-                          </div>
-                          <div className="ld-contact-email">✉ {emailContacto}</div>
-                        </a>
-                      ) : (
-                        <button type="button" className="ld-cta" onClick={() => setMostrarTelefone(true)}>
-                          <Icon path={mdiPhone} size={0.85} /> Revelar Contactos
-                        </button>
-                      )}
-                    </>
-                  )}
-
-                  {isCarro && !isDono && (
-                    <>
-                      <div className="ld-divider" />
-                      <div className="ld-fin-head">Simulação de Crédito</div>
-                      <div className="ld-fin-result-row">
-                        <div>
-                          <span className="ld-fin-prestacao">{prestacaoMensal.toLocaleString('pt-PT')}€</span>
-                          <span className="ld-fin-mes">/mês</span>
-                        </div>
-                        <div className="ld-fin-taeg">TAEG 7.9%</div>
-                      </div>
-                      <div className="ld-slider-group">
-                        <div className="ld-slider-label-row">
-                          <span>Entrada inicial</span>
-                          <span className="ld-slider-val">{Number(entrada).toLocaleString('pt-PT')}€</span>
-                        </div>
-                        <input
-                          type="range" className="ld-slider"
-                          min="0" max={Math.round(precoValor * 0.7)} step="250"
-                          value={entrada} onChange={e => setEntrada(Number(e.target.value))}
-                        />
-                      </div>
-                      <div className="ld-slider-group">
-                        <div className="ld-slider-label-row">
-                          <span>Prazo</span>
-                          <span className="ld-slider-val">{meses} meses</span>
-                        </div>
-                        <input
-                          type="range" className="ld-slider"
-                          min="24" max="120" step="12"
-                          value={meses} onChange={e => setMeses(Number(e.target.value))}
-                        />
-                      </div>
-                    </>
-                  )}
+                    <div className="ld-fin-taeg">TAEG 7.9%</div>
+                  </div>
+                  <div className="ld-slider-group">
+                    <div className="ld-slider-label-row">
+                      <span>Entrada inicial</span>
+                      <span className="ld-slider-val">{Number(entrada).toLocaleString('pt-PT')}€</span>
+                    </div>
+                    <input
+                      type="range" className="ld-slider"
+                      min="0" max={Math.round(precoValor * 0.7)} step="250"
+                      value={entrada} onChange={e => setEntrada(Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="ld-slider-group">
+                    <div className="ld-slider-label-row">
+                      <span>Prazo</span>
+                      <span className="ld-slider-val">{meses} meses</span>
+                    </div>
+                    <input
+                      type="range" className="ld-slider"
+                      min="24" max="120" step="12"
+                      value={meses} onChange={e => setMeses(Number(e.target.value))}
+                    />
+                  </div>
                 </div>
+              )}
 
-                <Link to={`/vendedor/${donoDoAnuncio?._id}`} className="ld-seller-panel">
-                  <div className="ld-seller-avatar">
-                    {donoDoAnuncio?.avatarUrl ? <img src={donoDoAnuncio.avatarUrl} alt="" /> : inicial}
+              <Link to={`/vendedor/${donoDoAnuncio?._id}`} className="ld-seller-panel">
+                <div className="ld-seller-avatar">
+                  {donoDoAnuncio?.avatarUrl ? <img src={donoDoAnuncio.avatarUrl} alt="" /> : inicial}
+                </div>
+                <div className="ld-seller-info">
+                  <div className="ld-seller-name">
+                    {donoDoAnuncio?.tipo === 'admin'
+                      ? (donoDoAnuncio.nome?.toUpperCase().includes('NOXVELIA') ? donoDoAnuncio.nome : `NOXVELIA ${donoDoAnuncio?.nome}`)
+                      : (donoDoAnuncio?.nome || 'Utilizador Particular')
+                    }
+                    {donoDoAnuncio?.tipo === 'admin' && <Icon path={mdiCheckDecagram} size={0.75} color="var(--nx-accent-blue)" />}
                   </div>
-                  <div className="ld-seller-info">
-                    <div className="ld-seller-name">
-                      {donoDoAnuncio?.tipo === 'admin'
-                        ? (donoDoAnuncio.nome?.toUpperCase().includes('NOXVELIA') ? donoDoAnuncio.nome : `NOXVELIA ${donoDoAnuncio?.nome}`)
-                        : (donoDoAnuncio?.nome || 'Utilizador Particular')
-                      }
-                      {donoDoAnuncio?.tipo === 'admin' && <Icon path={mdiCheckDecagram} size={0.8} color="var(--nx-accent-blue)" />}
-                    </div>
-                    <div className="ld-seller-sub">
-                      {donoDoAnuncio?.tipo === 'admin' ? 'Conta Oficial NOXVELIA' : 'Ver anúncios deste utilizador ›'}
-                    </div>
+                  <div className="ld-seller-sub">
+                    {donoDoAnuncio?.tipo === 'admin' ? 'Conta Oficial NOXVELIA' : 'Ver anúncios deste utilizador ›'}
                   </div>
-                  <Icon path={mdiChevronRight} size={0.85} color="var(--nx-text-sub)" />
-                </Link>
-              </div>
+                </div>
+                <Icon path={mdiChevronRight} size={0.8} color="var(--nx-text-sub)" />
+              </Link>
             </div>
           </div>
 
