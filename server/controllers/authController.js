@@ -33,7 +33,9 @@ export const register = async (req, res) => {
       tipoConta: tipoConta || 'particular',
       nif: tipoConta === 'profissional' ? nif : undefined,
       website: tipoConta === 'profissional' ? website : undefined,
-      verificado: false // Garante que entra como não verificado
+      verificado: false, 
+      rating: 0,           // 🌟 Garante que inicia sem avaliação
+      totalAvaliacoes: 0   // 🌟 Garante que inicia sem avaliadores
     });
 
     const tokenPlano = crypto.randomBytes(32).toString('hex');
@@ -47,7 +49,6 @@ export const register = async (req, res) => {
     enviarEmailVerificacao(utilizadorGuardado.email, utilizadorGuardado.nome, linkVerificacao)
       .catch(e => console.error('Falha ao enviar email de verificação:', e));
 
-    // 🌟 CORREÇÃO 1: Em vez de enviar o Token JWT (que faz auto-login), envia apenas a mensagem
     res.status(201).json({
       mensagem: 'Registo criado com sucesso. Por favor, verifica o teu e-mail para ativar a conta.'
     });
@@ -101,7 +102,8 @@ export const login = async (req, res) => {
         email: utilizador.email,
         tipo: utilizador.tipo,
         tipoConta: utilizador.tipoConta,
-        website: utilizador.website
+        website: utilizador.website,
+        rating: utilizador.rating, // Passa as estrelas para o front no login
       }
     });
   } catch (erro) {
@@ -189,7 +191,6 @@ export const resetPassword = async (req, res) => {
     const { token } = req.params;
     const { password } = req.body;
 
-    // 🌟 CORREÇÃO 2: Garantir a mesma segurança de password do Registo.jsx
     const validarPassword = (pwd) => {
       const temTamanho = pwd.length >= 9;
       const temMaiuscula = /[A-Z]/.test(pwd);

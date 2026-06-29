@@ -13,7 +13,6 @@ import {
   mdiCamera, mdiStar,
 } from '@mdi/js';
 
-// 🌟 Importante: Garante que o caminho para o teu AnuncioCard está correto
 import AnuncioCard from '../shared/AnuncioCard';
 
 export default function Anuncio() {
@@ -36,14 +35,15 @@ export default function Anuncio() {
   const [meses, setMeses] = useState(84);
   const [entrada, setEntrada] = useState(0);
 
-  // Estado para guardar as sugestões de anúncios
   const [sugeridos, setSugeridos] = useState([]);
 
   useEffect(() => {
-    // 🌟 CORREÇÃO: Força o ecrã a subir suavemente para o topo assim que o ID do anúncio mudar
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 1. Salto instantâneo para o topo (simula página nova)
+    window.scrollTo(0, 0);
 
-    // Faz reset aos estados visuais para o novo anúncio carregar limpo
+    // 2. Forçar loading imediato
+    setLoading(true);
+
     setFotoActiva(0);
     setAbaAtiva('especificacoes');
     setMostrarTelefone(false);
@@ -57,13 +57,13 @@ export default function Anuncio() {
         // O DISPARADOR INVISÍVEL DAS ESTATÍSTICAS
         api.post(`/anuncios/${id}/visita`).catch(() => {});
 
-        // BUSCAR ANÚNCIOS SEMELHANTES (Filtra para o mesmo tipo e exclui o anúncio atual)
+        // BUSCAR ANÚNCIOS SEMELHANTES
         api.get('/anuncios')
           .then(res => {
             const listaDeAnuncios = Array.isArray(res.data) ? res.data : (res.data.anuncios || []);
             const recomendados = listaDeAnuncios
               .filter(a => a._id !== data._id && a.tipo === data.tipo)
-              .slice(0, 4); // Mostra no máximo 4 anúncios na montra de baixo
+              .slice(0, 4);
             setSugeridos(recomendados);
           })
           .catch(() => console.error("Não foi possível carregar sugestões."));
@@ -75,7 +75,7 @@ export default function Anuncio() {
       }
     };
     carregar();
-  }, [id]); // Executa sempre que o ID mudar no URL
+  }, [id]);
 
   useEffect(() => {
     if (signed && id) {
@@ -183,6 +183,13 @@ export default function Anuncio() {
   const accent = isCarro ? 'var(--nx-accent-car)' : 'var(--nx-accent-home)';
   const accentShadow = isCarro ? 'rgba(42,193,180,.3)' : 'rgba(124,110,247,.3)';
 
+  // 🌟 DADOS DO VENDEDOR E CONFIANÇA
+  const garantia = anuncio.garantia;
+  const aceitaRetoma = anuncio.aceitaRetoma;
+  const rating = donoDoAnuncio?.rating || 0;
+  const totalAvaliacoes = donoDoAnuncio?.totalAvaliacoes || 0;
+  const anoRegistoUser = donoDoAnuncio?.createdAt ? new Date(donoDoAnuncio.createdAt).getFullYear() : '2026';
+
   return (
     <>
       <Helmet>
@@ -237,6 +244,11 @@ export default function Anuncio() {
         .estado-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
         .meta-dot { color: var(--nx-text-sub); font-size: 10px; }
 
+        /* 🌟 CSS DAS BADGES DE CONFIANÇA */
+        .nx-price-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; padding-bottom: 16px; border-bottom: 1px solid var(--nx-border); }
+        .nx-badge-item { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; background: var(--nx-bg-2); border: 1px solid var(--nx-border); color: var(--nx-text-2); }
+        .nx-badge-item.garantia { background: rgba(42, 193, 180, 0.06); border-color: rgba(42, 193, 180, 0.2); color: #2ac1b4; }
+
         .tabs-wrap { display: flex; gap: 2px; border-bottom: 1px solid var(--nx-border); margin-bottom: 22px; overflow-x: auto; scrollbar-width: none; }
         .tabs-wrap::-webkit-scrollbar { display: none; }
         .tab-btn { padding: 10px 18px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--nx-text-sub); font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all .2s; letter-spacing: .01em; }
@@ -260,7 +272,7 @@ export default function Anuncio() {
         .sidebar-sticky { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 14px; }
         .price-panel { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: 20px; padding: 26px; box-shadow: var(--nx-shadow-card); backdrop-filter: blur(16px); }
         .panel-price { font-family: var(--nx-font-display); font-size: clamp(28px, 3.5vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 4px; }
-        .panel-price-m2 { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-bottom: 22px; }
+        .panel-price-m2 { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-bottom: 12px; }
 
         .btn-contact { width: 100%; padding: 16px; background: ${accent}; color: #fff; border: none; border-radius: 12px; font-family: var(--nx-font-body); font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px ${accentShadow}; }
         .btn-contact:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 28px ${accentShadow}; }
@@ -289,7 +301,11 @@ export default function Anuncio() {
         .seller-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .seller-info { flex: 1; }
         .seller-name { font-size: 15px; font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
-        .seller-sub { font-size: 12px; color: var(--nx-text-sub); font-weight: 600; }
+        .seller-sub { font-size: 12px; color: var(--nx-text-sub); font-weight: 600; margin-top: 4px; }
+        
+        /* 🌟 CSS DAS ESTRELAS */
+        .seller-stars-row { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: #f59e0b; margin-bottom: 2px; }
+        .seller-reviews-count { color: var(--nx-text-sub); font-weight: 500; font-size: 11px; margin-left: 2px; }
 
         .owner-box { background: rgba(59,130,246,.05); border: 1px solid rgba(59,130,246,.2); border-radius: 14px; padding: 18px; margin-top: 16px; }
         .owner-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #60a5fa; margin-bottom: 12px; }
@@ -311,7 +327,6 @@ export default function Anuncio() {
         .nx-btn-danger:hover { opacity: .85; }
         .nx-btn-danger:disabled { opacity: .5; cursor: not-allowed; }
 
-        /* 🌟 CSS DA SECÇÃO DE ANÚNCIOS SUGERIDOS */
         .sugeridos-section { margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--nx-border); }
         .sugeridos-title { font-family: var(--nx-font-display); font-size: 22px; font-weight: 800; color: var(--nx-text); margin-bottom: 24px; letter-spacing: -0.02em; }
         .sugeridos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
@@ -322,9 +337,7 @@ export default function Anuncio() {
           <div className="nx-modal-box" onClick={e => e.stopPropagation()}>
             <div className="nx-modal-icon">🎉</div>
             <h3 className="nx-modal-title">Parabéns pela Venda!</h3>
-            <p className="nx-modal-text">
-              Pretendes eliminar este anúncio de forma permanente dado que o ativo já foi vendido?
-            </p>
+            <p className="nx-modal-text">Pretendes eliminar este anúncio de forma permanente dado que o ativo já foi vendido?</p>
             <div className="nx-modal-footer">
               <button type="button" className="nx-btn-cancel" disabled={eliminandoVendido} onClick={() => setMostrarModalVendido(false)}>Cancelar</button>
               <button type="button" className="nx-btn-danger" disabled={eliminandoVendido} onClick={handleConfirmarVendido}>
@@ -359,44 +372,21 @@ export default function Anuncio() {
             <div>
               <div className="gallery-wrap">
                 <div className="gallery-main">
-                  {fotos[fotoActiva]
-                    ? <img src={fotos[fotoActiva]} alt={anuncio.titulo} />
-                    : <div className="gallery-placeholder">{isCarro ? '🚗' : '🏠'}</div>
-                  }
+                  {fotos[fotoActiva] ? <img src={fotos[fotoActiva]} alt={anuncio.titulo} /> : <div className="gallery-placeholder">{isCarro ? '🚗' : '🏠'}</div>}
                   <div className="gallery-overlay" />
-
-                  <div className="gallery-badge">
-                    <Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={0.7} />
-                    {isCarro ? 'Automóvel' : 'Imóvel'}
-                  </div>
-
-                  {fotos.length > 1 && (
-                    <div className="gallery-counter">
-                      <Icon path={mdiCamera} size={0.65} />
-                      {fotoActiva + 1} / {fotos.length}
-                    </div>
-                  )}
-
+                  <div className="gallery-badge"><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={0.7} />{isCarro ? 'Automóvel' : 'Imóvel'}</div>
+                  {fotos.length > 1 && (<div className="gallery-counter"><Icon path={mdiCamera} size={0.65} />{fotoActiva + 1} / {fotos.length}</div>)}
                   <div className="gallery-bottom">
                     <div className="gallery-title-overlay">{anuncio.titulo}</div>
-                    <div className="gallery-loc">
-                      <Icon path={mdiMapMarkerOutline} size={0.65} />
-                      {localizacaoString}
-                    </div>
+                    <div className="gallery-loc"><Icon path={mdiMapMarkerOutline} size={0.65} />{localizacaoString}</div>
                   </div>
-
                   {fotos.length > 1 && (
                     <>
-                      <button className="arrow-btn arrow-left" onClick={() => setFotoActiva(i => i === 0 ? fotos.length - 1 : i - 1)}>
-                        <Icon path={mdiChevronLeft} size={1.1} />
-                      </button>
-                      <button className="arrow-btn arrow-right" onClick={() => setFotoActiva(i => i === fotos.length - 1 ? 0 : i + 1)}>
-                        <Icon path={mdiChevronRight} size={1.1} />
-                      </button>
+                      <button className="arrow-btn arrow-left" onClick={() => setFotoActiva(i => i === 0 ? fotos.length - 1 : i - 1)}><Icon path={mdiChevronLeft} size={1.1} /></button>
+                      <button className="arrow-btn arrow-right" onClick={() => setFotoActiva(i => i === fotos.length - 1 ? 0 : i + 1)}><Icon path={mdiChevronRight} size={1.1} /></button>
                     </>
                   )}
                 </div>
-
                 {fotos.length > 1 && (
                   <div className="thumbs-row">
                     {fotos.map((f, i) => (
@@ -420,27 +410,16 @@ export default function Anuncio() {
               </div>
 
               <div className="tabs-wrap">
-                <button type="button" className={`tab-btn ${abaAtiva === 'especificacoes' ? 'active' : ''}`} onClick={() => setAbaAtiva('especificacoes')}>
-                  Ficha Técnica
-                </button>
-                {extrasOpcionais.length > 0 && (
-                  <button type="button" className={`tab-btn ${abaAtiva === 'equipamento' ? 'active' : ''}`} onClick={() => setAbaAtiva('equipamento')}>
-                    {isCarro ? 'Equipamento' : 'Detalhes'}
-                  </button>
-                )}
-                <button type="button" className={`tab-btn ${abaAtiva === 'descricao' ? 'active' : ''}`} onClick={() => setAbaAtiva('descricao')}>
-                  Descrição
-                </button>
+                <button type="button" className={`tab-btn ${abaAtiva === 'especificacoes' ? 'active' : ''}`} onClick={() => setAbaAtiva('especificacoes')}>Ficha Técnica</button>
+                {extrasOpcionais.length > 0 && (<button type="button" className={`tab-btn ${abaAtiva === 'equipamento' ? 'active' : ''}`} onClick={() => setAbaAtiva('equipamento')}>{isCarro ? 'Equipamento' : 'Detalhes'}</button>)}
+                <button type="button" className={`tab-btn ${abaAtiva === 'descricao' ? 'active' : ''}`} onClick={() => setAbaAtiva('descricao')}>Descrição</button>
               </div>
 
               {abaAtiva === 'especificacoes' && (
                 <div className="specs-grid">
                   {specs.filter(s => s.value != null && s.value !== '').map((s, i) => (
                     <div key={i} className="spec-card">
-                      <div className="spec-label">
-                        <Icon path={s.icon} size={0.75} />
-                        {s.label}
-                      </div>
+                      <div className="spec-label"><Icon path={s.icon} size={0.75} />{s.label}</div>
                       <div className="spec-value">{s.value}</div>
                     </div>
                   ))}
@@ -451,8 +430,7 @@ export default function Anuncio() {
                 <div className="extras-grid">
                   {extrasOpcionais.map((extra, i) => (
                     <div key={i} className="extra-item">
-                      <span className="extra-check"><Icon path={mdiStar} size={0.75} /></span>
-                      {extra}
+                      <span className="extra-check"><Icon path={mdiStar} size={0.75} /></span>{extra}
                     </div>
                   ))}
                 </div>
@@ -460,10 +438,7 @@ export default function Anuncio() {
 
               {abaAtiva === 'descricao' && (
                 <div className="desc-box">
-                  <div className="desc-head">
-                    <Icon path={mdiFileDocumentOutline} size={0.8} />
-                    Descrição do Anunciante
-                  </div>
+                  <div className="desc-head"><Icon path={mdiFileDocumentOutline} size={0.8} />Descrição do Anunciante</div>
                   <div className="desc-text">{anuncio.descricao || 'Nenhuma descrição detalhada providenciada.'}</div>
                 </div>
               )}
@@ -474,6 +449,17 @@ export default function Anuncio() {
                 <div className="price-panel">
                   <div className="panel-price">{preco}</div>
                   {precoPorM2 && <div className="panel-price-m2">{precoPorM2}/m²</div>}
+
+                  {/* 🌟 VITRINE DE BADGES DE CONFIANÇA */}
+                  <div className="nx-price-badges">
+                    {(garantia || donoDoAnuncio?.tipo === 'admin') && (
+                      <div className="nx-badge-item garantia">🛡️ {garantia || 'Garantia Incluída'}</div>
+                    )}
+                    {aceitaRetoma && (
+                      <div className="nx-badge-item">🔄 Aceita Retoma</div>
+                    )}
+                    <div className="nx-badge-item">⚡ Financiamento</div>
+                  </div>
 
                   {isDono ? (
                     <div className="owner-box">
@@ -488,10 +474,7 @@ export default function Anuncio() {
                       {mostrarTelefone ? (
                         <a href={`tel:${telefoneContacto}`} className="contact-revealed">
                           <span className="contact-label">Contactar via</span>
-                          <div className="contact-phone">
-                            <Icon path={mdiPhone} size={0.9} color={accent} />
-                            {telefoneContacto}
-                          </div>
+                          <div className="contact-phone"><Icon path={mdiPhone} size={0.9} color={accent} />{telefoneContacto}</div>
                           <div className="contact-email">✉ {emailContacto}</div>
                         </a>
                       ) : (
@@ -517,31 +500,21 @@ export default function Anuncio() {
                           <span>Entrada inicial</span>
                           <span className="slider-val">{Number(entrada).toLocaleString('pt-PT')}€</span>
                         </div>
-                        <input
-                          type="range" className="fin-slider"
-                          min="0" max={Math.round(precoValor * 0.7)} step="250"
-                          value={entrada} onChange={e => setEntrada(Number(e.target.value))}
-                        />
+                        <input type="range" className="fin-slider" min="0" max={Math.round(precoValor * 0.7)} step="250" value={entrada} onChange={e => setEntrada(Number(e.target.value))} />
                       </div>
                       <div className="slider-group" style={{ marginBottom: 0 }}>
                         <div className="slider-label-row">
                           <span>Prazo</span>
                           <span className="slider-val">{meses} meses</span>
                         </div>
-                        <input
-                          type="range" className="fin-slider"
-                          min="24" max="120" step="12"
-                          value={meses} onChange={e => setMeses(Number(e.target.value))}
-                        />
+                        <input type="range" className="fin-slider" min="24" max="120" step="12" value={meses} onChange={e => setMeses(Number(e.target.value))} />
                       </div>
                     </div>
                   )}
                 </div>
 
                 <Link to={`/vendedor/${donoDoAnuncio?._id}`} className="seller-panel">
-                  <div className="seller-avatar">
-                    {donoDoAnuncio?.avatarUrl ? <img src={donoDoAnuncio.avatarUrl} alt="" /> : inicial}
-                  </div>
+                  <div className="seller-avatar">{donoDoAnuncio?.avatarUrl ? <img src={donoDoAnuncio.avatarUrl} alt="" /> : inicial}</div>
                   <div className="seller-info">
                     <div className="seller-name">
                       {donoDoAnuncio?.tipo === 'admin'
@@ -550,8 +523,18 @@ export default function Anuncio() {
                       }
                       {donoDoAnuncio?.tipo === 'admin' && <Icon path={mdiCheckDecagram} size={0.8} color="var(--nx-accent-blue)" />}
                     </div>
+
+                    {/* 🌟 SISTEMA DE ESTRELAS DO VENDEDOR */}
+                    <div className="seller-stars-row">
+                      {rating > 0 ? (
+                        <>⭐ {rating.toFixed(1)} <span className="seller-reviews-count">({totalAvaliacoes} avaliações)</span></>
+                      ) : (
+                        <span className="seller-reviews-count" style={{ fontSize: '11px', marginLeft: 0 }}>Sem avaliações ainda</span>
+                      )}
+                    </div>
+
                     <div className="seller-sub">
-                      {donoDoAnuncio?.tipo === 'admin' ? 'Conta Oficial NOXVELIA' : 'Ver anúncios deste utilizador ›'}
+                      Na NOXVELIA desde {anoRegistoUser} · Ver stock ›
                     </div>
                   </div>
                   <Icon path={mdiChevronRight} size={0.85} color="var(--nx-text-sub)" />
@@ -560,14 +543,12 @@ export default function Anuncio() {
             </div>
           </div>
 
-          {/* 🌟 SECÇÃO DE ANÚNCIOS SUGERIDOS */}
+          {/* 🌟 ANÚNCIOS SUGERIDOS */}
           {sugeridos.length > 0 && (
             <div className="sugeridos-section">
               <h3 className="sugeridos-title">Poderá gostar destes anúncios</h3>
               <div className="sugeridos-grid">
-                {sugeridos.map(sug => (
-                  <AnuncioCard key={sug._id} anuncio={sug} />
-                ))}
+                {sugeridos.map(sug => <AnuncioCard key={sug._id} anuncio={sug} />)}
               </div>
             </div>
           )}

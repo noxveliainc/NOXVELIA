@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
   stripeCustomerId:     { type: String, default: null },
   stripeSubscriptionId: { type: String, default: null },
 
-  // ── VERIFICAÇÃO DE EMAIL (NOVO) ────────────────────────────
+  // ── VERIFICAÇÃO DE EMAIL ────────────────────────────
   verificado:       { type: Boolean, default: false },
   tokenVerificacao: { type: String, select: false },
   expiracaoToken:   { type: Date, select: false },
@@ -32,8 +32,12 @@ const userSchema = new mongoose.Schema({
   // ── RESET DE PASSWORD ──────────────────────────────────────
   passwordResetToken:   { type: String, select: false },
   passwordResetExpires: { type: Date,   select: false },
+
+  // 🌟 NOVO: SISTEMA DE CONFIANÇA / REPUTAÇÃO DO VENDEDOR
+  rating:          { type: Number, default: 0 }, // Pontuação de 0 a 5 estrelas
+  totalAvaliacoes: { type: Number, default: 0 }, // Quantas pessoas avaliaram este vendedor
 }, {
-  timestamps: true
+  timestamps: true // Isto cria automaticamente o createdAt, que usamos no Frontend para "Na NOXVELIA desde..."
 });
 
 userSchema.pre('save', async function(next) {

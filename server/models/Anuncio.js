@@ -21,6 +21,10 @@ const anuncioSchema = new mongoose.Schema({
     quantidade: { type: Number, default: 0 }
   }],
   
+  // 🌟 NOVO: Campos de Confiança (Badges)
+  garantia: { type: String, default: null }, // ex: "18 Meses" ou null
+  aceitaRetoma: { type: Boolean, default: false }, // Mostra a badge de retoma se for true
+  
   imovel: {
     tipologia: { type: String, enum: ['T0','T1','T2','T3','T4','T5+'] },
     tipoImovel: { type: String, enum: ['apartamento','moradia','terreno','comercial','garagem'] },
