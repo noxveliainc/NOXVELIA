@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import Icon from '@mdi/react';
-import { mdiAlertCircleOutline, mdiCloudUploadOutline, mdiClose, mdiCrown, mdiShieldCheck } from '@mdi/js';
+import { mdiAlertCircleOutline, mdiCloudUploadOutline, mdiClose, mdiCrown, mdiShieldCheck, mdiShieldOutline, mdiSwapHorizontal } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
+
+const OPCOES_GARANTIA = ['6 meses', '12 meses', '18 meses', '24 meses', 'Garantia de fábrica'];
 
 export default function Publicar() {
   const navigate = useNavigate();
@@ -51,6 +53,9 @@ export default function Publicar() {
     potencia: '',
     cilindrada: '',
     cor: '',
+    // 🌟 NOVO: Badges de Confiança
+    garantia: '',
+    aceitaRetoma: false,
   });
 
   useEffect(() => {
@@ -154,6 +159,10 @@ export default function Publicar() {
           cidade:   form.cidade,
           distrito: form.distrito,
         },
+        // 🌟 Badges de Confiança — null quando não aplicável, para não
+        // mostrar a badge "Garantia Incluída" sem haver garantia real
+        garantia: form.garantia || null,
+        aceitaRetoma: form.tipo === 'carro' ? !!form.aceitaRetoma : false,
         // Dados específicos do tipo de ativo
         ...(form.tipo === 'imovel'
           ? {
@@ -282,6 +291,20 @@ export default function Publicar() {
         .pub-pro-badge-icon { color: var(--nx-gold, #eab308); flex-shrink: 0; }
         .pub-pro-badge-text { font-size: 13px; font-weight: 600; color: var(--nx-text); line-height: 1.4; }
         .pub-pro-badge-text strong { color: var(--nx-gold, #eab308); }
+
+        /* 🌟 NOVO: Cartões de seleção de confiança (Garantia / Retoma) */
+        .pub-trust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 768px) { .pub-trust-grid { grid-template-columns: 1fr; } }
+        .pub-trust-card { border: 1px solid var(--nx-border); border-radius: 14px; padding: 16px; background: rgba(255,255,255,0.02); transition: border-color .2s, background .2s; }
+        .pub-trust-card.is-active { border-color: ${accentColorVar}; background: rgba(${accentRgb}, 0.06); }
+        .pub-trust-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .pub-trust-card-title { font-size: 13px; font-weight: 700; color: var(--nx-text); }
+        .pub-trust-card-desc { font-size: 11.5px; color: var(--nx-text-sub); line-height: 1.5; margin: 0 0 12px; }
+        .pub-switch-row { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--nx-text); }
+        .pub-switch { position: relative; width: 40px; height: 22px; border-radius: 20px; background: var(--nx-border-2); flex-shrink: 0; transition: background .2s; }
+        .pub-switch.checked { background: ${accentColorVar}; }
+        .pub-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .2s; }
+        .pub-switch.checked::after { transform: translateX(18px); }
 
         .pub-submit { width: 100%; padding: 18px; background: ${accentColorVar}; color: #ffffff; border: none; border-radius: 12px; font-family: var(--nx-font-body); font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(${accentRgb}, 0.2); }
         .pub-submit:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-2px); }
@@ -455,10 +478,58 @@ export default function Publicar() {
               </div>
             </div>
 
-            {/* SECÇÃO 4 — Ficha Técnica */}
+            {/* SECÇÃO 4 — 🌟 NOVO: Confiança & Garantias (badges do anúncio) */}
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">04</span>
+                <h2 className="pub-section-title">Confiança & Garantias</h2>
+              </div>
+
+              <div className="pub-trust-grid">
+                <div className={`pub-trust-card ${form.garantia ? 'is-active' : ''}`}>
+                  <div className="pub-trust-card-head">
+                    <Icon path={mdiShieldOutline} size={0.9} color={accentColorVar} />
+                    <span className="pub-trust-card-title">Garantia Incluída</span>
+                  </div>
+                  <p className="pub-trust-card-desc">
+                    Se ofereces garantia neste ativo, escolhe o período. Isto mostra uma badge de confiança no anúncio.
+                  </p>
+                  <select className="pub-input" name="garantia" value={form.garantia} onChange={handle}>
+                    <option value="">Sem garantia</option>
+                    {OPCOES_GARANTIA.map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+
+                {form.tipo === 'carro' && (
+                  <div className={`pub-trust-card ${form.aceitaRetoma ? 'is-active' : ''}`}>
+                    <div className="pub-trust-card-head">
+                      <Icon path={mdiSwapHorizontal} size={0.9} color={accentColorVar} />
+                      <span className="pub-trust-card-title">Aceita Retoma</span>
+                    </div>
+                    <p className="pub-trust-card-desc">
+                      Indica se estás disposto a aceitar o carro do comprador como parte do pagamento.
+                    </p>
+                    <label className="pub-switch-row">
+                      <span className={`pub-switch ${form.aceitaRetoma ? 'checked' : ''}`}>
+                        <input
+                          type="checkbox"
+                          name="aceitaRetoma"
+                          checked={form.aceitaRetoma}
+                          onChange={handle}
+                          style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', margin: 0, cursor: 'pointer' }}
+                        />
+                      </span>
+                      {form.aceitaRetoma ? 'Sim, aceito retoma' : 'Não aceito retoma'}
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* SECÇÃO 5 — Ficha Técnica */}
+            <div>
+              <div className="pub-section-header">
+                <span className="pub-section-num">05</span>
                 <h2 className="pub-section-title">Ficha Técnica</h2>
               </div>
 

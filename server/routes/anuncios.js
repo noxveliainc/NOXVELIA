@@ -195,8 +195,11 @@ router.post('/', verificarToken, async (req, res) => {
     // ── Sanitização do body ──────────────────────────────────
     // Remover campos que só o servidor deve definir para
     // prevenir manipulação via body (ex: {destacado: true}).
+ // Dentro do router.post('/')
+// ...
+// ── Sanitização do body ──────────────────────────────────
     const {
-      destacado: _ignorado,          // nunca aceitar do cliente
+      destacado: _ignorado,
       dataExpiracaoDestaque: _ignore2,
       utilizador: _ignore3,
       visitas: _ignore4,
@@ -208,24 +211,24 @@ router.post('/', verificarToken, async (req, res) => {
     // ── Construir o payload final ────────────────────────────
     const dadosAnuncio = {
       ...bodyLimpo,
+      garantia: req.body.garantia || null,
+      aceitaRetoma: !!req.body.aceitaRetoma,
       utilizador: req.user.id,
-      // Sobrepor a localização com as coordenadas resolvidas no backend
       localizacao: {
         cidade,
         distrito,
         ...(coordenadas ? { coordenadas } : {}),
       },
-      // AUTO-DESTAQUE: só o servidor decide; nunca o cliente
+      // AUTO-DESTAQUE: só o servidor decide
       ...(ehPremium || ehAdmin
-        ? {
-            destacado:             true,
-            dataExpiracaoDestaque: null, // sem expiração — revogado pelo webhook Stripe
-          }
-        : {
-            destacado: false,
-          }
+        ? { destacado: true, dataExpiracaoDestaque: null }
+        : { destacado: false }
       ),
     };
+
+    const novoAnuncio = new Anuncio(dadosAnuncio);
+    await novoAnuncio.save();
+    res.status(201).json(novoAnuncio);
 
     const novoAnuncio = new Anuncio(dadosAnuncio);
     await novoAnuncio.save();
@@ -250,7 +253,7 @@ router.put('/:id', verificarToken, async (req, res) => {
     if (String(anuncio.utilizador) !== req.user.id && req.user.tipo !== 'admin')
       return res.status(403).json({ erro: 'Acesso negado.' });
 
-    // Sanitizar campos protegidos no update também
+    // Sanitizar campos protegidos
     const {
       destacado: _ig1,
       dataExpiracaoDestaque: _ig2,
@@ -260,9 +263,16 @@ router.put('/:id', verificarToken, async (req, res) => {
       ...bodyLimpo
     } = req.body;
 
+    // Atualizar com os novos campos de confiança
     const atualizado = await Anuncio.findByIdAndUpdate(
       req.params.id,
-      bodyLimpo,
+      { 
+        $set: { 
+          ...bodyLimpo, 
+          garantia: req.body.garantia || null, 
+          aceitaRetoma: !!req.body.aceitaRetoma 
+        } 
+      },
       { new: true, runValidators: true }
     );
     res.json(atualizado);
