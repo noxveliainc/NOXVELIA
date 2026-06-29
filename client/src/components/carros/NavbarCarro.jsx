@@ -25,6 +25,9 @@ export default function NavbarCarro() {
   const [isUpdatingPwd, setIsUpdatingPwd] = useState(false);
   const [mostrarPassword, setMostrarPassword] = useState(false);
 
+  // 🌟 NOVO: Estado para controlar o menu mobile
+  const [menuMobileAberto, setMenuMobileAberto] = useState(false);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -65,11 +68,13 @@ export default function NavbarCarro() {
 
   const handleIrParaHome = (e) => {
     e.preventDefault();
+    setMenuMobileAberto(false);
     navigate('/carros');
   };
 
   const handlePremium = (e) => {
     e.preventDefault();
+    setMenuMobileAberto(false);
     navigate('/planos');
   };
 
@@ -109,6 +114,7 @@ export default function NavbarCarro() {
         .ncr-switcher-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; color: #475569; }
         .ncr-switcher-item:hover { background: #f1f5f9; color: #0f172a; }
         .ncr-switcher-item.current { background: rgba(42, 193, 180, 0.08); color: #2ac1b4; pointer-events: none; }
+        
         .ncr-actions { display: flex; align-items: center; gap: 8px; }
         .ncr-btn-publish { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #0f172a; color: #ffffff; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s ease; margin-right: 12px; }
         .ncr-btn-publish:hover { background: #1e293b; }
@@ -123,7 +129,6 @@ export default function NavbarCarro() {
         .ncr-btn-premium.active { color: #eab308; }
         .ncr-btn-premium.active svg { fill: rgba(234,179,8,0.15); }
 
-        /* 🌟 PRO BADGE — idêntico ao NavbarImovel */
         .ncr-pro-badge { display: inline-flex; align-items: center; padding: 2px 7px; background: linear-gradient(135deg, #2ac1b4, #0f9d92); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
         .ncr-ud-pro { margin-left: auto; padding: 2px 7px; background: linear-gradient(135deg, #2ac1b4, #0f9d92); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
 
@@ -167,12 +172,30 @@ export default function NavbarCarro() {
         .nav-modal-btn { width: 100%; padding: 16px; background: #2ac1b4; color: #040711; border: none; border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: opacity 0.2s; margin-top: 12px; }
         .nav-modal-btn:hover { opacity: 0.9; }
         .nav-modal-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        @media (max-width: 640px) {
+
+        /* 🌟 CSS MOBILE - MENU HAMBÚRGUER E GAVETA LATERAL */
+        .ncr-burger-btn { display: none; background: none; border: none; color: #475569; cursor: pointer; padding: 6px; align-items: center; justify-content: center; }
+        .ncr-mobile-drawer { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
+        .ncr-drawer-overlay { position: absolute; inset: 0; background: rgba(4, 7, 17, 0.4); opacity: 0; backdrop-filter: blur(4px); transition: opacity 0.3s ease; pointer-events: none; }
+        .ncr-drawer-content { position: absolute; top: 0; right: 0; width: 290px; height: 100vh; background: #ffffff; box-shadow: -10px 0 40px rgba(0,0,0,0.15); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); padding: 24px; box-sizing: border-box; display: flex; flex-direction: column; pointer-events: auto; }
+        
+        .ncr-mobile-drawer.active { pointer-events: auto; }
+        .ncr-mobile-drawer.active .ncr-drawer-overlay { opacity: 1; pointer-events: auto; }
+        .ncr-mobile-drawer.active .ncr-drawer-content { transform: translateX(0); }
+
+        .ncr-drawer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+        .ncr-drawer-user { display: flex; align-items: center; gap: 12px; text-align: left; }
+        .ncr-drawer-close { background: none; border: none; color: #64748b; cursor: pointer; padding: 4px; }
+        .ncr-drawer-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .ncr-drawer-link { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; color: #334155; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.2s; border: none; background: transparent; width: 100%; text-align: left; cursor: pointer; }
+        .ncr-drawer-link:hover { background: #f1f5f9; color: #0f172a; }
+        .ncr-drawer-link.publish { background: #0f172a; color: #ffffff; justify-content: center; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(15,23,42,0.15); }
+        .ncr-drawer-link.logout-btn { color: #ef4444; margin-top: auto; border-top: 1px solid #f1f5f9; padding-top: 16px; border-radius: 0; }
+
+        @media (max-width: 820px) {
           .ncr-root { padding: 0 20px; height: 64px; }
-          .ncr-btn-publish { padding: 8px 14px; margin-right: 4px; font-size: 12px; }
-          .ncr-divider { margin: 0 4px; }
-          .ncr-username { display: none; }
-          .ncr-user-trigger { padding: 0; border: none; }
+          .ncr-actions { display: none; }
+          .ncr-burger-btn { display: inline-flex; }
         }
       `}</style>
 
@@ -191,9 +214,9 @@ export default function NavbarCarro() {
                   <input className="nav-modal-input" type={mostrarPassword ? "text" : "password"} value={dadosPassword.atual} onChange={e => setDadosPassword({...dadosPassword, atual: e.target.value})} required />
                   <button type="button" className="nav-modal-toggle-pwd" onClick={() => setMostrarPassword(!mostrarPassword)}>
                     {mostrarPassword ? (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                     ) : (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     )}
                   </button>
                 </div>
@@ -204,9 +227,9 @@ export default function NavbarCarro() {
                   <input className="nav-modal-input" type={mostrarPassword ? "text" : "password"} value={dadosPassword.nova} onChange={e => setDadosPassword({...dadosPassword, nova: e.target.value})} required minLength={9} />
                   <button type="button" className="nav-modal-toggle-pwd" onClick={() => setMostrarPassword(!mostrarPassword)}>
                     {mostrarPassword ? (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                     ) : (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     )}
                   </button>
                 </div>
@@ -217,9 +240,9 @@ export default function NavbarCarro() {
                   <input className="nav-modal-input" type={mostrarPassword ? "text" : "password"} value={dadosPassword.confirmar} onChange={e => setDadosPassword({...dadosPassword, confirmar: e.target.value})} required minLength={9} />
                   <button type="button" className="nav-modal-toggle-pwd" onClick={() => setMostrarPassword(!mostrarPassword)}>
                     {mostrarPassword ? (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                     ) : (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     )}
                   </button>
                 </div>
@@ -238,49 +261,28 @@ export default function NavbarCarro() {
             <img src="/logo-noxvelia.png" alt="NOXVELIA" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
             <div className="ncr-logo-brand-text">NOXVELIA <span>Drive</span></div>
           </div>
-          {dadosUser?.tipo === 'admin' && (
-            <Link to="/admin" className="ncr-icon-btn" title="Painel de Administração" style={{ color: '#ef4444', marginLeft: '8px' }} onClick={e => e.stopPropagation()}>
-              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-            </Link>
-          )}
           {dropdownAberto && (
             <div className="ncr-switcher-dropdown" onClick={e => e.stopPropagation()}>
-              <Link to="/carros" className="ncr-switcher-item current">NOXVELIA Drive</Link>
-              <Link to="/imoveis" className="ncr-switcher-item">NOXVELIA Estate</Link>
+              <Link to="/carros" className="ncr-switcher-item current" onClick={() => setDropdownAberto(false)}>NOXVELIA Drive</Link>
+              <Link to="/imoveis" className="ncr-switcher-item" onClick={() => setDropdownAberto(false)}>NOXVELIA Estate</Link>
             </div>
           )}
         </div>
 
+        {/* 🌟 DESKTOP ACTIONS */}
         <div className="ncr-actions">
           {signed ? (
             <>
               <Link to="/publicar" className="ncr-btn-publish">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="6" y1="1" x2="6" y2="11" /><line x1="1" y1="6" x2="11" y2="6" /></svg>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="6" y1="1" x2="6" y2="11" /><line x1="1" y1="6" x2="11" y2="6" /></svg>
                 Criar Anúncio
               </Link>
-
-              <button type="button" onClick={handleIrParaHome} className="ncr-icon-btn" title="Início — NOXVELIA Drive">
-                <svg viewBox="0 0 24 24">
-                  <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" />
-                  <polyline points="9 21 9 12 15 12 15 21" />
-                </svg>
-              </button>
-
-              <button type="button" onClick={handlePremium} className={`ncr-btn-premium${isPremium ? ' active' : ''}`} title={isPremium ? 'Plano Profissional Ativo' : 'Aderir ao Plano Profissional'}>
-                <svg viewBox="0 0 24 24">
-                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                  <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-                  <line x1="12" y1="12" x2="12" y2="16" />
-                  <line x1="10" y1="14" x2="14" y2="14" />
-                </svg>
-              </button>
-
-              <Link to="/favoritos" state={{ from: location.pathname }} className="ncr-icon-btn" title="Favoritos">
-                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-              </Link>
-
+              <button type="button" onClick={handleIrParaHome} className="ncr-icon-btn"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" /><polyline points="9 21 9 12 15 12 15 21" /></svg></button>
+              <button type="button" onClick={handlePremium} className={`ncr-btn-premium${isPremium ? ' active' : ''}`}><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" /></svg></button>
+              <Link to="/favoritos" className="ncr-icon-btn"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg></Link>
+              
               <div ref={sinoRef} style={{ position: 'relative' }}>
-                <button type="button" className="ncr-icon-btn" onClick={() => setSinoAberto(!sinoAberto)} title="Notificações">
+                <button type="button" className="ncr-icon-btn" onClick={() => setSinoAberto(!sinoAberto)}>
                   <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                   {naoLidasSino > 0 && <span className="ncr-badge">{naoLidasSino}</span>}
                 </button>
@@ -298,41 +300,19 @@ export default function NavbarCarro() {
                   </div>
                 )}
               </div>
-
               <div className="ncr-divider" />
-
               <div ref={userMenuRef} style={{ position: 'relative' }}>
                 <button className={`ncr-user-trigger ${userMenuAberto ? 'active' : ''}`} onClick={() => setUserMenuAberto(!userMenuAberto)}>
-                  <div className="ncr-avatar">
-                    {avatarImg ? <img src={avatarImg} alt="Perfil" /> : <span className="ncr-avatar-initial">{inicial}</span>}
-                  </div>
-                  {primeiroNome && (
-                    <span className="ncr-username">
-                      {primeiroNome}
-                      {/* 🌟 BADGE PRO */}
-                      {isPremium && <span className="ncr-pro-badge">PRO</span>}
-                    </span>
-                  )}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: '#94a3b8' }}><path d="M6 9l6 6 6-6"/></svg>
+                  <div className="ncr-avatar">{avatarImg ? <img src={avatarImg} alt="Perfil" /> : <span className="ncr-avatar-initial">{inicial}</span>}</div>
+                  {primeiroNome && <span className="ncr-username">{primeiroNome} {isPremium && <span className="ncr-pro-badge">PRO</span>}</span>}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
                 </button>
-
                 {userMenuAberto && (
                   <div className="ncr-user-dropdown" onClick={(e) => e.stopPropagation()}>
-                    <Link to="/perfil" onClick={() => setUserMenuAberto(false)} className="ncr-ud-item">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                      O Meu Perfil
-                      {/* 🌟 BADGE PRO no dropdown */}
-                      {isPremium && <span className="ncr-ud-pro">PRO</span>}
-                    </Link>
-                    <button onClick={() => { setUserMenuAberto(false); setMostrarModalPassword(true); }} className="ncr-ud-item">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                      Alterar Password
-                    </button>
+                    <Link to="/perfil" onClick={() => setUserMenuAberto(false)} className="ncr-ud-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>O Meu Perfil {isPremium && <span className="ncr-ud-pro">PRO</span>}</Link>
+                    <button onClick={() => { setUserMenuAberto(false); setMostrarModalPassword(true); }} className="ncr-ud-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Alterar Password</button>
                     <div className="ncr-ud-divider" />
-                    <button onClick={() => { setUserMenuAberto(false); logout(); }} className="ncr-ud-item logout">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                      Terminar Sessão
-                    </button>
+                    <button onClick={() => { setUserMenuAberto(false); logout(); }} className="ncr-ud-item logout"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Terminar Sessão</button>
                   </div>
                 )}
               </div>
@@ -344,6 +324,51 @@ export default function NavbarCarro() {
             </div>
           )}
         </div>
+
+        {/* 🌟 MOBILE BURGER BUTTON */}
+        <button type="button" className="ncr-burger-btn" onClick={() => setMenuMobileAberto(true)}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+
+        {/* 🌟 MOBILE DRAWER (GAVETA NATIVA) */}
+        <div className={`ncr-mobile-drawer ${menuMobileAberto ? 'active' : ''}`}>
+          <div className="ncr-drawer-overlay" onClick={() => setMenuMobileAberto(false)} />
+          <div className="ncr-drawer-content">
+            <div className="ncr-drawer-header">
+              {signed ? (
+                <div className="ncr-drawer-user">
+                  <div className="ncr-avatar">{avatarImg ? <img src={avatarImg} alt="Perfil" /> : <span className="ncr-avatar-initial">{inicial}</span>}</div>
+                  <span style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>Olá, {primeiroNome}!</span>
+                </div>
+              ) : (
+                <span style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>Menu</span>
+              )}
+              <button className="ncr-drawer-close" onClick={() => setMenuMobileAberto(false)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+
+            <div className="ncr-drawer-menu">
+              {signed ? (
+                <>
+                  <Link to="/publicar" className="ncr-drawer-link publish" onClick={() => setMenuMobileAberto(false)}>+ Criar Anúncio</Link>
+                  <Link to="/perfil" className="ncr-drawer-link" onClick={() => setMenuMobileAberto(false)}>👤 O Meu Perfil {isPremium && <span className="ncr-ud-pro">PRO</span>}</Link>
+                  <button type="button" className="ncr-drawer-link" onClick={handleIrParaHome}>🚗 Início (Drive)</button>
+                  <button type="button" className="ncr-drawer-link" onClick={handlePremium}>💼 Plano Profissional {isPremium && '✓'}</button>
+                  <Link to="/favoritos" className="ncr-drawer-link" onClick={() => setMenuMobileAberto(false)}>❤️ Favoritos</Link>
+                  <button type="button" className="ncr-drawer-link" onClick={() => { setMenuMobileAberto(false); setMostrarModalPassword(true); }}>🔐 Alterar Password</button>
+                  <button type="button" className="ncr-drawer-link logout-btn" onClick={() => { setMenuMobileAberto(false); logout(); }}>🚪 Terminar Sessão</button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="ncr-drawer-link publish" onClick={() => setMenuMobileAberto(false)}>Entrar</Link>
+                  <Link to="/registo" className="ncr-drawer-link" style={{ justifyContent: 'center', border: '1px solid #cbd5e1' }} onClick={() => setMenuMobileAberto(false)}>Registar Conta</Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
       </nav>
     </>
   );
