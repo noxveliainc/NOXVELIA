@@ -230,10 +230,6 @@ router.post('/', verificarToken, async (req, res) => {
     await novoAnuncio.save();
     res.status(201).json(novoAnuncio);
 
-    const novoAnuncio = new Anuncio(dadosAnuncio);
-    await novoAnuncio.save();
-    res.status(201).json(novoAnuncio);
-
   } catch (err) {
     console.error('❌ Erro ao publicar anúncio:', err);
     res.status(500).json({ erro: 'Erro ao publicar o anúncio.' });
