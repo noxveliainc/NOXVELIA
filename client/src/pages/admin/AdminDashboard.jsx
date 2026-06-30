@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
-// 🛡️ Substituição Total para MDI (Zero Lucide-React)
 import Icon from '@mdi/react';
 import { 
   mdiAccountMultiple, mdiFileDocumentOutline, mdiCar, mdiHomeOutline, 
   mdiTrashCanOutline, mdiShieldOutline, mdiLoading, mdiCheck, mdiClose, 
   mdiOpenInNew, mdiCurrencyEur, mdiMagnify, mdiChevronDown, mdiStar, 
-  mdiClockOutline, mdiAlertOutline, mdiCrown, mdiChartTimelineVariant, mdiFilterVariant
+  mdiClockOutline, mdiAlertOutline, mdiCrown, mdiChartTimelineVariant, 
+  mdiFilterVariant, mdiPhoneOutline, mdiEmailOutline, mdiContentCopy
 } from '@mdi/js';
 
 /* ------------------------------------------------------------------ */
-/* NOXVELIA · Soberania — Admin Command Center                       */
-/* Design language: "Mission Control" — deep navy/ink canvas,        */
+/* NOXVELIA · Soberania — Admin Command Center                        */
+/* Design language: "Mission Control" — deep navy/ink canvas,         */
 /* amber sovereign accent, monospace data readouts, hairline grids.  */
 /* ------------------------------------------------------------------ */
 
@@ -56,6 +56,9 @@ export default function AdminDashboard() {
   const [erro, setErro] = useState('');
   const [activeTab, setActiveTab] = useState('contas');
   const [isDeleting, setIsDeleting] = useState(null);
+  
+  // Feedback visual para quando se copia um contacto
+  const [copiadoFeedback, setCopiadoFeedback] = useState(null);
 
   const [searchUsers, setSearchUsers] = useState('');
   const [filterPlano, setFilterPlano] = useState('todos');
@@ -90,23 +93,14 @@ export default function AdminDashboard() {
     carregarQuartelGeneral();
   }, [signed, user, navigate]);
 
-  const banirUtilizador = async (id, nome) => {
-    if (window.confirm(`Soberano, tens a certeza absoluta que queres banir permanentemente: ${nome}?`)) {
-      setIsDeleting(id);
-      try {
-        await api.delete(`/admin/utilizadores/${id}`);
-        setUtilizadores(utilizadores.filter(u => u._id !== id));
-        setStats(prev => prev ? { ...prev, totalUsers: (prev.totalUsers || 1) - 1 } : prev);
-      } catch (err) {
-        alert(err.response?.data?.erro || 'Erro ao banir.');
-      } finally {
-        setIsDeleting(null);
-      }
-    }
+  const copiarParaClipboard = (texto, idTracker) => {
+    navigator.clipboard.writeText(texto);
+    setCopiadoFeedback(idTracker);
+    setTimeout(() => setCopiadoFeedback(null), 2000);
   };
 
   const apagarAnuncio = async (id, titulo) => {
-    if (window.confirm(`Queres eliminar o anúncio "${titulo}"?`)) {
+    if (window.confirm(`Tens a certeza que pretendes eliminar permanentemente o anúncio: "${titulo}"?`)) {
       setIsDeleting(id);
       try {
         await api.delete(`/admin/anuncios/${id}`);
@@ -160,9 +154,9 @@ export default function AdminDashboard() {
     return utilizadores.filter(u => {
       const matchSearch = !searchUsers ||
         (u.nome?.toLowerCase().includes(searchUsers.toLowerCase()) ||
-         u.email?.toLowerCase().includes(searchUsers.toLowerCase()));
+         u.email?.toLowerCase().includes(searchUsers.toLowerCase()) ||
+         u.telefone?.includes(searchUsers));
       
-      // 🌟 LÓGICA DE FILTROS ATUALIZADA PARA PROFISSIONAIS E PARTICULARES
       const matchPlano =
         filterPlano === 'todos' ||
         (filterPlano === 'admin' && u.tipo === 'admin') ||
@@ -227,7 +221,7 @@ export default function AdminDashboard() {
         @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .nx-row { animation: fadeUp 0.25s ease both; }
         .nx-row:hover { background: rgba(255,255,255,0.02); }
-        .nx-btn { transition: all 0.15s ease; }
+        .nx-btn { transition: all 0.15s ease; text-decoration: none; }
         .nx-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.15); }
         .nx-btn:active:not(:disabled) { transform: translateY(0); }
         .nx-tab { transition: all 0.15s ease; }
@@ -237,6 +231,10 @@ export default function AdminDashboard() {
         .nx-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
         .nx-scroll::-webkit-scrollbar-thumb { background: ${COLORS.borderStrong}; border-radius: 3px; }
         .nx-live { animation: pulse 2s ease-in-out infinite; }
+        
+        .contact-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; font-family: ${FONT_MONO}; font-size: 11px; color: ${COLORS.textDim}; cursor: pointer; transition: all 0.2s; }
+        .contact-badge:hover { background: rgba(255,255,255,0.08); color: #fff; border-color: rgba(255,255,255,0.2); }
+        .contact-badge.copied { background: ${COLORS.greenDim}; color: ${COLORS.green}; border-color: rgba(34,211,165,0.3); }
       `}</style>
 
       <div style={{ maxWidth: '1320px', margin: '0 auto' }}>
@@ -292,7 +290,7 @@ export default function AdminDashboard() {
 
         {/* ===================== KPI GRID ===================== */}
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '14px', marginBottom: '28px'
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '28px'
         }}>
           {[
             { label: 'Utilizadores', value: stats?.totalUsers ?? 0, sub: `${totalPremium} premium`, color: COLORS.blue, icon: <Icon path={mdiAccountMultiple} size={0.8} /> },
@@ -354,7 +352,7 @@ export default function AdminDashboard() {
           paddingBottom: '0px', overflowX: 'auto'
         }}>
           {[
-            { id: 'contas', label: 'Gestão de Contas', icon: <Icon path={mdiAccountMultiple} size={0.7} />, count: utilizadores.length },
+            { id: 'contas', label: 'Gestão & Auditoria', icon: <Icon path={mdiAccountMultiple} size={0.7} />, count: utilizadores.length },
             { id: 'anuncios', label: 'Moderação de Anúncios', icon: <Icon path={mdiFileDocumentOutline} size={0.7} />, count: anuncios.length },
             { id: 'pedidos', label: 'Pedidos de Destaque', icon: <Icon path={mdiStar} size={0.7} />, count: pedidosDestaque.length, premium: true },
           ].map(tab => {
@@ -395,18 +393,18 @@ export default function AdminDashboard() {
           padding: '24px', overflowX: 'auto'
         }} className="nx-scroll">
 
-          {/* ---------- CONTAS ---------- */}
+          {/* ---------- CONTAS / AUDITORIA ---------- */}
           {activeTab === 'contas' && (
             <>
               <PanelToolbar
                 searchValue={searchUsers}
                 onSearch={setSearchUsers}
-                placeholder="Procurar por nome ou email..."
+                placeholder="Procurar por nome, email ou telefone..."
                 filters={[
                   { id: 'todos', label: 'Todos' },
                   { id: 'admin', label: 'Soberanos' },
-                  { id: 'profissional', label: 'Stands/Agências' }, // 🌟 NOVO FILTRO
-                  { id: 'particular', label: 'Particulares' },      // 🌟 NOVO FILTRO
+                  { id: 'profissional', label: 'Stands/Agências' },
+                  { id: 'particular', label: 'Particulares' },
                   { id: 'premium', label: 'Premium' },
                 ]}
                 activeFilter={filterPlano}
@@ -414,13 +412,13 @@ export default function AdminDashboard() {
                 resultCount={utilizadoresFiltrados.length}
                 totalCount={utilizadores.length}
               />
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
                 <thead>
                   <tr style={{ color: COLORS.textFaint, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: `1px solid ${COLORS.border}`, fontFamily: FONT_MONO }}>
-                    <th style={{ padding: '10px 12px' }}>Utilizador</th>
+                    <th style={{ padding: '10px 12px' }}>Utilizador & Contactos</th>
                     <th style={{ padding: '10px 12px' }}>Tipo de Conta / Plano</th>
                     <th style={{ padding: '10px 12px' }}>Registado a</th>
-                    <th style={{ padding: '10px 12px', textAlign: 'right' }}>Ações</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right' }}>Ações de Auditoria</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -431,34 +429,62 @@ export default function AdminDashboard() {
                       const isSoberano = u._id === user?.id || u._id === user?._id;
                       return (
                         <tr key={u._id} className="nx-row" style={{ borderBottom: `1px solid ${COLORS.border}`, color: '#cbd5e1', animationDelay: `${idx * 0.02}s` }}>
-                          <td style={{ padding: '14px 12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <Avatar nome={u.nome} isSoberano={u.tipo === 'admin'} premium={u.premiumAtivo} />
-                            <div>
-                              <div style={{ fontWeight: 500, color: '#fff', fontSize: '14px' }}>{u.nome}</div>
-                              <div style={{ fontSize: '12px', color: COLORS.textFaint, fontFamily: FONT_MONO }}>{u.email}</div>
+                          
+                          {/* Coluna 1: Avatar, Nome e Contactos Copiáveis */}
+                          <td style={{ padding: '16px 12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                              <Avatar nome={u.nome} isSoberano={u.tipo === 'admin'} premium={u.premiumAtivo} />
+                              <div>
+                                <div style={{ fontWeight: 600, color: '#fff', fontSize: '14px', marginBottom: '6px' }}>{u.nome}</div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                  
+                                  {/* Botão de Email */}
+                                  <button 
+                                    className={`contact-badge ${copiadoFeedback === `email-${u._id}` ? 'copied' : ''}`}
+                                    onClick={() => copiarParaClipboard(u.email, `email-${u._id}`)}
+                                    title="Clique para copiar o email"
+                                  >
+                                    <Icon path={copiadoFeedback === `email-${u._id}` ? mdiCheck : mdiEmailOutline} size={0.5} />
+                                    {u.email}
+                                  </button>
+
+                                  {/* Botão de Telefone */}
+                                  <button 
+                                    className={`contact-badge ${copiadoFeedback === `tel-${u._id}` ? 'copied' : ''}`}
+                                    onClick={() => copiarParaClipboard(u.telefone, `tel-${u._id}`)}
+                                    title="Clique para copiar o telemóvel"
+                                  >
+                                    <Icon path={copiadoFeedback === `tel-${u._id}` ? mdiCheck : mdiPhoneOutline} size={0.5} />
+                                    {u.telefone || 'Sem número'}
+                                  </button>
+                                  
+                                </div>
+                              </div>
                             </div>
                           </td>
-                          <td style={{ padding: '14px 12px' }}>
-                            {/* 🌟 NOVA EXIBIÇÃO DE BADGES DUPLAS */}
+
+                          <td style={{ padding: '16px 12px' }}>
                             <PlanoBadge tipo={u.tipo} premium={u.premiumAtivo} tipoConta={u.tipoConta} />
                           </td>
-                          <td style={{ padding: '14px 12px', color: COLORS.textDim, fontSize: '13px', fontFamily: FONT_MONO }}>
+
+                          <td style={{ padding: '16px 12px', color: COLORS.textDim, fontSize: '13px', fontFamily: FONT_MONO }}>
                             {u.createdAt ? formatarData(u.createdAt) : '—'}
                           </td>
-                          <td style={{ padding: '14px 12px', textAlign: 'right' }}>
-                            {!isSoberano ? (
-                              <ActionButton
-                                onClick={() => banirUtilizador(u._id, u.nome)}
-                                loading={isDeleting === u._id}
-                                color={COLORS.red}
-                                icon={<Icon path={mdiTrashCanOutline} size={0.6} />}
-                                label="Banir"
-                              />
-                            ) : (
-                              <span style={{ color: COLORS.textFaint, fontSize: '12px', fontStyle: 'italic', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                <Icon path={mdiShieldOutline} size={0.6} /> Intocável
-                              </span>
-                            )}
+
+                          <td style={{ padding: '16px 12px', textAlign: 'right' }}>
+                            <Link 
+                              to={`/vendedor/${u._id}`} 
+                              target="_blank"
+                              className="nx-btn"
+                              style={{
+                                background: 'transparent', border: `1px solid ${COLORS.blue}`,
+                                color: COLORS.blue, padding: '7px 13px', borderRadius: '7px',
+                                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                fontWeight: 700, fontSize: '12px', fontFamily: FONT_MONO, letterSpacing: '0.03em'
+                              }}
+                            >
+                              <Icon path={mdiOpenInNew} size={0.6} /> VER PERFIL
+                            </Link>
                           </td>
                         </tr>
                       );
@@ -486,7 +512,7 @@ export default function AdminDashboard() {
                 resultCount={anunciosFiltrados.length}
                 totalCount={anuncios.length}
               />
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
                 <thead>
                   <tr style={{ color: COLORS.textFaint, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: `1px solid ${COLORS.border}`, fontFamily: FONT_MONO }}>
                     <th style={{ padding: '10px 12px' }}>Anúncio</th>
@@ -501,17 +527,20 @@ export default function AdminDashboard() {
                   ) : (
                     anunciosFiltrados.map((a, idx) => (
                       <tr key={a._id} className="nx-row" style={{ borderBottom: `1px solid ${COLORS.border}`, color: '#cbd5e1', animationDelay: `${idx * 0.02}s` }}>
-                        <td style={{ padding: '14px 12px', fontWeight: 500, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                          {a.titulo || 'Anúncio Sem Título'}
-                          {a.destacado && (
-                            <span style={{
-                              background: COLORS.goldDim, color: COLORS.gold, fontSize: '10px',
-                              padding: '3px 7px', borderRadius: '5px', fontWeight: 700, display: 'inline-flex',
-                              alignItems: 'center', gap: '4px', fontFamily: FONT_MONO, letterSpacing: '0.05em'
-                            }}>
-                              <Icon path={mdiStar} size={0.5} color={COLORS.gold} /> DESTACADO
-                            </span>
-                          )}
+                        <td style={{ padding: '14px 12px', fontWeight: 500, color: '#fff', fontSize: '14px' }}>
+                          <Link to={`/anuncio/${a._id}`} target="_blank" style={{ color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ textDecoration: 'underline', textUnderlineOffset: '4px' }}>{a.titulo || 'Anúncio Sem Título'}</span>
+                            <Icon path={mdiOpenInNew} size={0.5} color={COLORS.textDim} />
+                            {a.destacado && (
+                              <span style={{
+                                background: COLORS.goldDim, color: COLORS.gold, fontSize: '10px',
+                                padding: '3px 7px', borderRadius: '5px', fontWeight: 700, display: 'inline-flex',
+                                alignItems: 'center', gap: '4px', fontFamily: FONT_MONO, letterSpacing: '0.05em'
+                              }}>
+                                <Icon path={mdiStar} size={0.5} color={COLORS.gold} /> DESTACADO
+                              </span>
+                            )}
+                          </Link>
                         </td>
                         <td style={{ padding: '14px 12px' }}>
                           {a.tipo === 'carro'
@@ -540,7 +569,7 @@ export default function AdminDashboard() {
 
           {/* ---------- PEDIDOS DE DESTAQUE ---------- */}
           {activeTab === 'pedidos' && (
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
               <thead>
                 <tr style={{ color: COLORS.textFaint, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: `1px solid ${COLORS.border}`, fontFamily: FONT_MONO }}>
                   <th style={{ padding: '10px 12px' }}>Anúncio Alvo</th>
@@ -650,7 +679,7 @@ export default function AdminDashboard() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Sub-components                                                    */
+/* Sub-components                                                     */
 /* ------------------------------------------------------------------ */
 
 function Avatar({ nome, isSoberano, premium }) {
@@ -660,7 +689,7 @@ function Avatar({ nome, isSoberano, premium }) {
   else if (premium) { bg = 'rgba(167,139,250,0.15)'; border = 'rgba(167,139,250,0.3)'; }
   return (
     <div style={{
-      width: '38px', height: '38px', borderRadius: '50%', background: bg, color: '#fff',
+      width: '42px', height: '42px', borderRadius: '50%', background: bg, color: '#fff',
       display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
       fontFamily: FONT_DISPLAY, fontSize: '15px', border: `1px solid ${border}`, flexShrink: 0
     }}>
@@ -669,7 +698,6 @@ function Avatar({ nome, isSoberano, premium }) {
   );
 }
 
-// 🌟 NOVO COMPONENTE PLANO BADGE QUE MOSTRA DUAS BADGES (TIPO + PLANO)
 function PlanoBadge({ tipo, premium, tipoConta }) {
   if (tipo === 'admin') {
     return (
