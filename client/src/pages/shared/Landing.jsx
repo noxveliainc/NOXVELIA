@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import NavbarLanding from '../../components/NavbarLanding';
+import NavbarLanding from './NavbarLanding';
 
 const mundos = {
   estate: {

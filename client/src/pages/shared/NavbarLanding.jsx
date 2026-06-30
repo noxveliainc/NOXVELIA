@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 // Navbar da Landing Page — fixa e flutua transparente sobre o hero em
 // ecrã inteiro, tornando-se sólida assim que se ultrapassa essa secção.
