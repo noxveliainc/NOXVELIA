@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 
@@ -44,7 +43,6 @@ export const AuthProvider = ({ children }) => {
       setUser(dadosUtilizador);
       return response.data;
     } catch (err) {
-      // 🌟 CORREÇÃO: Lança o erro para o Login.jsx conseguir ler o setErro
       throw err; 
     }
   };

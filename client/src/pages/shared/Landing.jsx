@@ -1,100 +1,40 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const CURSOR_SIZE = 32;
-const LERP_FACTOR = 0.12;
 
 const panels = [
   {
     id: 'imoveis',
-    label: 'NOXVELIA',
-    tag: 'estate',
-    sublabel: 'Estate Division',
+    label: 'NOXVELIA Estate',
+    tag: 'Imobiliário Premium',
     route: '/imoveis',
-    accentMid: '#3ecf8e',
-    accentDim: 'rgba(62,207,142,0.04)',
-    bg: 'linear-gradient(160deg, #040f09 0%, #071a10 60%, #0a2416 100%)',
+    accent: '#3ecf8e',
     img: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1400&q=80',
-    description: 'Plataforma cognitiva para ativos imobiliários, residências premium e investimentos de alto padrão.',
-    number: '01',
+    description: 'Encontre a sua próxima residência de luxo ou oportunidade de investimento imobiliário.',
     btnBg: '#3ecf8e',
-    tagBg: 'rgba(62, 207, 142, 0.1)',
-    tagColor: '#3ecf8e'
+    btnText: '#ffffff',
   },
   {
     id: 'carros',
-    label: 'NOXVELIA',
-    tag: 'drive',
-    sublabel: 'Drive Division',
+    label: 'NOXVELIA Drive',
+    tag: 'Automóveis de Prestígio',
     route: '/carros',
-    accentMid: '#2ac1b4',
-    accentDim: 'rgba(42,193,180,0.04)',
-    bg: 'linear-gradient(160deg, #040d0f 0%, #07171a 60%, #0a2024 100%)',
+    accent: '#2ac1b4',
     img: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=80',
-    description: 'Ecossistema inteligente para frotas comerciais, desportivos de prestígio e veículos elétricos.',
-    number: '02',
+    description: 'Explore a nossa seleção rigorosa de veículos desportivos, familiares e elétricos.',
     btnBg: '#2ac1b4',
-    tagBg: 'rgba(42, 193, 180, 0.1)',
-    tagColor: '#3cd1c4'
+    btnText: '#ffffff',
   },
 ];
 
 export default function Landing() {
   const navigate = useNavigate();
-  const cursorRef = useRef(null);
-  const cursorDotRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
 
-  const animState = useRef({
-    mouseX: -200, mouseY: -200,
-    curX: -200, curY: -200,
-    raf: null,
-    running: false,
-  });
-
-  const startLoop = useCallback(() => {
-    const state = animState.current;
-    if (state.running) return;
-    state.running = true;
-
-    const tick = () => {
-      const s = animState.current;
-      s.curX += (s.mouseX - s.curX) * LERP_FACTOR;
-      s.curY += (s.mouseY - s.curY) * LERP_FACTOR;
-
-      if (cursorRef.current) {
-        cursorRef.current.style.transform =
-          `translate(${s.curX - CURSOR_SIZE / 2}px,${s.curY - CURSOR_SIZE / 2}px)`;
-      }
-      s.raf = requestAnimationFrame(tick);
-    };
-
-    state.raf = requestAnimationFrame(tick);
-  }, []);
-
   useEffect(() => {
-    const id = requestAnimationFrame(() => setLoaded(true));
-
-    const onMove = (e) => {
-      const s = animState.current;
-      s.mouseX = e.clientX;
-      s.mouseY = e.clientY;
-      if (cursorDotRef.current) {
-        cursorDotRef.current.style.transform =
-          `translate(${e.clientX - 4}px,${e.clientY - 4}px)`;
-      }
-    };
-
-    window.addEventListener('mousemove', onMove, { passive: true });
-    startLoop();
-
-    return () => {
-      cancelAnimationFrame(id);
-      window.removeEventListener('mousemove', onMove);
-      cancelAnimationFrame(animState.current.raf);
-      animState.current.running = false;
-    };
-  }, [startLoop]);
+    // Um pequeno delay para a animação suave de entrada
+    const timer = setTimeout(() => setLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <>
@@ -105,154 +45,137 @@ export default function Landing() {
 
         .pp-root { 
           font-family: 'Inter', sans-serif; 
-          background: #020617; 
-          color: #f8fafc; 
+          background: #ffffff; 
+          color: #0f172a; 
           min-height: 100vh; 
           overflow: hidden; 
-          cursor: none;
+          position: relative;
         }
 
-        .pp-cursor { position: fixed; top: 0; left: 0; width: ${CURSOR_SIZE}px; height: ${CURSOR_SIZE}px; border: 1px solid rgba(60,209,196,0.25); border-radius: 50%; pointer-events: none; z-index: 9999; will-change: transform; mix-blend-mode: difference; }
-        .pp-cursor-dot { position: fixed; top: 0; left: 0; width: 6px; height: 6px; background: #3cd1c4; border-radius: 50%; pointer-events: none; z-index: 9999; will-change: transform; mix-blend-mode: difference; }
+        /* ── LOGO GLOBAL NO TOPO ── */
+        .pp-global-logo {
+          position: absolute;
+          top: 40px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 100;
+          opacity: 0;
+          animation: fadeDown 0.8s 0.2s ease forwards;
+        }
+        .pp-global-logo img {
+          height: 48px;
+          width: auto;
+        }
 
         /* ── HERO SPLIT GRID ── */
-        .pp-hero { display: grid; grid-template-columns: 1fr 1fr; height: 100vh; width: 100%; }
+        .pp-hero { 
+          display: flex; 
+          height: 100vh; 
+          width: 100%; 
+        }
 
         .pp-panel { 
           position: relative; 
           overflow: hidden; 
           display: flex; 
           flex-direction: column; 
-          justify-content: center; 
+          justify-content: flex-end; 
           align-items: center;    
-          padding: 80px 64px; 
+          padding: 80px 40px; 
           transition: flex 0.7s cubic-bezier(0.76, 0, 0.24, 1); 
           flex: 1;
+          cursor: pointer;
         }
-        .pp-panel:hover { flex: 1.15; }
+        .pp-panel:hover { flex: 1.25; }
 
         .pp-panel-bg { 
           position: absolute; 
           inset: 0; 
           background-size: cover; 
           background-position: center; 
-          opacity: 0.14; 
-          transition: opacity 0.7s ease, transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
-          transform: scale(1.02); 
-          will-change: transform, opacity; 
+          transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+          transform: scale(1); 
+          will-change: transform; 
         }
-        .pp-panel:hover .pp-panel-bg { opacity: 0.26; transform: scale(1.0); }
+        .pp-panel:hover .pp-panel-bg { transform: scale(1.05); }
 
-        .pp-panel-overlay { position: absolute; inset: 0; pointer-events: none; }
-
-        .pp-panel-number { 
+        /* Gradiente Branco que sobe desde baixo para ler o texto perfeitamente */
+        .pp-panel-overlay { 
           position: absolute; 
-          top: 50%; 
-          left: 50%; 
-          transform: translate(-50%, -50%); 
-          font-family: 'Plus Jakarta Sans', sans-serif; 
-          font-size: clamp(140px, 20vw, 240px); 
-          font-weight: 800; 
-          line-height: 1; 
-          color: transparent; 
-          -webkit-text-stroke: 1px rgba(244, 244, 245, 0.015); 
+          inset: 0; 
+          background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0.85) 25%, rgba(255,255,255,0) 70%); 
           pointer-events: none; 
-          transition: -webkit-text-stroke-color 0.5s, transform 0.6s; 
-          user-select: none; 
-          letter-spacing: -0.05em; 
         }
-        .pp-panel:hover .pp-panel-number { -webkit-text-stroke-color: rgba(244, 244, 245, 0.03); transform: translate(-50%, -50%) scale(1.02); }
 
-        .pp-divider { position: absolute; top: 0; right: 0; width: 1px; height: 100%; background: rgba(255, 255, 255, 0.03); z-index: 2; }
+        .pp-divider { 
+          position: absolute; 
+          top: 0; 
+          right: 0; 
+          width: 1px; 
+          height: 100%; 
+          background: rgba(0, 0, 0, 0.08); 
+          z-index: 2; 
+        }
 
-        /* ── CONTEÚDO CENTRALIZADO ── */
+        /* ── CONTEÚDO ── */
         .pp-panel-content { 
           position: relative; 
           z-index: 5; 
           opacity: 0; 
-          transform: translateY(12px); 
+          transform: translateY(20px); 
           transition: opacity 0.7s ease, transform 0.7s ease; 
           display: flex;
           flex-direction: column;
           align-items: center; 
           text-align: center;  
+          max-width: 480px;
         }
         .pp-panel-content.loaded { opacity: 1; transform: none; }
         .pp-panel:first-child .pp-panel-content { transition-delay: 0.3s; }
         .pp-panel:last-child .pp-panel-content { transition-delay: 0.4s; }
 
-        .pp-panel-brand-box {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 24px;
-        }
-
-        .pp-panel-text-flex {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-        }
-        .pp-panel-title-wrapper {
-          display: flex;
-          align-items: center; 
-          gap: 12px;
-        }
-
-        .pp-panel-sublabel { 
+        .pp-panel-tag { 
           font-size: 11px; 
-          font-weight: 600; 
-          letter-spacing: 0.06em; 
+          font-weight: 700; 
+          letter-spacing: 0.1em; 
           text-transform: uppercase; 
-          opacity: 0.35;
+          color: #64748b;
+          margin-bottom: 8px;
         }
         
         .pp-panel-title { 
           font-family: 'Plus Jakarta Sans', sans-serif; 
-          font-size: clamp(28px, 3.2vw, 44px); 
+          font-size: clamp(32px, 4vw, 48px); 
           font-weight: 800; 
-          line-height: 1; 
-          letter-spacing: -0.02em; 
-          color: #ffffff; 
-        }
-
-        .pp-panel-badge {
-          font-family: 'Inter', sans-serif;
-          font-size: 13px;
-          font-weight: 600;
-          letter-spacing: 0.03em;
-          text-transform: uppercase;
-          padding: 6px 14px;
-          border-radius: 6px;
-          line-height: 1;
-          display: inline-block;
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          line-height: 1.1; 
+          letter-spacing: -0.03em; 
+          color: #0f172a; 
+          margin-bottom: 16px;
         }
         
         .pp-panel-desc { 
-          font-size: 14px; 
+          font-size: 15px; 
           line-height: 1.6; 
-          color: #94a3b8; 
-          max-width: 360px; 
-          margin-bottom: 36px; 
-          font-weight: 400; 
+          color: #475569; 
+          margin-bottom: 32px; 
+          font-weight: 500; 
         }
 
         .pp-btn-primary { 
           display: inline-flex; 
           align-items: center; 
           gap: 10px; 
-          padding: 14px 28px; 
+          padding: 16px 32px; 
           font-family: 'Inter', sans-serif; 
-          font-size: 13px; 
-          font-weight: 600; 
+          font-size: 14px; 
+          font-weight: 700; 
           border: none; 
-          cursor: none; 
-          border-radius: 8px; 
-          transition: transform 0.2s, background-color 0.2s; 
+          cursor: pointer; 
+          border-radius: 12px; 
+          transition: transform 0.2s, box-shadow 0.2s; 
+          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
+        .pp-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         .pp-btn-primary:active { transform: scale(0.98); }
 
         .pp-btn-arrow { display: inline-block; transition: transform 0.2s; }
@@ -260,97 +183,79 @@ export default function Landing() {
 
         .pp-tagline { 
           position: fixed; 
-          bottom: 32px; 
+          bottom: 24px; 
           left: 50%; 
           transform: translateX(-50%); 
           z-index: 50; 
           font-size: 11px; 
-          font-weight: 500; 
-          letter-spacing: 0.03em; 
-          color: #475569; 
+          font-weight: 600; 
+          letter-spacing: 0.05em; 
+          color: #94a3b8; 
           opacity: 0; 
           transition: opacity 0.6s 0.6s ease; 
           white-space: nowrap; 
+          pointer-events: none;
         }
         .pp-tagline.loaded { opacity: 1; }
 
+        @keyframes fadeDown {
+          from { opacity: 0; transform: translate(-50%, -10px); }
+          to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
         @media(max-width:768px) {
-          .pp-hero { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-          .pp-panel { padding: 48px 32px; }
-          .pp-cursor, .pp-cursor-dot { display: none; }
-          .pp-root { cursor: default; }
-          .pp-panel, .pp-btn-primary { cursor: pointer; }
-          .pp-panel-title-wrapper { flex-direction: column; align-items: center; gap: 8px; }
+          .pp-hero { flex-direction: column; }
+          .pp-panel { padding: 48px 24px; justify-content: flex-end; }
+          .pp-panel:hover { flex: 1; }
+          .pp-divider { width: 100%; height: 1px; top: auto; bottom: 0; left: 0; }
+          .pp-global-logo { top: 24px; }
         }
       `}</style>
 
       <div className="pp-root">
-        <div ref={cursorRef} className="pp-cursor" />
-        <div ref={cursorDotRef} className="pp-cursor-dot" />
+        
+        {/* LOGO CENTRAL UNIFICADO NO TOPO */}
+        <div className="pp-global-logo">
+          <img src="/logo-noxvelia.png" alt="NOXVELIA" />
+        </div>
 
-        {/* 🌟 Cabeçalho superior esquerdo foi removido conforme o teu pedido */}
-
-        {/* Módulos Operacionais Centralizados */}
+        {/* Módulos Operacionais */}
         <main className="pp-hero">
           {panels.map((panel, i) => (
-            <section key={panel.id} className="pp-panel" style={{ background: panel.bg }}>
+            <section 
+              key={panel.id} 
+              className="pp-panel" 
+              onClick={() => navigate(panel.route)}
+            >
               <div
                 className="pp-panel-bg"
                 style={{ backgroundImage: `url(${panel.img})` }}
               />
-              <div
-                className="pp-panel-overlay"
-                style={{ background: `radial-gradient(ellipse at bottom, ${panel.accentDim} 0%, transparent 65%)` }}
-              />
+              <div className="pp-panel-overlay" />
 
-              <div className="pp-panel-number">{panel.number}</div>
               {i === 0 && <div className="pp-divider" />}
 
               <div className={`pp-panel-content${loaded ? ' loaded' : ''}`}>
                 
-                <div className="pp-panel-brand-box">
-                  {/* 🌟 NOVA LOGO NOS PAINÉIS CENTRAIS */}
-                 
-<img 
-  src="/logo-noxvelia.png" 
-  alt="NOXVELIA" 
-  style={{ height: '64px', width: 'auto', objectFit: 'contain' }} 
-/>
-                  
-                  
-                  <div className="pp-panel-text-flex">
-                    <p className="pp-panel-sublabel">{panel.sublabel}</p>
-                    <div className="pp-panel-title-wrapper">
-                      <h2 className="pp-panel-title">{panel.label}</h2>
-                      <span 
-                        className="pp-panel-badge" 
-                        style={{ background: panel.tagBg, color: panel.tagColor }}
-                      >
-                        {panel.tag}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
+                <p className="pp-panel-tag" style={{ color: panel.accent }}>{panel.tag}</p>
+                <h2 className="pp-panel-title">{panel.label}</h2>
                 <p className="pp-panel-desc">{panel.description}</p>
                 
-                <div className="pp-panel-actions">
-                  <button
-                    onClick={() => navigate(panel.route)}
-                    className="pp-btn-primary"
-                    style={{ background: panel.btnBg, color: '#020617' }}
-                  >
-                    Aceder a NOXVELIA {panel.tag}
-                    <span className="pp-btn-arrow">→</span>
-                  </button>
-                </div>
+                <button
+                  className="pp-btn-primary"
+                  style={{ background: panel.btnBg, color: panel.btnText }}
+                >
+                  Entrar na Plataforma
+                  <span className="pp-btn-arrow">→</span>
+                </button>
+
               </div>
             </section>
           ))}
         </main>
 
         <div className={`pp-tagline${loaded ? ' loaded' : ''}`}>
-          NOXVELIA Ecosystem &bull; Intelligence Platforms &bull; Portugal &bull; 2026
+          NOXVELIA PORTUGAL &copy; 2026
         </div>
       </div>
     </>

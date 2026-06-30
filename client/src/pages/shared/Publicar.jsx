@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import Icon from '@mdi/react';
-import { mdiAlertCircleOutline, mdiCloudUploadOutline, mdiClose, mdiCrown, mdiShieldCheck, mdiShieldOutline, mdiSwapHorizontal } from '@mdi/js';
+import { 
+  mdiAlertCircleOutline, mdiCloudUploadOutline, mdiClose, mdiCrown, 
+  mdiShieldCheckOutline, mdiSwapHorizontal 
+} from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 
@@ -25,7 +28,6 @@ export default function Publicar() {
   const [equipamento, setEquipamento] = useState([]);
   const [novoExtra, setNovoExtra] = useState('');
 
-  // Modal da barreira de pagamento (só aparece para utilizadores FREE)
   const [modalPremiumAberto, setModalPremiumAberto] = useState(false);
 
   const [form, setForm] = useState({
@@ -53,7 +55,6 @@ export default function Publicar() {
     potencia: '',
     cilindrada: '',
     cor: '',
-    // 🌟 NOVO: Badges de Confiança
     garantia: '',
     aceitaRetoma: false,
   });
@@ -139,12 +140,7 @@ export default function Publicar() {
       return;
     }
 
-    // ── Geocoding foi movido para o backend ──────────────────
-    // O frontend envia apenas cidade + distrito. O servidor
-    // resolve as coordenadas via Nominatim antes de guardar.
-
     try {
-      // Construção limpa do payload — sem campos redundantes
       const payload = {
         tipo:      form.tipo,
         titulo:    form.titulo,
@@ -154,16 +150,12 @@ export default function Publicar() {
         email:     form.email,
         fotos,
         equipamento: form.tipo === 'carro' ? equipamento : [],
-        // Apenas cidade + distrito; coordenadas resolvidas no backend
         localizacao: {
           cidade:   form.cidade,
           distrito: form.distrito,
         },
-        // 🌟 Badges de Confiança — null quando não aplicável, para não
-        // mostrar a badge "Garantia Incluída" sem haver garantia real
         garantia: form.garantia || null,
         aceitaRetoma: form.tipo === 'carro' ? !!form.aceitaRetoma : false,
-        // Dados específicos do tipo de ativo
         ...(form.tipo === 'imovel'
           ? {
               imovel: {
@@ -190,15 +182,12 @@ export default function Publicar() {
               },
             }
         ),
-        // NOTA: NÃO enviamos `destacado`. O backend decide sempre
-        // com base no papel real do utilizador (premiumAtivo / admin).
       };
 
       const res = await api.post('/anuncios', payload);
       navigate('/sucesso/' + res.data._id);
 
     } catch (err) {
-      // Interceção da barreira de pagamento
       if (err.response?.data?.erro === 'LIMITE_ATINGIDO') {
         setModalPremiumAberto(true);
       } else {
@@ -217,115 +206,110 @@ export default function Publicar() {
 
   const modelosDisponiveis    = form.marca    ? getModelosPorMarca(form.marca)        : [];
   const cidadesDisponiveis    = form.distrito ? DISTRITOS_CIDADES_PT[form.distrito]   : [];
-  const accentColorVar        = form.tipo === 'carro' ? 'var(--nx-accent-car)' : 'var(--nx-accent-home)';
-  const accentRgb             = form.tipo === 'carro' ? '42, 193, 180'         : '99, 179, 237';
+  const accentColorVar        = form.tipo === 'carro' ? '#2ac1b4' : '#3ecf8e';
+  const accentRgb             = form.tipo === 'carro' ? '42, 193, 180' : '62, 207, 142';
   const ehPremium             = user?.premiumAtivo === true;
 
   return (
     <>
       <style>{`
-        .pub-root { background: var(--nx-bg); color: var(--nx-text); min-height: calc(100vh - 72px); font-family: var(--nx-font-body); padding: 48px 24px; transition: background 0.3s ease; }
+        .pub-root { background: #f8fafc; color: #0f172a; min-height: calc(100vh - 72px); font-family: 'Inter', sans-serif; padding: 48px 24px; transition: background 0.3s ease; }
         .pub-container { max-width: 860px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
-        .pub-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--nx-border); padding-bottom: 24px; margin-bottom: 40px; flex-wrap: wrap; gap: 16px; }
-        .pub-title { font-family: var(--nx-font-display); font-size: 32px; font-weight: 800; margin: 0 0 4px 0; letter-spacing: -0.02em; }
-        .pub-subtitle { font-size: 14px; color: var(--nx-text-sub); margin: 0; }
+        .pub-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 24px; margin-bottom: 40px; flex-wrap: wrap; gap: 16px; }
+        .pub-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 32px; font-weight: 800; margin: 0 0 4px 0; letter-spacing: -0.02em; color: #0f172a; }
+        .pub-subtitle { font-size: 14px; color: #64748b; margin: 0; }
 
-        .btn-cancel { padding: 10px 20px; background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: 12px; color: var(--nx-text); font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; box-shadow: var(--nx-shadow-btn); }
-        .btn-cancel:hover { background: var(--nx-bg-2); border-color: var(--nx-border-2); transform: translateY(-2px); }
+        .btn-cancel { padding: 10px 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; color: #475569; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .btn-cancel:hover { background: #f1f5f9; border-color: #cbd5e1; color: #0f172a; transform: translateY(-2px); }
 
-        .pub-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 16px; border-radius: 12px; color: var(--nx-danger); font-size: 14px; font-weight: 500; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
+        .pub-error { background: #fef2f2; border: 1px solid #fecaca; padding: 16px; border-radius: 12px; color: #ef4444; font-size: 14px; font-weight: 500; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
 
-        .pub-form { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: 24px; padding: 40px; box-shadow: var(--nx-shadow-card); display: flex; flex-direction: column; gap: 40px; }
+        .pub-form { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 40px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 40px; }
 
-        .pub-section-header { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--nx-border); padding-bottom: 12px; margin-bottom: 24px; }
-        .pub-section-num { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: rgba(${accentRgb}, 0.15); color: ${accentColorVar}; border: 1px solid rgba(${accentRgb}, 0.3); border-radius: 50%; font-size: 11px; font-weight: 800; }
-        .pub-section-title { font-family: var(--nx-font-display); font-size: 16px; font-weight: 800; margin: 0; }
+        .pub-section-header { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 24px; }
+        .pub-section-num { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: rgba(${accentRgb}, 0.1); color: ${accentColorVar}; border: 1px solid rgba(${accentRgb}, 0.2); border-radius: 50%; font-size: 11px; font-weight: 800; }
+        .pub-section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 800; margin: 0; color: #0f172a; }
 
         .pub-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .pub-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
         @media (max-width: 768px) { .pub-grid-2, .pub-grid-3 { grid-template-columns: 1fr; } }
 
-        .pub-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--nx-text-sub); margin-bottom: 7px; }
+        .pub-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; margin-bottom: 7px; }
 
-        .pub-input { width: 100%; padding: 11px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; color: var(--nx-text); font-family: var(--nx-font-body); font-size: 14px; font-weight: 500; outline: none; transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
-        .pub-input::placeholder { color: rgba(255, 255, 255, 0.25); font-weight: 400; }
-        .pub-input:hover:not(:disabled):not(:focus) { border-color: rgba(255, 255, 255, 0.22); background: rgba(255, 255, 255, 0.06); }
-        .pub-input:disabled { opacity: 0.38; cursor: not-allowed; background: rgba(255, 255, 255, 0.02); }
-        .pub-input:focus { border-color: ${accentColorVar}; box-shadow: 0 0 0 4px rgba(${accentRgb}, 0.35), inset 0 1px 2px rgba(0,0,0,0.2); background: rgba(255, 255, 255, 0.08); }
+        .pub-input { width: 100%; padding: 11px 14px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; color: #0f172a; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; outline: none; transition: border-color 0.18s ease, box-shadow 0.18s ease; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
+        .pub-input::placeholder { color: #94a3b8; font-weight: 400; }
+        .pub-input:hover:not(:disabled):not(:focus) { border-color: #94a3b8; }
+        .pub-input:disabled { opacity: 0.5; cursor: not-allowed; background: #f8fafc; }
+        .pub-input:focus { border-color: ${accentColorVar}; box-shadow: 0 0 0 3px rgba(${accentRgb}, 0.15); }
 
-        select.pub-input { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; }
-        select.pub-input option { background: #0f172a; color: #ffffff; font-weight: 500; }
+        select.pub-input { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; }
+        select.pub-input option { background: #ffffff; color: #0f172a; }
         textarea.pub-input { resize: vertical; min-height: 120px; line-height: 1.6; }
-        input[type=number].pub-input::-webkit-inner-spin-button, input[type=number].pub-input::-webkit-outer-spin-button { opacity: 0.4; }
 
-        .pub-toggle-box { display: flex; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: 12px; padding: 4px; gap: 4px; }
-        .pub-toggle-btn { flex: 1; padding: 10px; border: none; background: transparent; color: var(--nx-text-sub); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-        .pub-toggle-btn:not(:disabled):hover { background: var(--nx-bg-3); }
-        .pub-toggle-btn:disabled { cursor: not-allowed; opacity: 0.3; text-decoration: line-through; }
-        .pub-toggle-btn.active { background: var(--nx-card-bg); color: var(--nx-text); border: 1px solid var(--nx-border-2); box-shadow: var(--nx-shadow-btn); text-decoration: none; opacity: 1; }
+        .pub-toggle-box { display: flex; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px; gap: 4px; }
+        .pub-toggle-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .pub-toggle-btn:not(:disabled):hover { color: #0f172a; }
+        .pub-toggle-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .pub-toggle-btn.active { background: #ffffff; color: #0f172a; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); opacity: 1; }
 
-        .pub-upload-zone { border: 2px dashed rgba(255, 255, 255, 0.15); border-radius: 16px; padding: 32px 16px; text-align: center; cursor: pointer; background: rgba(255, 255, 255, 0.02); transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .pub-upload-zone:hover { border-color: ${accentColorVar}; background: rgba(${accentRgb}, 0.03); }
-        .pub-upload-icon { color: var(--nx-text-sub); margin-bottom: 12px; transition: color 0.2s; }
+        .pub-upload-zone { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 32px 16px; text-align: center; cursor: pointer; background: #f8fafc; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .pub-upload-zone:hover { border-color: ${accentColorVar}; background: rgba(${accentRgb}, 0.02); }
+        .pub-upload-icon { color: #64748b; margin-bottom: 12px; transition: color 0.2s; }
         .pub-upload-zone:hover .pub-upload-icon { color: ${accentColorVar}; }
 
         .pub-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-top: 12px; }
-        .pub-thumb-wrap { position: relative; aspect-ratio: 4/3; border-radius: 8px; overflow: hidden; border: 1px solid var(--nx-border); background: var(--nx-bg); }
+        .pub-thumb-wrap { position: relative; aspect-ratio: 4/3; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
         .pub-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .pub-thumb-remove { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; background: var(--nx-danger); color: #fff; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.2s; }
+        .pub-thumb-remove { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; background: #ef4444; color: #fff; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.2s; }
         .pub-thumb-wrap:hover .pub-thumb-remove { opacity: 1; }
-        .pub-thumb-badge { position: absolute; bottom: 6px; left: 6px; background: ${accentColorVar}; color: #000; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+        .pub-thumb-badge { position: absolute; bottom: 6px; left: 6px; background: ${accentColorVar}; color: #fff; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
 
         .pub-extra-row { display: flex; gap: 8px; margin-bottom: 16px; }
-        .pub-btn-add { padding: 0 20px; background: var(--nx-text); color: var(--nx-bg); border: none; border-radius: 10px; font-weight: 700; font-size: 12px; text-transform: uppercase; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
+        .pub-btn-add { padding: 0 20px; background: #0f172a; color: #ffffff; border: none; border-radius: 10px; font-weight: 700; font-size: 12px; text-transform: uppercase; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
         .pub-btn-add:hover { opacity: 0.85; }
 
         .pub-extra-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-        .pub-extra-tag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--nx-text); }
-        .pub-extra-del { width: 18px; height: 18px; border-radius: 50%; background: var(--nx-border-2); color: var(--nx-text); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
-        .pub-extra-del:hover { background: var(--nx-danger); color: #fff; }
+        .pub-extra-tag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: 600; color: #0f172a; }
+        .pub-extra-del { width: 18px; height: 18px; border-radius: 50%; background: #e2e8f0; color: #475569; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s, color 0.2s; }
+        .pub-extra-del:hover { background: #ef4444; color: #fff; }
 
-        /* Badge de conta Pro (substitui o botão de upgrade para premium) */
-        .pub-pro-badge { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: rgba(234, 179, 8, 0.08); border: 1px solid rgba(234, 179, 8, 0.25); border-radius: 12px; margin-bottom: 0; }
-        .pub-pro-badge-icon { color: var(--nx-gold, #eab308); flex-shrink: 0; }
-        .pub-pro-badge-text { font-size: 13px; font-weight: 600; color: var(--nx-text); line-height: 1.4; }
-        .pub-pro-badge-text strong { color: var(--nx-gold, #eab308); }
+        .pub-pro-badge { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: #fefce8; border: 1px solid #fde047; border-radius: 12px; margin-bottom: 0; }
+        .pub-pro-badge-icon { color: #d97706; flex-shrink: 0; }
+        .pub-pro-badge-text { font-size: 13px; font-weight: 600; color: #92400e; line-height: 1.4; }
+        .pub-pro-badge-text strong { color: #d97706; }
 
-        /* 🌟 NOVO: Cartões de seleção de confiança (Garantia / Retoma) */
         .pub-trust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         @media (max-width: 768px) { .pub-trust-grid { grid-template-columns: 1fr; } }
-        .pub-trust-card { border: 1px solid var(--nx-border); border-radius: 14px; padding: 16px; background: rgba(255,255,255,0.02); transition: border-color .2s, background .2s; }
-        .pub-trust-card.is-active { border-color: ${accentColorVar}; background: rgba(${accentRgb}, 0.06); }
+        .pub-trust-card { border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; background: #ffffff; transition: border-color .2s, background .2s, box-shadow .2s; }
+        .pub-trust-card.is-active { border-color: ${accentColorVar}; background: rgba(${accentRgb}, 0.03); box-shadow: 0 4px 6px -1px rgba(${accentRgb}, 0.1); }
         .pub-trust-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .pub-trust-card-title { font-size: 13px; font-weight: 700; color: var(--nx-text); }
-        .pub-trust-card-desc { font-size: 11.5px; color: var(--nx-text-sub); line-height: 1.5; margin: 0 0 12px; }
-        .pub-switch-row { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--nx-text); }
-        .pub-switch { position: relative; width: 40px; height: 22px; border-radius: 20px; background: var(--nx-border-2); flex-shrink: 0; transition: background .2s; }
+        .pub-trust-card-title { font-size: 13px; font-weight: 700; color: #0f172a; }
+        .pub-trust-card-desc { font-size: 11.5px; color: #64748b; line-height: 1.5; margin: 0 0 12px; }
+        .pub-switch-row { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: #0f172a; }
+        .pub-switch { position: relative; width: 40px; height: 22px; border-radius: 20px; background: #cbd5e1; flex-shrink: 0; transition: background .2s; }
         .pub-switch.checked { background: ${accentColorVar}; }
-        .pub-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .2s; }
+        .pub-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .pub-switch.checked::after { transform: translateX(18px); }
 
-        .pub-submit { width: 100%; padding: 18px; background: ${accentColorVar}; color: #ffffff; border: none; border-radius: 12px; font-family: var(--nx-font-body); font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(${accentRgb}, 0.2); }
-        .pub-submit:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-2px); }
-        .pub-submit:disabled { background: var(--nx-border); color: var(--nx-text-sub); cursor: not-allowed; box-shadow: none; transform: none; }
+        .pub-submit { width: 100%; padding: 18px; background: ${accentColorVar}; color: #ffffff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(${accentRgb}, 0.2); }
+        .pub-submit:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-2px); }
+        .pub-submit:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none; transform: none; }
 
-        /* Modal da barreira de pagamento */
-        .premium-modal-overlay { position: fixed; inset: 0; background: rgba(4, 7, 17, 0.9); backdrop-filter: blur(10px); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 24px; animation: fadeIn 0.2s ease-out; }
-        .premium-modal-card { background: linear-gradient(145deg, #0f172a 0%, #040711 100%); border: 1px solid var(--nx-gold, #eab308); border-radius: 24px; width: 100%; max-width: 520px; padding: 48px; text-align: center; box-shadow: 0 25px 50px -12px rgba(234, 179, 8, 0.15); position: relative; animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        .premium-icon-wrap { width: 80px; height: 80px; margin: 0 auto 24px; background: rgba(234, 179, 8, 0.1); border: 2px solid rgba(234, 179, 8, 0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--nx-gold, #eab308); }
-        .premium-title { font-family: var(--nx-font-display); font-size: 28px; font-weight: 800; color: #fff; margin: 0 0 12px; }
-        .premium-desc { font-size: 15px; color: #94a3b8; line-height: 1.6; margin: 0 0 32px; }
-        .premium-btn { display: block; width: 100%; padding: 18px; background: var(--nx-gold, #eab308); color: #000; border: none; border-radius: 12px; font-family: var(--nx-font-body); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 15px; cursor: pointer; transition: all 0.2s; text-decoration: none; margin-bottom: 16px; }
+        .premium-modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 24px; animation: fadeIn 0.2s ease-out; }
+        .premium-modal-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; width: 100%; max-width: 520px; padding: 48px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); position: relative; animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .premium-icon-wrap { width: 80px; height: 80px; margin: 0 auto 24px; background: #fefce8; border: 2px solid #fef08a; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #eab308; }
+        .premium-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 800; color: #0f172a; margin: 0 0 12px; }
+        .premium-desc { font-size: 15px; color: #475569; line-height: 1.6; margin: 0 0 32px; }
+        .premium-btn { display: block; width: 100%; padding: 18px; background: #eab308; color: #ffffff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 15px; cursor: pointer; transition: all 0.2s; text-decoration: none; margin-bottom: 16px; }
         .premium-btn:hover { background: #ca8a04; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(234, 179, 8, 0.2); }
         .premium-close-btn { background: transparent; border: none; color: #64748b; font-weight: 600; font-size: 13px; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; transition: color 0.2s; }
-        .premium-close-btn:hover { color: #f8fafc; }
+        .premium-close-btn:hover { color: #0f172a; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
       `}</style>
 
-      {/* Modal da barreira de pagamento — só aparece para utilizadores FREE */}
       {modalPremiumAberto && (
         <div className="premium-modal-overlay">
           <div className="premium-modal-card">
@@ -370,7 +354,6 @@ export default function Publicar() {
 
           <form onSubmit={handleSubmit} className="pub-form">
 
-            {/* SECÇÃO 1 — Categoria */}
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">01</span>
@@ -382,7 +365,6 @@ export default function Publicar() {
               </div>
             </div>
 
-            {/* SECÇÃO 2 — Media */}
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">02</span>
@@ -391,10 +373,10 @@ export default function Publicar() {
               <label className="pub-upload-zone">
                 <input type="file" multiple onChange={handleImageUpload} disabled={uploadingImage} style={{ display: 'none' }} accept="image/*" />
                 <Icon path={mdiCloudUploadOutline} size={1.5} className="pub-upload-icon" />
-                <span style={{ fontSize: '14px', fontWeight: 600 }}>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>
                   {uploadingImage ? 'A carregar imagens...' : 'Solta as fotos aqui ou clica para carregar'}
                 </span>
-                <span style={{ fontSize: '12px', color: 'var(--nx-text-muted)', marginTop: '4px' }}>
+                <span style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
                   Máx 10 fotografias por publicação (Mínimo 1)
                 </span>
               </label>
@@ -413,17 +395,15 @@ export default function Publicar() {
               )}
             </div>
 
-            {/* SECÇÃO 3 — Parâmetros Comerciais */}
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">03</span>
                 <h2 className="pub-section-title">Especificações de Mercado</h2>
               </div>
 
-              {/* Badge de conta Pro — visível apenas para utilizadores premium */}
               {ehPremium && (
                 <div className="pub-pro-badge" style={{ marginBottom: '20px' }}>
-                  <Icon path={mdiShieldCheck} size={1.1} className="pub-pro-badge-icon" />
+                  <Icon path={mdiShieldCheckOutline} size={1.1} className="pub-pro-badge-icon" />
                   <p className="pub-pro-badge-text">
                     <strong>Conta Pro ativa</strong> — Este anúncio será publicado com{' '}
                     <strong>destaque automático</strong> e sem limites de publicação.
@@ -478,7 +458,6 @@ export default function Publicar() {
               </div>
             </div>
 
-            {/* SECÇÃO 4 — 🌟 NOVO: Confiança & Garantias (badges do anúncio) */}
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">04</span>
@@ -488,7 +467,7 @@ export default function Publicar() {
               <div className="pub-trust-grid">
                 <div className={`pub-trust-card ${form.garantia ? 'is-active' : ''}`}>
                   <div className="pub-trust-card-head">
-                    <Icon path={mdiShieldOutline} size={0.9} color={accentColorVar} />
+                    <Icon path={mdiShieldCheckOutline} size={0.9} color={accentColorVar} />
                     <span className="pub-trust-card-title">Garantia Incluída</span>
                   </div>
                   <p className="pub-trust-card-desc">
@@ -526,7 +505,6 @@ export default function Publicar() {
               </div>
             </div>
 
-            {/* SECÇÃO 5 — Ficha Técnica */}
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">05</span>
@@ -573,7 +551,7 @@ export default function Publicar() {
                       </select>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', paddingTop: '24px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', color: '#0f172a' }}>
                         <input type="checkbox" name="garagem" checked={form.garagem} onChange={handle} style={{ width: '18px', height: '18px', accentColor: accentColorVar }} />
                         Inclui Garagem / Estacionamento
                       </label>
@@ -649,7 +627,7 @@ export default function Publicar() {
                     )}
                   </div>
 
-                  <div style={{ paddingTop: '16px', borderTop: '1px solid var(--nx-border)' }}>
+                  <div style={{ paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
                     <label className="pub-label">Equipamento & Opcionais</label>
                     <div className="pub-extra-row">
                       <input
@@ -680,7 +658,7 @@ export default function Publicar() {
             </div>
 
             <button type="submit" disabled={loading || uploadingImage} className="pub-submit">
-              {loading ? 'A publicar...' : '✦ Finalizar e Publicar'}
+              Finalizar e Publicar
             </button>
 
           </form>

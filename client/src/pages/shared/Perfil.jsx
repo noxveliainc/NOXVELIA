@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import AnuncioCard from '../../pages/shared/AnuncioCard';
-import { BadgeCheck, BarChart2, Share2, Building2, X, Crown, Settings } from 'lucide-react';
+import Icon from '@mdi/react';
+import { 
+  mdiCheckDecagram, mdiChartBar, mdiShareVariantOutline, mdiDomain, 
+  mdiClose, mdiCrown, mdiCogOutline, mdiCheck, mdiEmailOutline, mdiPhoneOutline, mdiStar 
+} from '@mdi/js';
 
 export default function Perfil() {
   const { user, signed, atualizarAvatar, atualizarUser, logout: limparSessaoGlobal } = useAuth();
@@ -28,7 +32,6 @@ export default function Perfil() {
   const [mostrarModalEvolucao, setMostrarModalEvolucao] = useState(false);
   const [dadosEvolucao, setDadosEvolucao] = useState({ nomeEmpresa: '', nif: '', website: '' });
 
-  // 🌟 NOVO: Modal Unificado "Informações Pessoais"
   const [mostrarModalInfo, setMostrarModalInfo] = useState(false);
   const [dadosInfo, setDadosInfo] = useState({ email: '', telefone: '' });
   const [dadosPassword, setDadosPassword] = useState({ atual: '', nova: '', confirmar: '' });
@@ -49,10 +52,7 @@ export default function Perfil() {
         ]);
         if (!isMounted) return;
         setUtilizador(resUser.data);
-        
-        // Preenchemos os dados base para o Modal unificado
         setDadosInfo({ email: resUser.data.email || '', telefone: resUser.data.telefone || '' });
-        
         setAnuncios(resAnuncios.data);
         setLoading(false);
       } catch (err) {
@@ -96,21 +96,18 @@ export default function Perfil() {
       alert('O Nome da Empresa é obrigatório para contas profissionais.');
       return;
     }
-
     try {
       setMostrarModalEvolucao(false);
       setIsDeleting(true);
-      
       const res = await api.put('/users/me', { 
         tipoConta: 'profissional',
         nome: dadosEvolucao.nomeEmpresa, 
         nif: dadosEvolucao.nif,
         website: dadosEvolucao.website
       });
-      
       setUtilizador(res.data);
       if (atualizarUser) atualizarUser(res.data);
-      alert('Parabéns! A tua conta foi evoluída para Profissional com sucesso.');
+      alert('A tua conta foi evoluída para Profissional com sucesso.');
     } catch (err) {
       alert('Ocorreu um erro ao evoluir a tua conta.');
     } finally {
@@ -118,13 +115,10 @@ export default function Perfil() {
     }
   };
 
-  // 🌟 NOVO: Função central que guarda Email/Telefone e Password se preenchida
   const guardarInformacoesPessoais = async (e) => {
     e.preventDefault();
     setIsDeleting(true);
-
     try {
-      // 1. Atualizar Password (se o utilizador preencheu os campos)
       if (dadosPassword.atual || dadosPassword.nova || dadosPassword.confirmar) {
         if (dadosPassword.nova !== dadosPassword.confirmar) {
           alert("A nova password e a confirmação não coincidem.");
@@ -141,17 +135,12 @@ export default function Perfil() {
           novaPassword: dadosPassword.nova 
         });
       }
-
-      // 2. Atualizar Dados Base (Email, Telefone)
       const res = await api.put('/users/me', { 
         email: dadosInfo.email, 
         telefone: dadosInfo.telefone 
       });
-      
       setUtilizador(res.data);
       if (atualizarUser) atualizarUser(res.data);
-      
-      // Limpa os campos da password
       setDadosPassword({ atual: '', nova: '', confirmar: '' });
       setMostrarModalInfo(false);
       alert('Informações atualizadas com sucesso!');
@@ -191,24 +180,24 @@ export default function Perfil() {
   const totalImoveis = anuncios.filter(a => a.tipo === 'imovel').length;
   const totalCarros = anuncios.filter(a => a.tipo === 'carro').length;
 
-  if (loading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#040711' }}><div className="nx-spinner" style={{ borderColor: 'rgba(42, 193, 180, 0.2)', borderTopColor: '#2ac1b4' }} /></div>;
+  if (loading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}><div className="nx-spinner" style={{ borderColor: 'rgba(42, 193, 180, 0.2)', borderTopColor: '#2ac1b4' }} /></div>;
 
   return (
     <>
       <style>{`
-        .perfil-outer { background: #040711; min-height: calc(100vh - 72px); padding: 40px 24px; display: flex; justify-content: center; font-family: var(--nx-font-body, sans-serif); color: #f8fafc; }
-        .perfil-moldura { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 32px; width: 100%; max-width: 1100px; padding: 48px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); backdrop-filter: blur(16px); position: relative; }
+        .perfil-outer { background: #f8fafc; min-height: calc(100vh - 72px); padding: 40px 24px; display: flex; justify-content: center; font-family: 'Inter', sans-serif; color: #0f172a; }
+        .perfil-moldura { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 32px; width: 100%; max-width: 1100px; padding: 48px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); position: relative; }
         
-        .perfil-back { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #94a3b8; text-decoration: none; letter-spacing: .05em; text-transform: uppercase; background: none; border: none; cursor: pointer; padding: 0; transition: color .2s; margin-bottom: 32px; }
-        .perfil-back:hover { color: #f8fafc; }
+        .perfil-back { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #64748b; text-decoration: none; letter-spacing: .05em; text-transform: uppercase; background: none; border: none; cursor: pointer; padding: 0; transition: color .2s; margin-bottom: 32px; }
+        .perfil-back:hover { color: #0f172a; }
         
-        .perfil-header { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 36px; margin-bottom: 32px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+        .perfil-header { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px; padding: 36px; margin-bottom: 32px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
         
         .perfil-avatar-wrap { position: relative; cursor: pointer; flex-shrink: 0; }
-        .perfil-avatar { width: 100px; height: 100px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: hidden; background: rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; font-family: var(--nx-font-display); font-size: 32px; color: #2ac1b4; transition: filter .2s, border-color .2s, box-shadow .2s; }
-        .perfil-avatar-wrap:hover .perfil-avatar { filter: brightness(.85); }
+        .perfil-avatar { width: 100px; height: 100px; border-radius: 20px; border: 1px solid #cbd5e1; overflow: hidden; background: #ffffff; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 32px; color: #2ac1b4; transition: filter .2s, border-color .2s, box-shadow .2s; }
+        .perfil-avatar-wrap:hover .perfil-avatar { filter: brightness(.95); }
         .perfil-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .perfil-avatar-overlay { position: absolute; inset: 0; border-radius: 20px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; background: rgba(0,0,0,0.6); pointer-events: none; }
+        .perfil-avatar-overlay { position: absolute; inset: 0; border-radius: 20px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; background: rgba(15,23,42,0.6); pointer-events: none; }
         .perfil-avatar-wrap:hover .perfil-avatar-overlay { opacity: 1; }
 
         .perfil-avatar-wrap.is-premium .perfil-avatar { border: 2px solid #eab308; box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.15); }
@@ -216,76 +205,81 @@ export default function Perfil() {
         .perfil-info { flex: 1; min-width: 0; }
         
         .perfil-badge-conta { display: inline-block; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 6px; }
-        .badge-profissional { background: rgba(42, 193, 180, 0.1); color: #2ac1b4; border: 1px solid rgba(42, 193, 180, 0.2); }
-        .badge-particular { background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); }
-        .badge-premium { background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.35); margin-left: 8px; }
+        .badge-profissional { background: rgba(42, 193, 180, 0.1); color: #0d9488; border: 1px solid rgba(42, 193, 180, 0.2); }
+        .badge-particular { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+        .badge-premium { background: rgba(234, 179, 8, 0.1); color: #d97706; border: 1px solid rgba(234, 179, 8, 0.3); margin-left: 8px; }
         
-        .btn-upgrade { margin-left: 12px; background: transparent; color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 6px; font-size: 10px; font-weight: 800; padding: 6px 12px; cursor: pointer; text-transform: uppercase; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-upgrade:hover { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.5); }
+        .btn-upgrade { margin-left: 12px; background: transparent; color: #2563eb; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 6px; font-size: 10px; font-weight: 800; padding: 6px 12px; cursor: pointer; text-transform: uppercase; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-upgrade:hover { background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.5); }
 
-        .perfil-name { font-family: var(--nx-font-display, sans-serif); font-size: 28px; font-weight: 800; color: #f8fafc; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
-        .perfil-email { font-size: 13px; color: #94a3b8; margin: 0 0 20px; display: flex; align-items: center; }
+        .perfil-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 800; color: #0f172a; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+        .perfil-email { font-size: 13px; color: #64748b; margin: 0; display: flex; align-items: center; }
         
+        .stars-container { display: flex; align-items: center; gap: 4px; color: #f59e0b; margin-top: 8px; margin-bottom: 20px; }
+        .stars-text { font-size: 13px; font-weight: 700; color: #0f172a; margin-left: 4px; }
+        .stars-count { font-size: 12px; font-weight: 500; color: #64748b; }
+
         .perfil-stats { display: flex; gap: 32px; }
-        .perfil-stat-val { font-family: var(--nx-font-display); font-size: 24px; font-weight: 700; color: #f8fafc; line-height: 1; }
+        .perfil-stat-val { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 700; color: #0f172a; line-height: 1; }
         .perfil-stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #64748b; margin-top: 3px; }
-        .perfil-stat-divider { width: 1px; background: rgba(255, 255, 255, 0.1); margin: 0 4px; }
+        .perfil-stat-divider { width: 1px; background: #e2e8f0; margin: 0 4px; }
         
         .perfil-actions { display: flex; flex-direction: column; gap: 10px; width: 200px; }
         @media (max-width: 768px) { .perfil-actions { width: 100%; } }
 
-        .btn-action-primary { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: rgba(42, 193, 180, 0.1); color: #2ac1b4; border: 1px solid rgba(42, 193, 180, 0.2); border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all .2s; }
-        .btn-action-primary:hover { background: rgba(42, 193, 180, 0.2); }
+        .btn-action-primary { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: rgba(42, 193, 180, 0.1); color: #0d9488; border: 1px solid rgba(42, 193, 180, 0.2); border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+        .btn-action-primary:hover { background: rgba(42, 193, 180, 0.15); }
 
-        .btn-action-solid { padding: 12px; background: #f8fafc; color: #040711; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: opacity .2s; }
+        .btn-action-solid { padding: 12px; background: #0f172a; color: #ffffff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: opacity .2s; }
         .btn-action-solid:hover { opacity: 0.85; }
         
-        .btn-action-outline { padding: 12px; background: transparent; color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
-        .btn-action-outline:hover { border-color: #f8fafc; color: #f8fafc; }
-        .btn-action-outline.danger:hover { border-color: #ef4444; color: #ef4444; }
+        .btn-action-outline { padding: 12px; background: #ffffff; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .btn-action-outline:hover { border-color: #94a3b8; color: #0f172a; background: #f8fafc; }
+        .btn-action-outline.danger:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
         
-        .tabs-row { display: flex; gap: 4px; margin-bottom: 28px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 4px; width: fit-content; }
-        .tab-btn { padding: 9px 22px; border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; background: transparent; color: #94a3b8; }
-        .tab-btn.active-imovel { background: #3b82f6; color: #fff; }
-        .tab-btn.active-carro { background: #2ac1b4; color: #040711; }
+        .tabs-row { display: flex; gap: 4px; margin-bottom: 28px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 4px; width: fit-content; }
+        .tab-btn { padding: 9px 22px; border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; background: transparent; color: #64748b; }
+        .tab-btn.active-imovel { background: #3ecf8e; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tab-btn.active-carro { background: #2ac1b4; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
         .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
-        .card-wrapper { display: flex; flex-direction: column; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 12px; gap: 12px; }
+        .card-wrapper { display: flex; flex-direction: column; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px; gap: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); transition: border-color .2s; }
+        .card-wrapper:hover { border-color: #cbd5e1; }
         
-        .btn-destacar { width: 100%; padding: 10px; background: #eab308; color: #422006; border: none; border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
-        .btn-destacar:hover { filter: brightness(1.1); }
-        .badge-destacado { width: 100%; padding: 10px; background: rgba(234, 179, 8, 0.1); color: #eab308; border: 1px dashed rgba(234, 179, 8, 0.4); border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; text-align: center; }
+        .btn-destacar { width: 100%; padding: 10px; background: #fefce8; color: #a16207; border: 1px solid #fde047; border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+        .btn-destacar:hover { background: #fef08a; }
+        .badge-destacado { width: 100%; padding: 10px; background: #fefce8; color: #ca8a04; border: 1px dashed #fde047; border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; text-align: center; }
         
-        .analytics-trigger-btn { width: 100%; padding: 10px; background: transparent; border: 1px dashed rgba(255, 255, 255, 0.2); color: #94a3b8; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;}
-        .analytics-trigger-btn:hover { border-color: #2ac1b4; color: #2ac1b4; }
+        .analytics-trigger-btn { width: 100%; padding: 10px; background: #f8fafc; border: 1px dashed #cbd5e1; color: #64748b; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;}
+        .analytics-trigger-btn:hover { border-color: #2ac1b4; color: #0d9488; background: #f1f5f9; }
         
-        .analytics-panel { margin-top: 4px; padding: 16px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
+        .analytics-panel { margin-top: 4px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
         .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
         .stat-box { text-align: center; }
-        .stat-box-val { font-size: 20px; font-weight: 800; color: #f8fafc; }
+        .stat-box-val { font-size: 20px; font-weight: 800; color: #0f172a; }
         .stat-box-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #64748b; }
         
-        .chart-row { display: flex; align-items: flex-end; justify-content: space-between; height: 60px; padding-top: 10px; border-top: 1px dashed rgba(255, 255, 255, 0.1); }
+        .chart-row { display: flex; align-items: flex-end; justify-content: space-between; height: 60px; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
         .chart-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
         .chart-bar { width: 8px; background: #2ac1b4; border-radius: 2px 2px 0 0; }
         .chart-day { font-size: 8px; font-weight: 700; color: #64748b; }
         
-        .perfil-loading-overlay { position: absolute; inset: 0; background: rgba(4, 7, 17, 0.85); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; border-radius: 32px; }
+        .perfil-loading-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; border-radius: 32px; }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(4, 7, 17, 0.9); backdrop-filter: blur(10px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto;}
-        .modal-card { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; width: 100%; max-width: 480px; padding: 40px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); margin: auto; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto;}
+        .modal-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; width: 100%; max-width: 480px; padding: 40px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); margin: auto; }
         .modal-close { position: absolute; top: 24px; right: 24px; background: transparent; border: none; color: #94a3b8; cursor: pointer; transition: color 0.2s; }
-        .modal-close:hover { color: #f8fafc; }
-        .modal-title { font-family: var(--nx-font-display); font-size: 24px; font-weight: 800; color: #f8fafc; margin: 0 0 8px; display: flex; align-items: center; gap: 10px; }
-        .modal-desc { font-size: 14px; color: #94a3b8; margin: 0 0 24px; line-height: 1.5; }
+        .modal-close:hover { color: #0f172a; }
+        .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 8px; display: flex; align-items: center; gap: 10px; }
+        .modal-desc { font-size: 14px; color: #64748b; margin: 0 0 24px; line-height: 1.5; }
         
         .modal-form-group { margin-bottom: 20px; }
-        .modal-form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 8px; }
-        .modal-input { width: 100%; padding: 14px 16px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #f8fafc; outline: none; font-size: 14px; transition: all 0.2s; box-sizing: border-box; }
-        .modal-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        .modal-input::placeholder { color: #475569; }
+        .modal-form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 8px; }
+        .modal-input { width: 100%; padding: 14px 16px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; color: #0f172a; outline: none; font-size: 14px; transition: all 0.2s; box-sizing: border-box; }
+        .modal-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+        .modal-input::placeholder { color: #94a3b8; }
         
-        .modal-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 32px 0; }
+        .modal-divider { height: 1px; background: #e2e8f0; margin: 32px 0; }
         
         .modal-btn-submit { width: 100%; padding: 16px; background: #3b82f6; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: opacity 0.2s; margin-top: 12px; }
         .modal-btn-submit:hover { opacity: 0.9; }
@@ -296,9 +290,9 @@ export default function Perfil() {
         <div className="modal-overlay">
           <div className="modal-card">
             <button className="modal-close" onClick={() => setMostrarModalEvolucao(false)}>
-              <X size={24} />
+              <Icon path={mdiClose} size={1} />
             </button>
-            <h2 className="modal-title"><Building2 size={28} color="#3b82f6" /> Evolução de Conta</h2>
+            <h2 className="modal-title"><Icon path={mdiDomain} size={1.2} color="#3b82f6" /> Evolução de Conta</h2>
             <p className="modal-desc">
               Transforma a tua conta num perfil empresarial. Terás direito a uma montra exclusiva com links para o teu website e contactos diretos.
             </p>
@@ -346,18 +340,17 @@ export default function Perfil() {
         </div>
       )}
 
-      {/* 🌟 NOVO: MODAL UNIFICADO DE INFORMAÇÕES PESSOAIS */}
+      {/* 🌟 MODAL UNIFICADO DE INFORMAÇÕES PESSOAIS */}
       {mostrarModalInfo && (
         <div className="modal-overlay">
           <div className="modal-card">
             <button className="modal-close" onClick={() => setMostrarModalInfo(false)}>
-              <X size={24} />
+              <Icon path={mdiClose} size={1} />
             </button>
-            <h2 className="modal-title"><Settings size={26} color="#2ac1b4" /> Informações Pessoais</h2>
+            <h2 className="modal-title"><Icon path={mdiCogOutline} size={1.2} color="#2ac1b4" /> Informações Pessoais</h2>
             <p className="modal-desc">Atualiza os teus contactos ou altera a tua palavra-passe.</p>
 
             <form onSubmit={guardarInformacoesPessoais}>
-              {/* Secção de Contactos */}
               <div className="modal-form-group">
                 <label>Email da Conta</label>
                 <input 
@@ -386,7 +379,6 @@ export default function Perfil() {
 
               <div className="modal-divider" />
 
-              {/* Secção de Password */}
               <p className="modal-desc" style={{ marginBottom: '16px', fontSize: '13px' }}>
                 Para alterares a palavra-passe, preenche os campos abaixo. Caso contrário, deixa-os em branco.
               </p>
@@ -423,7 +415,7 @@ export default function Perfil() {
                 </div>
               </div>
 
-              <button className="modal-btn-submit" type="submit" style={{ background: '#2ac1b4', color: '#040711', marginTop: '8px' }}>
+              <button className="modal-btn-submit" type="submit" style={{ background: '#2ac1b4', color: '#ffffff', marginTop: '8px' }}>
                 Guardar Informações Pessoais
               </button>
             </form>
@@ -438,13 +430,13 @@ export default function Perfil() {
             <div className="perfil-loading-overlay">
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                 <div className="nx-spinner" style={{ borderColor: 'rgba(42, 193, 180, 0.2)', borderTopColor: '#2ac1b4' }} />
-                <span style={{ fontFamily: 'var(--nx-font-body)', fontWeight: 600, color: '#f8fafc', fontSize: '14px' }}>A processar...</span>
+                <span style={{ fontFamily: 'var(--nx-font-body)', fontWeight: 600, color: '#0f172a', fontSize: '14px' }}>A processar...</span>
               </div>
             </div>
           )}
 
           <button onClick={() => navigate(rotaVoltar)} className="perfil-back">
-            ← {labelVoltar}
+            <Icon path={mdiChevronLeft} size={0.7} /> {labelVoltar}
           </button>
 
           <div className="perfil-header">
@@ -471,12 +463,12 @@ export default function Perfil() {
                 </div>
 
                 {utilizador?.premiumAtivo && (
-                  <div className="perfil-badge-conta badge-premium">⭐ Premium</div>
+                  <div className="perfil-badge-conta badge-premium"><Icon path={mdiStar} size={0.4} /> Premium</div>
                 )}
                 
                 {utilizador?.tipoConta !== 'profissional' && utilizador?.tipo !== 'admin' && (
                   <button className="btn-upgrade" onClick={() => setMostrarModalEvolucao(true)}>
-                    <Building2 size={12} /> Evoluir para Profissional
+                    <Icon path={mdiDomain} size={0.5} /> Evoluir para Profissional
                   </button>
                 )}
               </div>
@@ -486,13 +478,28 @@ export default function Perfil() {
                   ? (utilizador?.nome?.toUpperCase().includes('NOXVELIA') ? utilizador?.nome : `NOXVELIA ${utilizador?.nome}`)
                   : utilizador?.nome
                 }
-                {utilizador?.tipo === 'admin' && <BadgeCheck size={26} fill="#3b82f6" color="#040711" />}
+                {utilizador?.tipo === 'admin' && <Icon path={mdiCheckDecagram} size={1} color="#3b82f6" />}
                 {utilizador?.tipo !== 'admin' && utilizador?.premiumAtivo && (
-                  <Crown size={24} color="#eab308" fill="#eab308" title="Membro Premium" />
+                  <Icon path={mdiCrown} size={1} color="#eab308" title="Membro Premium" />
                 )}
               </h1>
 
               <p className="perfil-email">{utilizador?.email}</p>
+
+              {/* 🌟 ESTRELAS DE AVALIAÇÃO REAIS */}
+              <div className="stars-container">
+                {utilizador?.rating > 0 ? (
+                  <>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Icon key={i} path={mdiStar} size={0.7} color={i < Math.round(utilizador.rating) ? '#f59e0b' : '#e2e8f0'} />
+                    ))}
+                    <span className="stars-text">{utilizador.rating.toFixed(1)}</span>
+                    <span className="stars-count">({utilizador.totalAvaliacoes || 0} avaliações)</span>
+                  </>
+                ) : (
+                  <span className="stars-count" style={{ marginLeft: 0 }}>Sem avaliações recebidas</span>
+                )}
+              </div>
               
               <div className="perfil-stats">
                 <div><div className="perfil-stat-val">{totalImoveis}</div><div className="perfil-stat-label">Imóveis</div></div>
@@ -503,15 +510,14 @@ export default function Perfil() {
 
             <div className="perfil-actions">
               <button className="btn-action-primary" onClick={copiarLinkMontra}>
-                <Share2 size={16} /> 
+                <Icon path={mdiShareVariantOutline} size={0.7} /> 
                 {linkCopiado ? 'Link Copiado!' : 'Partilhar Montra'}
               </button>
               
               <button className="btn-action-solid" onClick={() => navigate('/publicar')}>+ Criar Anúncio</button>
               
-              {/* 🌟 O BOTÃO DE INFORMAÇÕES PESSOAIS */}
               <button className="btn-action-outline" onClick={() => setMostrarModalInfo(true)}>
-                <Settings size={14} /> Info. Pessoais
+                <Icon path={mdiCogOutline} size={0.65} /> Info. Pessoais
               </button>
 
               <button className="btn-action-outline danger" onClick={handleLogout}>Terminar Sessão</button>
@@ -533,22 +539,22 @@ export default function Perfil() {
                 <AnuncioCard anuncio={anuncio} showStatus onAnuncioEliminado={handleAnuncioEliminado} />
                 
                 {anuncio.destacado ? (
-                  <div className="badge-destacado">🌟 Destaque Ativo</div>
+                  <div className="badge-destacado"><Icon path={mdiStar} size={0.6} /> Destaque Ativo</div>
                 ) : (
                   <button className="btn-destacar" onClick={() => navigate('/sucesso/' + anuncio._id)}>
-                    🚀 Promover Anúncio (1.99€)
+                    Promover Anúncio (1.99€)
                   </button>
                 )}
 
                 <button className="analytics-trigger-btn" onClick={() => verAnalytics(anuncio._id)}>
-                  <BarChart2 size={14} /> {anuncioAnalisado === anuncio._id ? 'Ocultar Relatório' : 'Ver Performance'}
+                  <Icon path={mdiChartBar} size={0.7} /> {anuncioAnalisado === anuncio._id ? 'Ocultar Relatório' : 'Ver Performance'}
                 </button>
 
                 {anuncioAnalisado === anuncio._id && dadosGrafico && (
                   <div className="analytics-panel">
                     <div className="stat-grid">
                       <div className="stat-box"><div className="stat-box-val">{dadosGrafico.totalVisitas}</div><div className="stat-box-lbl">Visitas</div></div>
-                      <div className="stat-box" style={{ borderLeft: '1px solid rgba(255,255,255,0.1)', borderRight: '1px solid rgba(255,255,255,0.1)' }}><div className="stat-box-val" style={{ color: '#3b82f6' }}>{dadosGrafico.guardadoEmFavoritos}</div><div className="stat-box-lbl">Favoritos</div></div>
+                      <div className="stat-box" style={{ borderLeft: '1px solid #e2e8f0', borderRight: '1px solid #e2e8f0' }}><div className="stat-box-val" style={{ color: '#3b82f6' }}>{dadosGrafico.guardadoEmFavoritos}</div><div className="stat-box-lbl">Favoritos</div></div>
                       <div className="stat-box"><div className="stat-box-val" style={{ color: '#2ac1b4' }}>{dadosGrafico.contactosGerados}</div><div className="stat-box-lbl">Mensagens</div></div>
                     </div>
                     <div className="chart-row">
