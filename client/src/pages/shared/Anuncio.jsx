@@ -352,10 +352,6 @@ export default function Anuncio() {
         .estado-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
         .meta-dot { color: var(--nx-text-sub); font-size: 10px; }
 
-        .nx-price-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; padding-bottom: 16px; border-bottom: 1px solid var(--nx-border); }
-        .nx-badge-item { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; background: var(--nx-bg-2); border: 1px solid var(--nx-border); color: var(--nx-text-2); }
-        .nx-badge-item.garantia { background: rgba(42, 193, 180, 0.06); border-color: rgba(42, 193, 180, 0.2); color: #2ac1b4; }
-
         .tabs-wrap { display: flex; gap: 2px; border-bottom: 1px solid var(--nx-border); margin-bottom: 22px; overflow-x: auto; scrollbar-width: none; }
         .tabs-wrap::-webkit-scrollbar { display: none; }
         .tab-btn { padding: 10px 18px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--nx-text-sub); font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all .2s; letter-spacing: .01em; }
@@ -383,16 +379,23 @@ export default function Anuncio() {
         .panel-price { font-family: var(--nx-font-display); font-size: clamp(28px, 3.5vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 4px; }
         .panel-price-m2 { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-bottom: 12px; }
 
-        .btn-contact { width: 100%; padding: 16px; background: ${accent}; color: #fff; border: none; border-radius: 12px; font-family: var(--nx-font-body); font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px ${accentShadow}; }
-        .btn-contact:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 28px ${accentShadow}; }
+        /* 🌟 BADGES MELHORADAS */
+        .nx-price-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; padding-bottom: 16px; border-bottom: 1px solid var(--nx-border); }
+        .nx-badge-item { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; background: var(--nx-bg-2); border: 1px solid var(--nx-border); color: var(--nx-text-2); }
+        .nx-badge-item.garantia { background: rgba(42, 193, 180, 0.06); border-color: rgba(42, 193, 180, 0.2); color: #2ac1b4; }
 
-        .contact-revealed { width: 100%; padding: 16px; background: var(--nx-bg-2); border: 2px dashed var(--nx-border-2); border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; transition: background .2s; cursor: pointer; animation: nx-fade-in .3s; }
-        .contact-revealed:hover { background: var(--nx-bg-3); }
+        /* 🌟 BOTÕES DE CONTACTO CORRIGIDOS COM BOX-SIZING */
+        .btn-contact { width: 100%; box-sizing: border-box; padding: 16px; background: ${accent}; color: #fff; border: none; border-radius: 12px; font-family: var(--nx-font-body); font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px ${accentShadow}; margin-bottom: 12px; }
+        .btn-contact:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 28px ${accentShadow}; }
+        
+        .btn-whatsapp { width: 100%; box-sizing: border-box; padding: 16px; background: #10b981; color: #fff; border: none; border-radius: 12px; font-family: var(--nx-font-body); font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3); text-decoration: none; margin-bottom: 12px; }
+        .btn-whatsapp:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(16, 185, 129, 0.4); color: #fff; }
+
+        .contact-revealed { width: 100%; box-sizing: border-box; padding: 18px 16px; background: rgba(42, 193, 180, 0.05); border: 2px dashed rgba(42, 193, 180, 0.4); border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; transition: all .2s; margin-bottom: 12px; overflow: hidden; }
+        .contact-revealed:hover { background: rgba(42, 193, 180, 0.1); border-color: rgba(42, 193, 180, 0.6); }
         .contact-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); }
-        .contact-phone { font-size: 20px; font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 7px; }
-        .contact-email { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-top: 2px; }
-        .btn-whatsapp { width: 100%; padding: 13px; margin-top: 10px; background: #1fb855; color: #fff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none; transition: filter .2s, transform .2s; animation: nx-fade-in .3s; }
-        .btn-whatsapp:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .contact-phone { font-size: clamp(18px, 2vw, 22px); font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+        .contact-email { font-size: 13px; color: var(--nx-text-sub); font-weight: 600; margin-top: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         .finance-box { background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: 14px; padding: 20px; margin-top: 16px; }
         .finance-box .fin-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--nx-text-sub); margin-bottom: 14px; }
@@ -407,19 +410,23 @@ export default function Anuncio() {
         .fin-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${accent}; cursor: pointer; }
         .fin-note { font-size: 10.5px; color: var(--nx-text-sub); margin-top: 12px; line-height: 1.5; }
 
-        .trust-strip { display: flex; gap: 18px; padding: 14px 4px 0; margin-top: 2px; }
+        .trust-strip { display: flex; gap: 18px; padding: 14px 4px 0; margin-top: 2px; border-top: 1px solid var(--nx-border); }
         .trust-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--nx-text-sub); }
 
-        .seller-panel { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: 16px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; text-decoration: none; transition: all .2s; }
-        .seller-panel:hover { border-color: var(--nx-border-2); background: var(--nx-bg-2); }
-        .seller-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--nx-bg-3); display: flex; align-items: center; justify-content: center; font-family: var(--nx-font-display); font-size: 18px; font-weight: 800; color: var(--nx-text); flex-shrink: 0; overflow: hidden; }
+        /* 🌟 CSS DO VENDEDOR PREMIUM */
+        .seller-panel { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: 16px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; transition: all .2s; margin-top: 16px; box-shadow: var(--nx-shadow-card); }
+        .seller-panel:hover { border-color: var(--nx-border-2); background: var(--nx-bg-2); transform: translateY(-2px); }
+        .seller-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--nx-bg-3); border: 1px solid var(--nx-border); display: flex; align-items: center; justify-content: center; font-family: var(--nx-font-display); font-size: 18px; font-weight: 800; color: var(--nx-text); flex-shrink: 0; overflow: hidden; }
         .seller-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .seller-info { flex: 1; min-width: 0; }
-        .seller-name { font-size: 15px; font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
-        .seller-sub { font-size: 12px; color: var(--nx-text-sub); font-weight: 600; margin-top: 4px; }
+        .seller-info { flex: 1; min-width: 0; text-align: left; }
+        .seller-name { font-size: 15px; font-weight: 800; color: var(--nx-text); display: flex; align-items: center; gap: 5px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .seller-stars-row { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: #f59e0b; margin-bottom: 2px; }
-        .seller-reviews-count { color: var(--nx-text-sub); font-weight: 500; font-size: 11px; margin-left: 2px; }
+        .seller-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .seller-rating { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 800; color: var(--nx-text); background: rgba(245, 158, 11, 0.1); padding: 2px 6px; border-radius: 6px; }
+        .seller-rating-icon { color: #f59e0b; display: flex; align-items: center; }
+        .seller-reviews { font-weight: 600; color: var(--nx-text-sub); font-size: 11.5px; }
+        .seller-rating-empty { font-size: 12px; font-weight: 600; color: var(--nx-text-sub); background: var(--nx-bg-3); padding: 2px 6px; border-radius: 6px; }
+        .seller-date { font-size: 12px; font-weight: 600; color: var(--nx-text-sub); }
 
         .owner-box { background: rgba(59,130,246,.05); border: 1px solid rgba(59,130,246,.2); border-radius: 14px; padding: 18px; margin-top: 16px; }
         .owner-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #60a5fa; margin-bottom: 12px; }
@@ -658,6 +665,7 @@ export default function Anuncio() {
                           <Icon path={mdiPhone} size={0.85} /> Revelar Contactos
                         </button>
                       )}
+                      
                       <div className="trust-strip">
                         <span className="trust-item"><Icon path={mdiShieldCheckOutline} size={0.6} />Pagamento seguro</span>
                         <span className="trust-item"><Icon path={mdiClockOutline} size={0.6} />Resposta rápida</span>
@@ -705,19 +713,21 @@ export default function Anuncio() {
                       {vendedorVerificado && <Icon path={mdiCheckDecagram} size={0.8} color="var(--nx-accent-blue)" />}
                     </div>
 
-                    <div className="seller-stars-row">
+                    <div className="seller-meta">
                       {rating > 0 ? (
-                        <>⭐ {rating.toFixed(1)} <span className="seller-reviews-count">({totalAvaliacoes} avaliações)</span></>
+                        <div className="seller-rating">
+                          <span className="seller-rating-icon"><Icon path={mdiStar} size={0.55} /></span>
+                          {rating.toFixed(1)}
+                          <span className="seller-reviews">({totalAvaliacoes})</span>
+                        </div>
                       ) : (
-                        <span className="seller-reviews-count" style={{ fontSize: '11px', marginLeft: 0 }}>Sem avaliações ainda</span>
+                        <div className="seller-rating-empty">Novo Vendedor</div>
                       )}
-                    </div>
-
-                    <div className="seller-sub">
-                      Na NOXVELIA desde {anoRegistoUser} · Ver stock ›
+                      <span className="meta-dot">·</span>
+                      <div className="seller-date">Desde {anoRegistoUser}</div>
                     </div>
                   </div>
-                  <Icon path={mdiChevronRight} size={0.85} color="var(--nx-text-sub)" />
+                  <Icon path={mdiChevronRight} size={1} color="var(--nx-text-sub)" />
                 </Link>
               </div>
             </div>
