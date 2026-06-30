@@ -6,7 +6,8 @@ import AnuncioCard from '../../pages/shared/AnuncioCard';
 import Icon from '@mdi/react';
 import { 
   mdiCheckDecagram, mdiChartBar, mdiShareVariantOutline, mdiDomain, 
-  mdiClose, mdiCrown, mdiCogOutline, mdiCheck, mdiEmailOutline, mdiPhoneOutline, mdiStar 
+  mdiClose, mdiCrown, mdiCogOutline, mdiCheck, mdiEmailOutline, mdiPhoneOutline, mdiStar,
+  mdiChevronLeft   // <-- adicionar isto
 } from '@mdi/js';
 
 export default function Perfil() {
