@@ -4,29 +4,27 @@ import { useNavigate } from 'react-router-dom';
 const panels = [
   {
     id: 'estate',
-    side: 'left',
-    label: 'NOXVELIA Estate',
-    short: 'Estate',
-    tag: 'Imobiliário selecionado',
-    blurb: 'Casas e investimentos escolhidos com critério, não em catálogo.',
-    cta: 'Entrar no Estate',
+    label: 'Estate',
+    tag: 'Imobiliário',
+    title: 'Imóveis selecionados',
+    desc: 'Casas, apartamentos e investimentos escolhidos com critério.',
+    cta: 'Ver Imóveis',
     route: '/imoveis',
     accent: '#3ecf8e',
-    accentSoft: 'rgba(62,207,142,0.35)',
-    img: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1400&q=70',
+    accentSoft: 'rgba(62,207,142,0.1)',
+    img: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=900&q=70',
   },
   {
     id: 'drive',
-    side: 'right',
-    label: 'NOXVELIA Drive',
-    short: 'Drive',
-    tag: 'Coleção automóvel',
-    blurb: 'Viaturas inspecionadas ao detalhe, prontas para a estrada.',
-    cta: 'Entrar no Drive',
+    label: 'Drive',
+    tag: 'Automóveis',
+    title: 'Viaturas de confiança',
+    desc: 'Carros inspecionados ao detalhe, prontos para a estrada.',
+    cta: 'Ver Automóveis',
     route: '/carros',
     accent: '#2ac1b4',
-    accentSoft: 'rgba(42,193,180,0.35)',
-    img: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=70',
+    accentSoft: 'rgba(42,193,180,0.1)',
+    img: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=70',
   },
 ];
 
@@ -36,268 +34,179 @@ export default function Landing() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..800&family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-        :root {
-          --ink-bg: #0c0e10;
-          --paper: #f5f3ee;
-          --muted: #9aa1a8;
-          --hairline: rgba(245,243,238,0.14);
-          --estate: #3ecf8e;
-          --drive: #2ac1b4;
-        }
-
         .lp-root {
           font-family: 'Inter', sans-serif;
-          background: var(--ink-bg);
-          color: var(--paper);
+          background: #f8fafc;
           min-height: 100dvh;
           display: flex;
           flex-direction: column;
-          position: relative;
+          color: #0f172a;
         }
 
-        /* ── TOPO ── */
         .lp-top {
           display: flex;
           justify-content: center;
-          padding: clamp(20px, 3.5vw, 32px) 20px 0;
-          flex-shrink: 0;
-          opacity: 0;
-          animation: fadeDown .7s .1s cubic-bezier(.2,.7,.3,1) forwards;
+          padding: clamp(24px, 4vw, 40px) 20px 0;
         }
-        .lp-top img { height: clamp(26px, 3vw, 34px); width: auto; display: block; filter: brightness(0) invert(1); }
+        .lp-top img { height: clamp(28px, 3vw, 36px); width: auto; }
 
-        /* ── HERO ── */
-        .lp-hero {
+        .lp-main {
           flex: 1;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          position: relative;
-          min-height: 0;
-        }
-
-        .lp-panel {
-          position: relative;
           display: flex;
-          align-items: flex-end;
-          overflow: hidden;
-          border: none;
-          background: var(--ink-bg);
-          cursor: pointer;
-          padding: 0;
-          font: inherit;
-          color: inherit;
-          text-align: left;
-          transition: flex-grow .6s cubic-bezier(.2,.7,.3,1);
-          flex-grow: 1;
-        }
-        .lp-hero:has(.lp-panel[data-side="left"]:hover) .lp-panel[data-side="left"],
-        .lp-hero:has(.lp-panel[data-side="left"]:focus-visible) .lp-panel[data-side="left"] { flex-grow: 1.12; }
-        .lp-hero:has(.lp-panel[data-side="right"]:hover) .lp-panel[data-side="right"],
-        .lp-hero:has(.lp-panel[data-side="right"]:focus-visible) .lp-panel[data-side="right"] { flex-grow: 1.12; }
-
-        .lp-img {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          filter: grayscale(1) brightness(.78) contrast(1.05);
-          transform: scale(1.04);
-          transition: transform .9s cubic-bezier(.2,.7,.3,1), filter .5s ease;
-        }
-        .lp-panel:hover .lp-img,
-        .lp-panel:focus-visible .lp-img { filter: grayscale(.15) brightness(.62) contrast(1.08); transform: scale(1.1); }
-
-        .lp-scrim {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(to top, var(--ink-bg) 0%, rgba(12,14,16,0.55) 38%, rgba(12,14,16,0.1) 65%, rgba(12,14,16,0.35) 100%);
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: clamp(32px, 6vw, 56px) 20px;
         }
 
-        .lp-glow {
-          position: absolute;
-          left: 0; right: 0; bottom: 0;
-          height: 55%;
+        .lp-heading {
+          text-align: center;
+          max-width: 560px;
+          margin-bottom: clamp(28px, 5vw, 48px);
           opacity: 0;
-          transition: opacity .5s ease;
-          pointer-events: none;
+          animation: rise .6s .1s ease forwards;
         }
-        .lp-panel:hover .lp-glow,
-        .lp-panel:focus-visible .lp-glow { opacity: .55; }
-
-        .lp-body {
-          position: relative;
-          z-index: 3;
-          width: 100%;
-          padding: clamp(28px, 5vw, 64px) clamp(24px, 6vw, 72px) clamp(36px, 6vw, 76px);
-          opacity: 0;
-          transform: translateY(16px);
-          animation: rise .7s cubic-bezier(.2,.7,.3,1) forwards;
-        }
-        .lp-panel[data-side="left"] .lp-body { animation-delay: .35s; }
-        .lp-panel[data-side="right"] .lp-body { animation-delay: .45s; }
-        .lp-panel[data-side="right"] .lp-body { text-align: right; margin-left: auto; }
-
         .lp-eyebrow {
           font-size: 11px;
           font-weight: 700;
           letter-spacing: .12em;
           text-transform: uppercase;
-          margin-bottom: 14px;
+          color: #64748b;
+          margin-bottom: 10px;
         }
-
         .lp-title {
-          font-family: 'Fraunces', serif;
-          font-optical-sizing: auto;
-          font-weight: 600;
-          font-size: clamp(34px, 6vw, 64px);
-          line-height: 1;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-weight: 800;
+          font-size: clamp(26px, 4vw, 38px);
+          letter-spacing: -0.02em;
+          line-height: 1.15;
+          margin-bottom: 12px;
+        }
+        .lp-sub {
+          font-size: clamp(14px, 1.6vw, 16px);
+          color: #64748b;
+          line-height: 1.5;
+        }
+
+        .lp-grid {
+          width: 100%;
+          max-width: 920px;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(260px, 1fr));
+          gap: clamp(16px, 2.5vw, 24px);
+        }
+
+        .lp-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 20px;
+          overflow: hidden;
+          text-align: left;
+          cursor: pointer;
+          font: inherit;
+          color: inherit;
+          display: flex;
+          flex-direction: column;
+          box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+          transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+          opacity: 0;
+          animation: rise .6s ease forwards;
+        }
+        .lp-card:nth-child(1) { animation-delay: .2s; }
+        .lp-card:nth-child(2) { animation-delay: .3s; }
+        .lp-card:hover, .lp-card:focus-visible {
+          transform: translateY(-4px);
+          box-shadow: 0 16px 32px -12px rgba(15,23,42,0.16);
+        }
+        .lp-card:focus-visible { outline: 2px solid #0f172a; outline-offset: 2px; }
+
+        .lp-card-img-wrap {
+          position: relative;
+          aspect-ratio: 16 / 10;
+          overflow: hidden;
+        }
+        .lp-card-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform .5s ease;
+        }
+        .lp-card:hover .lp-card-img, .lp-card:focus-visible .lp-card-img { transform: scale(1.05); }
+
+        .lp-card-tag {
+          position: absolute;
+          top: 14px;
+          left: 14px;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: .06em;
+          text-transform: uppercase;
+          padding: 6px 10px;
+          border-radius: 7px;
+          background: rgba(255,255,255,0.92);
+          backdrop-filter: blur(4px);
+        }
+
+        .lp-card-body {
+          padding: clamp(18px, 3vw, 24px);
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+
+        .lp-card-title {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-weight: 800;
+          font-size: clamp(18px, 2vw, 21px);
           letter-spacing: -0.01em;
-          margin-bottom: 14px;
+          margin-bottom: 6px;
         }
-        .lp-title em { font-style: italic; font-weight: 500; opacity: .92; }
 
-        .lp-blurb {
-          font-size: clamp(13px, 1.3vw, 15px);
+        .lp-card-desc {
+          font-size: 13.5px;
+          color: #64748b;
           line-height: 1.55;
-          color: var(--muted);
-          max-width: 340px;
-          margin-bottom: clamp(22px, 3vw, 32px);
+          margin-bottom: 18px;
+          flex: 1;
         }
-        .lp-panel[data-side="right"] .lp-blurb { margin-left: auto; }
 
-        .lp-cta {
+        .lp-card-cta {
           display: inline-flex;
           align-items: center;
-          gap: 10px;
+          justify-content: center;
+          gap: 8px;
+          padding: 12px;
+          border-radius: 10px;
           font-size: 13px;
           font-weight: 700;
-          letter-spacing: .02em;
+          color: #ffffff;
+          transition: gap .2s ease, opacity .2s ease;
         }
-        .lp-cta-arrow {
-          width: 34px;
-          height: 34px;
-          border-radius: 50%;
-          border: 1.5px solid rgba(245,243,238,0.45);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: transform .35s cubic-bezier(.2,.7,.3,1), background .35s, border-color .35s;
-        }
-        .lp-panel:hover .lp-cta-arrow,
-        .lp-panel:focus-visible .lp-cta-arrow { transform: scale(1.08); }
-        .lp-panel[data-side="right"] .lp-cta { flex-direction: row-reverse; }
-        .lp-panel[data-side="right"] .lp-cta-arrow svg { transform: scaleX(-1); }
+        .lp-card:hover .lp-card-cta, .lp-card:focus-visible .lp-card-cta { gap: 11px; opacity: .92; }
 
-        .lp-panel:focus-visible { outline: 2px solid var(--paper); outline-offset: -2px; }
-
-        /* ── COSTURA / EMBLEMA ── */
-        .lp-seam {
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          left: 50%;
-          width: 1px;
-          background: var(--hairline);
-          z-index: 5;
-          pointer-events: none;
-        }
-
-        .lp-vs {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          z-index: 6;
-          width: 56px;
-          height: 56px;
-          border-radius: 50%;
-          background: var(--ink-bg);
-          border: 1px solid var(--hairline);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: 'Fraunces', serif;
-          font-weight: 600;
-          font-size: 18px;
-          color: var(--paper);
-          opacity: 0;
-          animation: pop .5s .6s cubic-bezier(.34,1.56,.64,1) forwards;
-          transition: box-shadow .4s ease, border-color .4s ease;
-        }
-        .lp-hero:has(.lp-panel[data-side="left"]:hover) .lp-vs,
-        .lp-hero:has(.lp-panel[data-side="left"]:focus-visible) .lp-vs {
-          border-color: var(--estate);
-          box-shadow: 0 0 0 6px rgba(62,207,142,0.12);
-        }
-        .lp-hero:has(.lp-panel[data-side="right"]:hover) .lp-vs,
-        .lp-hero:has(.lp-panel[data-side="right"]:focus-visible) .lp-vs {
-          border-color: var(--drive);
-          box-shadow: 0 0 0 6px rgba(42,193,180,0.12);
-        }
-
-        .lp-vlabel {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          z-index: 6;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: .22em;
-          text-transform: uppercase;
-          color: var(--muted);
-          white-space: nowrap;
-          opacity: 0;
-          animation: fadeIn .6s .9s ease forwards;
-        }
-        .lp-vlabel.top { transform: translate(-50%, calc(-50% - 90px)) rotate(-90deg); }
-        .lp-vlabel.bottom { transform: translate(-50%, calc(-50% + 90px)) rotate(-90deg); }
-
-        /* ── RODAPÉ ── */
         .lp-foot {
           text-align: center;
-          font-size: 10.5px;
+          font-size: 11px;
           font-weight: 600;
-          letter-spacing: .04em;
-          color: var(--muted);
-          padding: 14px 0 18px;
-          flex-shrink: 0;
-          opacity: 0;
-          animation: fadeIn .6s 1s ease forwards;
+          color: #94a3b8;
+          padding: 16px 0 22px;
         }
 
-        @keyframes fadeDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
-        @keyframes fadeIn { to { opacity: 1; } }
-        @keyframes rise { to { opacity: 1; transform: none; } }
-        @keyframes pop { from { opacity: 0; transform: translate(-50%, -50%) scale(.6); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
-
-        /* ── MOBILE ── */
-        @media (max-width: 760px) {
-          .lp-hero { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-          .lp-panel { transition: none; }
-          .lp-panel[data-side="right"] .lp-body,
-          .lp-panel[data-side="right"] .lp-blurb,
-          .lp-panel[data-side="right"] .lp-cta { text-align: left; margin-left: 0; }
-          .lp-panel[data-side="right"] .lp-cta { flex-direction: row; }
-          .lp-panel[data-side="right"] .lp-cta-arrow svg { transform: none; }
-          .lp-blurb { max-width: none; }
-          .lp-seam { left: 0; right: 0; top: 50%; bottom: auto; width: 100%; height: 1px; }
-          .lp-vs { top: 50%; left: 50%; }
-          .lp-vlabel { display: none; }
-        }
-
-        @media (max-width: 760px) and (max-height: 560px) {
-          .lp-blurb { display: none; }
+        @media (max-width: 620px) {
+          .lp-grid { grid-template-columns: 1fr; max-width: 420px; }
+          .lp-main { justify-content: flex-start; padding-top: clamp(24px, 6vw, 36px); }
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .lp-top, .lp-body, .lp-vs, .lp-vlabel, .lp-foot { animation: none; opacity: 1; }
-          .lp-img, .lp-cta-arrow, .lp-panel { transition: none; }
+          .lp-heading, .lp-card { animation: none; opacity: 1; }
+          .lp-card, .lp-card-img, .lp-card-cta { transition: none; }
         }
+
+        @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
       `}</style>
 
       <div className="lp-root">
@@ -305,44 +214,38 @@ export default function Landing() {
           <img src="/logo-noxvelia.png" alt="NOXVELIA" />
         </div>
 
-        <main className="lp-hero">
-          {panels.map((panel) => (
-            <button
-              key={panel.id}
-              className="lp-panel"
-              data-side={panel.side}
-              onClick={() => navigate(panel.route)}
-              aria-label={panel.cta}
-            >
-              <img className="lp-img" src={panel.img} alt="" loading="eager" />
-              <div className="lp-scrim" />
-              <div
-                className="lp-glow"
-                style={{ background: `radial-gradient(120% 100% at ${panel.side === 'left' ? '80%' : '20%'} 100%, ${panel.accentSoft}, transparent 60%)` }}
-              />
+        <main className="lp-main">
+          <div className="lp-heading">
+            <p className="lp-eyebrow">Bem-vindo</p>
+            <h1 className="lp-title">O que procuras hoje?</h1>
+            <p className="lp-sub">Imóveis e automóveis selecionados, numa só plataforma de confiança.</p>
+          </div>
 
-              <div className="lp-body">
-                <p className="lp-eyebrow" style={{ color: panel.accent }}>{panel.tag}</p>
-                <h2 className="lp-title">
-                  NOXVELIA <em>{panel.short}</em>
-                </h2>
-                <p className="lp-blurb">{panel.blurb}</p>
-                <span className="lp-cta">
-                  {panel.cta}
-                  <span className="lp-cta-arrow">
+          <div className="lp-grid">
+            {panels.map((panel) => (
+              <button
+                key={panel.id}
+                className="lp-card"
+                onClick={() => navigate(panel.route)}
+                aria-label={panel.cta}
+              >
+                <div className="lp-card-img-wrap">
+                  <img className="lp-card-img" src={panel.img} alt="" loading="lazy" />
+                  <span className="lp-card-tag" style={{ color: panel.accent }}>{panel.tag}</span>
+                </div>
+                <div className="lp-card-body">
+                  <h2 className="lp-card-title">{panel.title}</h2>
+                  <p className="lp-card-desc">{panel.desc}</p>
+                  <span className="lp-card-cta" style={{ background: panel.accent }}>
+                    {panel.cta}
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                       <path d="M2 8h12M9 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </span>
-                </span>
-              </div>
-            </button>
-          ))}
-
-          <div className="lp-seam" />
-          <span className="lp-vlabel top">Escolhe</span>
-          <div className="lp-vs">N</div>
-          <span className="lp-vlabel bottom">o teu mundo</span>
+                </div>
+              </button>
+            ))}
+          </div>
         </main>
 
         <div className="lp-foot">NOXVELIA Portugal &copy; 2026</div>
