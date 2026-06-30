@@ -45,3 +45,7 @@ export default function PremiumRoute({ children }) {
   // Premium ativo → renderiza a página
   return children;
 }
+
+s
+
+
