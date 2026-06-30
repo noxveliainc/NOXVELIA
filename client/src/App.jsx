@@ -5,7 +5,7 @@ import { HelmetProvider } from 'react-helmet-async';
 
 // --- COMPONENTES ---
 import ProtectedRoute from './components/ProtectedRoute';
-import PremiumRoute from './components/PremiumRoute'; // 🌟 Importado
+import PremiumRoute from './components/PremiumRoute';
 import NavbarCarro from './components/carros/NavbarCarro';
 import NavbarImovel from './components/imoveis/NavbarImovel';
 import PageTransition from './components/PageTransition'; 
@@ -17,7 +17,7 @@ const Login          = lazy(() => import('./pages/shared/Login'));
 const Registo        = lazy(() => import('./pages/shared/Registo'));
 const ForgotPassword = lazy(() => import('./pages/shared/ForgotPassword'));
 const ResetPassword  = lazy(() => import('./pages/auth/ResetPassword'));
-const VerificarEmail = lazy(() => import('./pages/shared/VerificarEmail')); // 🌟 NOVO
+const VerificarEmail = lazy(() => import('./pages/shared/VerificarEmail'));
 
 const PesquisaCarro  = lazy(() => import('./pages/carros/PesquisaCarro'));
 const PesquisaImovel = lazy(() => import('./pages/imoveis/PesquisaImovel'));
@@ -55,8 +55,10 @@ function AppShell() {
     }
   }, [location.pathname]);
 
+  // 🌟 A rota "/" (Landing) já renderiza a sua própria NavbarLanding internamente,
+  // por isso continua de fora do NavbarComponent global aqui em baixo — nada mudou
+  // nesta lógica, só a Landing.jsx é que passou a ter navbar própria.
   const rotasSemNavbar = ['/', '/login', '/registo', '/forgot-password'];
-  // 🌟 NOVO: /verificar-email também entra na lista de rotas "auth" sem navbar/footer
   const isAuthRoute = location.pathname.startsWith('/reset-password') || location.pathname.startsWith('/verificar-email');
   const esconderNavbar = rotasSemNavbar.includes(location.pathname) || isAuthRoute;
   const esconderFooter = rotasSemNavbar.includes(location.pathname) || isAuthRoute || location.pathname.startsWith('/admin');
@@ -79,7 +81,7 @@ function AppShell() {
             <Route path="/registo" element={<Registo />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/verificar-email/:token" element={<VerificarEmail />} /> {/* 🌟 NOVO */}
+            <Route path="/verificar-email/:token" element={<VerificarEmail />} />
             <Route path="/anuncio/:id" element={<Anuncio />} />
             <Route path="/vendedor/:id" element={<PerfilPublico />} />
             
