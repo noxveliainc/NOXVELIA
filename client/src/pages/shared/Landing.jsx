@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import NavbarLanding from './NavbarLanding';
+import Footer from '../../components/Footer';
 
 const mundos = {
   estate: {
@@ -52,7 +52,6 @@ const pilares = [
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { user, signed } = useAuth();
   const [hover, setHover] = useState(null); // 'estate' | 'drive' | null
 
   const podeFazerHover = useCallback(
@@ -63,21 +62,9 @@ export default function Landing() {
   const handleEnter = (id) => { if (podeFazerHover()) setHover(id); };
   const handleLeave = () => { if (podeFazerHover()) setHover(null); };
 
-  const obterUserLocal = () => {
-    try {
-      const guardado = localStorage.getItem('@App:user');
-      return guardado ? JSON.parse(guardado) : null;
-    } catch {
-      return null;
-    }
-  };
-  const dadosUser = user || obterUserLocal();
-  const primeiroNome = dadosUser?.nome?.split(' ')[0] || '';
-
   const flexBasis = (id) => {
     if (!hover) return '50%';
-    if (hover === id) return '58%';
-    return '42%';
+    return hover === id ? '58%' : '42%';
   };
 
   return (
@@ -87,17 +74,13 @@ export default function Landing() {
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .lp-root {
-          font-family: 'Inter', sans-serif;
-          background: #f8fafc;
-          color: #0f172a;
-        }
+        .lp-root { font-family: 'Inter', sans-serif; background: #f8fafc; color: #0f172a; display: flex; flex-direction: column; min-height: 100dvh; }
 
         /* ============ HERO PARTIDO ============ */
         .lp-hero {
           position: relative;
           height: 100dvh;
-          min-height: 560px;
+          min-height: 520px;
           display: flex;
           overflow: hidden;
           background: #040711;
@@ -113,8 +96,9 @@ export default function Landing() {
           font: inherit;
           color: inherit;
           overflow: hidden;
-          transition: flex-basis .6s cubic-bezier(.16,1,.3,1);
+          transition: flex-basis .5s cubic-bezier(.16,1,.3,1);
         }
+        .lp-half + .lp-half { border-left: 1px solid rgba(255,255,255,0.08); }
 
         .lp-half-img {
           position: absolute;
@@ -122,38 +106,28 @@ export default function Landing() {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transform: scale(1.06);
-          transition: transform .8s cubic-bezier(.16,1,.3,1), filter .6s ease;
-          filter: saturate(0.85) brightness(0.78);
+          transform: scale(1.05);
+          transition: transform .6s ease, filter .4s ease;
+          filter: saturate(0.85) brightness(0.75);
         }
-        .lp-half.is-active .lp-half-img { transform: scale(1.12); filter: saturate(1.05) brightness(0.85); }
-        .lp-half.is-dim .lp-half-img { filter: saturate(0.55) brightness(0.55); }
+        .lp-half.is-active .lp-half-img { transform: scale(1.1); filter: saturate(1.05) brightness(0.85); }
 
         .lp-half-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, rgba(4,7,17,0.35) 0%, rgba(4,7,17,0.25) 45%, rgba(4,7,17,0.9) 100%);
+          background: linear-gradient(180deg, rgba(4,7,17,0.25) 0%, rgba(4,7,17,0.3) 45%, rgba(4,7,17,0.92) 100%);
         }
-        .lp-half-estate .lp-half-overlay { background: linear-gradient(180deg, rgba(4,7,17,0.35) 0%, rgba(4,7,17,0.2) 45%, rgba(3,12,9,0.92) 100%); }
-        .lp-half-drive .lp-half-overlay { background: linear-gradient(180deg, rgba(4,7,17,0.35) 0%, rgba(4,7,17,0.2) 45%, rgba(2,14,14,0.92) 100%); }
 
         .lp-half-content {
           position: absolute;
           left: 0; right: 0; bottom: 0;
           padding: clamp(28px, 5vw, 64px) clamp(20px, 6vw, 64px);
-          text-align: left;
           color: #f8fafc;
-          opacity: 0;
-          transform: translateY(16px);
-          animation: lp-rise .7s .25s ease forwards;
         }
-        .lp-half:nth-child(1) .lp-half-content { animation-delay: .35s; }
-        .lp-half:last-of-type .lp-half-content { animation-delay: .5s; }
 
         .lp-half-tag {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
           font-size: 11px;
           font-weight: 800;
           letter-spacing: .14em;
@@ -162,7 +136,6 @@ export default function Landing() {
           border-radius: 999px;
           background: rgba(255,255,255,0.1);
           border: 1px solid rgba(255,255,255,0.25);
-          backdrop-filter: blur(4px);
           margin-bottom: 18px;
         }
 
@@ -192,104 +165,22 @@ export default function Landing() {
           font-size: 13px;
           font-weight: 700;
           color: #040711;
-          transition: gap .25s ease, transform .25s ease;
+          transition: gap .2s ease;
         }
-        .lp-half:hover .lp-half-cta, .lp-half:focus-visible .lp-half-cta { gap: 13px; transform: translateX(2px); }
-        .lp-half-cta svg { flex-shrink: 0; }
+        .lp-half:hover .lp-half-cta, .lp-half:focus-visible .lp-half-cta { gap: 13px; }
 
         .lp-half:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
 
-        /* costura central */
-        .lp-seam {
-          position: relative;
-          z-index: 5;
-          flex: 0 0 86px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #040711;
-        }
-        .lp-seam::before {
-          content: '';
-          position: absolute;
-          top: 0; bottom: 0; left: 50%;
-          width: 1px;
-          transform: translateX(-50%);
-          background: linear-gradient(180deg, transparent, rgba(62,207,142,0.55) 35%, rgba(42,193,180,0.55) 65%, transparent);
-        }
-        .lp-seam-badge {
-          position: relative;
-          width: 58px; height: 58px;
-          border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          background: rgba(4,7,17,0.75);
-          border: 1px solid rgba(255,255,255,0.18);
-          backdrop-filter: blur(8px);
-          color: #f8fafc;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-weight: 800;
-          font-size: 11px;
-          letter-spacing: .1em;
-          text-transform: uppercase;
-          box-shadow: 0 0 0 8px rgba(255,255,255,0.03);
-        }
-
-        .lp-hero-eyebrow {
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          z-index: 4;
-          text-align: center;
-          padding-top: clamp(112px, 16vh, 150px);
-          pointer-events: none;
-        }
-        .lp-hero-eyebrow p {
-          color: rgba(248,250,252,0.65);
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: .16em;
-          text-transform: uppercase;
-        }
-        .lp-hero-eyebrow h1 {
-          margin-top: 8px;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-weight: 800;
-          font-size: clamp(20px, 2.6vw, 28px);
-          color: #f8fafc;
-          letter-spacing: -0.01em;
-        }
-
-        .lp-scroll-hint {
-          position: absolute;
-          bottom: 22px; left: 50%;
-          transform: translateX(-50%);
-          z-index: 5;
-          display: flex; flex-direction: column; align-items: center; gap: 6px;
-          color: rgba(248,250,252,0.55);
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: .12em;
-          text-transform: uppercase;
-          animation: lp-bounce 2s ease-in-out infinite;
-        }
-
-        @keyframes lp-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-        @keyframes lp-bounce { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 6px); } }
-
         @media (max-width: 760px) {
-          .lp-hero { flex-direction: column; height: auto; min-height: 100dvh; }
-          .lp-half { flex-basis: 50% !important; height: 50%; min-height: 280px; }
-          .lp-half-img { transform: scale(1.04) !important; filter: saturate(0.95) brightness(0.8) !important; }
-          .lp-seam { flex-basis: 0 !important; width: 100%; height: 0; }
-          .lp-seam::before { top: 50%; left: 0; right: 0; width: auto; height: 1px; transform: translateY(-50%); background: linear-gradient(90deg, transparent, rgba(62,207,142,0.6), rgba(42,193,180,0.6), transparent); }
-          .lp-seam-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-          .lp-hero-eyebrow { padding-top: 96px; }
+          .lp-hero { flex-direction: column; height: auto; min-height: 100dvh; padding-top: 70px; }
+          .lp-half { flex-basis: 50% !important; height: 50%; min-height: 260px; }
+          .lp-half + .lp-half { border-left: none; border-top: 1px solid rgba(255,255,255,0.08); }
           .lp-half-content { padding: 22px 20px; }
           .lp-half-title { font-size: 30px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .lp-half-content { animation: none; opacity: 1; transform: none; }
-          .lp-half, .lp-half-img, .lp-half-cta, .lp-scroll-hint { transition: none; animation: none; }
+          .lp-half, .lp-half-img, .lp-half-cta { transition: none; }
         }
 
         /* ============ PILARES ============ */
@@ -297,6 +188,7 @@ export default function Landing() {
           padding: clamp(56px, 8vw, 96px) 20px;
           max-width: 1080px;
           margin: 0 auto;
+          width: 100%;
         }
         .lp-pillars-grid {
           display: grid;
@@ -331,33 +223,19 @@ export default function Landing() {
         @media (max-width: 760px) {
           .lp-pillars-grid { grid-template-columns: 1fr; }
         }
-
-        .lp-foot {
-          text-align: center;
-          font-size: 11px;
-          font-weight: 600;
-          color: #94a3b8;
-          padding: 16px 0 32px;
-        }
       `}</style>
 
       <div className="lp-root">
         <NavbarLanding />
 
         <section className="lp-hero" aria-label="Escolhe o teu mundo NOXVELIA">
-          <div className="lp-hero-eyebrow">
-            <p>{signed ? `Olá, ${primeiroNome}` : 'Bem-vindo à NOXVELIA'}</p>
-            <h1>Escolhe o mundo onde queres continuar</h1>
-          </div>
-
           {['estate', 'drive'].map((id) => {
             const m = mundos[id];
             const ativo = hover === id;
-            const apagado = hover && hover !== id;
             return (
               <button
                 key={m.id}
-                className={`lp-half lp-half-${m.id} ${ativo ? 'is-active' : ''} ${apagado ? 'is-dim' : ''}`}
+                className={`lp-half ${ativo ? 'is-active' : ''}`}
                 style={{ flexBasis: flexBasis(id) }}
                 onMouseEnter={() => handleEnter(id)}
                 onMouseLeave={handleLeave}
@@ -382,15 +260,6 @@ export default function Landing() {
               </button>
             );
           })}
-
-          <div className="lp-seam" aria-hidden="true">
-            <span className="lp-seam-badge">OU</span>
-          </div>
-
-          <div className="lp-scroll-hint" aria-hidden="true">
-            <span>Saber mais</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
-          </div>
         </section>
 
         <section className="lp-pillars">
@@ -405,7 +274,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <div className="lp-foot">NOXVELIA Portugal &copy; 2026</div>
+        <Footer />
       </div>
     </>
   );
