@@ -12,7 +12,7 @@ const mundos = [
     cta: 'Ver Imóveis',
     route: '/imoveis',
     accent: '#3ecf8e',
-    img: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1400&q=75',
+    img: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=900&h=1200&q=75',
   },
   {
     id: 'drive',
@@ -22,7 +22,7 @@ const mundos = [
     cta: 'Ver Automóveis',
     route: '/carros',
     accent: '#2ac1b4',
-    img: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=75',
+    img: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&h=1200&q=75',
   },
 ];
 
@@ -62,106 +62,86 @@ export default function Landing() {
 
         .lp-root { font-family: 'Inter', sans-serif; background: #f8fafc; color: #0f172a; display: flex; flex-direction: column; min-height: 100dvh; }
 
-        /* ============ ACESSOS (vertical, simples, leve) ============ */
+        /* ============ ACESSOS: lista vertical, imagens em retrato, sem efeitos ============ */
         .lp-hero {
           display: flex;
           flex-direction: column;
-          gap: 14px;
-          padding: clamp(16px, 3vw, 28px);
-          background: #040711;
-        }
-
-        .lp-card {
-          position: relative;
-          display: block;
+          max-width: 760px;
           width: 100%;
-          height: clamp(220px, 32vh, 320px);
-          border-radius: 20px;
-          overflow: hidden;
-          border: none;
-          cursor: pointer;
-          font: inherit;
-          color: inherit;
-          text-align: left;
-          /* Apenas transform/opacity: leve para o browser, sem reflow no hover */
-          transform: translateZ(0);
+          margin: 0 auto;
+          padding: clamp(28px, 5vw, 56px) 20px;
         }
 
-        .lp-card-img {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          will-change: transform;
-          transition: transform .35s ease;
-        }
-        .lp-card:hover .lp-card-img,
-        .lp-card:focus-visible .lp-card-img {
-          transform: scale(1.04);
-        }
-
-        .lp-card-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(180deg, rgba(4,7,17,0.15) 0%, rgba(4,7,17,0.35) 50%, rgba(4,7,17,0.9) 100%);
-        }
-
-        .lp-card-content {
-          position: absolute;
-          left: 0; right: 0; bottom: 0;
-          padding: clamp(20px, 3vw, 32px);
-          color: #f8fafc;
-        }
-
-        .lp-card-tag {
-          display: inline-flex;
+        .lp-row {
+          display: flex;
           align-items: center;
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: .14em;
-          text-transform: uppercase;
-          padding: 6px 12px;
-          border-radius: 999px;
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(255,255,255,0.25);
-          margin-bottom: 12px;
+          gap: clamp(20px, 4vw, 40px);
+          padding: clamp(24px, 4vw, 36px) 0;
+          border-bottom: 1px solid #e2e8f0;
+          text-decoration: none;
+          color: inherit;
+          cursor: pointer;
+          background: none;
+          border-left: none;
+          border-right: none;
+          border-top: none;
+          width: 100%;
+          text-align: left;
+          font: inherit;
+        }
+        .lp-row:first-child { border-top: 1px solid #e2e8f0; }
+
+        .lp-row-img {
+          flex: 0 0 auto;
+          width: clamp(96px, 16vw, 140px);
+          aspect-ratio: 3 / 4;
+          border-radius: 14px;
+          object-fit: cover;
+          display: block;
         }
 
-        .lp-card-title {
+        .lp-row-body { flex: 1; min-width: 0; }
+
+        .lp-row-tag {
+          display: inline-block;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: .12em;
+          text-transform: uppercase;
+          color: #64748b;
+          margin-bottom: 6px;
+        }
+
+        .lp-row-title {
           font-family: 'Plus Jakarta Sans', sans-serif;
           font-weight: 800;
-          font-size: clamp(26px, 4vw, 38px);
+          font-size: clamp(24px, 4vw, 34px);
           letter-spacing: -0.02em;
-          line-height: 1;
-          margin-bottom: 8px;
+          line-height: 1.05;
+          margin-bottom: 6px;
         }
 
-        .lp-card-desc {
-          max-width: 420px;
-          font-size: 13.5px;
-          color: rgba(248,250,252,0.8);
+        .lp-row-desc {
+          font-size: 14px;
+          color: #64748b;
           line-height: 1.5;
-          margin-bottom: 16px;
+          max-width: 420px;
+          margin-bottom: 14px;
         }
 
-        .lp-card-cta {
+        .lp-row-cta {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
-          padding: 11px 20px;
-          border-radius: 999px;
+          gap: 6px;
           font-size: 13px;
           font-weight: 700;
-          color: #040711;
-          transition: gap .2s ease;
         }
-        .lp-card:hover .lp-card-cta, .lp-card:focus-visible .lp-card-cta { gap: 12px; }
+        .lp-row-cta svg { flex: 0 0 auto; }
 
-        .lp-card:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
-
-        @media (prefers-reduced-motion: reduce) {
-          .lp-card-img, .lp-card-cta { transition: none; }
+        @media (max-width: 560px) {
+          .lp-row { gap: 16px; }
+          .lp-row-img { width: 76px; }
+          .lp-row-desc { display: none; }
         }
 
         /* ============ PILARES ============ */
@@ -203,7 +183,6 @@ export default function Landing() {
 
         @media (max-width: 760px) {
           .lp-pillars-grid { grid-template-columns: 1fr; }
-          .lp-card { height: 240px; }
         }
       `}</style>
 
@@ -214,17 +193,15 @@ export default function Landing() {
           {mundos.map((m) => (
             <button
               key={m.id}
-              className="lp-card"
+              className="lp-row"
               onClick={() => navigate(m.route)}
-              aria-label={m.cta}
             >
-              <img className="lp-card-img" src={m.img} alt="" loading="lazy" />
-              <div className="lp-card-overlay" />
-              <div className="lp-card-content">
-                <span className="lp-card-tag">{m.tag}</span>
-                <h2 className="lp-card-title">{m.title}</h2>
-                <p className="lp-card-desc">{m.desc}</p>
-                <span className="lp-card-cta" style={{ background: m.accent }}>
+              <img className="lp-row-img" src={m.img} alt="" loading="lazy" />
+              <div className="lp-row-body">
+                <span className="lp-row-tag">{m.tag}</span>
+                <h2 className="lp-row-title">{m.title}</h2>
+                <p className="lp-row-desc">{m.desc}</p>
+                <span className="lp-row-cta" style={{ color: m.accent }}>
                   {m.cta}
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                     <path d="M2 8h12M9 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
