@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavbarLanding from './NavbarLanding';
 import Footer from '../../components/Footer';
 
-const mundos = {
-  estate: {
+const mundos = [
+  {
     id: 'estate',
     tag: 'Imobiliário',
     title: 'Estate',
@@ -14,7 +14,7 @@ const mundos = {
     accent: '#3ecf8e',
     img: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1400&q=75',
   },
-  drive: {
+  {
     id: 'drive',
     tag: 'Automóveis',
     title: 'Drive',
@@ -24,7 +24,7 @@ const mundos = {
     accent: '#2ac1b4',
     img: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=75',
   },
-};
+];
 
 const pilares = [
   {
@@ -52,20 +52,6 @@ const pilares = [
 
 export default function Landing() {
   const navigate = useNavigate();
-  const [hover, setHover] = useState(null); // 'estate' | 'drive' | null
-
-  const podeFazerHover = useCallback(
-    () => typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches,
-    []
-  );
-
-  const handleEnter = (id) => { if (podeFazerHover()) setHover(id); };
-  const handleLeave = () => { if (podeFazerHover()) setHover(null); };
-
-  const flexBasis = (id) => {
-    if (!hover) return '50%';
-    return hover === id ? '58%' : '42%';
-  };
 
   return (
     <>
@@ -76,111 +62,106 @@ export default function Landing() {
 
         .lp-root { font-family: 'Inter', sans-serif; background: #f8fafc; color: #0f172a; display: flex; flex-direction: column; min-height: 100dvh; }
 
-        /* ============ HERO PARTIDO ============ */
+        /* ============ ACESSOS (vertical, simples, leve) ============ */
         .lp-hero {
-          position: relative;
-          height: 100dvh;
-          min-height: 520px;
           display: flex;
-          overflow: hidden;
+          flex-direction: column;
+          gap: 14px;
+          padding: clamp(16px, 3vw, 28px);
           background: #040711;
         }
 
-        .lp-half {
+        .lp-card {
           position: relative;
-          flex: 0 0 50%;
-          min-width: 0;
-          height: 100%;
+          display: block;
+          width: 100%;
+          height: clamp(220px, 32vh, 320px);
+          border-radius: 20px;
+          overflow: hidden;
           border: none;
           cursor: pointer;
           font: inherit;
           color: inherit;
-          overflow: hidden;
-          transition: flex-basis .5s cubic-bezier(.16,1,.3,1);
+          text-align: left;
+          /* Apenas transform/opacity: leve para o browser, sem reflow no hover */
+          transform: translateZ(0);
         }
-        .lp-half + .lp-half { border-left: 1px solid rgba(255,255,255,0.08); }
 
-        .lp-half-img {
+        .lp-card-img {
           position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transform: scale(1.05);
-          transition: transform .6s ease, filter .4s ease;
-          filter: saturate(0.85) brightness(0.75);
+          will-change: transform;
+          transition: transform .35s ease;
         }
-        .lp-half.is-active .lp-half-img { transform: scale(1.1); filter: saturate(1.05) brightness(0.85); }
+        .lp-card:hover .lp-card-img,
+        .lp-card:focus-visible .lp-card-img {
+          transform: scale(1.04);
+        }
 
-        .lp-half-overlay {
+        .lp-card-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, rgba(4,7,17,0.25) 0%, rgba(4,7,17,0.3) 45%, rgba(4,7,17,0.92) 100%);
+          background: linear-gradient(180deg, rgba(4,7,17,0.15) 0%, rgba(4,7,17,0.35) 50%, rgba(4,7,17,0.9) 100%);
         }
 
-        .lp-half-content {
+        .lp-card-content {
           position: absolute;
           left: 0; right: 0; bottom: 0;
-          padding: clamp(28px, 5vw, 64px) clamp(20px, 6vw, 64px);
+          padding: clamp(20px, 3vw, 32px);
           color: #f8fafc;
         }
 
-        .lp-half-tag {
+        .lp-card-tag {
           display: inline-flex;
           align-items: center;
           font-size: 11px;
           font-weight: 800;
           letter-spacing: .14em;
           text-transform: uppercase;
-          padding: 7px 13px;
+          padding: 6px 12px;
           border-radius: 999px;
           background: rgba(255,255,255,0.1);
           border: 1px solid rgba(255,255,255,0.25);
-          margin-bottom: 18px;
-        }
-
-        .lp-half-title {
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-weight: 800;
-          font-size: clamp(34px, 6vw, 64px);
-          letter-spacing: -0.03em;
-          line-height: 1;
           margin-bottom: 12px;
         }
 
-        .lp-half-desc {
-          max-width: 360px;
-          font-size: clamp(13px, 1.4vw, 15px);
-          color: rgba(248,250,252,0.8);
-          line-height: 1.55;
-          margin-bottom: 22px;
+        .lp-card-title {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-weight: 800;
+          font-size: clamp(26px, 4vw, 38px);
+          letter-spacing: -0.02em;
+          line-height: 1;
+          margin-bottom: 8px;
         }
 
-        .lp-half-cta {
+        .lp-card-desc {
+          max-width: 420px;
+          font-size: 13.5px;
+          color: rgba(248,250,252,0.8);
+          line-height: 1.5;
+          margin-bottom: 16px;
+        }
+
+        .lp-card-cta {
           display: inline-flex;
           align-items: center;
-          gap: 9px;
-          padding: 13px 22px;
+          gap: 8px;
+          padding: 11px 20px;
           border-radius: 999px;
           font-size: 13px;
           font-weight: 700;
           color: #040711;
           transition: gap .2s ease;
         }
-        .lp-half:hover .lp-half-cta, .lp-half:focus-visible .lp-half-cta { gap: 13px; }
+        .lp-card:hover .lp-card-cta, .lp-card:focus-visible .lp-card-cta { gap: 12px; }
 
-        .lp-half:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
-
-        @media (max-width: 760px) {
-          .lp-hero { flex-direction: column; height: auto; min-height: 100dvh; padding-top: 70px; }
-          .lp-half { flex-basis: 50% !important; height: 50%; min-height: 260px; }
-          .lp-half + .lp-half { border-left: none; border-top: 1px solid rgba(255,255,255,0.08); }
-          .lp-half-content { padding: 22px 20px; }
-          .lp-half-title { font-size: 30px; }
-        }
+        .lp-card:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
 
         @media (prefers-reduced-motion: reduce) {
-          .lp-half, .lp-half-img, .lp-half-cta { transition: none; }
+          .lp-card-img, .lp-card-cta { transition: none; }
         }
 
         /* ============ PILARES ============ */
@@ -222,6 +203,7 @@ export default function Landing() {
 
         @media (max-width: 760px) {
           .lp-pillars-grid { grid-template-columns: 1fr; }
+          .lp-card { height: 240px; }
         }
       `}</style>
 
@@ -229,37 +211,28 @@ export default function Landing() {
         <NavbarLanding />
 
         <section className="lp-hero" aria-label="Escolhe o teu mundo NOXVELIA">
-          {['estate', 'drive'].map((id) => {
-            const m = mundos[id];
-            const ativo = hover === id;
-            return (
-              <button
-                key={m.id}
-                className={`lp-half ${ativo ? 'is-active' : ''}`}
-                style={{ flexBasis: flexBasis(id) }}
-                onMouseEnter={() => handleEnter(id)}
-                onMouseLeave={handleLeave}
-                onFocus={() => handleEnter(id)}
-                onBlur={handleLeave}
-                onClick={() => navigate(m.route)}
-                aria-label={m.cta}
-              >
-                <img className="lp-half-img" src={m.img} alt="" loading="eager" />
-                <div className="lp-half-overlay" />
-                <div className="lp-half-content">
-                  <span className="lp-half-tag">{m.tag}</span>
-                  <h2 className="lp-half-title">{m.title}</h2>
-                  <p className="lp-half-desc">{m.desc}</p>
-                  <span className="lp-half-cta" style={{ background: m.accent }}>
-                    {m.cta}
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                      <path d="M2 8h12M9 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </span>
-                </div>
-              </button>
-            );
-          })}
+          {mundos.map((m) => (
+            <button
+              key={m.id}
+              className="lp-card"
+              onClick={() => navigate(m.route)}
+              aria-label={m.cta}
+            >
+              <img className="lp-card-img" src={m.img} alt="" loading="lazy" />
+              <div className="lp-card-overlay" />
+              <div className="lp-card-content">
+                <span className="lp-card-tag">{m.tag}</span>
+                <h2 className="lp-card-title">{m.title}</h2>
+                <p className="lp-card-desc">{m.desc}</p>
+                <span className="lp-card-cta" style={{ background: m.accent }}>
+                  {m.cta}
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 8h12M9 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </div>
+            </button>
+          ))}
         </section>
 
         <section className="lp-pillars">
