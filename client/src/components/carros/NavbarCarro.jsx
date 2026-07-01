@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 
 export default function NavbarCarro() {
-  const { user, signed, logout } = useAuth();
+  const { user, signed, logout, atualizarUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
@@ -20,9 +20,10 @@ export default function NavbarCarro() {
   const [userMenuAberto, setUserMenuAberto] = useState(false);
   const userMenuRef = useRef(null);
   
-  const [mostrarModalPassword, setMostrarModalPassword] = useState(false);
+  const [mostrarModalInfo, setMostrarModalInfo] = useState(false);
+  const [dadosInfo, setDadosInfo] = useState({ email: '', telefone: '' });
   const [dadosPassword, setDadosPassword] = useState({ atual: '', nova: '', confirmar: '' });
-  const [isUpdatingPwd, setIsUpdatingPwd] = useState(false);
+  const [isUpdatingInfo, setIsUpdatingInfo] = useState(false);
   const [mostrarPassword, setMostrarPassword] = useState(false);
 
   // 🌟 NOVO: Estado para controlar o menu mobile
@@ -78,17 +79,50 @@ export default function NavbarCarro() {
     navigate('/planos');
   };
 
-  const alterarPassword = async (e) => {
-    e.preventDefault();
-    if (dadosPassword.nova !== dadosPassword.confirmar) return alert('As novas palavras-passe não coincidem!');
+  // 🌟 Abre o modal unificado de Informações Pessoais, pré-preenchido com os dados atuais
+  const abrirModalInfo = async () => {
+    setDadosInfo({ email: dadosUser?.email || '', telefone: dadosUser?.telefone || '' });
     try {
-      setIsUpdatingPwd(true);
-      await api.put('/users/me/password', { passwordAtual: dadosPassword.atual, novaPassword: dadosPassword.nova });
-      alert('Palavra-passe alterada com sucesso!');
-      setMostrarModalPassword(false);
+      const { data } = await api.get('/users/me');
+      setDadosInfo({ email: data.email || '', telefone: data.telefone || '' });
+    } catch {}
+    setMostrarModalInfo(true);
+  };
+
+  const guardarInformacoesPessoais = async (e) => {
+    e.preventDefault();
+    setIsUpdatingInfo(true);
+    try {
+      if (dadosPassword.atual || dadosPassword.nova || dadosPassword.confirmar) {
+        if (dadosPassword.nova !== dadosPassword.confirmar) {
+          alert('A nova password e a confirmação não coincidem.');
+          setIsUpdatingInfo(false);
+          return;
+        }
+        if (dadosPassword.nova.length < 9) {
+          alert('A nova password tem de ter pelo menos 9 caracteres.');
+          setIsUpdatingInfo(false);
+          return;
+        }
+        await api.put('/users/me/password', {
+          passwordAtual: dadosPassword.atual,
+          novaPassword: dadosPassword.nova
+        });
+      }
+      const res = await api.put('/users/me', {
+        email: dadosInfo.email,
+        telefone: dadosInfo.telefone
+      });
+      if (atualizarUser) atualizarUser(res.data);
       setDadosPassword({ atual: '', nova: '', confirmar: '' });
       setMostrarPassword(false);
-    } catch (err) { alert(err.response?.data?.erro || 'Erro ao alterar a palavra-passe.'); } finally { setIsUpdatingPwd(false); }
+      setMostrarModalInfo(false);
+      alert('Informações atualizadas com sucesso!');
+    } catch (err) {
+      alert(err.response?.data?.erro || 'Erro ao atualizar informações. Verifica se a password atual está correta ou se o email já está em uso.');
+    } finally {
+      setIsUpdatingInfo(false);
+    }
   };
 
   const obterUserLocal = () => { try { const guardado = localStorage.getItem('@App:user'); return guardado ? JSON.parse(guardado) : null; } catch { return null; } };
@@ -162,8 +196,8 @@ export default function NavbarCarro() {
         .ncr-ud-item.logout:hover { background: #fff1f2; color: #be123c; }
         .ncr-btn-login { display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; color: #0f172a; font-size: 13px; font-weight: 600; padding: 9px 20px; text-decoration: none; }
         
-        .nav-modal-overlay { position: fixed; inset: 0; background: rgba(4, 7, 17, 0.9); backdrop-filter: blur(10px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
-        .nav-modal-card { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; width: 100%; max-width: 480px; padding: 40px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); color: #f8fafc; }
+        .nav-modal-overlay { position: fixed; inset: 0; background: rgba(4, 7, 17, 0.9); backdrop-filter: blur(10px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; }
+        .nav-modal-card { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; width: 100%; max-width: 480px; padding: 40px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); color: #f8fafc; margin: auto; }
         .nav-modal-close { position: absolute; top: 24px; right: 24px; background: transparent; border: none; color: #94a3b8; cursor: pointer; transition: color 0.2s; }
         .nav-modal-close:hover { color: #f8fafc; }
         .nav-modal-title { font-family: var(--nx-font-display, sans-serif); font-size: 22px; font-weight: 800; margin: 0 0 8px; display: flex; align-items: center; gap: 10px; }
@@ -172,10 +206,12 @@ export default function NavbarCarro() {
         .nav-modal-form-group { margin-bottom: 20px; text-align: left; }
         .nav-modal-form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 8px; }
         .nav-modal-input-wrapper { position: relative; display: flex; align-items: center; }
-        .nav-modal-input { width: 100%; padding: 14px 48px 14px 16px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #f8fafc; outline: none; font-size: 14px; transition: all 0.2s; box-sizing: border-box; }
+        .nav-modal-input { width: 100%; padding: 14px 16px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #f8fafc; outline: none; font-size: 14px; transition: all 0.2s; box-sizing: border-box; }
+        .nav-modal-input.has-toggle { padding-right: 48px; }
         .nav-modal-input:focus { border-color: #2ac1b4; box-shadow: 0 0 0 3px rgba(42, 193, 180, 0.1); }
         .nav-modal-toggle-pwd { position: absolute; right: 12px; background: transparent; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; transition: color 0.2s; }
         .nav-modal-toggle-pwd:hover { color: #f8fafc; }
+        .nav-modal-divider { height: 1px; background: rgba(255, 255, 255, 0.1); margin: 28px 0 20px; }
         .nav-modal-btn { width: 100%; padding: 16px; background: #2ac1b4; color: #040711; border: none; border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: opacity 0.2s; margin-top: 12px; }
         .nav-modal-btn:hover { opacity: 0.9; }
         .nav-modal-btn:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -209,22 +245,56 @@ export default function NavbarCarro() {
         }
       `}</style>
 
-      {mostrarModalPassword && (
+      {mostrarModalInfo && (
         <div className="nav-modal-overlay">
           <div className="nav-modal-card">
-            <button className="nav-modal-close" onClick={() => setMostrarModalPassword(false)}>
+            <button className="nav-modal-close" onClick={() => setMostrarModalInfo(false)}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
             <h2 className="nav-modal-title">
-              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-              Alterar Palavra-passe
+              <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              Informações Pessoais
             </h2>
-            <p className="nav-modal-desc">Define uma nova palavra-passe forte para proteger a tua conta.</p>
-            <form onSubmit={alterarPassword}>
+            <p className="nav-modal-desc">Atualiza os teus contactos ou altera a tua palavra-passe.</p>
+            <form onSubmit={guardarInformacoesPessoais}>
+              <div className="nav-modal-form-group">
+                <label>Email da Conta</label>
+                <div className="nav-modal-input-wrapper">
+                  <input
+                    className="nav-modal-input"
+                    type="email"
+                    value={dadosInfo.email}
+                    onChange={e => setDadosInfo({ ...dadosInfo, email: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="nav-modal-form-group">
+                <label>Telemóvel / Telefone</label>
+                <div className="nav-modal-input-wrapper">
+                  <input
+                    className="nav-modal-input"
+                    type="tel"
+                    value={dadosInfo.telefone}
+                    onChange={e => {
+                      const apenasNumeros = e.target.value.replace(/\D/g, '');
+                      if (apenasNumeros.length <= 9) setDadosInfo({ ...dadosInfo, telefone: apenasNumeros });
+                    }}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="nav-modal-divider" />
+
+              <p className="nav-modal-desc" style={{ marginBottom: '16px', fontSize: '12px' }}>
+                Para alterares a palavra-passe, preenche os campos abaixo. Caso contrário, deixa-os em branco.
+              </p>
+
               <div className="nav-modal-form-group">
                 <label>Palavra-passe Atual</label>
                 <div className="nav-modal-input-wrapper">
-                  <input className="nav-modal-input" type={mostrarPassword ? "text" : "password"} value={dadosPassword.atual} onChange={e => setDadosPassword({...dadosPassword, atual: e.target.value})} required />
+                  <input className="nav-modal-input has-toggle" type={mostrarPassword ? "text" : "password"} placeholder="Deixa em branco se não quiseres alterar" value={dadosPassword.atual} onChange={e => setDadosPassword({...dadosPassword, atual: e.target.value})} />
                   <button type="button" className="nav-modal-toggle-pwd" onClick={() => setMostrarPassword(!mostrarPassword)}>
                     {mostrarPassword ? (
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
@@ -235,33 +305,20 @@ export default function NavbarCarro() {
                 </div>
               </div>
               <div className="nav-modal-form-group">
-                <label>Nova Palavra-passe (Mín. 9 caracteres)</label>
+                <label>Nova Password</label>
                 <div className="nav-modal-input-wrapper">
-                  <input className="nav-modal-input" type={mostrarPassword ? "text" : "password"} value={dadosPassword.nova} onChange={e => setDadosPassword({...dadosPassword, nova: e.target.value})} required minLength={9} />
-                  <button type="button" className="nav-modal-toggle-pwd" onClick={() => setMostrarPassword(!mostrarPassword)}>
-                    {mostrarPassword ? (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                    ) : (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    )}
-                  </button>
+                  <input className="nav-modal-input has-toggle" type={mostrarPassword ? "text" : "password"} placeholder="Mínimo 9 caracteres" value={dadosPassword.nova} onChange={e => setDadosPassword({...dadosPassword, nova: e.target.value})} minLength={9} />
                 </div>
               </div>
               <div className="nav-modal-form-group">
-                <label>Confirmar Nova Palavra-passe</label>
+                <label>Confirmar Nova Password</label>
                 <div className="nav-modal-input-wrapper">
-                  <input className="nav-modal-input" type={mostrarPassword ? "text" : "password"} value={dadosPassword.confirmar} onChange={e => setDadosPassword({...dadosPassword, confirmar: e.target.value})} required minLength={9} />
-                  <button type="button" className="nav-modal-toggle-pwd" onClick={() => setMostrarPassword(!mostrarPassword)}>
-                    {mostrarPassword ? (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                    ) : (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    )}
-                  </button>
+                  <input className="nav-modal-input has-toggle" type={mostrarPassword ? "text" : "password"} value={dadosPassword.confirmar} onChange={e => setDadosPassword({...dadosPassword, confirmar: e.target.value})} minLength={9} />
                 </div>
               </div>
-              <button className="nav-modal-btn" type="submit" disabled={isUpdatingPwd}>
-                {isUpdatingPwd ? 'A Gravar...' : 'Gravar Palavra-passe'}
+
+              <button className="nav-modal-btn" type="submit" disabled={isUpdatingInfo}>
+                {isUpdatingInfo ? 'A Gravar...' : 'Guardar Informações'}
               </button>
             </form>
           </div>
@@ -331,7 +388,7 @@ export default function NavbarCarro() {
                     {isAdmin && (
                       <Link to="/admin" onClick={() => setUserMenuAberto(false)} className="ncr-ud-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>Painel Admin <span className="ncr-ud-admin-badge">ADMIN</span></Link>
                     )}
-                    <button onClick={() => { setUserMenuAberto(false); setMostrarModalPassword(true); }} className="ncr-ud-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Alterar Password</button>
+                    <button onClick={() => { setUserMenuAberto(false); abrirModalInfo(); }} className="ncr-ud-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Informações Pessoais</button>
                     <div className="ncr-ud-divider" />
                     <button onClick={() => { setUserMenuAberto(false); logout(); }} className="ncr-ud-item logout"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Terminar Sessão</button>
                   </div>
@@ -398,9 +455,9 @@ export default function NavbarCarro() {
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                     Favoritos
                   </Link>
-                  <button type="button" className="ncr-drawer-link" onClick={() => { setMenuMobileAberto(false); setMostrarModalPassword(true); }}>
+                  <button type="button" className="ncr-drawer-link" onClick={() => { setMenuMobileAberto(false); abrirModalInfo(); }}>
                     <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                    Alterar Password
+                    Informações Pessoais
                   </button>
                   <button type="button" className="ncr-drawer-link logout-btn" onClick={() => { setMenuMobileAberto(false); logout(); }}>
                     <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>

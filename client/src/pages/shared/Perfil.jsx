@@ -6,7 +6,7 @@ import AnuncioCard from '../../pages/shared/AnuncioCard';
 import Icon from '@mdi/react';
 import { 
   mdiCheckDecagram, mdiChartBar, mdiShareVariantOutline, mdiDomain, 
-  mdiClose, mdiCrown, mdiCogOutline, mdiCheck, mdiEmailOutline, mdiPhoneOutline, mdiStar,
+  mdiClose, mdiCrown, mdiCheck, mdiEmailOutline, mdiPhoneOutline, mdiStar,
   mdiChevronLeft   // <-- adicionar isto
 } from '@mdi/js';
 
@@ -33,10 +33,6 @@ export default function Perfil() {
   const [mostrarModalEvolucao, setMostrarModalEvolucao] = useState(false);
   const [dadosEvolucao, setDadosEvolucao] = useState({ nomeEmpresa: '', nif: '', website: '' });
 
-  const [mostrarModalInfo, setMostrarModalInfo] = useState(false);
-  const [dadosInfo, setDadosInfo] = useState({ email: '', telefone: '' });
-  const [dadosPassword, setDadosPassword] = useState({ atual: '', nova: '', confirmar: '' });
-
   const rotaVoltar = abaActiva === 'carro' ? '/carros' : '/imoveis';
   const labelVoltar = abaActiva === 'carro' ? 'Automóveis' : 'Imóveis';
 
@@ -53,7 +49,6 @@ export default function Perfil() {
         ]);
         if (!isMounted) return;
         setUtilizador(resUser.data);
-        setDadosInfo({ email: resUser.data.email || '', telefone: resUser.data.telefone || '' });
         setAnuncios(resAnuncios.data);
         setLoading(false);
       } catch (err) {
@@ -111,42 +106,6 @@ export default function Perfil() {
       alert('A tua conta foi evoluída para Profissional com sucesso.');
     } catch (err) {
       alert('Ocorreu um erro ao evoluir a tua conta.');
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const guardarInformacoesPessoais = async (e) => {
-    e.preventDefault();
-    setIsDeleting(true);
-    try {
-      if (dadosPassword.atual || dadosPassword.nova || dadosPassword.confirmar) {
-        if (dadosPassword.nova !== dadosPassword.confirmar) {
-          alert("A nova password e a confirmação não coincidem.");
-          setIsDeleting(false);
-          return;
-        }
-        if (dadosPassword.nova.length < 9) {
-          alert("A nova password tem de ter pelo menos 9 caracteres.");
-          setIsDeleting(false);
-          return;
-        }
-        await api.put('/users/me/password', { 
-          passwordAtual: dadosPassword.atual, 
-          novaPassword: dadosPassword.nova 
-        });
-      }
-      const res = await api.put('/users/me', { 
-        email: dadosInfo.email, 
-        telefone: dadosInfo.telefone 
-      });
-      setUtilizador(res.data);
-      if (atualizarUser) atualizarUser(res.data);
-      setDadosPassword({ atual: '', nova: '', confirmar: '' });
-      setMostrarModalInfo(false);
-      alert('Informações atualizadas com sucesso!');
-    } catch (err) {
-      alert(err.response?.data?.erro || 'Erro ao atualizar informações. Verifica se a password atual está correta ou se o email já está em uso.');
     } finally {
       setIsDeleting(false);
     }
@@ -341,89 +300,6 @@ export default function Perfil() {
         </div>
       )}
 
-      {/* 🌟 MODAL UNIFICADO DE INFORMAÇÕES PESSOAIS */}
-      {mostrarModalInfo && (
-        <div className="modal-overlay">
-          <div className="modal-card">
-            <button className="modal-close" onClick={() => setMostrarModalInfo(false)}>
-              <Icon path={mdiClose} size={1} />
-            </button>
-            <h2 className="modal-title"><Icon path={mdiCogOutline} size={1.2} color="#2ac1b4" /> Informações Pessoais</h2>
-            <p className="modal-desc">Atualiza os teus contactos ou altera a tua palavra-passe.</p>
-
-            <form onSubmit={guardarInformacoesPessoais}>
-              <div className="modal-form-group">
-                <label>Email da Conta</label>
-                <input 
-                  className="modal-input" 
-                  type="email" 
-                  value={dadosInfo.email} 
-                  onChange={e => setDadosInfo({...dadosInfo, email: e.target.value})} 
-                  required 
-                  style={{ borderColor: 'rgba(42, 193, 180, 0.4)' }}
-                />
-              </div>
-              <div className="modal-form-group">
-                <label>Telemóvel / Telefone</label>
-                <input 
-                  className="modal-input" 
-                  type="tel" 
-                  value={dadosInfo.telefone} 
-                  onChange={e => {
-                    const apenasNumeros = e.target.value.replace(/\D/g, ''); 
-                    if (apenasNumeros.length <= 9) setDadosInfo({...dadosInfo, telefone: apenasNumeros});
-                  }} 
-                  required 
-                  style={{ borderColor: 'rgba(42, 193, 180, 0.4)' }}
-                />
-              </div>
-
-              <div className="modal-divider" />
-
-              <p className="modal-desc" style={{ marginBottom: '16px', fontSize: '13px' }}>
-                Para alterares a palavra-passe, preenche os campos abaixo. Caso contrário, deixa-os em branco.
-              </p>
-              
-              <div className="modal-form-group">
-                <label>Palavra-passe Atual</label>
-                <input 
-                  className="modal-input" 
-                  type="password" 
-                  placeholder="Deixa em branco se não quiseres alterar"
-                  value={dadosPassword.atual} 
-                  onChange={e => setDadosPassword({...dadosPassword, atual: e.target.value})} 
-                />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="modal-form-group">
-                  <label>Nova Password</label>
-                  <input 
-                    className="modal-input" 
-                    type="password" 
-                    placeholder="Mínimo 9 char"
-                    value={dadosPassword.nova} 
-                    onChange={e => setDadosPassword({...dadosPassword, nova: e.target.value})} 
-                  />
-                </div>
-                <div className="modal-form-group">
-                  <label>Confirmar Nova</label>
-                  <input 
-                    className="modal-input" 
-                    type="password" 
-                    value={dadosPassword.confirmar} 
-                    onChange={e => setDadosPassword({...dadosPassword, confirmar: e.target.value})} 
-                  />
-                </div>
-              </div>
-
-              <button className="modal-btn-submit" type="submit" style={{ background: '#2ac1b4', color: '#ffffff', marginTop: '8px' }}>
-                Guardar Informações Pessoais
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
       <div className="perfil-outer">
         <div className="perfil-moldura">
           
@@ -516,10 +392,6 @@ export default function Perfil() {
               </button>
               
               <button className="btn-action-solid" onClick={() => navigate('/publicar')}>+ Criar Anúncio</button>
-              
-              <button className="btn-action-outline" onClick={() => setMostrarModalInfo(true)}>
-                <Icon path={mdiCogOutline} size={0.65} /> Info. Pessoais
-              </button>
 
               <button className="btn-action-outline danger" onClick={handleLogout}>Terminar Sessão</button>
             </div>
