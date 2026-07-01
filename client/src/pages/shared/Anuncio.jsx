@@ -12,10 +12,11 @@ import {
   mdiGarageVariant, mdiBalcony, mdiHammerWrench, mdiCar, mdiFileDocumentOutline,
   mdiCamera, mdiStar, mdiAlertCircleOutline, mdiWhatsapp, mdiContentCopy,
   mdiShieldCheckOutline, mdiClockOutline, mdiMagnifyPlusOutline, mdiClose, mdiCheck,
-  mdiCheckCircleOutline, mdiSwapHorizontal, mdiLightningBolt, mdiCarInfo
+  mdiCheckCircleOutline, mdiSwapHorizontal, mdiLightningBolt, mdiEmailOutline
 } from '@mdi/js';
 
 import AnuncioCard from '../shared/AnuncioCard';
+import CarVerticalLogo from '../../components/CarVerticalLogo';
 
 const formatarMoeda = (valor) =>
   new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
@@ -231,13 +232,13 @@ export default function Anuncio() {
   const temVaranda = anuncio.equipamento?.some(e => e.toLowerCase().includes('varanda') || e.toLowerCase().includes('terraço'));
 
   // Lógica do Ano/Mês combinada
-  const valorAnoMes = anuncio.carro?.ano 
+  const valorAnoMes = anuncio.carro?.ano
     ? (anuncio.carro?.mesRegisto ? `${anuncio.carro.ano} / ${String(anuncio.carro.mesRegisto).padStart(2, '0')}` : anuncio.carro.ano)
     : null;
 
-  // 🌟 Lógica do Link da carVertical
+  // Link de afiliação carVertical
   const vin = anuncio.carro?.vin;
-  const carVerticalLink = vin 
+  const carVerticalLink = vin
     ? `https://www.carvertical.deal/27H3X8P/CXW7M6/?uid=332&source_id=AFF&sub1=noxvelia&sub3=${vin}`
     : `https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia`;
 
@@ -318,7 +319,7 @@ export default function Anuncio() {
         .btn-icon:hover { background: #f1f5f9; border-color: #cbd5e1; color: #0f172a; transform: translateY(-1px); }
         .btn-icon:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid ${accent}; outline-offset: 2px; }
         .btn-icon.saved { color: #ef4444; background: rgba(239,68,68,.05); border-color: rgba(239,68,68,.2); }
-        .toast-copy { position: absolute; top: 110%; right: 0; background: #0f172a; color: #ffffff; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 6px; white-space: nowrap; pointer-events: none; animation: nx-fade-in .2s; z-index: 20; }
+        .toast-copy { position: absolute; top: 110%; right: 0; background: #0f172a; color: #ffffff; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 6px; white-space: nowrap; pointer-events: none; animation: nx-fade-in .2s; z-index: 20; display: flex; align-items: center; gap: 4px; }
 
         .ano-grid { display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start; }
         @media (max-width: 960px) { .ano-grid { grid-template-columns: 1fr; } }
@@ -353,7 +354,8 @@ export default function Anuncio() {
         .meta-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; }
         .meta-ref { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
         .meta-ref:hover { color: #0f172a; }
-        .estado-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
+        .estado-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
+        .estado-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
         .meta-dot { color: #cbd5e1; font-size: 10px; }
 
         .tabs-wrap { display: flex; gap: 2px; border-bottom: 1px solid #e2e8f0; margin-bottom: 22px; overflow-x: auto; scrollbar-width: none; }
@@ -390,7 +392,7 @@ export default function Anuncio() {
 
         .btn-contact { width: 100%; box-sizing: border-box; padding: 16px; background: ${accent}; color: #fff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px ${accentShadow}; margin-bottom: 12px; }
         .btn-contact:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: 0 10px 28px ${accentShadow}; }
-        
+
         .btn-whatsapp { width: 100%; box-sizing: border-box; padding: 16px; background: #10b981; color: #fff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.2); text-decoration: none; margin-bottom: 12px; }
         .btn-whatsapp:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(16, 185, 129, 0.3); color: #fff; }
 
@@ -398,21 +400,19 @@ export default function Anuncio() {
         .contact-revealed:hover { background: #f1f5f9; border-color: #94a3b8; }
         .contact-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; }
         .contact-phone { font-size: clamp(18px, 2vw, 22px); font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
-        .contact-email { font-size: 13px; color: #475569; font-weight: 600; margin-top: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .contact-email { font-size: 13px; color: #475569; font-weight: 600; margin-top: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
 
-        /* 🌟 NOVO: Banner carVertical */
-        .cv-banner { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 14px; padding: 20px; margin-top: 16px; text-decoration: none; display: block; transition: all .2s; }
+        .cv-banner { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 20px; padding: 22px; text-decoration: none; display: block; transition: all .2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
         .cv-banner:hover { border-color: #7dd3fc; background: #e0f2fe; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.1); }
-        .cv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-        .cv-title { font-size: 15px; font-weight: 800; color: #0369a1; display: flex; align-items: center; gap: 6px; }
-        .cv-discount { background: #0284c7; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .cv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .cv-discount { background: #1B4DFF; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
         .cv-desc { font-size: 13px; color: #0c4a6e; line-height: 1.5; margin-bottom: 14px; }
         .cv-code-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-        .cv-code { display: inline-block; background: #fff; border: 1px dashed #7dd3fc; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #0284c7; }
-        .cv-btn { width: 100%; padding: 12px; background: #0284c7; color: #fff; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; text-align: center; transition: background .2s; }
-        .cv-banner:hover .cv-btn { background: #0369a1; }
+        .cv-code { display: inline-block; background: #fff; border: 1px dashed #7dd3fc; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #1B4DFF; }
+        .cv-btn { width: 100%; padding: 12px; background: #1B4DFF; color: #fff; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; text-align: center; transition: background .2s; }
+        .cv-banner:hover .cv-btn { background: #143bc4; }
 
-        .finance-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; margin-top: 16px; }
+        .finance-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
         .finance-box .fin-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 14px; }
         .fin-result-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #cbd5e1; }
         .fin-prestacao { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 800; color: ${accent}; letter-spacing: -.02em; }
@@ -428,8 +428,8 @@ export default function Anuncio() {
         .trust-strip { display: flex; gap: 18px; padding: 16px 4px 0; margin-top: 4px; border-top: 1px solid #e2e8f0; justify-content: center; }
         .trust-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #64748b; }
 
-        .seller-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; transition: all .2s; margin-top: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
-        .seller-panel:hover { border-color: #cbd5e1; background: #f8fafc; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+        .seller-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; transition: all .2s; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+        .seller-panel:hover { border-color: #cbd5e1; background: #f8fafc; transform: translateY(-2px); box-shadow: 0 14px 20px -5px rgba(0,0,0,0.08); }
         .seller-avatar { width: 48px; height: 48px; border-radius: 50%; background: #f1f5f9; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 800; color: #0f172a; flex-shrink: 0; overflow: hidden; }
         .seller-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .seller-info { flex: 1; min-width: 0; text-align: left; }
@@ -441,12 +441,12 @@ export default function Anuncio() {
         .seller-rating-empty { font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
         .seller-date { font-size: 12px; font-weight: 600; color: #64748b; }
 
-        .owner-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 14px; padding: 18px; margin-top: 16px; }
+        .owner-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 14px; padding: 18px; margin-top: 4px; }
         .owner-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #2563eb; margin-bottom: 12px; }
         .owner-btns { display: flex; gap: 10px; }
         .btn-owner-edit { flex: 1; padding: 11px; text-align: center; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; transition: all .2s; }
         .btn-owner-edit:hover { border-color: #94a3b8; background: #f8fafc; }
-        .btn-owner-sold { flex: 1; padding: 11px; border: none; background: #10b981; color: #fff; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: opacity .2s; }
+        .btn-owner-sold { flex: 1; padding: 11px; border: none; background: #10b981; color: #fff; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: opacity .2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-owner-sold:hover { opacity: .85; }
 
         .nx-modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; animation: nx-fade-in .2s; }
@@ -531,7 +531,7 @@ export default function Anuncio() {
             <div className="ano-actions">
               <button className="btn-icon" onClick={handlePartilhar} title="Partilhar" aria-label="Partilhar anúncio">
                 <Icon path={mdiShareVariantOutline} size={0.85} />
-                {copiado && <div className="toast-copy">✓ Copiado!</div>}
+                {copiado && <div className="toast-copy"><Icon path={mdiCheck} size={0.55} /> Copiado</div>}
               </button>
               {!isDono && (
                 <button className={`btn-icon ${guardado ? 'saved' : ''}`} onClick={toggleGuardado} title="Guardar" aria-pressed={guardado} aria-label={guardado ? 'Remover dos guardados' : 'Guardar anúncio'}>
@@ -585,7 +585,7 @@ export default function Anuncio() {
                 <div className="listing-price">{preco}</div>
                 <div className="listing-subtitle">{anuncio.titulo}</div>
                 <div className="meta-row">
-                  <span className="estado-badge">● {anuncio.estado || 'Disponível'}</span>
+                  <span className="estado-badge"><span className="estado-dot" />{anuncio.estado || 'Disponível'}</span>
                   <span className="meta-item"><Icon path={mdiEyeOutline} size={0.65} /> {anuncio.visitas || 0} visualizações</span>
                   <span className="meta-dot">·</span>
                   <button type="button" className="meta-ref" onClick={copiarReferencia} title="Copiar referência">
@@ -630,6 +630,13 @@ export default function Anuncio() {
             </div>
 
             <div>
+              {/*
+                Sidebar organizada por ordem de decisão: 1) preço e ação
+                principal (contactar/gerir), 2) confiança no vendedor,
+                3) verificação independente do veículo, 4) simulação de
+                financiamento. Cada bloco é um cartão próprio para leitura
+                rápida em ecrãs pequenos.
+              */}
               <div className="sidebar-sticky">
                 <div className="price-panel">
                   <div className="panel-price">{preco}</div>
@@ -651,7 +658,7 @@ export default function Anuncio() {
                       <div className="owner-btns">
                         <Link to={`/editar/${id}`} className="btn-owner-edit">Editar Dados</Link>
                         <button type="button" className="btn-owner-sold" onClick={() => setMostrarModalVendido(true)}>
-                          <Icon path={mdiCheck} size={0.7} style={{marginRight: 4}} /> Vendido
+                          <Icon path={mdiCheck} size={0.7} /> Vendido
                         </button>
                       </div>
                     </div>
@@ -662,7 +669,7 @@ export default function Anuncio() {
                           <a href={`tel:${telefoneContacto}`} className="contact-revealed">
                             <span className="contact-label">Contactar via</span>
                             <div className="contact-phone"><Icon path={mdiPhone} size={0.9} color={accent} />{telefoneContacto}</div>
-                            <div className="contact-email">✉ {emailContacto}</div>
+                            <div className="contact-email"><Icon path={mdiEmailOutline} size={0.6} />{emailContacto}</div>
                           </a>
                           {whatsappNumero && (
                             <a
@@ -678,56 +685,12 @@ export default function Anuncio() {
                           <Icon path={mdiPhone} size={0.85} /> Revelar Contactos
                         </button>
                       )}
-                      
+
                       <div className="trust-strip">
                         <span className="trust-item"><Icon path={mdiShieldCheckOutline} size={0.6} />Pagamento seguro</span>
                         <span className="trust-item"><Icon path={mdiClockOutline} size={0.6} />Resposta rápida</span>
                       </div>
                     </>
-                  )}
-
-                  {/* 🌟 NOVO: Banner carVertical */}
-                  {isCarro && !isDono && (
-                    <a href={carVerticalLink} target="_blank" rel="noopener noreferrer" className="cv-banner">
-                      <div className="cv-head">
-                        <span className="cv-title"><Icon path={mdiCarInfo} size={0.8} /> carVertical</span>
-                        <span className="cv-discount">-20%</span>
-                      </div>
-                      <p className="cv-desc">Verifica o histórico de acidentes, roubos e anomalias de quilometragem deste veículo.</p>
-                      <div className="cv-code-wrap">
-                        <span style={{ fontSize: '11px', color: '#0c4a6e', fontWeight: 600 }}>CÓDIGO:</span>
-                        <span className="cv-code">NOXVELIA</span>
-                      </div>
-                      <div className="cv-btn">Verificar Histórico</div>
-                    </a>
-                  )}
-
-                  {isCarro && !isDono && (
-                    <div className="finance-box">
-                      <div className="fin-head">Simulação de Crédito</div>
-                      <div className="fin-result-row">
-                        <div>
-                          <span className="fin-prestacao">{prestacaoMensal.toLocaleString('pt-PT')}€</span>
-                          <span className="fin-mes">/mês</span>
-                        </div>
-                        <div className="fin-taeg">TAEG 7.9%</div>
-                      </div>
-                      <div className="slider-group">
-                        <div className="slider-label-row">
-                          <span>Entrada inicial</span>
-                          <span className="slider-val">{Number(entrada).toLocaleString('pt-PT')}€</span>
-                        </div>
-                        <input type="range" className="fin-slider" min="0" max={Math.round(precoValor * 0.7)} step="250" value={entrada} onChange={e => setEntrada(Number(e.target.value))} aria-label="Entrada inicial" />
-                      </div>
-                      <div className="slider-group" style={{ marginBottom: 0 }}>
-                        <div className="slider-label-row">
-                          <span>Prazo</span>
-                          <span className="slider-val">{meses} meses</span>
-                        </div>
-                        <input type="range" className="fin-slider" min="24" max="120" step="12" value={meses} onChange={e => setMeses(Number(e.target.value))} aria-label="Prazo em meses" />
-                      </div>
-                      <div className="fin-note">Simulação meramente indicativa. Os valores reais dependem da aprovação de crédito junto da instituição financeira parceira.</div>
-                    </div>
                   )}
                 </div>
 
@@ -762,6 +725,49 @@ export default function Anuncio() {
                   </div>
                   <Icon path={mdiChevronRight} size={1} color="#94a3b8" />
                 </Link>
+
+                {isCarro && !isDono && (
+                  <a href={carVerticalLink} target="_blank" rel="noopener noreferrer" className="cv-banner">
+                    <div className="cv-head">
+                      <CarVerticalLogo height={18} />
+                      <span className="cv-discount">-20%</span>
+                    </div>
+                    <p className="cv-desc">Verifica o histórico de acidentes, roubos e anomalias de quilometragem deste veículo.</p>
+                    <div className="cv-code-wrap">
+                      <span style={{ fontSize: '11px', color: '#0c4a6e', fontWeight: 600 }}>CÓDIGO:</span>
+                      <span className="cv-code">NOXVELIA</span>
+                    </div>
+                    <div className="cv-btn">Verificar Histórico</div>
+                  </a>
+                )}
+
+                {isCarro && !isDono && (
+                  <div className="finance-box">
+                    <div className="fin-head">Simulação de Crédito</div>
+                    <div className="fin-result-row">
+                      <div>
+                        <span className="fin-prestacao">{prestacaoMensal.toLocaleString('pt-PT')}€</span>
+                        <span className="fin-mes">/mês</span>
+                      </div>
+                      <div className="fin-taeg">TAEG 7.9%</div>
+                    </div>
+                    <div className="slider-group">
+                      <div className="slider-label-row">
+                        <span>Entrada inicial</span>
+                        <span className="slider-val">{Number(entrada).toLocaleString('pt-PT')}€</span>
+                      </div>
+                      <input type="range" className="fin-slider" min="0" max={Math.round(precoValor * 0.7)} step="250" value={entrada} onChange={e => setEntrada(Number(e.target.value))} aria-label="Entrada inicial" />
+                    </div>
+                    <div className="slider-group" style={{ marginBottom: 0 }}>
+                      <div className="slider-label-row">
+                        <span>Prazo</span>
+                        <span className="slider-val">{meses} meses</span>
+                      </div>
+                      <input type="range" className="fin-slider" min="24" max="120" step="12" value={meses} onChange={e => setMeses(Number(e.target.value))} aria-label="Prazo em meses" />
+                    </div>
+                    <div className="fin-note">Simulação meramente indicativa. Os valores reais dependem da aprovação de crédito junto da instituição financeira parceira.</div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
