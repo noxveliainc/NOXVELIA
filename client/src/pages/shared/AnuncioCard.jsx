@@ -32,6 +32,11 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const isVerificado = anuncio?.utilizador?.tipo === 'admin' || anuncio?.utilizador?.premiumAtivo === true;
   const isCarro = anuncio?.tipo === 'carro';
 
+  // 🌟 Tratamento da Tag Ano/Mês
+  const tagAnoMes = anuncio?.carro?.ano 
+    ? (anuncio.carro?.mesRegisto ? `${String(anuncio.carro.mesRegisto).padStart(2, '0')}/${anuncio.carro.ano}` : anuncio.carro.ano)
+    : null;
+
   const handleAbrirModal = e => { e.preventDefault(); e.stopPropagation(); setMostrarModal(true); };
   const handleFecharModal = e => { e?.preventDefault(); e?.stopPropagation(); setMostrarModal(false); };
 
@@ -60,26 +65,27 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           display: flex;
           flex-direction: column;
           text-decoration: none;
-          background: #0d1117;
-          border: 1px solid rgba(255,255,255,0.06);
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
           border-radius: 16px;
           overflow: hidden;
           transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease, border-color .3s ease;
-          color: #ffffff;
+          color: #0f172a;
           position: relative;
+          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
         .nxc-wrap:hover {
           transform: translateY(-4px);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.45);
-          border-color: rgba(255,255,255,0.12);
+          box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+          border-color: #cbd5e1;
         }
         .nxc-wrap.premium {
-          border-color: rgba(234,179,8,0.3);
-          box-shadow: 0 0 0 1px rgba(234,179,8,0.08) inset, 0 4px 20px rgba(234,179,8,0.08);
+          border-color: rgba(234, 179, 8, 0.4);
+          box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.15) inset, 0 4px 20px rgba(234, 179, 8, 0.1);
         }
         .nxc-wrap.premium:hover {
-          border-color: rgba(234,179,8,0.5);
-          box-shadow: 0 20px 40px rgba(234,179,8,0.15);
+          border-color: rgba(234, 179, 8, 0.6);
+          box-shadow: 0 20px 40px rgba(234, 179, 8, 0.15);
         }
 
         /* ── IMAGEM ── */
@@ -87,7 +93,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           position: relative;
           aspect-ratio: 16/10;
           overflow: hidden;
-          background: #080c12;
+          background: #f8fafc;
         }
         .nxc-img img {
           width: 100%;
@@ -98,14 +104,14 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         }
         .nxc-wrap:hover .nxc-img img { transform: scale(1.05); }
 
-        /* Gradient overlay for readability */
+        /* Overlay para legibilidade das tags */
         .nxc-img-overlay {
           position: absolute;
           inset: 0;
           background: linear-gradient(
             to top,
-            rgba(0,0,0,0.55) 0%,
-            rgba(0,0,0,0.1) 40%,
+            rgba(15, 23, 42, 0.6) 0%,
+            rgba(15, 23, 42, 0.1) 40%,
             transparent 70%
           );
           pointer-events: none;
@@ -119,8 +125,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           align-items: center;
           justify-content: center;
           font-size: 36px;
-          opacity: .08;
-          background: linear-gradient(135deg, #0d1117 0%, #111827 100%);
+          color: #cbd5e1;
         }
 
         /* ── BADGES ── */
@@ -129,7 +134,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           top: 12px;
           left: 12px;
           background: linear-gradient(135deg, #eab308 0%, #f59e0b 100%);
-          color: #000;
+          color: #fff;
           font-size: 9px;
           font-weight: 900;
           padding: 4px 9px;
@@ -142,6 +147,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           z-index: 5;
           box-shadow: 0 3px 10px rgba(234,179,8,0.35);
         }
+        
         .nxc-badge-status {
           position: absolute;
           top: 12px;
@@ -155,18 +161,16 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           z-index: 5;
         }
 
-        /* Tipo badge (car / home) - bottom-left, always visible */
         .nxc-badge-tipo {
           position: absolute;
           bottom: 10px;
           left: 10px;
-          background: rgba(0,0,0,0.6);
+          background: rgba(255, 255, 255, 0.9);
           backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(255,255,255,0.1);
-          color: rgba(255,255,255,0.7);
+          border: 1px solid rgba(0, 0, 0, 0.05);
+          color: #0f172a;
           font-size: 9px;
-          font-weight: 700;
+          font-weight: 800;
           padding: 3px 8px;
           border-radius: 5px;
           z-index: 5;
@@ -178,11 +182,10 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           position: absolute;
           top: 12px;
           right: 12px;
-          background: rgba(0,0,0,0.65);
+          background: rgba(255, 255, 255, 0.9);
           backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(239,68,68,0.3);
-          color: #f87171;
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          color: #ef4444;
           font-size: 9px;
           font-weight: 800;
           padding: 5px 9px;
@@ -195,23 +198,21 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           display: flex;
           align-items: center;
           gap: 4px;
-          font-family: var(--nx-font-body, 'Inter', sans-serif);
         }
         .nxc-delete-btn:hover {
           background: #ef4444;
           color: #fff;
           border-color: #ef4444;
-          box-shadow: 0 4px 12px rgba(239,68,68,0.35);
         }
+
         .nxc-photo-count {
           position: absolute;
           bottom: 10px;
           right: 10px;
-          background: rgba(0,0,0,0.6);
+          background: rgba(15, 23, 42, 0.65);
           backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(255,255,255,0.1);
-          color: rgba(255,255,255,0.8);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #fff;
           font-size: 10px;
           font-weight: 700;
           padding: 4px 8px;
@@ -224,33 +225,26 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         /* ── BODY ── */
         .nxc-body {
-          padding: 14px 16px 12px;
+          padding: 14px 16px 14px;
           display: flex;
           flex-direction: column;
           flex: 1;
-          background: #0d1117;
           gap: 6px;
         }
 
-        .nxc-price-row {
-          display: flex;
-          align-items: baseline;
-          gap: 6px;
-        }
         .nxc-price {
-          font-family: var(--nx-font-display, 'Plus Jakarta Sans', sans-serif);
-          font-size: 19px;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 20px;
           font-weight: 800;
-          color: #ffffff;
-          letter-spacing: -.03em;
+          color: #0f172a;
+          letter-spacing: -.02em;
           line-height: 1;
         }
-        .nxc-wrap.premium .nxc-price { color: #eab308; }
 
         .nxc-title {
-          font-size: 13px;
-          font-weight: 500;
-          color: rgba(255,255,255,0.45);
+          font-size: 14px;
+          font-weight: 600;
+          color: #475569;
           line-height: 1.5;
           display: -webkit-box;
           -webkit-line-clamp: 1;
@@ -261,31 +255,23 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-tags {
           display: flex;
           flex-wrap: wrap;
-          gap: 5px;
-          margin-top: 3px;
+          gap: 6px;
+          margin-top: 4px;
         }
         .nxc-tag {
-          font-size: 10px;
-          font-weight: 600;
-          padding: 3px 8px;
-          border-radius: 5px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.07);
-          color: rgba(255,255,255,0.35);
+          font-size: 10.5px;
+          font-weight: 700;
+          padding: 4px 8px;
+          border-radius: 6px;
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
+          color: #475569;
           white-space: nowrap;
-          letter-spacing: .01em;
         }
         .nxc-wrap.premium .nxc-tag {
-          background: rgba(234,179,8,0.06);
-          border-color: rgba(234,179,8,0.12);
-          color: rgba(234,179,8,0.6);
-        }
-
-        /* ── SEPARATOR ── */
-        .nxc-sep {
-          height: 1px;
-          background: rgba(255,255,255,0.04);
-          margin: 0;
+          background: #fefce8;
+          border-color: #fde047;
+          color: #854d0e;
         }
 
         /* ── FOOTER ── */
@@ -293,8 +279,9 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 10px 16px;
-          background: #0d1117;
+          padding: 12px 16px;
+          background: #ffffff;
+          border-top: 1px solid #e2e8f0;
         }
         .nxc-user {
           display: flex;
@@ -306,14 +293,14 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: #1a2234;
-          border: 1px solid rgba(255,255,255,0.07);
+          background: #f8fafc;
+          border: 1px solid #cbd5e1;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 9px;
+          font-size: 10px;
           font-weight: 800;
-          color: rgba(255,255,255,0.4);
+          color: #64748b;
           overflow: hidden;
           flex-shrink: 0;
         }
@@ -322,25 +309,21 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           display: flex;
           align-items: center;
           gap: 4px;
-          font-size: 11px;
-          color: rgba(255,255,255,0.3);
+          font-size: 12px;
+          color: #475569;
           font-weight: 600;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
-        .nxc-username.mine {
-          color: rgba(255,255,255,0.5);
-          font-weight: 700;
-        }
+        .nxc-username.mine { color: #0f172a; font-weight: 700; }
 
-        /* ── LOCALIZAÇÃO no footer ── */
         .nxc-loc {
           display: flex;
           align-items: center;
           gap: 3px;
-          font-size: 10px;
-          color: rgba(255,255,255,0.22);
+          font-size: 11px;
+          color: #64748b;
           font-weight: 600;
           white-space: nowrap;
           flex-shrink: 0;
@@ -348,96 +331,21 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         /* ── MODAL ── */
         .nxc-modal-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(2,6,23,0.85);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          z-index: 100000;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          animation: nxc-fade .2s ease;
-        }
-        @keyframes nxc-fade {
-          from { opacity: 0; }
-          to   { opacity: 1; }
+          position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px);
+          z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 20px;
         }
         .nxc-modal-box {
-          background: #0d1117;
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 20px;
-          padding: 40px 32px;
-          max-width: 400px;
-          width: 100%;
-          text-align: center;
-          box-shadow: 0 32px 64px rgba(0,0,0,0.7);
-          animation: nxc-pop .25s cubic-bezier(.16,1,.3,1);
+          background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 32px;
+          max-width: 400px; width: 100%; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
         }
-        @keyframes nxc-pop {
-          from { transform: scale(.9) translateY(12px); opacity: 0; }
-          to   { transform: scale(1) translateY(0);    opacity: 1; }
-        }
-        .nxc-modal-icon {
-          width: 68px;
-          height: 68px;
-          border-radius: 50%;
-          background: rgba(239,68,68,0.08);
-          border: 1px solid rgba(239,68,68,0.18);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 20px;
-        }
-        .nxc-modal-title {
-          font-family: var(--nx-font-display, 'Plus Jakarta Sans', sans-serif);
-          font-size: 21px;
-          font-weight: 800;
-          color: #fff;
-          margin: 0 0 10px;
-          letter-spacing: -.02em;
-        }
-        .nxc-modal-text {
-          font-size: 14px;
-          color: rgba(255,255,255,0.45);
-          line-height: 1.75;
-          margin: 0 0 28px;
-        }
-        .nxc-modal-text strong { color: rgba(255,255,255,0.75); }
+        .nxc-modal-icon { margin: 0 auto 20px; display: flex; justify-content: center; }
+        .nxc-modal-title { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 10px; }
+        .nxc-modal-text { font-size: 14px; color: #64748b; margin: 0 0 24px; line-height: 1.6; }
         .nxc-modal-actions { display: flex; gap: 10px; }
-        .nxc-modal-cancel {
-          flex: 1;
-          padding: 13px;
-          border-radius: 10px;
-          border: 1px solid rgba(255,255,255,0.08);
-          background: transparent;
-          color: rgba(255,255,255,0.45);
-          font-size: 13px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all .2s;
-          font-family: var(--nx-font-body, 'Inter', sans-serif);
-          letter-spacing: .02em;
-        }
-        .nxc-modal-cancel:hover { background: rgba(255,255,255,0.04); color: #fff; border-color: rgba(255,255,255,0.15); }
-        .nxc-modal-delete {
-          flex: 1;
-          padding: 13px;
-          border-radius: 10px;
-          border: none;
-          background: #ef4444;
-          color: #fff;
-          font-size: 13px;
-          font-weight: 800;
-          cursor: pointer;
-          transition: all .2s;
-          font-family: var(--nx-font-body, 'Inter', sans-serif);
-          letter-spacing: .03em;
-          box-shadow: 0 4px 16px rgba(239,68,68,0.3);
-        }
-        .nxc-modal-delete:hover { background: #dc2626; box-shadow: 0 6px 20px rgba(239,68,68,0.4); }
-        .nxc-modal-delete:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+        .nxc-modal-cancel { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .nxc-modal-cancel:hover { background: #f8fafc; color: #0f172a; border-color: #94a3b8; }
+        .nxc-modal-delete { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #ef4444; color: #fff; font-weight: 800; cursor: pointer; transition: all .2s; }
+        .nxc-modal-delete:hover { background: #dc2626; }
       `}</style>
 
       <Link to={`/anuncio/${anuncio?._id}`} className={`nxc-wrap${isPremium ? ' premium' : ''}`}>
@@ -487,12 +395,10 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
             {anuncio?.imovel?.tipologia   && <span className="nxc-tag">{anuncio.imovel.tipologia}</span>}
             {anuncio?.carro?.marca        && <span className="nxc-tag">{anuncio.carro.marca}{anuncio.carro.modelo ? ` ${anuncio.carro.modelo}` : ''}</span>}
             {anuncio?.carro?.km != null   && <span className="nxc-tag">{new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km</span>}
-            {anuncio?.carro?.ano          && <span className="nxc-tag">{anuncio.carro.ano}</span>}
+            {tagAnoMes                    && <span className="nxc-tag">{tagAnoMes}</span>}
             {anuncio?.carro?.combustivel  && <span className="nxc-tag">{anuncio.carro.combustivel}</span>}
           </div>
         </div>
-
-        <div className="nxc-sep" />
 
         {/* ── FOOTER ── */}
         <div className="nxc-footer">
@@ -506,14 +412,14 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
             <span className={`nxc-username${eMeuAnuncio ? ' mine' : ''}`}>
               {eMeuAnuncio ? 'O teu anúncio' : (anuncio?.utilizador?.nome || 'Anunciante')}
               {isVerificado && (
-                <Icon path={mdiCheckDecagram} size={0.42} color="#3b82f6" title="Vendedor Verificado" style={{ flexShrink: 0 }} />
+                <Icon path={mdiCheckDecagram} size={0.45} color="#3b82f6" title="Vendedor Verificado" style={{ flexShrink: 0 }} />
               )}
             </span>
           </div>
 
           {anuncio?.localizacao?.cidade && (
             <div className="nxc-loc">
-              <Icon path={mdiMapMarkerOutline} size={0.45} />
+              <Icon path={mdiMapMarkerOutline} size={0.5} />
               {anuncio.localizacao.cidade}
             </div>
           )}
@@ -526,11 +432,11 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         <div className="nxc-modal-overlay" onClick={handleFecharModal}>
           <div className="nxc-modal-box" onClick={e => e.stopPropagation()}>
             <div className="nxc-modal-icon">
-              <Icon path={mdiTrashCanOutline} size={1.4} color="#ef4444" />
+              <Icon path={mdiTrashCanOutline} size={1.8} color="#ef4444" />
             </div>
-            <h3 className="nxc-modal-title">Eliminar este anúncio?</h3>
+            <h3 className="nxc-modal-title">Eliminar anúncio?</h3>
             <p className="nxc-modal-text">
-              Esta ação é <strong>permanente e irreversível</strong>. O anúncio será removido imediatamente.
+              Esta ação é <strong>permanente e irreversível</strong>.
             </p>
             <div className="nxc-modal-actions">
               <button type="button" className="nxc-modal-cancel" onClick={handleFecharModal} disabled={eliminando}>

@@ -12,7 +12,7 @@ import {
   mdiGarageVariant, mdiBalcony, mdiHammerWrench, mdiCar, mdiFileDocumentOutline,
   mdiCamera, mdiStar, mdiAlertCircleOutline, mdiWhatsapp, mdiContentCopy,
   mdiShieldCheckOutline, mdiClockOutline, mdiMagnifyPlusOutline, mdiClose, mdiCheck,
-  mdiCheckCircleOutline, mdiSwapHorizontal, mdiLightningBolt
+  mdiCheckCircleOutline, mdiSwapHorizontal, mdiLightningBolt, mdiCarInfo
 } from '@mdi/js';
 
 import AnuncioCard from '../shared/AnuncioCard';
@@ -205,8 +205,8 @@ export default function Anuncio() {
       <h2 style={{ fontSize: '22px', color: '#0f172a', marginBottom: '8px', fontWeight: 800 }}>Não foi possível abrir este anúncio</h2>
       <p style={{ color: '#64748b', marginBottom: '24px', maxWidth: 360, lineHeight: 1.6 }}>{erro}</p>
       <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={() => navigate(-1)} className="nx-btn-primary">Voltar Atrás</button>
-        <Link to="/" className="nx-btn-primary" style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1' }}>Página Inicial</Link>
+        <button onClick={() => navigate(-1)} className="nx-btn-primary" style={{ padding: '12px 24px', borderRadius: '12px', background: '#0f172a', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Voltar Atrás</button>
+        <Link to="/" className="nx-btn-primary" style={{ padding: '12px 24px', borderRadius: '12px', background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 700, textDecoration: 'none' }}>Página Inicial</Link>
       </div>
     </div>
   );
@@ -230,8 +230,19 @@ export default function Anuncio() {
   const localizacaoString = `${anuncio.localizacao?.cidade || 'N/A'}${anuncio.localizacao?.distrito ? `, ${anuncio.localizacao.distrito}` : ''}`;
   const temVaranda = anuncio.equipamento?.some(e => e.toLowerCase().includes('varanda') || e.toLowerCase().includes('terraço'));
 
+  // Lógica do Ano/Mês combinada
+  const valorAnoMes = anuncio.carro?.ano 
+    ? (anuncio.carro?.mesRegisto ? `${anuncio.carro.ano} / ${String(anuncio.carro.mesRegisto).padStart(2, '0')}` : anuncio.carro.ano)
+    : null;
+
+  // 🌟 Lógica do Link da carVertical
+  const vin = anuncio.carro?.vin;
+  const carVerticalLink = vin 
+    ? `https://www.carvertical.deal/27H3X8P/CXW7M6/?uid=332&source_id=AFF&sub1=noxvelia&sub3=${vin}`
+    : `https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia`;
+
   const specs = isCarro ? [
-    { label: 'Ano', value: anuncio.carro?.ano, icon: mdiCalendarBlank },
+    { label: 'Ano / Mês', value: valorAnoMes, icon: mdiCalendarBlank },
     { label: 'Quilómetros', value: anuncio.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null, icon: mdiSpeedometer },
     { label: 'Combustível', value: anuncio.carro?.combustivel, icon: mdiGasStation },
     { label: 'Transmissão', value: anuncio.carro?.transmissao, icon: mdiCarShiftPattern },
@@ -388,6 +399,18 @@ export default function Anuncio() {
         .contact-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; }
         .contact-phone { font-size: clamp(18px, 2vw, 22px); font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
         .contact-email { font-size: 13px; color: #475569; font-weight: 600; margin-top: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* 🌟 NOVO: Banner carVertical */
+        .cv-banner { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 14px; padding: 20px; margin-top: 16px; text-decoration: none; display: block; transition: all .2s; }
+        .cv-banner:hover { border-color: #7dd3fc; background: #e0f2fe; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.1); }
+        .cv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .cv-title { font-size: 15px; font-weight: 800; color: #0369a1; display: flex; align-items: center; gap: 6px; }
+        .cv-discount { background: #0284c7; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .cv-desc { font-size: 13px; color: #0c4a6e; line-height: 1.5; margin-bottom: 14px; }
+        .cv-code-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+        .cv-code { display: inline-block; background: #fff; border: 1px dashed #7dd3fc; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #0284c7; }
+        .cv-btn { width: 100%; padding: 12px; background: #0284c7; color: #fff; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; text-align: center; transition: background .2s; }
+        .cv-banner:hover .cv-btn { background: #0369a1; }
 
         .finance-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; margin-top: 16px; }
         .finance-box .fin-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 14px; }
@@ -661,6 +684,22 @@ export default function Anuncio() {
                         <span className="trust-item"><Icon path={mdiClockOutline} size={0.6} />Resposta rápida</span>
                       </div>
                     </>
+                  )}
+
+                  {/* 🌟 NOVO: Banner carVertical */}
+                  {isCarro && !isDono && (
+                    <a href={carVerticalLink} target="_blank" rel="noopener noreferrer" className="cv-banner">
+                      <div className="cv-head">
+                        <span className="cv-title"><Icon path={mdiCarInfo} size={0.8} /> carVertical</span>
+                        <span className="cv-discount">-20%</span>
+                      </div>
+                      <p className="cv-desc">Verifica o histórico de acidentes, roubos e anomalias de quilometragem deste veículo.</p>
+                      <div className="cv-code-wrap">
+                        <span style={{ fontSize: '11px', color: '#0c4a6e', fontWeight: 600 }}>CÓDIGO:</span>
+                        <span className="cv-code">NOXVELIA</span>
+                      </div>
+                      <div className="cv-btn">Verificar Histórico</div>
+                    </a>
                   )}
 
                   {isCarro && !isDono && (

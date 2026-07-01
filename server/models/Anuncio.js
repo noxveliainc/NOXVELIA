@@ -21,9 +21,9 @@ const anuncioSchema = new mongoose.Schema({
     quantidade: { type: Number, default: 0 }
   }],
   
-  // 🌟 NOVO: Campos de Confiança (Badges)
-  garantia: { type: String, default: null }, // ex: "18 Meses" ou null
-  aceitaRetoma: { type: Boolean, default: false }, // Mostra a badge de retoma se for true
+  // 🌟 Campos de Confiança (Badges)
+  garantia: { type: String, default: null }, 
+  aceitaRetoma: { type: Boolean, default: false }, 
   
   imovel: {
     tipologia: { type: String, enum: ['T0','T1','T2','T3','T4','T5+'] },
@@ -44,6 +44,8 @@ const anuncioSchema = new mongoose.Schema({
     marca: String,
     modelo: String,
     ano: Number,
+    mesRegisto: Number, // 🌟 NOVO: Mês de Registo
+    vin: String, // 🌟 NOVO: Número de Identificação do Veículo
     km: Number,
     combustivel: { type: String, enum: ['gasolina','diesel','eletrico','hibrido','gpl'] },
     transmissao: { type: String, enum: ['manual','automatico'] },

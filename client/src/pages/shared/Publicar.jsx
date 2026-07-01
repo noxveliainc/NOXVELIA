@@ -11,6 +11,12 @@ import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 
 const OPCOES_GARANTIA = ['6 meses', '12 meses', '18 meses', '24 meses', 'Garantia de fábrica'];
+const MESES_ANO = [
+  { v: 1, l: 'Janeiro' }, { v: 2, l: 'Fevereiro' }, { v: 3, l: 'Março' },
+  { v: 4, l: 'Abril' }, { v: 5, l: 'Maio' }, { v: 6, l: 'Junho' },
+  { v: 7, l: 'Julho' }, { v: 8, l: 'Agosto' }, { v: 9, l: 'Setembro' },
+  { v: 10, l: 'Outubro' }, { v: 11, l: 'Novembro' }, { v: 12, l: 'Dezembro' }
+];
 
 export default function Publicar() {
   const navigate = useNavigate();
@@ -49,6 +55,8 @@ export default function Publicar() {
     marca: '',
     modelo: '',
     ano: '',
+    mesRegisto: '',
+    vin: '', // 🌟 NOVO: Número de Chassi
     km: '',
     combustivel: 'gasolina',
     transmissao: 'manual',
@@ -140,6 +148,13 @@ export default function Publicar() {
       return;
     }
 
+    // 🌟 NOVO: Validação do número de chassis (VIN)
+    if (form.tipo === 'carro' && form.vin && form.vin.length !== 17) {
+      setErro('O número de chassis (VIN) deve ter exatamente 17 caracteres.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload = {
         tipo:      form.tipo,
@@ -173,6 +188,8 @@ export default function Publicar() {
                 marca:       form.marca,
                 modelo:      form.modelo,
                 ano:         Number(form.ano),
+                ...(form.mesRegisto ? { mesRegisto: Number(form.mesRegisto) } : {}),
+                ...(form.vin ? { vin: form.vin.toUpperCase() } : {}), // 🌟 NOVO
                 km:          Number(form.km),
                 combustivel: form.combustivel,
                 transmissao: form.transmissao,
@@ -233,7 +250,8 @@ export default function Publicar() {
 
         .pub-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .pub-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-        @media (max-width: 768px) { .pub-grid-2, .pub-grid-3 { grid-template-columns: 1fr; } }
+        .pub-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+        @media (max-width: 768px) { .pub-grid-2, .pub-grid-3, .pub-grid-4 { grid-template-columns: 1fr; } }
 
         .pub-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; margin-bottom: 7px; }
 
@@ -580,10 +598,17 @@ export default function Publicar() {
                     </div>
                   </div>
 
-                  <div className="pub-grid-3">
+                  <div className="pub-grid-4">
                     <div>
                       <label className="pub-label">Ano *</label>
                       <input className="pub-input" name="ano" type="number" min="1930" max={new Date().getFullYear()} value={form.ano} onChange={handle} required placeholder={String(new Date().getFullYear())} />
+                    </div>
+                    <div>
+                      <label className="pub-label">Mês *</label>
+                      <select className="pub-input" name="mesRegisto" value={form.mesRegisto} onChange={handle} required>
+                        <option value="">Mês</option>
+                        {MESES_ANO.map(m => <option key={m.v} value={m.v}>{m.l}</option>)}
+                      </select>
                     </div>
                     <div>
                       <label className="pub-label">Quilómetros *</label>
@@ -612,6 +637,23 @@ export default function Publicar() {
                         <option value="automatico">Automático</option>
                       </select>
                     </div>
+                  </div>
+
+                  {/* 🌟 NOVO: Campo para o Chassi (VIN) */}
+                  <div>
+                    <label className="pub-label">Número de Quadro / Chassi (VIN)</label>
+                    <input 
+                      className="pub-input" 
+                      name="vin" 
+                      value={form.vin} 
+                      onChange={handle} 
+                      placeholder="Introduz o VIN (Opcional)" 
+                      style={{ textTransform: 'uppercase' }}
+                      maxLength={17}
+                    />
+                    <span style={{ display: 'block', fontSize: '11px', color: '#64748b', marginTop: '6px' }}>
+                      Se fornecido, permite aos compradores consultar o histórico na carVertical diretamente pelo teu anúncio.
+                    </span>
                   </div>
 
                   <div className="pub-grid-2">
