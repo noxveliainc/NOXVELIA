@@ -148,30 +148,62 @@ export default function Landing() {
         }
         .lp-pillar p { font-size: 15px; color: #64748b; line-height: 1.6; }
 
-        /* ============ SOCIAL PROOF (Wireframe Testimonial) ============ */
-        .lp-social {
-          padding: 100px 24px;
+        /* ============ TRUST / PARTNERSHIPS SECTION ============ */
+        .lp-trust {
+          padding: 90px 24px;
           text-align: center;
-          max-width: 800px;
+          max-width: 900px;
           margin: 0 auto;
         }
-        .lp-quote-icon {
+        .lp-trust-eyebrow {
+          font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
+          color: #64748b; margin-bottom: 16px; display: block;
+        }
+        .lp-trust h2 {
           font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 80px;
-          line-height: 0;
-          color: #cbd5e1;
-          margin-bottom: 24px;
-          display: block;
-        }
-        .lp-social p {
-          font-size: clamp(20px, 3vw, 28px);
-          font-weight: 500;
+          font-size: clamp(24px, 3vw, 32px);
+          font-weight: 800;
           color: #0f172a;
-          line-height: 1.5;
-          margin-bottom: 24px;
+          margin-bottom: 16px;
+          letter-spacing: -0.02em;
         }
-        .lp-social-author {
-          font-weight: 700; color: #475569; font-size: 15px;
+        .lp-trust > p {
+          font-size: 16px; color: #64748b; line-height: 1.6;
+          max-width: 560px; margin: 0 auto 48px;
+        }
+        .lp-trust-partners {
+          display: flex;
+          align-items: stretch;
+          justify-content: center;
+          gap: 24px;
+          flex-wrap: wrap;
+        }
+        .lp-partner-card {
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 20px;
+          padding: 28px 32px;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          text-align: left;
+          max-width: 340px;
+        }
+        .lp-partner-icon {
+          width: 48px; height: 48px; flex-shrink: 0;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          display: flex; align-items: center; justify-content: center;
+          color: #0f172a;
+        }
+        .lp-partner-icon svg { width: 22px; height: 22px; }
+        .lp-partner-card strong {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 15px; display: block; margin-bottom: 4px;
+        }
+        .lp-partner-card span {
+          font-size: 13px; color: #64748b; line-height: 1.5; display: block;
         }
 
         /* ============ PRICING / CTA CARDS (Wireframe Bottom) ============ */
@@ -228,6 +260,7 @@ export default function Landing() {
           .lp-hero-text p { margin: 0 auto 32px; }
           .lp-hero-visual { height: 300px; }
           .lp-benefits-container { grid-template-columns: 1fr; gap: 48px; }
+          .lp-trust-partners { flex-direction: column; align-items: center; }
           .lp-cta-container { grid-template-columns: 1fr; }
         }
       `}</style>
@@ -268,11 +301,37 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 3. SOCIAL PROOF */}
-        <section className="lp-social">
-          <span className="lp-quote-icon">“</span>
-          <p>Encontrar o comprador certo para um ativo premium exige descrição e uma plataforma focada na qualidade. A NOXVELIA entregou ambos.</p>
-          <div className="lp-social-author">Ricardo T., Vendedor Profissional</div>
+        {/* 3. TRUST / PARTNERSHIPS */}
+        <section className="lp-trust">
+          <span className="lp-trust-eyebrow">Verificação & Confiança</span>
+          <h2>Cada ativo, verificado ao detalhe.</h2>
+          <p>Trabalhamos com parceiros de referência para garantir que o que vês é exatamente o que existe — sem surpresas.</p>
+          <div className="lp-trust-partners">
+            <div className="lp-partner-card">
+              <div className="lp-partner-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="M9 12l2 2 4-4"/>
+                </svg>
+              </div>
+              <div>
+                <strong>carVertical</strong>
+                <span>Histórico completo de quilometragem, acidentes e roubo em cada viatura NOXVELIA Drive.</span>
+              </div>
+            </div>
+            <div className="lp-partner-card">
+              <div className="lp-partner-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 12l2 2 4-4"/>
+                  <circle cx="12" cy="12" r="9"/>
+                </svg>
+              </div>
+              <div>
+                <strong>Curadoria Manual</strong>
+                <span>Cada imóvel é inspecionado e validado pela nossa equipa antes de entrar na plataforma.</span>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* 4. CTA CARDS (Estate & Drive) */}

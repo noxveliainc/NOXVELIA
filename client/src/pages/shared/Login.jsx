@@ -14,11 +14,8 @@ export default function Login() {
   const location = useLocation();
   const { login: sincronizarContexto } = useAuth();
 
-  // 🌟 NOVO: mensagem que chega depois de um registo bem-sucedido
   const mensagemRegisto = location.state?.mensagemRegisto;
 
-  // Destino de retorno: vem do state (passado pelo BannerCTA),
-  // ou do localStorage como fallback, ou /imoveis como último recurso
   const destinoVoltar =
     location.state?.from ||
     (localStorage.getItem('@App:contexto_visual') === 'carro' ? '/carros' : '/imoveis');
@@ -60,39 +57,25 @@ export default function Login() {
     <>
       <style>{`
         .auth-root {
-          background-color: #040711;
-          background-image: radial-gradient(circle at top right, rgba(42, 193, 180, 0.05), transparent 45%),
-                            radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.05), transparent 45%);
-
-          --nx-text: #f8fafc;
-          --nx-text-sub: #94a3b8;
-          --nx-text-muted: #64748b;
-          --nx-card-bg: rgba(15, 23, 42, 0.6);
-          --nx-card-border: rgba(255, 255, 255, 0.08);
-          --nx-input-bg: rgba(15, 23, 42, 0.5);
-          --nx-input-border: rgba(255, 255, 255, 0.1);
-
-          height: 100vh;
+          background-color: #f8fafc;
+          min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 24px;
-          color: var(--nx-text);
-          font-family: var(--nx-font-body, 'Inter', sans-serif);
-          overflow: hidden;
+          color: #0f172a;
+          font-family: 'Inter', sans-serif;
           box-sizing: border-box;
         }
 
         .auth-card {
-          background: var(--nx-card-bg);
-          border: 1px solid var(--nx-card-border);
-          border-radius: var(--nx-radius-lg, 20px);
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 24px;
           padding: 48px;
           width: 100%;
           max-width: 460px;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
           max-height: 90vh;
           overflow-y: auto;
         }
@@ -101,8 +84,8 @@ export default function Login() {
         .auth-card { -ms-overflow-style: none; scrollbar-width: none; }
 
         .auth-back {
-          color: var(--nx-text-sub);
-          font-size: 11px;
+          color: #64748b;
+          font-size: 12px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.05em;
@@ -111,19 +94,20 @@ export default function Login() {
           margin-bottom: 32px;
           transition: color 0.2s;
         }
-        .auth-back:hover { color: var(--nx-text); }
+        .auth-back:hover { color: #0f172a; }
 
         .auth-title {
-          font-family: var(--nx-font-display, 'Plus Jakarta Sans', sans-serif);
+          font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 32px;
           font-weight: 800;
           margin-bottom: 8px;
           letter-spacing: -0.02em;
+          color: #0f172a;
         }
 
         .auth-subtitle {
-          font-size: 14px;
-          color: var(--nx-text-sub);
+          font-size: 15px;
+          color: #475569;
           margin-bottom: 32px;
         }
 
@@ -134,7 +118,7 @@ export default function Login() {
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          color: var(--nx-text-muted);
+          color: #64748b;
           margin-bottom: 8px;
         }
 
@@ -147,32 +131,30 @@ export default function Login() {
         .auth-input {
           width: 100%;
           padding: 14px 16px;
-          background: var(--nx-input-bg);
-          border: 1px solid var(--nx-input-border);
-          border-radius: var(--nx-radius-sm, 8px);
-          color: var(--nx-text);
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          border-radius: 12px;
+          color: #0f172a;
           outline: none;
           font-family: inherit;
-          font-size: 14px;
+          font-size: 15px;
           transition: all 0.2s;
           box-sizing: border-box;
         }
         .auth-input:focus {
-          border-color: var(--nx-accent-car, #2ac1b4);
-          box-shadow: 0 0 0 3px rgba(42, 193, 180, 0.12);
+          border-color: #0f172a;
+          box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
         }
-        .auth-input::placeholder { color: var(--nx-text-muted); }
+        .auth-input::placeholder { color: #94a3b8; }
 
-        .auth-input-wrapper .auth-input {
-          padding-right: 48px;
-        }
+        .auth-input-wrapper .auth-input { padding-right: 48px; }
 
         .auth-toggle-pwd {
           position: absolute;
           right: 12px;
           background: transparent;
           border: none;
-          color: var(--nx-text-muted);
+          color: #94a3b8;
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -180,81 +162,76 @@ export default function Login() {
           padding: 4px;
           transition: color 0.2s;
         }
-        .auth-toggle-pwd:hover { color: var(--nx-text); }
+        .auth-toggle-pwd:hover { color: #0f172a; }
 
         .auth-btn {
           width: 100%;
           padding: 16px;
-          background: var(--nx-text);
-          color: #040711;
+          background: #0f172a;
+          color: #ffffff;
           border: none;
-          border-radius: var(--nx-radius-sm, 8px);
+          border-radius: 12px;
+          font-size: 14px;
           font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
           cursor: pointer;
           font-family: inherit;
-          transition: opacity 0.2s;
+          transition: transform 0.2s, box-shadow 0.2s;
           margin-top: 12px;
         }
-        .auth-btn:hover { opacity: 0.85; }
-        .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .auth-btn:hover:not(:disabled) { 
+          transform: translateY(-2px); 
+          box-shadow: 0 10px 20px -10px rgba(15, 23, 42, 0.3); 
+        }
+        .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .auth-links-group {
           margin-top: 24px;
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 16px;
           text-align: center;
         }
 
         .auth-link {
-          color: var(--nx-text-sub);
-          font-size: 13px;
+          color: #475569;
+          font-size: 14px;
           font-weight: 600;
           text-decoration: none;
           transition: color 0.2s;
         }
-        .auth-link:hover { color: var(--nx-text); }
+        .auth-link:hover { color: #0f172a; }
 
         .auth-error {
-          color: #ef4444;
-          font-size: 13px;
+          color: #b91c1c;
+          font-size: 13.5px;
           font-weight: 500;
           margin-bottom: 24px;
-          background: rgba(239, 68, 68, 0.08);
+          background: #fef2f2;
           padding: 14px;
-          border: 1px solid rgba(239, 68, 68, 0.2);
-          border-radius: var(--nx-radius-sm, 8px);
+          border: 1px solid #fecaca;
+          border-radius: 12px;
         }
 
-        /* 🌟 NOVO: banner de sucesso (mensagem pós-registo) */
         .auth-info-banner {
-          color: #2ac1b4;
-          font-size: 13px;
+          color: #0f766e;
+          font-size: 13.5px;
           font-weight: 500;
           margin-bottom: 24px;
-          background: rgba(42, 193, 180, 0.08);
+          background: #f0fdfa;
           padding: 14px;
-          border: 1px solid rgba(42, 193, 180, 0.25);
-          border-radius: var(--nx-radius-sm, 8px);
-          line-height: 1.4;
+          border: 1px solid #ccfbf1;
+          border-radius: 12px;
+          line-height: 1.5;
         }
 
-        .auth-success {
-          text-align: center;
-          padding: 40px 0;
-        }
+        .auth-success { text-align: center; padding: 40px 0; }
         .auth-success h2 {
-          font-family: var(--nx-font-display, 'Plus Jakarta Sans', sans-serif);
+          font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 24px;
-          color: var(--nx-accent-car, #2ac1b4);
+          color: #0f172a;
           margin-bottom: 12px;
         }
-        .auth-success p {
-          color: var(--nx-text-sub);
-          font-size: 14px;
-        }
+        .auth-success p { color: #64748b; font-size: 15px; }
       `}</style>
 
       <div className="auth-root">
@@ -263,7 +240,7 @@ export default function Login() {
           <Link to={destinoVoltar} className="auth-back">← Voltar</Link>
 
           <div style={{ marginBottom: '24px' }}>
-            <img src="/logo-noxvelia.png" alt="NOXVELIA" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
+            <img src="/logo-noxvelia.png" alt="NOXVELIA" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
           </div>
 
           {sucesso ? (
@@ -276,7 +253,6 @@ export default function Login() {
               <h1 className="auth-title">Iniciar Sessão</h1>
               <p className="auth-subtitle">Acede à tua conta na NOXVELIA.</p>
 
-              {/* 🌟 NOVO: mostra a mensagem vinda do registo, se existir */}
               {mensagemRegisto && !erro && (
                 <div className="auth-info-banner">{mensagemRegisto}</div>
               )}
@@ -290,7 +266,7 @@ export default function Login() {
                   <input
                     className="auth-input"
                     type="email"
-                    placeholder="joao.silva@email.com"
+                    placeholder="exemplo@email.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
@@ -330,12 +306,12 @@ export default function Login() {
                 </div>
 
                 <button className="auth-btn" type="submit" disabled={loading}>
-                  {loading ? 'A verificar credenciais...' : 'Entrar na Plataforma'}
+                  {loading ? 'A verificar...' : 'Entrar na Plataforma'}
                 </button>
               </form>
 
               <div className="auth-links-group">
-                <Link to="/forgot-password" className="auth-link" style={{ color: '#2ac1b4', fontWeight: '700' }}>
+                <Link to="/forgot-password" className="auth-link" style={{ fontWeight: '600' }}>
                   Esqueceste-te da palavra-passe?
                 </Link>
 
@@ -344,7 +320,7 @@ export default function Login() {
                   state={{ from: location.state?.from || destinoVoltar }}
                   className="auth-link"
                 >
-                  Ainda não tens conta? Regista-te aqui.
+                  Ainda não tens conta? <span style={{color: '#0f172a', fontWeight: '700'}}>Regista-te aqui.</span>
                 </Link>
               </div>
             </>
