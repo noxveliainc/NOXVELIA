@@ -301,24 +301,26 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 3. TRUST / PARTNERSHIPS */}
+       {/* 3. TRUST / PARTNERSHIPS */}
         <section className="lp-trust">
           <span className="lp-trust-eyebrow">Verificação & Confiança</span>
           <h2>Cada ativo, verificado ao detalhe.</h2>
           <p>Trabalhamos com parceiros de referência para garantir que o que vês é exatamente o que existe — sem surpresas.</p>
+          
           <div className="lp-trust-partners">
+            
+            {/* Cartão Parceiro 1: carVertical (NOXVELIA Drive) */}
             <div className="lp-partner-card">
-              <div className="lp-partner-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                  <path d="M9 12l2 2 4-4"/>
-                </svg>
+              <div className="lp-partner-icon" style={{ padding: '8px' }}>
+                <img src="/carvertical-logo.png" alt="carVertical" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
               <div>
                 <strong>carVertical</strong>
                 <span>Histórico completo de quilometragem, acidentes e roubo em cada viatura NOXVELIA Drive.</span>
               </div>
             </div>
+
+            {/* Cartão Parceiro 2: Curadoria (NOXVELIA Estate) */}
             <div className="lp-partner-card">
               <div className="lp-partner-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -331,6 +333,7 @@ export default function Landing() {
                 <span>Cada imóvel é inspecionado e validado pela nossa equipa antes de entrar na plataforma.</span>
               </div>
             </div>
+
           </div>
         </section>
 

@@ -16,7 +16,6 @@ import {
 } from '@mdi/js';
 
 import AnuncioCard from '../shared/AnuncioCard';
-import CarVerticalLogo from '../../components/CarVerticalLogo';
 
 const formatarMoeda = (valor) =>
   new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
@@ -278,7 +277,7 @@ export default function Anuncio() {
   const aceitaRetoma = anuncio.aceitaRetoma;
   const rating = donoDoAnuncio?.rating || 0;
   const totalAvaliacoes = donoDoAnuncio?.totalAvaliacoes || 0;
-  const anoRegistoUser = donoDoAnuncio?.createdAt ? new Date(donoDoAnuncio.createdAt).getFullYear() : '2026';
+  const anoRegistoUser = donoDoAnuncio?.createdAt ? new Date(donoDoAnuncio.createdAt).getFullYear() : new Date().getFullYear();
   const vendedorVerificado = donoDoAnuncio?.tipo === 'admin';
   const referencia = anuncio._id?.slice(-6).toUpperCase();
 
@@ -402,14 +401,15 @@ export default function Anuncio() {
         .contact-phone { font-size: clamp(18px, 2vw, 22px); font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
         .contact-email { font-size: 13px; color: #475569; font-weight: 600; margin-top: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
 
-        .cv-banner { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 20px; padding: 22px; text-decoration: none; display: block; transition: all .2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .cv-banner { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 20px; padding: 24px; text-decoration: none; display: flex; flex-direction: column; transition: all .2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); box-sizing: border-box; width: 100%; margin-top: 16px; }
         .cv-banner:hover { border-color: #7dd3fc; background: #e0f2fe; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.1); }
-        .cv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-        .cv-discount { background: #1B4DFF; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .cv-desc { font-size: 13px; color: #0c4a6e; line-height: 1.5; margin-bottom: 14px; }
-        .cv-code-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-        .cv-code { display: inline-block; background: #fff; border: 1px dashed #7dd3fc; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #1B4DFF; }
-        .cv-btn { width: 100%; padding: 12px; background: #1B4DFF; color: #fff; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; text-align: center; transition: background .2s; }
+        .cv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; width: 100%; box-sizing: border-box; }
+        .cv-discount { background: #1B4DFF; color: #fff; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .cv-desc { font-size: 14px; color: #0c4a6e; line-height: 1.5; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
+        .cv-code-wrap { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px dashed #7dd3fc; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; cursor: pointer; transition: all 0.2s; width: 100%; box-sizing: border-box; }
+        .cv-code-wrap:hover { background: #f8fafc; border-color: #38bdf8; }
+        .cv-code { display: flex; align-items: center; background: #f0f9ff; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 800; color: #1B4DFF; letter-spacing: 0.05em; }
+        .cv-btn { width: 100%; padding: 16px; background: #1B4DFF; color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; transition: background .2s, transform .2s; box-sizing: border-box; }
         .cv-banner:hover .cv-btn { background: #143bc4; }
 
         .finance-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
@@ -630,13 +630,6 @@ export default function Anuncio() {
             </div>
 
             <div>
-              {/*
-                Sidebar organizada por ordem de decisão: 1) preço e ação
-                principal (contactar/gerir), 2) confiança no vendedor,
-                3) verificação independente do veículo, 4) simulação de
-                financiamento. Cada bloco é um cartão próprio para leitura
-                rápida em ecrãs pequenos.
-              */}
               <div className="sidebar-sticky">
                 <div className="price-panel">
                   <div className="panel-price">{preco}</div>
@@ -658,7 +651,7 @@ export default function Anuncio() {
                       <div className="owner-btns">
                         <Link to={`/editar/${id}`} className="btn-owner-edit">Editar Dados</Link>
                         <button type="button" className="btn-owner-sold" onClick={() => setMostrarModalVendido(true)}>
-                          <Icon path={mdiCheck} size={0.7} /> Vendido
+                          <Icon path={mdiCheck} size={0.7} style={{marginRight: 4}} /> Vendido
                         </button>
                       </div>
                     </div>
@@ -685,12 +678,58 @@ export default function Anuncio() {
                           <Icon path={mdiPhone} size={0.85} /> Revelar Contactos
                         </button>
                       )}
-
+                      
                       <div className="trust-strip">
                         <span className="trust-item"><Icon path={mdiShieldCheckOutline} size={0.6} />Pagamento seguro</span>
                         <span className="trust-item"><Icon path={mdiClockOutline} size={0.6} />Resposta rápida</span>
                       </div>
                     </>
+                  )}
+
+                  {/* 🌟 Banner carVertical 100% Simétrico e Clicável */}
+                  {isCarro && !isDono && (
+                    <a href={carVerticalLink} target="_blank" rel="noopener noreferrer" className="cv-banner">
+                      <div className="cv-head">
+                        <img src="/carvertical-logo.png" alt="carVertical" style={{ height: '22px', width: 'auto', objectFit: 'contain' }} />
+                        <span className="cv-discount">-20%</span>
+                      </div>
+                      <p className="cv-desc">Verifica o histórico de acidentes, roubos e anomalias de quilometragem deste veículo.</p>
+                      <div className="cv-code-wrap" onClick={(e) => { e.preventDefault(); navigator.clipboard.writeText("NOXVELIA"); alert("Código copiado com sucesso!"); }}>
+                        <span style={{ fontSize: '12px', color: '#0c4a6e', fontWeight: 600 }}>CÓDIGO DE DESCONTO:</span>
+                        <span className="cv-code">
+                          NOXVELIA <Icon path={mdiContentCopy} size={0.5} style={{marginLeft: '6px'}}/>
+                        </span>
+                      </div>
+                      <div className="cv-btn">Verificar Histórico</div>
+                    </a>
+                  )}
+
+                  {isCarro && !isDono && (
+                    <div className="finance-box">
+                      <div className="fin-head">Simulação de Crédito</div>
+                      <div className="fin-result-row">
+                        <div>
+                          <span className="fin-prestacao">{prestacaoMensal.toLocaleString('pt-PT')}€</span>
+                          <span className="fin-mes">/mês</span>
+                        </div>
+                        <div className="fin-taeg">TAEG 7.9%</div>
+                      </div>
+                      <div className="slider-group">
+                        <div className="slider-label-row">
+                          <span>Entrada inicial</span>
+                          <span className="slider-val">{Number(entrada).toLocaleString('pt-PT')}€</span>
+                        </div>
+                        <input type="range" className="fin-slider" min="0" max={Math.round(precoValor * 0.7)} step="250" value={entrada} onChange={e => setEntrada(Number(e.target.value))} aria-label="Entrada inicial" />
+                      </div>
+                      <div className="slider-group" style={{ marginBottom: 0 }}>
+                        <div className="slider-label-row">
+                          <span>Prazo</span>
+                          <span className="slider-val">{meses} meses</span>
+                        </div>
+                        <input type="range" className="fin-slider" min="24" max="120" step="12" value={meses} onChange={e => setMeses(Number(e.target.value))} aria-label="Prazo em meses" />
+                      </div>
+                      <div className="fin-note">Simulação meramente indicativa. Os valores reais dependem da aprovação de crédito junto da instituição financeira parceira.</div>
+                    </div>
                   )}
                 </div>
 
@@ -725,49 +764,6 @@ export default function Anuncio() {
                   </div>
                   <Icon path={mdiChevronRight} size={1} color="#94a3b8" />
                 </Link>
-
-                {isCarro && !isDono && (
-                  <a href={carVerticalLink} target="_blank" rel="noopener noreferrer" className="cv-banner">
-                    <div className="cv-head">
-                      <CarVerticalLogo height={18} />
-                      <span className="cv-discount">-20%</span>
-                    </div>
-                    <p className="cv-desc">Verifica o histórico de acidentes, roubos e anomalias de quilometragem deste veículo.</p>
-                    <div className="cv-code-wrap">
-                      <span style={{ fontSize: '11px', color: '#0c4a6e', fontWeight: 600 }}>CÓDIGO:</span>
-                      <span className="cv-code">NOXVELIA</span>
-                    </div>
-                    <div className="cv-btn">Verificar Histórico</div>
-                  </a>
-                )}
-
-                {isCarro && !isDono && (
-                  <div className="finance-box">
-                    <div className="fin-head">Simulação de Crédito</div>
-                    <div className="fin-result-row">
-                      <div>
-                        <span className="fin-prestacao">{prestacaoMensal.toLocaleString('pt-PT')}€</span>
-                        <span className="fin-mes">/mês</span>
-                      </div>
-                      <div className="fin-taeg">TAEG 7.9%</div>
-                    </div>
-                    <div className="slider-group">
-                      <div className="slider-label-row">
-                        <span>Entrada inicial</span>
-                        <span className="slider-val">{Number(entrada).toLocaleString('pt-PT')}€</span>
-                      </div>
-                      <input type="range" className="fin-slider" min="0" max={Math.round(precoValor * 0.7)} step="250" value={entrada} onChange={e => setEntrada(Number(e.target.value))} aria-label="Entrada inicial" />
-                    </div>
-                    <div className="slider-group" style={{ marginBottom: 0 }}>
-                      <div className="slider-label-row">
-                        <span>Prazo</span>
-                        <span className="slider-val">{meses} meses</span>
-                      </div>
-                      <input type="range" className="fin-slider" min="24" max="120" step="12" value={meses} onChange={e => setMeses(Number(e.target.value))} aria-label="Prazo em meses" />
-                    </div>
-                    <div className="fin-note">Simulação meramente indicativa. Os valores reais dependem da aprovação de crédito junto da instituição financeira parceira.</div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
