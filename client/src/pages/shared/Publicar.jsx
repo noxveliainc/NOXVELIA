@@ -45,24 +45,30 @@ export default function Publicar() {
     email: '',
     cidade: '',
     distrito: '',
+    // Campos Imóvel
+    estado: 'Usado', // Novo, Usado, Renovado, Em construção, Ruína
     tipoImovel: 'apartamento',
     tipologia: 'T2',
     area: '',
+    areaTerreno: '',
+    anoConstrucao: '',
     quartos: '',
     casasBanho: '',
     garagem: false,
     certEnergetico: 'C',
+    // Campos Automóvel
     marca: '',
     modelo: '',
     ano: '',
     mesRegisto: '',
-    vin: '', // 🌟 NOVO: Número de Chassi
+    vin: '',
     km: '',
     combustivel: 'gasolina',
     transmissao: 'manual',
     potencia: '',
     cilindrada: '',
     cor: '',
+    // Partilhados
     garantia: '',
     aceitaRetoma: false,
   });
@@ -148,7 +154,6 @@ export default function Publicar() {
       return;
     }
 
-    // 🌟 NOVO: Validação do número de chassis (VIN)
     if (form.tipo === 'carro' && form.vin && form.vin.length !== 17) {
       setErro('O número de chassis (VIN) deve ter exatamente 17 caracteres.');
       setLoading(false);
@@ -164,21 +169,24 @@ export default function Publicar() {
         telefone:  form.telefone,
         email:     form.email,
         fotos,
-        equipamento: form.tipo === 'carro' ? equipamento : [],
+        equipamento: equipamento,
         localizacao: {
           cidade:   form.cidade,
           distrito: form.distrito,
         },
+        estado: form.estado,
         garantia: form.garantia || null,
-        aceitaRetoma: form.tipo === 'carro' ? !!form.aceitaRetoma : false,
+        aceitaRetoma: !!form.aceitaRetoma,
         ...(form.tipo === 'imovel'
           ? {
               imovel: {
                 tipoImovel:            form.tipoImovel,
                 tipologia:             form.tipologia,
                 area:                  Number(form.area),
+                ...(form.areaTerreno ? { areaTerreno: Number(form.areaTerreno) } : {}),
                 quartos:               Number(form.quartos),
                 casasBanho:            Number(form.casasBanho),
+                ...(form.anoConstrucao ? { anoConstrucao: Number(form.anoConstrucao) } : {}),
                 garagem:               form.garagem,
                 certificadoEnergetico: form.certEnergetico,
               },
@@ -189,7 +197,7 @@ export default function Publicar() {
                 modelo:      form.modelo,
                 ano:         Number(form.ano),
                 ...(form.mesRegisto ? { mesRegisto: Number(form.mesRegisto) } : {}),
-                ...(form.vin ? { vin: form.vin.toUpperCase() } : {}), // 🌟 NOVO
+                ...(form.vin ? { vin: form.vin.toUpperCase() } : {}),
                 km:          Number(form.km),
                 combustivel: form.combustivel,
                 transmissao: form.transmissao,
@@ -433,11 +441,11 @@ export default function Publicar() {
                 <div className="pub-grid-2" style={{ gridTemplateColumns: '2fr 1fr' }}>
                   <div>
                     <label className="pub-label">Título Comercial *</label>
-                    <input className="pub-input" name="titulo" value={form.titulo} onChange={handle} required placeholder="Ex: Audi A3 Sportback" />
+                    <input className="pub-input" name="titulo" value={form.titulo} onChange={handle} required placeholder={form.tipo === 'carro' ? "Ex: Audi A3 Sportback" : "Ex: Moradia T3 no Porto"} />
                   </div>
                   <div>
                     <label className="pub-label">Preço (€) *</label>
-                    <input className="pub-input" name="preco" type="number" min="0" value={form.preco} onChange={handle} required placeholder="19900" />
+                    <input className="pub-input" name="preco" type="number" min="0" value={form.preco} onChange={handle} required placeholder={form.tipo === 'carro' ? "19900" : "350000"} />
                   </div>
                 </div>
 
@@ -471,7 +479,7 @@ export default function Publicar() {
 
                 <div>
                   <label className="pub-label">Descrição Detalhada do Ativo</label>
-                  <textarea className="pub-input" name="descricao" value={form.descricao} onChange={handle} rows={5} placeholder="Características e detalhes gerais..." />
+                  <textarea className="pub-input" name="descricao" value={form.descricao} onChange={handle} rows={5} placeholder={form.tipo === 'carro' ? "Características e detalhes gerais do veículo..." : "Características, localização e detalhes gerais do imóvel..."} />
                 </div>
               </div>
             </div>
@@ -497,29 +505,29 @@ export default function Publicar() {
                   </select>
                 </div>
 
-                {form.tipo === 'carro' && (
-                  <div className={`pub-trust-card ${form.aceitaRetoma ? 'is-active' : ''}`}>
-                    <div className="pub-trust-card-head">
-                      <Icon path={mdiSwapHorizontal} size={0.9} color={accentColorVar} />
-                      <span className="pub-trust-card-title">Aceita Retoma</span>
-                    </div>
-                    <p className="pub-trust-card-desc">
-                      Indica se estás disposto a aceitar o carro do comprador como parte do pagamento.
-                    </p>
-                    <label className="pub-switch-row">
-                      <span className={`pub-switch ${form.aceitaRetoma ? 'checked' : ''}`}>
-                        <input
-                          type="checkbox"
-                          name="aceitaRetoma"
-                          checked={form.aceitaRetoma}
-                          onChange={handle}
-                          style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', margin: 0, cursor: 'pointer' }}
-                        />
-                      </span>
-                      {form.aceitaRetoma ? 'Sim, aceito retoma' : 'Não aceito retoma'}
-                    </label>
+                <div className={`pub-trust-card ${form.aceitaRetoma ? 'is-active' : ''}`}>
+                  <div className="pub-trust-card-head">
+                    <Icon path={mdiSwapHorizontal} size={0.9} color={accentColorVar} />
+                    <span className="pub-trust-card-title">{form.tipo === 'carro' ? 'Aceita Retoma' : 'Aceita Permuta'}</span>
                   </div>
-                )}
+                  <p className="pub-trust-card-desc">
+                    {form.tipo === 'carro' 
+                      ? 'Indica se estás disposto a aceitar o carro do comprador como parte do pagamento.' 
+                      : 'Indica se estás aberto a permutar o teu imóvel por outro no negócio.'}
+                  </p>
+                  <label className="pub-switch-row">
+                    <span className={`pub-switch ${form.aceitaRetoma ? 'checked' : ''}`}>
+                      <input
+                        type="checkbox"
+                        name="aceitaRetoma"
+                        checked={form.aceitaRetoma}
+                        onChange={handle}
+                        style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', margin: 0, cursor: 'pointer' }}
+                      />
+                    </span>
+                    {form.aceitaRetoma ? 'Sim, aceito' : 'Não aceito'}
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -531,50 +539,76 @@ export default function Publicar() {
 
               {form.tipo === 'imovel' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div className="pub-grid-2">
+                  
+                  <div className="pub-grid-3">
+                    <div>
+                      <label className="pub-label">Estado</label>
+                      <select className="pub-input" name="estado" value={form.estado} onChange={handle}>
+                        <option value="Novo">Novo</option>
+                        <option value="Usado">Usado</option>
+                        <option value="Renovado">Renovado</option>
+                        <option value="Em construção">Em construção</option>
+                        <option value="Ruína">Ruína</option>
+                      </select>
+                    </div>
                     <div>
                       <label className="pub-label">Tipo de Imóvel</label>
                       <select className="pub-input" name="tipoImovel" value={form.tipoImovel} onChange={handle}>
                         <option value="apartamento">Apartamento</option>
                         <option value="moradia">Moradia</option>
                         <option value="terreno">Terreno</option>
+                        <option value="loja">Loja / Comércio</option>
+                        <option value="escritorio">Escritório</option>
                       </select>
                     </div>
                     <div>
                       <label className="pub-label">Tipologia</label>
-                      <select className="pub-input" name="tipologia" value={form.tipologia} onChange={handle}>
+                      <select className="pub-input" name="tipologia" value={form.tipologia} onChange={handle} disabled={['terreno', 'loja', 'escritorio'].includes(form.tipoImovel)}>
+                        <option value="-">-</option>
                         {['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'].map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
                     </div>
                   </div>
+
                   <div className="pub-grid-3">
                     <div>
                       <label className="pub-label">Área Útil (m²)</label>
-                      <input className="pub-input" name="area" type="number" min="0" value={form.area} onChange={handle} placeholder="0" />
+                      <input className="pub-input" name="area" type="number" min="0" value={form.area} onChange={handle} placeholder="Ex: 120" />
                     </div>
                     <div>
+                      <label className="pub-label">Área Terreno / Bruta (m²)</label>
+                      <input className="pub-input" name="areaTerreno" type="number" min="0" value={form.areaTerreno} onChange={handle} placeholder="Ex: 300" />
+                    </div>
+                    <div>
+                      <label className="pub-label">Ano de Construção</label>
+                      <input className="pub-input" name="anoConstrucao" type="number" min="1000" max={new Date().getFullYear() + 5} value={form.anoConstrucao} onChange={handle} placeholder="Ex: 2015" />
+                    </div>
+                  </div>
+
+                  <div className="pub-grid-3">
+                    <div>
                       <label className="pub-label">Quartos</label>
-                      <input className="pub-input" name="quartos" type="number" min="0" value={form.quartos} onChange={handle} placeholder="0" />
+                      <input className="pub-input" name="quartos" type="number" min="0" value={form.quartos} onChange={handle} placeholder="0" disabled={['terreno', 'loja', 'escritorio'].includes(form.tipoImovel)} />
                     </div>
                     <div>
                       <label className="pub-label">Casas de Banho</label>
-                      <input className="pub-input" name="casasBanho" type="number" min="0" value={form.casasBanho} onChange={handle} placeholder="0" />
+                      <input className="pub-input" name="casasBanho" type="number" min="0" value={form.casasBanho} onChange={handle} placeholder="0" disabled={form.tipoImovel === 'terreno'} />
                     </div>
-                  </div>
-                  <div className="pub-grid-2">
                     <div>
                       <label className="pub-label">Certificado Energético</label>
                       <select className="pub-input" name="certEnergetico" value={form.certEnergetico} onChange={handle}>
                         {['A+', 'A', 'B', 'B-', 'C', 'D', 'E', 'F', 'Isento'].map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', paddingTop: '24px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', color: '#0f172a' }}>
-                        <input type="checkbox" name="garagem" checked={form.garagem} onChange={handle} style={{ width: '18px', height: '18px', accentColor: accentColorVar }} />
-                        Inclui Garagem / Estacionamento
-                      </label>
-                    </div>
                   </div>
+
+                  <div style={{ paddingTop: '8px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', color: '#0f172a' }}>
+                      <input type="checkbox" name="garagem" checked={form.garagem} onChange={handle} style={{ width: '18px', height: '18px', accentColor: accentColorVar }} />
+                      Inclui Garagem / Estacionamento
+                    </label>
+                  </div>
+
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -639,7 +673,6 @@ export default function Publicar() {
                     </div>
                   </div>
 
-                  {/* 🌟 NOVO: Campo para o Chassi (VIN) */}
                   <div>
                     <label className="pub-label">Número de Quadro / Chassi (VIN)</label>
                     <input 
@@ -669,34 +702,38 @@ export default function Publicar() {
                     )}
                   </div>
 
-                  <div style={{ paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
-                    <label className="pub-label">Equipamento & Opcionais</label>
-                    <div className="pub-extra-row">
-                      <input
-                        type="text"
-                        className="pub-input"
-                        value={novoExtra}
-                        onChange={e => setNovoExtra(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleAddExtra(e)}
-                        placeholder="Ex: Teto Panorâmico"
-                      />
-                      <button type="button" onClick={handleAddExtra} className="pub-btn-add">Inserir</button>
-                    </div>
-                    {equipamento.length > 0 && (
-                      <div className="pub-extra-tags">
-                        {equipamento.map((extra, idx) => (
-                          <span key={idx} className="pub-extra-tag">
-                            {extra}
-                            <button type="button" onClick={() => handleRemoveExtra(idx)} className="pub-extra-del">
-                              <Icon path={mdiClose} size={0.6} />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 </div>
               )}
+
+              {/* Extras Partilhados */}
+              <div style={{ paddingTop: '24px', marginTop: '24px', borderTop: '1px solid #e2e8f0' }}>
+                <label className="pub-label">
+                  {form.tipo === 'carro' ? 'Equipamento & Opcionais' : 'Características & Extras'}
+                </label>
+                <div className="pub-extra-row">
+                  <input
+                    type="text"
+                    className="pub-input"
+                    value={novoExtra}
+                    onChange={e => setNovoExtra(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleAddExtra(e)}
+                    placeholder={form.tipo === 'carro' ? "Ex: Teto Panorâmico" : "Ex: Piscina, Ar Condicionado, Vista Mar"}
+                  />
+                  <button type="button" onClick={handleAddExtra} className="pub-btn-add">Inserir</button>
+                </div>
+                {equipamento.length > 0 && (
+                  <div className="pub-extra-tags">
+                    {equipamento.map((extra, idx) => (
+                      <span key={idx} className="pub-extra-tag">
+                        {extra}
+                        <button type="button" onClick={() => handleRemoveExtra(idx)} className="pub-extra-del">
+                          <Icon path={mdiClose} size={0.6} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <button type="submit" disabled={loading || uploadingImage} className="pub-submit">
