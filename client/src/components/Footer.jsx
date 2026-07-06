@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 
 export default function Footer() {
   // 🌟 ESTADO PARA CONTROLAR OS TICKETS DE SUPORTE
@@ -35,7 +34,7 @@ export default function Footer() {
         @media (max-width: 768px) { .nx-footer-top { flex-direction: column; } .nx-footer-links { flex-direction: column; gap: 32px; } .nx-footer-bottom { flex-direction: column-reverse; justify-content: center; text-align: center; } }
       `}</style>
 
-      {/* 🌟 O MODAL DE TICKETS VOLTOU (Agora é Global!) */}
+      {/* 🌟 O MODAL DE TICKETS */}
       {modalSuporteAberto && (
         <div className="suporte-modal-overlay" onClick={() => setModalSuporteAberto(false)}>
           <div className="suporte-modal-card" onClick={e => e.stopPropagation()}>
@@ -107,15 +106,15 @@ export default function Footer() {
             <div className="nx-footer-links">
               <div className="nx-footer-col">
                 <h4>Plataforma</h4>
-                <Link to="/carros">NOXVELIA Drive</Link>
-                <Link to="/imoveis">NOXVELIA Estate</Link>
+                <a href="/carros">NOXVELIA Drive</a>
+                <a href="/imoveis">NOXVELIA Estate</a>
               </div>
               <div className="nx-footer-col">
                 <h4>Empresa</h4>
-                {/* 🌟 O BOTÃO DE SUPORTE CHAMA AGORA O MODAL AQUI */}
                 <button onClick={() => setModalSuporteAberto(true)}>Suporte Técnico</button>
-                <Link to="/privacidade">Termos e Condições</Link>
-                <Link to="/privacidade">Política de Privacidade</Link>
+                {/* 🌟 USANDO TAGS HREF NORMAIS PARA FORÇAR A ABERTURA DA PÁGINA */}
+                <a href="/privacidade">Termos e Condições</a>
+                <a href="/privacidade">Política de Privacidade</a>
               </div>
             </div>
 
