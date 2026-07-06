@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -394,40 +395,43 @@ export default function NavbarCarro() {
             </div>
           </div>
         </div>
-
-        {/* 🔐 MODAL ALTERAR PALAVRA-PASSE */}
-        {modalPassAberto && (
-          <div className="ncr-pwm-overlay" onClick={fecharModalPass}>
-            <div className="ncr-pwm-card" onClick={(e) => e.stopPropagation()}>
-              <div className="ncr-pwm-header">
-                <span className="ncr-pwm-title">Alterar Palavra-passe</span>
-                <button type="button" className="ncr-pwm-close" onClick={fecharModalPass}>
-                  <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-              </div>
-              <form className="ncr-pwm-body" onSubmit={handleAlterarPassword}>
-                <div className="ncr-pwm-field">
-                  <label className="ncr-pwm-label">Palavra-passe atual</label>
-                  <input type="password" className="ncr-pwm-input" value={senhaAtual} onChange={(e) => setSenhaAtual(e.target.value)} autoComplete="current-password" />
-                </div>
-                <div className="ncr-pwm-field">
-                  <label className="ncr-pwm-label">Nova palavra-passe</label>
-                  <input type="password" className="ncr-pwm-input" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} autoComplete="new-password" />
-                </div>
-                <div className="ncr-pwm-field">
-                  <label className="ncr-pwm-label">Confirmar nova palavra-passe</label>
-                  <input type="password" className="ncr-pwm-input" value={confirmarSenha} onChange={(e) => setConfirmarSenha(e.target.value)} autoComplete="new-password" />
-                </div>
-                {erroPass && <div className="ncr-pwm-error">{erroPass}</div>}
-                {sucessoPass && <div className="ncr-pwm-success">{sucessoPass}</div>}
-                <button type="submit" className="ncr-pwm-submit" disabled={carregandoPass}>
-                  {carregandoPass ? 'A alterar...' : 'Alterar Palavra-passe'}
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
       </nav>
+
+      {/* 🔐 MODAL ALTERAR PALAVRA-PASSE (renderizado via Portal em document.body,
+          fora da <nav> para não ser afetado pelo backdrop-filter que quebra
+          o position: fixed) */}
+      {modalPassAberto && createPortal(
+        <div className="ncr-pwm-overlay" onClick={fecharModalPass}>
+          <div className="ncr-pwm-card" onClick={(e) => e.stopPropagation()}>
+            <div className="ncr-pwm-header">
+              <span className="ncr-pwm-title">Alterar Palavra-passe</span>
+              <button type="button" className="ncr-pwm-close" onClick={fecharModalPass}>
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            <form className="ncr-pwm-body" onSubmit={handleAlterarPassword}>
+              <div className="ncr-pwm-field">
+                <label className="ncr-pwm-label">Palavra-passe atual</label>
+                <input type="password" className="ncr-pwm-input" value={senhaAtual} onChange={(e) => setSenhaAtual(e.target.value)} autoComplete="current-password" />
+              </div>
+              <div className="ncr-pwm-field">
+                <label className="ncr-pwm-label">Nova palavra-passe</label>
+                <input type="password" className="ncr-pwm-input" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} autoComplete="new-password" />
+              </div>
+              <div className="ncr-pwm-field">
+                <label className="ncr-pwm-label">Confirmar nova palavra-passe</label>
+                <input type="password" className="ncr-pwm-input" value={confirmarSenha} onChange={(e) => setConfirmarSenha(e.target.value)} autoComplete="new-password" />
+              </div>
+              {erroPass && <div className="ncr-pwm-error">{erroPass}</div>}
+              {sucessoPass && <div className="ncr-pwm-success">{sucessoPass}</div>}
+              <button type="submit" className="ncr-pwm-submit" disabled={carregandoPass}>
+                {carregandoPass ? 'A alterar...' : 'Alterar Palavra-passe'}
+              </button>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
     </>
   );
 }
