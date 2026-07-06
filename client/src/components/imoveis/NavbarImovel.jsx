@@ -22,6 +22,15 @@ export default function NavbarImovel() {
 
   const [menuMobileAberto, setMenuMobileAberto] = useState(false);
 
+  // 🔐 MODAL ALTERAR PALAVRA-PASSE
+  const [modalPassAberto, setModalPassAberto] = useState(false);
+  const [senhaAtual, setSenhaAtual] = useState('');
+  const [novaSenha, setNovaSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [erroPass, setErroPass] = useState('');
+  const [sucessoPass, setSucessoPass] = useState('');
+  const [carregandoPass, setCarregandoPass] = useState(false);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -70,6 +79,51 @@ export default function NavbarImovel() {
     e.preventDefault();
     setMenuMobileAberto(false);
     navigate('/planos');
+  };
+
+  const fecharModalPass = () => {
+    setModalPassAberto(false);
+    setSenhaAtual('');
+    setNovaSenha('');
+    setConfirmarSenha('');
+    setErroPass('');
+    setSucessoPass('');
+  };
+
+  const handleAlterarPassword = async (e) => {
+    e.preventDefault();
+    setErroPass('');
+    setSucessoPass('');
+
+    if (!senhaAtual || !novaSenha || !confirmarSenha) {
+      setErroPass('Preenche todos os campos.');
+      return;
+    }
+    if (novaSenha.length < 9) {
+      setErroPass('A nova palavra-passe deve ter pelo menos 9 caracteres.');
+      return;
+    }
+    if (novaSenha !== confirmarSenha) {
+      setErroPass('As palavras-passe não coincidem.');
+      return;
+    }
+
+    setCarregandoPass(true);
+    try {
+      const res = await api.put('/users/me/password', {
+        passwordAtual: senhaAtual,
+        novaPassword: novaSenha,
+      });
+      setSucessoPass(res.data?.mensagem || 'Palavra-passe alterada com sucesso.');
+      setSenhaAtual('');
+      setNovaSenha('');
+      setConfirmarSenha('');
+      setTimeout(() => fecharModalPass(), 1800);
+    } catch (err) {
+      setErroPass(err.response?.data?.erro || 'Erro ao alterar a palavra-passe.');
+    } finally {
+      setCarregandoPass(false);
+    }
   };
 
   const obterUserLocal = () => { try { const guardado = localStorage.getItem('@App:user'); return guardado ? JSON.parse(guardado) : null; } catch { return null; } };
@@ -167,6 +221,24 @@ export default function NavbarImovel() {
           .nim-actions { display: none; }
           .nim-burger-btn { display: inline-flex; }
         }
+
+        /* 🔐 MODAL ALTERAR PALAVRA-PASSE */
+        .nim-pwm-overlay { position: fixed; inset: 0; z-index: 10000; background: rgba(4, 7, 17, 0.45); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .nim-pwm-card { background: #ffffff; border-radius: 16px; width: 100%; max-width: 380px; box-shadow: 0 30px 60px -15px rgba(0,0,0,0.25); overflow: hidden; font-family: 'Inter', sans-serif; }
+        .nim-pwm-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px; border-bottom: 1px solid #e2e8f0; }
+        .nim-pwm-title { font-size: 15px; font-weight: 800; color: #0f172a; }
+        .nim-pwm-close { background: none; border: none; color: #64748b; cursor: pointer; padding: 4px; display: flex; }
+        .nim-pwm-close svg { width: 18px; height: 18px; stroke-width: 2; fill: none; stroke: currentColor; }
+        .nim-pwm-body { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+        .nim-pwm-field { display: flex; flex-direction: column; gap: 6px; }
+        .nim-pwm-label { font-size: 12px; font-weight: 700; color: #475569; }
+        .nim-pwm-input { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: 'Inter', sans-serif; color: #0f172a; outline: none; transition: border-color 0.2s; }
+        .nim-pwm-input:focus { border-color: #3ecf8e; }
+        .nim-pwm-error { font-size: 12px; font-weight: 600; color: #be123c; background: #fff1f2; padding: 8px 10px; border-radius: 8px; }
+        .nim-pwm-success { font-size: 12px; font-weight: 600; color: #047857; background: #ecfdf5; padding: 8px 10px; border-radius: 8px; }
+        .nim-pwm-submit { margin-top: 4px; background: #059669; color: #ffffff; border: none; border-radius: 8px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .nim-pwm-submit:hover { background: #047857; }
+        .nim-pwm-submit:disabled { opacity: 0.6; cursor: not-allowed; }
       `}</style>
 
       <nav className={`nim-root${scrolled ? ' scrolled' : ''}`}>
@@ -233,6 +305,11 @@ export default function NavbarImovel() {
                       <Link to="/admin" onClick={() => setUserMenuAberto(false)} className="nim-ud-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>Painel Admin <span className="nim-ud-admin-badge">ADMIN</span></Link>
                     )}
                     <div className="nim-ud-divider" />
+                    <button type="button" onClick={() => { setUserMenuAberto(false); setModalPassAberto(true); }} className="nim-ud-item">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                      Alterar Palavra-passe
+                    </button>
+                    <div className="nim-ud-divider" />
                     <button onClick={() => { setUserMenuAberto(false); logout(); }} className="nim-ud-item logout"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Terminar Sessão</button>
                   </div>
                 )}
@@ -298,6 +375,10 @@ export default function NavbarImovel() {
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                     Favoritos
                   </Link>
+                  <button type="button" className="nim-drawer-link" onClick={() => { setMenuMobileAberto(false); setModalPassAberto(true); }}>
+                    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    Alterar Palavra-passe
+                  </button>
                   <button type="button" className="nim-drawer-link logout-btn" onClick={() => { setMenuMobileAberto(false); logout(); }}>
                     <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                     Terminar Sessão
@@ -312,6 +393,39 @@ export default function NavbarImovel() {
             </div>
           </div>
         </div>
+
+        {/* 🔐 MODAL ALTERAR PALAVRA-PASSE */}
+        {modalPassAberto && (
+          <div className="nim-pwm-overlay" onClick={fecharModalPass}>
+            <div className="nim-pwm-card" onClick={(e) => e.stopPropagation()}>
+              <div className="nim-pwm-header">
+                <span className="nim-pwm-title">Alterar Palavra-passe</span>
+                <button type="button" className="nim-pwm-close" onClick={fecharModalPass}>
+                  <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
+              <form className="nim-pwm-body" onSubmit={handleAlterarPassword}>
+                <div className="nim-pwm-field">
+                  <label className="nim-pwm-label">Palavra-passe atual</label>
+                  <input type="password" className="nim-pwm-input" value={senhaAtual} onChange={(e) => setSenhaAtual(e.target.value)} autoComplete="current-password" />
+                </div>
+                <div className="nim-pwm-field">
+                  <label className="nim-pwm-label">Nova palavra-passe</label>
+                  <input type="password" className="nim-pwm-input" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} autoComplete="new-password" />
+                </div>
+                <div className="nim-pwm-field">
+                  <label className="nim-pwm-label">Confirmar nova palavra-passe</label>
+                  <input type="password" className="nim-pwm-input" value={confirmarSenha} onChange={(e) => setConfirmarSenha(e.target.value)} autoComplete="new-password" />
+                </div>
+                {erroPass && <div className="nim-pwm-error">{erroPass}</div>}
+                {sucessoPass && <div className="nim-pwm-success">{sucessoPass}</div>}
+                <button type="submit" className="nim-pwm-submit" disabled={carregandoPass}>
+                  {carregandoPass ? 'A alterar...' : 'Alterar Palavra-passe'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
 
       </nav>
     </>
