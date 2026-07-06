@@ -32,6 +32,9 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const SucessoUpsell  = lazy(() => import('./pages/shared/SucessoUpsell'));
 const Planos         = lazy(() => import('./pages/shared/Planos'));
 
+// 🌟 NOVA PÁGINA IMPORTADA
+const PoliticaPrivacidade = lazy(() => import('./pages/shared/PoliticaPrivacidade'));
+
 function LoadingFallback() {
   return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#040711', minHeight: '60vh' }}>
@@ -55,9 +58,6 @@ function AppShell() {
     }
   }, [location.pathname]);
 
-  // 🌟 A rota "/" (Landing) já renderiza a sua própria NavbarLanding internamente,
-  // por isso continua de fora do NavbarComponent global aqui em baixo — nada mudou
-  // nesta lógica, só a Landing.jsx é que passou a ter navbar própria.
   const rotasSemNavbar = ['/', '/login', '/registo', '/forgot-password'];
   const isAuthRoute = location.pathname.startsWith('/reset-password') || location.pathname.startsWith('/verificar-email');
   const esconderNavbar = rotasSemNavbar.includes(location.pathname) || isAuthRoute;
@@ -85,6 +85,9 @@ function AppShell() {
             <Route path="/anuncio/:id" element={<Anuncio />} />
             <Route path="/vendedor/:id" element={<PerfilPublico />} />
             
+            {/* 🌟 ROTA DA POLÍTICA E TERMOS */}
+            <Route path="/privacidade" element={<PoliticaPrivacidade />} />
+            
             {/* Protegidas por Login (Auth) */}
             <Route path="/publicar" element={<ProtectedRoute><Publicar /></ProtectedRoute>} />
             <Route path="/editar/:id" element={<ProtectedRoute><Editar /></ProtectedRoute>} />
@@ -94,9 +97,6 @@ function AppShell() {
             <Route path="/sucesso/:id" element={<ProtectedRoute><SucessoUpsell /></ProtectedRoute>} />
             <Route path="/planos" element={<ProtectedRoute><Planos /></ProtectedRoute>} />
 
-            {/* Protegidas por Plano Premium (Exemplo de uso) */}
-            {/* <Route path="/dashboard-exclusiva" element={<PremiumRoute><DashboardPro /></PremiumRoute>} /> */}
-            
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
