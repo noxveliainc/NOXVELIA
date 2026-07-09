@@ -138,7 +138,7 @@ export default function NavbarImovel() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@800&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@800&display=swap');
         html, body { overflow-x: hidden; overscroll-behavior-x: none; }
         .nim-root { position: sticky; top: 0; z-index: 1000; height: 72px; display: flex; align-items: center; padding: 0 32px; justify-content: space-between; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid #e2e8f0; transition: all 0.25s ease; font-family: 'Inter', sans-serif; }
         .nim-root.scrolled { background: #ffffff; box-shadow: 0 4px 12px -4px rgba(15, 23, 42, 0.03); height: 68px; }
@@ -192,8 +192,9 @@ export default function NavbarImovel() {
         .nim-ud-item svg { width: 16px; height: 16px; flex-shrink: 0; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
         .nim-ud-divider { height: 1px; background: #e2e8f0; margin: 6px 0; }
         .nim-ud-item.logout:hover { background: #fff1f2; color: #be123c; }
-        .nim-ud-pro { margin-left: auto; padding: 2px 7px; background: linear-gradient(135deg, #3ecf8e, #2ac1b4); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
-        .nim-ud-admin-badge { margin-left: auto; padding: 2px 7px; background: linear-gradient(135deg, #818cf8, #6366f1); color: #ffffff; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
+        /* CORREÇÃO DO MENU AQUI */
+        .nim-ud-pro { margin-left: 6px; padding: 2px 7px; background: linear-gradient(135deg, #3ecf8e, #2ac1b4); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
+        .nim-ud-admin-badge { margin-left: 6px; padding: 2px 7px; background: linear-gradient(135deg, #818cf8, #6366f1); color: #ffffff; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
         .nim-btn-login { display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; color: #0f172a; font-size: 13px; font-weight: 600; padding: 9px 20px; text-decoration: none; }
 
         .nim-burger-btn { display: none; background: none; border: none; color: #475569; cursor: pointer; padding: 6px; align-items: center; justify-content: center; }

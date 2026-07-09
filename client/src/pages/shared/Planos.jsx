@@ -80,30 +80,33 @@ export default function Planos() {
           font-family: 'Inter', sans-serif;
           background: #ffffff;
           color: #0f172a;
-          min-height: calc(100vh - 72px);
-          padding: 90px 24px 100px;
+          height: auto;
+          box-sizing: border-box;
+          padding: 48px 24px 60px;
         }
 
         .pl-header {
           max-width: 640px;
-          margin: 0 auto 64px;
+          margin: 0 auto 36px;
           text-align: center;
         }
         .pl-eyebrow {
-          font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
-          color: #64748b; margin-bottom: 16px; display: block;
+          font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
+          color: #64748b; margin-bottom: 8px; display: block;
         }
         .pl-header h1 {
           font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: clamp(32px, 4vw, 44px);
+          font-size: clamp(28px, 3.5vw, 38px);
           font-weight: 800;
           letter-spacing: -0.03em;
-          margin-bottom: 16px;
+          margin-bottom: 8px;
+          margin-top: 0;
         }
         .pl-header p {
-          font-size: 16px;
+          font-size: 14.5px;
           color: #64748b;
-          line-height: 1.6;
+          line-height: 1.5;
+          margin: 0;
         }
 
         .pl-sync {
@@ -111,7 +114,7 @@ export default function Planos() {
           font-size: 13px;
           font-weight: 600;
           color: #2ac1b4;
-          margin-bottom: 32px;
+          margin-bottom: 20px;
         }
 
         .pl-grid {
@@ -119,7 +122,7 @@ export default function Planos() {
           margin: 0 auto;
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 28px;
+          gap: 24px;
           align-items: stretch;
         }
 
@@ -127,11 +130,12 @@ export default function Planos() {
           background: #ffffff;
           border: 1px solid #e2e8f0;
           border-radius: 24px;
-          padding: 40px 32px 32px;
+          padding: 32px 24px 24px;
           display: flex;
           flex-direction: column;
           box-shadow: 0 10px 25px -8px rgba(15, 23, 42, 0.06);
           position: relative;
+          box-sizing: border-box;
         }
 
         .pl-card--pro {
@@ -148,16 +152,16 @@ export default function Planos() {
 
         .pl-badge {
           display: inline-block;
-          font-size: 11px;
+          font-size: 10.5px;
           font-weight: 800;
           letter-spacing: 0.06em;
           text-transform: uppercase;
           color: #0f172a;
           background: #f0fdf9;
           border: 1px solid #ccf3e6;
-          padding: 5px 12px;
+          padding: 4px 10px;
           border-radius: 100px;
-          margin-bottom: 20px;
+          margin-bottom: 14px;
           width: fit-content;
         }
         .pl-badge--active {
@@ -168,31 +172,31 @@ export default function Planos() {
 
         .pl-plan-name {
           font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 20px;
+          font-size: 17px;
           font-weight: 800;
-          margin-bottom: 8px;
+          margin-bottom: 4px;
         }
 
         .pl-plan-desc {
-          font-size: 14px;
+          font-size: 13px;
           color: #64748b;
-          line-height: 1.6;
-          margin-bottom: 28px;
+          line-height: 1.5;
+          margin-bottom: 20px;
         }
 
         .pl-price {
           font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 40px;
+          font-size: 32px;
           font-weight: 800;
           letter-spacing: -0.02em;
-          margin-bottom: 28px;
+          margin-bottom: 20px;
           display: flex;
           align-items: baseline;
           gap: 6px;
         }
         .pl-price span {
           font-family: 'Inter', sans-serif;
-          font-size: 14px;
+          font-size: 12.5px;
           font-weight: 500;
           color: #64748b;
         }
@@ -200,31 +204,31 @@ export default function Planos() {
         .pl-features {
           list-style: none;
           padding: 0;
-          margin: 0 0 32px;
+          margin: 0 0 24px;
           flex: 1;
         }
         .pl-features li {
           display: flex;
           align-items: flex-start;
-          gap: 10px;
-          font-size: 14px;
+          gap: 9px;
+          font-size: 13px;
           color: #334155;
-          line-height: 1.5;
-          margin-bottom: 14px;
+          line-height: 1.45;
+          margin-bottom: 10px;
         }
         .pl-features svg {
-          width: 16px; height: 16px;
+          width: 15px; height: 15px;
           flex-shrink: 0;
-          margin-top: 2px;
+          margin-top: 1px;
           color: #2ac1b4;
         }
         .pl-card:not(.pl-card--pro) .pl-features svg { color: #94a3b8; }
 
         .pl-btn {
           width: 100%;
-          padding: 15px;
+          padding: 13px;
           border-radius: 12px;
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 700;
           cursor: pointer;
           display: flex;
@@ -233,6 +237,7 @@ export default function Planos() {
           gap: 8px;
           border: 1px solid transparent;
           transition: filter 0.2s, background 0.2s, color 0.2s;
+          box-sizing: border-box;
         }
         .pl-btn:disabled { opacity: 0.7; cursor: default; }
 
@@ -264,9 +269,9 @@ export default function Planos() {
 
         .pl-note {
           max-width: 780px;
-          margin: 28px auto 0;
+          margin: 20px auto 0;
           text-align: center;
-          font-size: 13px;
+          font-size: 12px;
           color: #94a3b8;
         }
 

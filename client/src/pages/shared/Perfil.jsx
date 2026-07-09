@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
@@ -6,13 +7,15 @@ import AnuncioCard from '../../pages/shared/AnuncioCard';
 import Icon from '@mdi/react';
 import { 
   mdiCheckDecagram, mdiChartBar, mdiShareVariantOutline, mdiDomain, 
-  mdiClose, mdiCrown, mdiStar, mdiChevronLeft 
+  mdiClose, mdiCrown, mdiStar, mdiChevronLeft, mdiPencil, mdiEarth
 } from '@mdi/js';
 
 export default function Perfil() {
   const { user, signed, atualizarAvatar, atualizarUser, logout: limparSessaoGlobal } = useAuth();
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
+  
+  const fileInputAvatarRef = useRef(null);
+  const fileInputCapaRef = useRef(null);
 
   const contextoVisualAtual = localStorage.getItem('@App:contexto_visual') || 'imovel';
 
@@ -23,14 +26,19 @@ export default function Perfil() {
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingCapa, setUploadingCapa] = useState(false);
   const [erro, setErro] = useState(null);
   const [linkCopiado, setLinkCopiado] = useState(false);
   
   const [anuncioAnalisado, setAnuncioAnalisado] = useState(null);
   const [dadosGrafico, setDadosGrafico] = useState(null);
 
+  // Modais
   const [mostrarModalEvolucao, setMostrarModalEvolucao] = useState(false);
   const [dadosEvolucao, setDadosEvolucao] = useState({ nomeEmpresa: '', nif: '', website: '' });
+
+  const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
+  const [dadosEditar, setDadosEditar] = useState({ bio: '', website: '', localidade: '' });
 
   const rotaVoltar = abaActiva === 'carro' ? '/carros' : '/imoveis';
   const labelVoltar = abaActiva === 'carro' ? 'Automóveis' : 'Imóveis';
@@ -66,6 +74,7 @@ export default function Perfil() {
 
   const handleLogout = () => { limparSessaoGlobal(); navigate('/', { replace: true }); };
 
+  // UPLOAD DO AVATAR
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -79,18 +88,36 @@ export default function Perfil() {
       if (atualizarAvatar) atualizarAvatar(novaUrl);
       setUtilizador(updateRes.data);
     } catch (error) {
-      setErro('Erro ao processar a imagem.');
+      alert('Erro ao processar a imagem do avatar.');
     } finally {
       setUploadingAvatar(false);
     }
   };
 
+  // UPLOAD DA CAPA
+  const handleCapaChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingCapa(true);
+    try {
+      const formData = new FormData();
+      formData.append('imagens', file);
+      const uploadRes = await api.post('/upload/imagens', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const novaUrl = Array.isArray(uploadRes.data.urls) ? uploadRes.data.urls[0] : uploadRes.data.url;
+      const updateRes = await api.put('/users/me', { capaUrl: novaUrl });
+      setUtilizador(updateRes.data);
+      if (atualizarUser) atualizarUser(updateRes.data);
+    } catch (error) {
+      alert('Erro ao processar a imagem de capa.');
+    } finally {
+      setUploadingCapa(false);
+    }
+  };
+
+  // EVOLUÇÃO DA CONTA
   const promoverParaProfissional = async (e) => {
     e.preventDefault();
-    if (!dadosEvolucao.nomeEmpresa) {
-      alert('O Nome da Empresa é obrigatório para contas profissionais.');
-      return;
-    }
+    if (!dadosEvolucao.nomeEmpresa) { alert('O Nome da Empresa é obrigatório.'); return; }
     try {
       setMostrarModalEvolucao(false);
       setIsDeleting(true);
@@ -105,6 +132,31 @@ export default function Perfil() {
       alert('A tua conta foi evoluída para Profissional com sucesso.');
     } catch (err) {
       alert('Ocorreu um erro ao evoluir a tua conta.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // EDIÇÃO DE PERFIL (BIO, WEBSITE)
+  const abrirEdicaoPerfil = () => {
+    setDadosEditar({
+      bio: utilizador?.bio || '',
+      website: utilizador?.website || '',
+      localidade: utilizador?.localidade || ''
+    });
+    setMostrarModalEditar(true);
+  };
+
+  const salvarPerfil = async (e) => {
+    e.preventDefault();
+    try {
+      setIsDeleting(true);
+      setMostrarModalEditar(false);
+      const res = await api.put('/users/me', dadosEditar);
+      setUtilizador(res.data);
+      if (atualizarUser) atualizarUser(res.data);
+    } catch (err) {
+      alert('Erro ao guardar as alterações do perfil.');
     } finally {
       setIsDeleting(false);
     }
@@ -150,31 +202,44 @@ export default function Perfil() {
         .perfil-back { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #64748b; text-decoration: none; letter-spacing: .05em; text-transform: uppercase; background: none; border: none; cursor: pointer; padding: 0; transition: color .2s; margin-bottom: 32px; }
         .perfil-back:hover { color: #0f172a; }
         
-        .perfil-header { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px; padding: 36px; margin-bottom: 32px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        /* CABEÇALHO DO PERFIL COM CAPA */
+        .perfil-header { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden; margin-bottom: 32px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
         
-        .perfil-avatar-wrap { position: relative; cursor: pointer; flex-shrink: 0; }
-        .perfil-avatar { width: 100px; height: 100px; border-radius: 20px; border: 1px solid #cbd5e1; overflow: hidden; background: #ffffff; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 32px; color: #2ac1b4; transition: filter .2s, border-color .2s, box-shadow .2s; }
+        .perfil-capa { height: 220px; background: linear-gradient(135deg, #cbd5e1, #f1f5f9); position: relative; cursor: pointer; }
+        .perfil-capa img { width: 100%; height: 100%; object-fit: cover; }
+        .perfil-capa-overlay { position: absolute; inset: 0; background: rgba(15,23,42,0.3); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: #fff; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; backdrop-filter: blur(2px); }
+        .perfil-capa:hover .perfil-capa-overlay { opacity: 1; }
+
+        .perfil-body { padding: 0 36px 36px; display: flex; gap: 32px; flex-wrap: wrap; position: relative; }
+        
+        .perfil-avatar-wrap { margin-top: -55px; position: relative; z-index: 2; flex-shrink: 0; cursor: pointer; }
+        .perfil-avatar { width: 120px; height: 120px; border-radius: 24px; border: 5px solid #ffffff; overflow: hidden; background: #ffffff; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 38px; color: #2ac1b4; transition: filter .2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .perfil-avatar-wrap:hover .perfil-avatar { filter: brightness(.95); }
         .perfil-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .perfil-avatar-overlay { position: absolute; inset: 0; border-radius: 20px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; background: rgba(15,23,42,0.6); pointer-events: none; }
+        .perfil-avatar-overlay { position: absolute; inset: 0; border-radius: 24px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; background: rgba(15,23,42,0.6); pointer-events: none; }
         .perfil-avatar-wrap:hover .perfil-avatar-overlay { opacity: 1; }
-
-        .perfil-avatar-wrap.is-premium .perfil-avatar { border: 2px solid #eab308; box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.15); }
+        .perfil-avatar-wrap.is-premium .perfil-avatar { border-color: #fef08a; box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.2); }
         
-        .perfil-info { flex: 1; min-width: 0; }
+        .perfil-info { flex: 1; min-width: 0; padding-top: 16px; }
         
-        .perfil-badge-conta { display: inline-block; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 6px; }
+        .perfil-badges-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .perfil-badge-conta { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding: 5px 10px; border-radius: 6px; }
         .badge-profissional { background: rgba(42, 193, 180, 0.1); color: #0d9488; border: 1px solid rgba(42, 193, 180, 0.2); }
         .badge-particular { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
-        .badge-premium { background: rgba(234, 179, 8, 0.1); color: #d97706; border: 1px solid rgba(234, 179, 8, 0.3); margin-left: 8px; }
+        .badge-premium { background: rgba(234, 179, 8, 0.1); color: #d97706; border: 1px solid rgba(234, 179, 8, 0.3); }
         
-        .btn-upgrade { margin-left: 12px; background: transparent; color: #2563eb; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 6px; font-size: 10px; font-weight: 800; padding: 6px 12px; cursor: pointer; text-transform: uppercase; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-upgrade:hover { background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.5); }
+        .btn-upgrade { background: transparent; color: #2563eb; border: 1px dashed rgba(59, 130, 246, 0.4); border-radius: 6px; font-size: 10px; font-weight: 800; padding: 5px 10px; cursor: pointer; text-transform: uppercase; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-upgrade:hover { background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.6); }
 
         .perfil-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 800; color: #0f172a; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
-        .perfil-email { font-size: 13px; color: #64748b; margin: 0; display: flex; align-items: center; }
+        .perfil-email { font-size: 13px; color: #64748b; margin: 0 0 16px 0; display: flex; align-items: center; }
         
-        .stars-container { display: flex; align-items: center; gap: 4px; color: #f59e0b; margin-top: 8px; margin-bottom: 20px; }
+        .perfil-bio { font-size: 14px; color: #334155; line-height: 1.6; margin: 0 0 16px 0; max-width: 800px; white-space: pre-wrap; }
+        .perfil-link-row { display: flex; gap: 16px; margin-bottom: 20px; }
+        .perfil-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #3b82f6; text-decoration: none; }
+        .perfil-link:hover { text-decoration: underline; }
+
+        .stars-container { display: flex; align-items: center; gap: 4px; color: #f59e0b; margin-bottom: 24px; }
         .stars-text { font-size: 13px; font-weight: 700; color: #0f172a; margin-left: 4px; }
         .stars-count { font-size: 12px; font-weight: 500; color: #64748b; }
 
@@ -183,19 +248,20 @@ export default function Perfil() {
         .perfil-stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #64748b; margin-top: 3px; }
         .perfil-stat-divider { width: 1px; background: #e2e8f0; margin: 0 4px; }
         
-        .perfil-actions { display: flex; flex-direction: column; gap: 10px; width: 200px; }
-        @media (max-width: 768px) { .perfil-actions { width: 100%; } }
+        .perfil-actions { display: flex; flex-direction: column; gap: 10px; width: 220px; padding-top: 16px; }
+        @media (max-width: 768px) { .perfil-actions { width: 100%; padding-top: 0; } }
 
         .btn-action-primary { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: rgba(42, 193, 180, 0.1); color: #0d9488; border: 1px solid rgba(42, 193, 180, 0.2); border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all .2s; }
         .btn-action-primary:hover { background: rgba(42, 193, 180, 0.15); }
 
-        .btn-action-solid { padding: 12px; background: #0f172a; color: #ffffff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: opacity .2s; }
+        .btn-action-solid { padding: 12px; background: #0f172a; color: #ffffff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: opacity .2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-action-solid:hover { opacity: 0.85; }
         
         .btn-action-outline { padding: 12px; background: #ffffff; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         .btn-action-outline:hover { border-color: #94a3b8; color: #0f172a; background: #f8fafc; }
         .btn-action-outline.danger:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
         
+        /* RESTO DA INTERFACE (Tabs, Cards, Analytics) MANTIDO INTACTO */
         .tabs-row { display: flex; gap: 4px; margin-bottom: 28px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 4px; width: fit-content; }
         .tab-btn { padding: 9px 22px; border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; background: transparent; color: #64748b; }
         .tab-btn.active-imovel { background: #3ecf8e; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -225,8 +291,9 @@ export default function Perfil() {
         
         .perfil-loading-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; border-radius: 32px; }
 
+        /* MODAIS PADRÃO */
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto;}
-        .modal-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; width: 100%; max-width: 480px; padding: 40px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); margin: auto; }
+        .modal-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; width: 100%; max-width: 500px; padding: 40px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); margin: auto; }
         .modal-close { position: absolute; top: 24px; right: 24px; background: transparent; border: none; color: #94a3b8; cursor: pointer; transition: color 0.2s; }
         .modal-close:hover { color: #0f172a; }
         .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 8px; display: flex; align-items: center; gap: 10px; }
@@ -234,11 +301,10 @@ export default function Perfil() {
         
         .modal-form-group { margin-bottom: 20px; }
         .modal-form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 8px; }
-        .modal-input { width: 100%; padding: 14px 16px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; color: #0f172a; outline: none; font-size: 14px; transition: all 0.2s; box-sizing: border-box; }
+        .modal-input { width: 100%; padding: 14px 16px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; color: #0f172a; outline: none; font-size: 14px; transition: all 0.2s; box-sizing: border-box; font-family: inherit; }
         .modal-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
         .modal-input::placeholder { color: #94a3b8; }
-        
-        .modal-divider { height: 1px; background: #e2e8f0; margin: 32px 0; }
+        textarea.modal-input { resize: vertical; min-height: 100px; }
         
         .modal-btn-submit { width: 100%; padding: 16px; background: #3b82f6; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: opacity 0.2s; margin-top: 12px; }
         .modal-btn-submit:hover { opacity: 0.9; }
@@ -299,6 +365,47 @@ export default function Perfil() {
         </div>
       )}
 
+      {/* MODAL DE EDIÇÃO DE PERFIL */}
+      {mostrarModalEditar && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <button className="modal-close" onClick={() => setMostrarModalEditar(false)}>
+              <Icon path={mdiClose} size={1} />
+            </button>
+            <h2 className="modal-title"><Icon path={mdiPencil} size={1.2} color="#3b82f6" /> Editar Perfil</h2>
+            <p className="modal-desc">
+              Personaliza a tua presença na plataforma. Adiciona uma biografia para que os compradores saibam quem és.
+            </p>
+
+            <form onSubmit={salvarPerfil}>
+              <div className="modal-form-group">
+                <label>Biografia do Perfil (Máx 800 Carateres)</label>
+                <textarea 
+                  className="modal-input" 
+                  placeholder="Escreve um pouco sobre ti ou sobre o teu stand..." 
+                  value={dadosEditar.bio}
+                  onChange={e => setDadosEditar({...dadosEditar, bio: e.target.value})}
+                  maxLength={800}
+                />
+              </div>
+
+              <div className="modal-form-group">
+                <label>Website ou Link Oficial</label>
+                <input 
+                  className="modal-input" 
+                  type="url" 
+                  placeholder="Ex: https://www.teusite.pt" 
+                  value={dadosEditar.website}
+                  onChange={e => setDadosEditar({...dadosEditar, website: e.target.value})}
+                />
+              </div>
+
+              <button className="modal-btn-submit" type="submit">Guardar Alterações</button>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="perfil-outer">
         <div className="perfil-moldura">
           
@@ -315,84 +422,110 @@ export default function Perfil() {
             <Icon path={mdiChevronLeft} size={0.7} /> {labelVoltar}
           </button>
 
+          {/* NOVO CABEÇALHO DO PERFIL COM CAPA E BIO */}
           <div className="perfil-header">
-            <div className={`perfil-avatar-wrap${utilizador?.premiumAtivo ? ' is-premium' : ''}`} onClick={() => fileInputRef.current?.click()}>
-              <div className="perfil-avatar">
-                {utilizador?.avatarUrl || user?.avatarUrl
-                  ? <img src={utilizador?.avatarUrl || user?.avatarUrl} alt="Perfil" />
-                  : (utilizador?.nome?.charAt(0).toUpperCase() || '?')
-                }
+            {/* Secção da Capa */}
+            <div className="perfil-capa" onClick={() => fileInputCapaRef.current?.click()}>
+              {utilizador?.capaUrl ? <img src={utilizador.capaUrl} alt="Capa" /> : null}
+              <div className="perfil-capa-overlay">
+                <Icon path={mdiPencil} size={0.7} style={{marginRight: '6px'}} /> 
+                {uploadingCapa ? 'A carregar...' : 'Alterar Capa (16:9)'}
               </div>
-              <div className="perfil-avatar-overlay">
-                <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff', textTransform: 'uppercase' }}>
-                  {uploadingAvatar ? 'A carregar…' : 'Alterar'}
-                </span>
-              </div>
-              <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
             </div>
+            <input ref={fileInputCapaRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCapaChange} />
 
-            <div className="perfil-info">
-              
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap' }}>
-                <div className={`perfil-badge-conta ${utilizador?.tipoConta === 'profissional' ? 'badge-profissional' : 'badge-particular'}`}>
-                  {utilizador?.tipoConta === 'profissional' ? 'Conta Profissional' : 'Conta Particular'}
+            {/* Secção de Informação e Avatar */}
+            <div className="perfil-body">
+              <div className={`perfil-avatar-wrap${utilizador?.premiumAtivo ? ' is-premium' : ''}`} onClick={() => fileInputAvatarRef.current?.click()}>
+                <div className="perfil-avatar">
+                  {utilizador?.avatarUrl || user?.avatarUrl
+                    ? <img src={utilizador?.avatarUrl || user?.avatarUrl} alt="Perfil" />
+                    : (utilizador?.nome?.charAt(0).toUpperCase() || '?')
+                  }
                 </div>
+                <div className="perfil-avatar-overlay">
+                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff', textTransform: 'uppercase' }}>
+                    {uploadingAvatar ? 'A carregar…' : 'Alterar'}
+                  </span>
+                </div>
+                <input ref={fileInputAvatarRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
+              </div>
 
-                {utilizador?.premiumAtivo && (
-                  <div className="perfil-badge-conta badge-premium"><Icon path={mdiStar} size={0.4} /> Premium</div>
-                )}
+              <div className="perfil-info">
                 
-                {utilizador?.tipoConta !== 'profissional' && utilizador?.tipo !== 'admin' && (
-                  <button className="btn-upgrade" onClick={() => setMostrarModalEvolucao(true)}>
-                    <Icon path={mdiDomain} size={0.5} /> Evoluir para Profissional
-                  </button>
+                <div className="perfil-badges-row">
+                  <div className={`perfil-badge-conta ${utilizador?.tipoConta === 'profissional' ? 'badge-profissional' : 'badge-particular'}`}>
+                    {utilizador?.tipoConta === 'profissional' ? 'Conta Profissional' : 'Conta Particular'}
+                  </div>
+
+                  {utilizador?.premiumAtivo && (
+                    <div className="perfil-badge-conta badge-premium"><Icon path={mdiStar} size={0.4} /> Premium</div>
+                  )}
+                  
+                  {utilizador?.tipoConta !== 'profissional' && utilizador?.tipo !== 'admin' && (
+                    <button className="btn-upgrade" onClick={() => setMostrarModalEvolucao(true)}>
+                      <Icon path={mdiDomain} size={0.5} /> Evoluir
+                    </button>
+                  )}
+                </div>
+                
+                <h1 className="perfil-name">
+                  {utilizador?.tipo === 'admin' 
+                    ? (utilizador?.nome?.toUpperCase().includes('NOXVELIA') ? utilizador?.nome : `NOXVELIA ${utilizador?.nome}`)
+                    : utilizador?.nome
+                  }
+                  {utilizador?.tipo === 'admin' && <Icon path={mdiCheckDecagram} size={1} color="#3b82f6" />}
+                  {utilizador?.tipo !== 'admin' && utilizador?.premiumAtivo && (
+                    <Icon path={mdiCrown} size={1} color="#eab308" title="Membro Premium" />
+                  )}
+                </h1>
+
+                <p className="perfil-email">{utilizador?.email}</p>
+
+                {/* Biografia e Links Pessoais */}
+                {utilizador?.bio && <p className="perfil-bio">{utilizador.bio}</p>}
+                
+                {utilizador?.website && (
+                  <div className="perfil-link-row">
+                    <a href={utilizador.website} target="_blank" rel="noopener noreferrer" className="perfil-link">
+                      <Icon path={mdiEarth} size={0.7} /> {utilizador.website.replace(/(^\w+:|^)\/\//, '')}
+                    </a>
+                  </div>
                 )}
+
+                <div className="stars-container">
+                  {utilizador?.rating > 0 ? (
+                    <>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Icon key={i} path={mdiStar} size={0.7} color={i < Math.round(utilizador.rating) ? '#f59e0b' : '#e2e8f0'} />
+                      ))}
+                      <span className="stars-text">{utilizador.rating.toFixed(1)}</span>
+                      <span className="stars-count">({utilizador.totalAvaliacoes || 0} avaliações)</span>
+                    </>
+                  ) : (
+                    <span className="stars-count" style={{ marginLeft: 0 }}>Sem avaliações recebidas</span>
+                  )}
+                </div>
+                
+                <div className="perfil-stats">
+                  <div><div className="perfil-stat-val">{totalImoveis}</div><div className="perfil-stat-label">Imóveis</div></div>
+                  <div className="perfil-stat-divider" />
+                  <div><div className="perfil-stat-val">{totalCarros}</div><div className="perfil-stat-label">Automóveis</div></div>
+                </div>
               </div>
-              
-              <h1 className="perfil-name">
-                {utilizador?.tipo === 'admin' 
-                  ? (utilizador?.nome?.toUpperCase().includes('NOXVELIA') ? utilizador?.nome : `NOXVELIA ${utilizador?.nome}`)
-                  : utilizador?.nome
-                }
-                {utilizador?.tipo === 'admin' && <Icon path={mdiCheckDecagram} size={1} color="#3b82f6" />}
-                {utilizador?.tipo !== 'admin' && utilizador?.premiumAtivo && (
-                  <Icon path={mdiCrown} size={1} color="#eab308" title="Membro Premium" />
-                )}
-              </h1>
 
-              <p className="perfil-email">{utilizador?.email}</p>
+              <div className="perfil-actions">
+                <button className="btn-action-solid" onClick={abrirEdicaoPerfil}>
+                  <Icon path={mdiPencil} size={0.7} /> Editar Perfil
+                </button>
 
-              {/* 🌟 ESTRELAS DE AVALIAÇÃO REAIS */}
-              <div className="stars-container">
-                {utilizador?.rating > 0 ? (
-                  <>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Icon key={i} path={mdiStar} size={0.7} color={i < Math.round(utilizador.rating) ? '#f59e0b' : '#e2e8f0'} />
-                    ))}
-                    <span className="stars-text">{utilizador.rating.toFixed(1)}</span>
-                    <span className="stars-count">({utilizador.totalAvaliacoes || 0} avaliações)</span>
-                  </>
-                ) : (
-                  <span className="stars-count" style={{ marginLeft: 0 }}>Sem avaliações recebidas</span>
-                )}
+                <button className="btn-action-primary" onClick={copiarLinkMontra}>
+                  <Icon path={mdiShareVariantOutline} size={0.7} /> 
+                  {linkCopiado ? 'Link Copiado!' : 'Partilhar Montra'}
+                </button>
+
+                <button className="btn-action-outline danger" onClick={handleLogout}>Terminar Sessão</button>
               </div>
-              
-              <div className="perfil-stats">
-                <div><div className="perfil-stat-val">{totalImoveis}</div><div className="perfil-stat-label">Imóveis</div></div>
-                <div className="perfil-stat-divider" />
-                <div><div className="perfil-stat-val">{totalCarros}</div><div className="perfil-stat-label">Automóveis</div></div>
-              </div>
-            </div>
-
-            <div className="perfil-actions">
-              <button className="btn-action-primary" onClick={copiarLinkMontra}>
-                <Icon path={mdiShareVariantOutline} size={0.7} /> 
-                {linkCopiado ? 'Link Copiado!' : 'Partilhar Montra'}
-              </button>
-              
-              <button className="btn-action-solid" onClick={() => navigate('/publicar')}>+ Criar Anúncio</button>
-
-              <button className="btn-action-outline danger" onClick={handleLogout}>Terminar Sessão</button>
             </div>
           </div>
 

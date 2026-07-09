@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
@@ -45,8 +46,7 @@ export default function Publicar() {
     email: '',
     cidade: '',
     distrito: '',
-    // Campos Imóvel
-    estado: 'Usado', // Novo, Usado, Renovado, Em construção, Ruína
+    estado: 'Usado',
     tipoImovel: 'apartamento',
     tipologia: 'T2',
     area: '',
@@ -56,7 +56,6 @@ export default function Publicar() {
     casasBanho: '',
     garagem: false,
     certEnergetico: 'C',
-    // Campos Automóvel
     marca: '',
     modelo: '',
     ano: '',
@@ -68,7 +67,6 @@ export default function Publicar() {
     potencia: '',
     cilindrada: '',
     cor: '',
-    // Partilhados
     garantia: '',
     aceitaRetoma: false,
   });
@@ -162,16 +160,16 @@ export default function Publicar() {
 
     try {
       const payload = {
-        tipo:      form.tipo,
-        titulo:    form.titulo,
+        tipo: form.tipo,
+        titulo: form.titulo,
         descricao: form.descricao,
-        preco:     Number(form.preco),
-        telefone:  form.telefone,
-        email:     form.email,
+        preco: Number(form.preco),
+        telefone: form.telefone,
+        email: form.email,
         fotos,
         equipamento: equipamento,
         localizacao: {
-          cidade:   form.cidade,
+          cidade: form.cidade,
           distrito: form.distrito,
         },
         estado: form.estado,
@@ -180,28 +178,28 @@ export default function Publicar() {
         ...(form.tipo === 'imovel'
           ? {
               imovel: {
-                tipoImovel:            form.tipoImovel,
-                tipologia:             form.tipologia,
-                area:                  Number(form.area),
+                tipoImovel: form.tipoImovel,
+                tipologia: form.tipologia,
+                area: Number(form.area),
                 ...(form.areaTerreno ? { areaTerreno: Number(form.areaTerreno) } : {}),
-                quartos:               Number(form.quartos),
-                casasBanho:            Number(form.casasBanho),
+                quartos: Number(form.quartos),
+                casasBanho: Number(form.casasBanho),
                 ...(form.anoConstrucao ? { anoConstrucao: Number(form.anoConstrucao) } : {}),
-                garagem:               form.garagem,
+                garagem: form.garagem,
                 certificadoEnergetico: form.certEnergetico,
               },
             }
           : {
               carro: {
-                marca:       form.marca,
-                modelo:      form.modelo,
-                ano:         Number(form.ano),
+                marca: form.marca,
+                modelo: form.modelo,
+                ano: Number(form.ano),
                 ...(form.mesRegisto ? { mesRegisto: Number(form.mesRegisto) } : {}),
                 ...(form.vin ? { vin: form.vin.toUpperCase() } : {}),
-                km:          Number(form.km),
+                km: Number(form.km),
                 combustivel: form.combustivel,
                 transmissao: form.transmissao,
-                ...(form.potencia   ? { potencia:   Number(form.potencia)   } : {}),
+                ...(form.potencia ? { potencia: Number(form.potencia) } : {}),
                 ...(form.cilindrada ? { cilindrada: Number(form.cilindrada) } : {}),
                 cor: form.cor,
               },
@@ -229,16 +227,16 @@ export default function Publicar() {
     }
   };
 
-  const modelosDisponiveis    = form.marca    ? getModelosPorMarca(form.marca)        : [];
-  const cidadesDisponiveis    = form.distrito ? DISTRITOS_CIDADES_PT[form.distrito]   : [];
-  const accentColorVar        = form.tipo === 'carro' ? '#2ac1b4' : '#3ecf8e';
-  const accentRgb             = form.tipo === 'carro' ? '42, 193, 180' : '62, 207, 142';
-  const ehPremium             = user?.premiumAtivo === true;
+  const modelosDisponiveis = form.marca ? getModelosPorMarca(form.marca) : [];
+  const cidadesDisponiveis = form.distrito ? DISTRITOS_CIDADES_PT[form.distrito] : [];
+  const accentColorVar = form.tipo === 'carro' ? '#2ac1b4' : '#3ecf8e';
+  const accentRgb = form.tipo === 'carro' ? '42, 193, 180' : '62, 207, 142';
+  const ehPremium = user?.premiumAtivo === true;
 
   return (
     <>
       <style>{`
-        .pub-root { background: #f8fafc; color: #0f172a; min-height: calc(100vh - 72px); font-family: 'Inter', sans-serif; padding: 48px 24px; transition: background 0.3s ease; }
+        .pub-root { background: #f8fafc; color: #0f172a; min-height: 100%; height: auto; font-family: 'Inter', sans-serif; padding: 48px 24px; box-sizing: border-box; }
         .pub-container { max-width: 860px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
         .pub-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 24px; margin-bottom: 40px; flex-wrap: wrap; gap: 16px; }
@@ -300,19 +298,19 @@ export default function Publicar() {
         .pub-extra-del { width: 18px; height: 18px; border-radius: 50%; background: #e2e8f0; color: #475569; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s, color 0.2s; }
         .pub-extra-del:hover { background: #ef4444; color: #fff; }
 
-        .pub-pro-badge { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: #fefce8; border: 1px solid #fde047; border-radius: 12px; margin-bottom: 0; }
+        .pub-pro-badge { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: #fefce8; border: 1px solid #fde047; border-radius: 12px; margin-bottom: 0; box-sizing: border-box; }
         .pub-pro-badge-icon { color: #d97706; flex-shrink: 0; }
-        .pub-pro-badge-text { font-size: 13px; font-weight: 600; color: #92400e; line-height: 1.4; }
+        .pub-pro-badge-text { font-size: 13px; font-weight: 600; color: #92400e; line-height: 1.4; margin: 0; }
         .pub-pro-badge-text strong { color: #d97706; }
 
         .pub-trust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         @media (max-width: 768px) { .pub-trust-grid { grid-template-columns: 1fr; } }
-        .pub-trust-card { border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; background: #ffffff; transition: border-color .2s, background .2s, box-shadow .2s; }
+        .pub-trust-card { border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; background: #ffffff; transition: border-color .2s, background .2s, box-shadow .2s; box-sizing: border-box; }
         .pub-trust-card.is-active { border-color: ${accentColorVar}; background: rgba(${accentRgb}, 0.03); box-shadow: 0 4px 6px -1px rgba(${accentRgb}, 0.1); }
         .pub-trust-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .pub-trust-card-title { font-size: 13px; font-weight: 700; color: #0f172a; }
         .pub-trust-card-desc { font-size: 11.5px; color: #64748b; line-height: 1.5; margin: 0 0 12px; }
-        .pub-switch-row { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: #0f172a; }
+        .pub-switch-row { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: #0f172a; position: relative; }
         .pub-switch { position: relative; width: 40px; height: 22px; border-radius: 20px; background: #cbd5e1; flex-shrink: 0; transition: background .2s; }
         .pub-switch.checked { background: ${accentColorVar}; }
         .pub-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
@@ -539,7 +537,6 @@ export default function Publicar() {
 
               {form.tipo === 'imovel' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  
                   <div className="pub-grid-3">
                     <div>
                       <label className="pub-label">Estado</label>
@@ -608,7 +605,6 @@ export default function Publicar() {
                       Inclui Garagem / Estacionamento
                     </label>
                   </div>
-
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -701,11 +697,9 @@ export default function Publicar() {
                       </div>
                     )}
                   </div>
-
                 </div>
               )}
 
-              {/* Extras Partilhados */}
               <div style={{ paddingTop: '24px', marginTop: '24px', borderTop: '1px solid #e2e8f0' }}>
                 <label className="pub-label">
                   {form.tipo === 'carro' ? 'Equipamento & Opcionais' : 'Características & Extras'}

@@ -138,7 +138,7 @@ export default function NavbarCarro() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@800&display=swap');
+       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@800&display=swap');
         html, body { overflow-x: hidden; overscroll-behavior-x: none; }
         .ncr-root { position: sticky; top: 0; z-index: 1000; height: 72px; display: flex; align-items: center; padding: 0 32px; justify-content: space-between; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid #e2e8f0; transition: all 0.25s ease; font-family: 'Inter', sans-serif; }
         .ncr-root.scrolled { background: #ffffff; box-shadow: 0 4px 12px -4px rgba(15, 23, 42, 0.03); height: 68px; }
@@ -170,8 +170,9 @@ export default function NavbarCarro() {
         .ncr-btn-premium.active svg { fill: rgba(234,179,8,0.15); }
 
         .ncr-pro-badge { display: inline-flex; align-items: center; padding: 2px 7px; background: linear-gradient(135deg, #2ac1b4, #0f9d92); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
-        .ncr-ud-pro { margin-left: auto; padding: 2px 7px; background: linear-gradient(135deg, #2ac1b4, #0f9d92); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
-        .ncr-ud-admin-badge { margin-left: auto; padding: 2px 7px; background: linear-gradient(135deg, #818cf8, #6366f1); color: #ffffff; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
+        /* CORREÇÃO DO MENU AQUI */
+        .ncr-ud-pro { margin-left: 6px; padding: 2px 7px; background: linear-gradient(135deg, #2ac1b4, #0f9d92); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
+        .ncr-ud-admin-badge { margin-left: 6px; padding: 2px 7px; background: linear-gradient(135deg, #818cf8, #6366f1); color: #ffffff; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
 
         .ncr-sino-dropdown { position: absolute; top: calc(100% + 12px); right: -6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); width: 320px; display: flex; flex-direction: column; z-index: 1020; overflow: hidden; }
         .ncr-sino-header { padding: 14px 16px; font-weight: 800; font-size: 14px; border-bottom: 1px solid #e2e8f0; color: #0f172a; background: #f8fafc; }

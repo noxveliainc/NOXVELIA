@@ -780,14 +780,27 @@ export default function Anuncio() {
         </div>
       </div>
 
-      {!isDono && (
-        <div className="mobile-cta-bar">
-          <div className="mobile-cta-price">{preco}</div>
-          <button type="button" className="mobile-cta-btn" onClick={() => setMostrarTelefone(true)}>
-            Contactar
-          </button>
-        </div>
-      )}
-    </>
-  );
-}
+  <div className="trust-strip">
+                        <span className="trust-item"><Icon path={mdiShieldCheckOutline} size={0.6} />Pagamento seguro</span>
+                        <span className="trust-item"><Icon path={mdiClockOutline} size={0.6} />Resposta rápida</span>
+                      </div>
+                    </>
+                  )}
+
+                  {/* 🌟 Banner carVertical 100% Simétrico e Clicável */}
+                  {isCarro && (
+                    <a href={carVerticalLink} target="_blank" rel="noopener noreferrer" className="cv-banner">
+                      <div className="cv-head">
+                        <img src="/carvertical-logo.png" alt="carVertical" style={{ height: '22px', width: 'auto', objectFit: 'contain' }} />
+                        <span className="cv-discount">-20%</span>
+                      </div>
+                      <p className="cv-desc">Verifica o histórico de acidentes, roubos e anomalias de quilometragem deste veículo.</p>
+                      <div className="cv-code-wrap" onClick={(e) => { e.preventDefault(); navigator.clipboard.writeText("NOXVELIA"); alert("Código copiado com sucesso!"); }}>
+                        <span style={{ fontSize: '12px', color: '#0c4a6e', fontWeight: 600 }}>CÓDIGO DE DESCONTO:</span>
+                        <span className="cv-code">
+                          NOXVELIA <Icon path={mdiContentCopy} size={0.5} style={{marginLeft: '6px'}}/>
+                        </span>
+                      </div>
+                      <div className="cv-btn">Verificar Histórico</div>
+                    </a>
+                  )}

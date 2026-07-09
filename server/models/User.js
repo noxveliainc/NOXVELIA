@@ -12,6 +12,11 @@ const userSchema = new mongoose.Schema({
   nif:        { type: String, trim: true, default: null },
   website:    { type: String, trim: true, default: null },
   avatarUrl:  { type: String, default: null },
+  
+  // 🌟 NOVO: CAPA E BIOGRAFIA DO PERFIL
+  capaUrl:    { type: String, default: null },
+  bio:        { type: String, trim: true, default: null, maxLength: 800 },
+
   favoritos:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'Anuncio' }],
   anunciosGuardados: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Anuncio' }],
 
@@ -33,11 +38,11 @@ const userSchema = new mongoose.Schema({
   passwordResetToken:   { type: String, select: false },
   passwordResetExpires: { type: Date,   select: false },
 
-  // 🌟 NOVO: SISTEMA DE CONFIANÇA / REPUTAÇÃO DO VENDEDOR
+  // 🌟 SISTEMA DE CONFIANÇA / REPUTAÇÃO DO VENDEDOR
   rating:          { type: Number, default: 0 }, // Pontuação de 0 a 5 estrelas
   totalAvaliacoes: { type: Number, default: 0 }, // Quantas pessoas avaliaram este vendedor
 }, {
-  timestamps: true // Isto cria automaticamente o createdAt, que usamos no Frontend para "Na NOXVELIA desde..."
+  timestamps: true
 });
 
 userSchema.pre('save', async function(next) {
