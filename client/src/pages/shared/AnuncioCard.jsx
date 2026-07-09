@@ -37,6 +37,16 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
     ? (anuncio.carro?.mesRegisto ? `${String(anuncio.carro.mesRegisto).padStart(2, '0')}/${anuncio.carro.ano}` : anuncio.carro.ano)
     : null;
 
+  const destaques = (isCarro ? [
+    { label: 'Ano', value: tagAnoMes },
+    { label: 'Km', value: anuncio?.carro?.km != null ? new Intl.NumberFormat('pt-PT').format(anuncio.carro.km) : null },
+    { label: 'Caixa', value: anuncio?.carro?.transmissao },
+  ] : [
+    { label: 'Tipo', value: anuncio?.imovel?.tipologia || anuncio?.imovel?.tipoImovel },
+    { label: 'Area', value: anuncio?.imovel?.area ? `${anuncio.imovel.area} m2` : null },
+    { label: 'Zona', value: anuncio?.localizacao?.cidade },
+  ]).filter(item => item.value).slice(0, 3);
+
   const handleAbrirModal = e => { e.preventDefault(); e.stopPropagation(); setMostrarModal(true); };
   const handleFecharModal = e => { e?.preventDefault(); e?.stopPropagation(); setMostrarModal(false); };
 
@@ -67,16 +77,24 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           text-decoration: none;
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 16px;
+          border-radius: 18px;
           overflow: hidden;
           transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease, border-color .3s ease;
           color: #0f172a;
           position: relative;
           box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
+        .nxc-wrap::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          pointer-events: none;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+        }
         .nxc-wrap:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+          transform: translateY(-5px);
+          box-shadow: 0 24px 38px -18px rgba(15,23,42,0.28);
           border-color: #cbd5e1;
         }
         .nxc-wrap.premium {
@@ -95,6 +113,17 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           overflow: hidden;
           background: #f8fafc;
         }
+        .nxc-img::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(255,255,255,0.16), transparent 36%);
+          opacity: 0;
+          transition: opacity .3s;
+          z-index: 2;
+          pointer-events: none;
+        }
+        .nxc-wrap:hover .nxc-img::after { opacity: 1; }
         .nxc-img img {
           width: 100%;
           height: 100%;
@@ -252,6 +281,40 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           overflow: hidden;
         }
 
+        .nxc-insights {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 6px;
+          margin-top: 8px;
+        }
+        .nxc-insight {
+          min-width: 0;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          padding: 7px 8px;
+        }
+        .nxc-insight-label {
+          display: block;
+          font-size: 8.5px;
+          font-weight: 900;
+          color: #94a3b8;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+          line-height: 1;
+          margin-bottom: 4px;
+        }
+        .nxc-insight-value {
+          display: block;
+          font-size: 11.5px;
+          font-weight: 800;
+          color: #0f172a;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          line-height: 1.1;
+        }
+
         .nxc-tags {
           display: flex;
           flex-wrap: wrap;
@@ -390,6 +453,16 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         <div className="nxc-body">
           <div className="nxc-price">{preco}</div>
           <div className="nxc-title">{anuncio?.titulo}</div>
+          {destaques.length > 0 && (
+            <div className="nxc-insights">
+              {destaques.map((item) => (
+                <span key={item.label} className="nxc-insight">
+                  <span className="nxc-insight-label">{item.label}</span>
+                  <span className="nxc-insight-value">{item.value}</span>
+                </span>
+              ))}
+            </div>
+          )}
           <div className="nxc-tags">
             {anuncio?.imovel?.area        && <span className="nxc-tag">{anuncio.imovel.area} m²</span>}
             {anuncio?.imovel?.tipologia   && <span className="nxc-tag">{anuncio.imovel.tipologia}</span>}

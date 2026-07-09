@@ -5,7 +5,11 @@ import AnuncioCard from './AnuncioCard';
 import MapaResultados from '../../components/imoveis/MapaResultados';
 import useDebounce from '../../hooks/useDebounce';
 import Icon from '@mdi/react';
-import { mdiMap, mdiViewGrid, mdiMagnify, mdiLoading, mdiFilterVariant, mdiChevronLeft, mdiChevronRight } from '@mdi/js';
+import {
+  mdiMap, mdiViewGrid, mdiMagnify, mdiLoading, mdiFilterVariant, mdiChevronLeft,
+  mdiChevronRight, mdiTuneVariant, mdiChartTimelineVariant, mdiShieldCheckOutline,
+  mdiCloseCircleOutline
+} from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 
@@ -21,7 +25,7 @@ const TRANSMISSAO = ['Manual', 'Automático'];
 const BannerCTA = ({ tipo, origem }) => {
   const navigate = useNavigate();
   const isCarro = tipo === 'carro';
-  const accent = isCarro ? 'var(--nx-accent-car)' : 'var(--nx-accent-estate)';
+  const accent = isCarro ? 'var(--nx-accent-car)' : 'var(--nx-accent-home)';
   const textoAnuncio = isCarro ? 'veículo' : 'imóvel';
   const divisao = isCarro ? 'NOXVELIA Drive' : 'NOXVELIA Estate';
 
@@ -256,6 +260,46 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
   const isImovel = tipoSeguro === 'imovel';
   const modelosDisponiveis = filtros.marca ? getModelosPorMarca(filtros.marca) : [];
   const cidadesDisponiveis = (filtros.distrito && filtros.distrito !== 'Todos') ? DISTRITOS_CIDADES_PT[filtros.distrito] : [];
+  const accent = tipoSeguro === 'carro' ? 'var(--nx-accent-car)' : 'var(--nx-accent-home)';
+  const nomeDivisao = tipoSeguro === 'carro' ? 'NOXVELIA Drive' : 'NOXVELIA Estate';
+  const contextoBusca = tipoSeguro === 'carro'
+    ? 'Automoveis selecionados para comparar, filtrar e contactar sem ruido.'
+    : 'Imoveis organizados para encontrar localizacao, preco e tipologia com rapidez.';
+
+  const filtrosAtivos = [
+    filtros.precoMax && `Ate ${Number(filtros.precoMax).toLocaleString('pt-PT')} EUR`,
+    filtros.distrito !== 'Todos' && filtros.distrito,
+    filtros.cidade,
+    filtros.marca,
+    filtros.modelo,
+    ...filtros.tipologias,
+    ...filtros.combustiveis,
+    ...filtros.transmissao,
+    searchQuery.trim() && `"${searchQuery.trim()}"`,
+  ].filter(Boolean);
+
+  const limparFiltros = () => {
+    const filtrosLimpos = {
+      tipo: tipoSeguro,
+      precoMin: '',
+      precoMax: '',
+      distrito: 'Todos',
+      cidade: '',
+      marca: '',
+      modelo: '',
+      tipologias: [],
+      combustiveis: [],
+      transmissao: [],
+    };
+    filtrosRef.current = filtrosLimpos;
+    setFiltros(filtrosLimpos);
+    setSearchQuery('');
+    buscaRef.current = '';
+    setTemMais(false);
+    setResultados([]);
+    paginaRef.current = 1;
+    setTimeout(() => { puxarDadosServidor(1, false, tipoSeguro); }, 50);
+  };
 
   return (
     <>
@@ -263,7 +307,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
         .pesquisa-root { background: var(--nx-bg); font-family: var(--nx-font-body); color: var(--nx-text); min-height: 100vh; display: flex; flex-direction: column; }
         .pesquisa-layout { display: flex; max-width: 1400px; margin: 0 auto; width: 100%; padding: 32px; gap: 24px; flex: 1; align-items: flex-start; }
 
-        .pesquisa-sidebar { width: 320px; flex-shrink: 0; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: var(--nx-radius-lg); padding: 24px; position: sticky; top: 96px; max-height: calc(100vh - 120px); overflow-y: auto; box-shadow: var(--nx-shadow-card); transition: width 0.25s ease, opacity 0.2s ease, padding 0.25s ease, border-color 0.25s ease; }
+        .pesquisa-sidebar { width: 320px; flex-shrink: 0; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: var(--nx-radius-lg); padding: 24px; position: sticky; top: 96px; max-height: calc(100vh - 120px); overflow-y: auto; box-shadow: 0 18px 40px -28px rgba(15,23,42,0.35); transition: width 0.25s ease, opacity 0.2s ease, padding 0.25s ease, border-color 0.25s ease; }
         .pesquisa-sidebar::-webkit-scrollbar { width: 4px; }
         .pesquisa-sidebar::-webkit-scrollbar-track { background: transparent; }
         .pesquisa-sidebar::-webkit-scrollbar-thumb { background: var(--nx-border); border-radius: 4px; }
@@ -274,6 +318,10 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
         .pesquisa-sidebar-toggle:hover { background: var(--nx-border); color: var(--nx-text); }
 
         .pesquisa-sidebar-header { display: flex; align-items: center; gap: 8px; font-family: var(--nx-font-display); font-size: 18px; font-weight: 800; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--nx-border); }
+        .pesquisa-filter-status { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: -8px 0 20px; }
+        .pesquisa-filter-stat { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; }
+        .pesquisa-filter-stat strong { display: block; font-size: 17px; color: #0f172a; font-family: var(--nx-font-display); line-height: 1; }
+        .pesquisa-filter-stat span { display: block; margin-top: 5px; font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
         .pesquisa-filter-group { margin-bottom: 24px; }
         .pesquisa-filter-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--nx-text-sub); margin-bottom: 12px; }
 
@@ -283,24 +331,52 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
         .pesquisa-tags { display: flex; flex-wrap: wrap; gap: 8px; }
         .pesquisa-tag { padding: 8px 12px; border: 1px solid var(--nx-border); border-radius: 6px; background: var(--nx-bg-3); font-size: 12px; font-weight: 600; cursor: pointer; color: var(--nx-text-sub); transition: all 0.2s ease; flex: 1 1 calc(50% - 8px); text-align: center; }
         .pesquisa-tag:hover { background: var(--nx-border); color: var(--nx-text); }
-        .pesquisa-tag.active { background: ${tipoSeguro === 'carro' ? 'var(--nx-accent-car)' : 'var(--nx-accent-estate)'}; color: #040711; border-color: ${tipoSeguro === 'carro' ? 'var(--nx-accent-car)' : 'var(--nx-accent-estate)'}; }
+        .pesquisa-tag.active { background: ${accent}; color: #040711; border-color: ${accent}; }
 
         .pesquisa-apply-btn { width: 100%; padding: 14px; background: var(--nx-text); color: var(--nx-bg); border: none; border-radius: var(--nx-radius-sm); font-family: var(--nx-font-body); font-weight: 800; font-size: 13px; cursor: pointer; transition: opacity 0.2s ease; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 8px; }
         .pesquisa-apply-btn:hover { opacity: 0.85; }
 
         .pesquisa-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
+        .pesquisa-command {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 22px;
+          padding: 22px 24px;
+          margin-bottom: 18px;
+          box-shadow: 0 18px 40px -30px rgba(15,23,42,0.35);
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 20px;
+          align-items: center;
+          position: relative;
+          overflow: hidden;
+        }
+        .pesquisa-command::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: ${accent}; }
+        .pesquisa-command-kicker { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+        .pesquisa-command h1 { margin: 0; font-size: clamp(24px, 3vw, 34px); line-height: 1.08; letter-spacing: -0.02em; color: #0f172a; }
+        .pesquisa-command p { margin: 8px 0 0; color: #64748b; font-size: 14px; line-height: 1.6; max-width: 640px; }
+        .pesquisa-command-metrics { display: grid; grid-template-columns: repeat(2, 118px); gap: 10px; }
+        .pesquisa-command-metric { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; }
+        .pesquisa-command-metric strong { display: block; font-family: var(--nx-font-display); font-size: 22px; line-height: 1; color: #0f172a; }
+        .pesquisa-command-metric span { display: block; margin-top: 6px; color: #64748b; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; }
+
         .pesquisa-search-row { display: flex; gap: 12px; align-items: stretch; margin-bottom: 24px; }
         .pesquisa-search-row .pesquisa-omnibar-wrapper { margin-bottom: 0; flex: 1; }
 
-        .pesquisa-omnibar-wrapper { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: var(--nx-radius-md); display: flex; align-items: center; padding: 10px 20px; }
-        .pesquisa-omnibar-wrapper:focus-within { border-color: ${tipoSeguro === 'carro' ? 'var(--nx-accent-car)' : 'var(--nx-accent-estate)'}; }
+        .pesquisa-omnibar-wrapper { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: var(--nx-radius-md); display: flex; align-items: center; padding: 10px 20px; box-shadow: 0 10px 26px -24px rgba(15,23,42,0.45); }
+        .pesquisa-omnibar-wrapper:focus-within { border-color: ${accent}; box-shadow: 0 0 0 3px rgba(42,193,180,0.12); }
         .pesquisa-omnibar-wrapper input { flex: 1; border: none; padding: 8px; font-size: 15px; color: var(--nx-text); outline: none; background: transparent; }
 
         .pesquisa-mobile-filter-btn { display: none; align-items: center; gap: 6px; padding: 0 18px; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: var(--nx-radius-md); color: var(--nx-text); font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
         .pesquisa-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         .pesquisa-results-count { font-family: var(--nx-font-display); font-size: 18px; font-weight: 700; color: var(--nx-text); }
+        .pesquisa-sort { border: 1px solid #e2e8f0; background: #ffffff; border-radius: 12px; padding: 10px 34px 10px 12px; font-family: var(--nx-font-body); font-size: 13px; font-weight: 800; color: var(--nx-text); cursor: pointer; outline: none; }
+        .pesquisa-active-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: -8px 0 22px; min-height: 34px; }
+        .pesquisa-active-chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #dbeafe; background: #eff6ff; color: #2563eb; border-radius: 999px; padding: 8px 11px; font-size: 12px; font-weight: 800; }
+        .pesquisa-clear-btn { display: inline-flex; align-items: center; gap: 6px; background: #ffffff; color: #64748b; border: 1px solid #e2e8f0; border-radius: 999px; padding: 8px 11px; font-size: 12px; font-weight: 800; cursor: pointer; }
+        .pesquisa-clear-btn:hover { border-color: #cbd5e1; color: #0f172a; }
 
         .pesquisa-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
 
@@ -314,6 +390,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
           .pesquisa-sidebar-toggle { display: none; }
           .pesquisa-mobile-filter-btn { display: inline-flex; }
           .pesquisa-main-content { width: 100%; }
+          .pesquisa-command { grid-template-columns: 1fr; }
+          .pesquisa-command-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
 
         .pesquisa-empty { text-align: center; padding: 100px 20px; color: var(--nx-text-sub); }
@@ -331,6 +409,16 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
 
           <aside className={`pesquisa-sidebar${isSidebarOpen ? '' : ' collapsed'}`}>
             <div className="pesquisa-sidebar-header"><Icon path={mdiFilterVariant} size={1} /> Filtros Avançados</div>
+            <div className="pesquisa-filter-status">
+              <div className="pesquisa-filter-stat">
+                <strong>{filtrosAtivos.length}</strong>
+                <span>Ativos</span>
+              </div>
+              <div className="pesquisa-filter-stat">
+                <strong>{limite}</strong>
+                <span>Por lote</span>
+              </div>
+            </div>
 
             <div className="pesquisa-filter-group">
               <div className="pesquisa-filter-title">Orçamento Máximo (€)</div>
@@ -412,6 +500,26 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
           </button>
 
           <main className="pesquisa-main-content">
+            <section className="pesquisa-command">
+              <div>
+                <div className="pesquisa-command-kicker">
+                  <Icon path={mdiTuneVariant} size={0.7} /> {nomeDivisao}
+                </div>
+                <h1>{tipoSeguro === 'carro' ? 'Encontra o carro certo sem perder ritmo.' : 'Encontra o imovel certo com mais clareza.'}</h1>
+                <p>{contextoBusca}</p>
+              </div>
+              <div className="pesquisa-command-metrics" aria-label="Resumo da pesquisa">
+                <div className="pesquisa-command-metric">
+                  <strong>{totalResultados}</strong>
+                  <span>Registos</span>
+                </div>
+                <div className="pesquisa-command-metric">
+                  <strong>{filtrosAtivos.length}</strong>
+                  <span>Filtros</span>
+                </div>
+              </div>
+            </section>
+
             <div className="pesquisa-search-row">
               <button type="button" className="pesquisa-mobile-filter-btn" onClick={() => setSidebarMobileAberta(true)}>
                 <Icon path={mdiFilterVariant} size={0.8} />
@@ -421,8 +529,28 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
               <div className="pesquisa-omnibar-wrapper">
                 <Icon path={mdiMagnify} size={0.9} color="var(--nx-text-sub)" style={{ marginRight: '12px' }} />
                 <input type="text" placeholder={tipoSeguro === 'carro' ? 'Pesquisar por marca, modelo, versão...' : 'Pesquisar por título, características...'} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                {loading && <Icon path={mdiLoading} size={0.9} color={tipoSeguro === 'carro' ? 'var(--nx-accent-car)' : 'var(--nx-accent-estate)'} className="animate-spin" />}
+                {loading && <Icon path={mdiLoading} size={0.9} color={accent} className="animate-spin" />}
               </div>
+            </div>
+
+            <div className="pesquisa-active-row">
+              {filtrosAtivos.length > 0 ? (
+                <>
+                  {filtrosAtivos.slice(0, 7).map((filtro) => (
+                    <span className="pesquisa-active-chip" key={filtro}>
+                      <Icon path={mdiShieldCheckOutline} size={0.55} /> {filtro}
+                    </span>
+                  ))}
+                  {filtrosAtivos.length > 7 && <span className="pesquisa-active-chip">+{filtrosAtivos.length - 7}</span>}
+                  <button type="button" className="pesquisa-clear-btn" onClick={limparFiltros}>
+                    <Icon path={mdiCloseCircleOutline} size={0.6} /> Limpar
+                  </button>
+                </>
+              ) : (
+                <span className="pesquisa-active-chip" style={{ background: '#f8fafc', color: '#64748b', borderColor: '#e2e8f0' }}>
+                  <Icon path={mdiChartTimelineVariant} size={0.6} /> Exploração livre
+                </span>
+              )}
             </div>
 
             {error && <div style={{ color: 'var(--nx-danger)', padding: '16px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', fontSize: '14px', fontWeight: 500, border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '24px' }}>{error}</div>}
@@ -433,7 +561,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
 
             <div className="pesquisa-topbar">
               <div className="pesquisa-results-count">{loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} registos`}</div>
-              <select style={{ border: 'none', background: 'transparent', fontFamily: 'var(--nx-font-body)', fontSize: '14px', fontWeight: 600, color: 'var(--nx-text)', cursor: 'pointer', outline: 'none' }} value={sort} onChange={(e) => setSort(e.target.value)}>
+              <select className="pesquisa-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
                 <option value="relevancia" style={{ background: 'var(--nx-bg-2)' }}>Relevância</option>
                 <option value="preco_asc" style={{ background: 'var(--nx-bg-2)' }}>Preço: Mais Baixo</option>
                 <option value="preco_desc" style={{ background: 'var(--nx-bg-2)' }}>Preço: Mais Alto</option>

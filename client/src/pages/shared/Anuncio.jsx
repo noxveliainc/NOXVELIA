@@ -280,6 +280,12 @@ export default function Anuncio() {
   const anoRegistoUser = donoDoAnuncio?.createdAt ? new Date(donoDoAnuncio.createdAt).getFullYear() : new Date().getFullYear();
   const vendedorVerificado = donoDoAnuncio?.tipo === 'admin';
   const referencia = anuncio._id?.slice(-6).toUpperCase();
+  const resumoDecisao = [
+    { label: 'Localizacao', value: localizacaoString, icon: mdiMapMarkerOutline },
+    { label: isCarro ? 'Perfil' : 'Preco / m2', value: isCarro ? (anuncio.carro?.marca || 'Viatura') : (precoPorM2 || 'Sob analise'), icon: isCarro ? mdiCar : mdiRulerSquare },
+    { label: 'Vendedor', value: vendedorVerificado ? 'Verificado' : (rating > 0 ? `${rating.toFixed(1)} estrelas` : 'Novo vendedor'), icon: mdiShieldCheckOutline },
+    { label: 'Contacto', value: telefoneContacto !== 'Nao fornecido' && telefoneContacto !== 'Não fornecido' ? 'Disponivel' : 'Por mensagem', icon: mdiPhone },
+  ];
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -356,6 +362,54 @@ export default function Anuncio() {
         .estado-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
         .estado-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
         .meta-dot { color: #cbd5e1; font-size: 10px; }
+
+        .decision-strip {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 10px;
+          margin: 0 0 22px;
+        }
+        .decision-item {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 14px;
+          padding: 13px 14px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          box-shadow: 0 10px 26px -24px rgba(15,23,42,0.45);
+        }
+        .decision-icon {
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: ${accent};
+          flex-shrink: 0;
+        }
+        .decision-label {
+          display: block;
+          font-size: 9.5px;
+          color: #94a3b8;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: .08em;
+          line-height: 1;
+          margin-bottom: 5px;
+        }
+        .decision-value {
+          display: block;
+          color: #0f172a;
+          font-size: 13px;
+          font-weight: 800;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
 
         .tabs-wrap { display: flex; gap: 2px; border-bottom: 1px solid #e2e8f0; margin-bottom: 22px; overflow-x: auto; scrollbar-width: none; }
         .tabs-wrap::-webkit-scrollbar { display: none; }
@@ -472,6 +526,8 @@ export default function Anuncio() {
         .lightbox-img-wrap { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 70px 90px; }
         .lightbox-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
         @media (max-width: 700px) { .lightbox-img-wrap { padding: 70px 16px; } .arrow-btn { width: 34px; height: 34px; } }
+        @media (max-width: 900px) { .decision-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 520px) { .decision-strip { grid-template-columns: 1fr; } }
 
         .mobile-cta-bar { display: none; }
         @media (max-width: 720px) {
@@ -592,6 +648,18 @@ export default function Anuncio() {
                     <Icon path={refCopiado ? mdiCheck : mdiContentCopy} size={0.6} /> Ref: #{referencia}
                   </button>
                 </div>
+              </div>
+
+              <div className="decision-strip">
+                {resumoDecisao.map((item) => (
+                  <div className="decision-item" key={item.label}>
+                    <span className="decision-icon"><Icon path={item.icon} size={0.78} /></span>
+                    <span style={{ minWidth: 0 }}>
+                      <span className="decision-label">{item.label}</span>
+                      <span className="decision-value">{item.value}</span>
+                    </span>
+                  </div>
+                ))}
               </div>
 
               <div className="tabs-wrap" role="tablist">
