@@ -7,8 +7,64 @@ import AnuncioCard from '../../pages/shared/AnuncioCard';
 import Icon from '@mdi/react';
 import { 
   mdiCheckDecagram, mdiChartBar, mdiShareVariantOutline, mdiDomain, 
-  mdiClose, mdiCrown, mdiStar, mdiChevronLeft, mdiPencil, mdiEarth
+  mdiClose, mdiCrown, mdiStar, mdiChevronLeft, mdiPencil, mdiEarth,
+  mdiWeb, mdiInstagram, mdiFacebook, mdiLinkedin, mdiYoutube, mdiMusicNote,
+  mdiPlus, mdiTrashCanOutline
 } from '@mdi/js';
+
+const TIPOS_LINK_PERFIL = [
+  { value: 'website', label: 'Website', icon: mdiWeb, placeholder: 'Ex: https://www.teusite.pt' },
+  { value: 'instagram', label: 'Instagram', icon: mdiInstagram, placeholder: 'Ex: https://instagram.com/oteuperfil' },
+  { value: 'facebook', label: 'Facebook', icon: mdiFacebook, placeholder: 'Ex: https://facebook.com/oteuperfil' },
+  { value: 'linkedin', label: 'LinkedIn', icon: mdiLinkedin, placeholder: 'Ex: https://linkedin.com/in/oteuperfil' },
+  { value: 'youtube', label: 'YouTube', icon: mdiYoutube, placeholder: 'Ex: https://youtube.com/@oteucanal' },
+  { value: 'tiktok', label: 'TikTok', icon: mdiMusicNote, placeholder: 'Ex: https://tiktok.com/@oteuperfil' },
+  { value: 'outro', label: 'Outro', icon: mdiEarth, placeholder: 'Ex: https://www.outrolink.pt' },
+];
+
+const criarLinkPerfilVazio = () => ({ tipo: 'website', url: '' });
+
+const obterMetaLinkPerfil = (tipo) => (
+  TIPOS_LINK_PERFIL.find((opcao) => opcao.value === tipo) || TIPOS_LINK_PERFIL[TIPOS_LINK_PERFIL.length - 1]
+);
+
+const prepararLinksParaEdicao = (linksPerfil, website) => {
+  const links = Array.isArray(linksPerfil)
+    ? linksPerfil.filter((link) => link?.url).slice(0, 3)
+    : [];
+
+  if (links.length > 0) return links.map((link) => ({ tipo: link.tipo || 'outro', url: link.url || '' }));
+  if (website) return [{ tipo: 'website', url: website }];
+  return [criarLinkPerfilVazio()];
+};
+
+const obterLinksVisiveis = (utilizador) => {
+  const links = Array.isArray(utilizador?.linksPerfil)
+    ? utilizador.linksPerfil.filter((link) => link?.url).slice(0, 3)
+    : [];
+
+  if (links.length > 0) return links;
+  return utilizador?.website ? [{ tipo: 'website', url: utilizador.website }] : [];
+};
+
+const normalizarHref = (url) => {
+  if (!url) return '#';
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+};
+
+const formatarTextoLink = (link) => {
+  const href = normalizarHref(link.url);
+  try {
+    const url = new URL(href);
+    const primeiroSegmento = url.pathname.split('/').filter(Boolean)[0];
+    if (['instagram', 'tiktok'].includes(link.tipo) && primeiroSegmento) {
+      return `@${primeiroSegmento.replace(/^@/, '')}`;
+    }
+    return url.hostname.replace(/^www\./, '');
+  } catch {
+    return String(link.url).replace(/(^\w+:|^)\/\//, '');
+  }
+};
 
 export default function Perfil() {
   const { user, signed, atualizarAvatar, atualizarUser, logout: limparSessaoGlobal } = useAuth();
@@ -38,7 +94,7 @@ export default function Perfil() {
   const [dadosEvolucao, setDadosEvolucao] = useState({ nomeEmpresa: '', nif: '', website: '' });
 
   const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
-  const [dadosEditar, setDadosEditar] = useState({ bio: '', website: '', localidade: '' });
+  const [dadosEditar, setDadosEditar] = useState({ bio: '', website: '', localidade: '', linksPerfil: [criarLinkPerfilVazio()] });
 
   const rotaVoltar = abaActiva === 'carro' ? '/carros' : '/imoveis';
   const labelVoltar = abaActiva === 'carro' ? 'Automóveis' : 'Imóveis';
@@ -142,17 +198,52 @@ export default function Perfil() {
     setDadosEditar({
       bio: utilizador?.bio || '',
       website: utilizador?.website || '',
-      localidade: utilizador?.localidade || ''
+      localidade: utilizador?.localidade || '',
+      linksPerfil: prepararLinksParaEdicao(utilizador?.linksPerfil, utilizador?.website)
     });
     setMostrarModalEditar(true);
   };
 
+  const atualizarLinkPerfil = (index, campo, valor) => {
+    setDadosEditar(prev => ({
+      ...prev,
+      linksPerfil: prev.linksPerfil.map((link, i) => (
+        i === index ? { ...link, [campo]: valor } : link
+      ))
+    }));
+  };
+
+  const adicionarLinkPerfil = () => {
+    setDadosEditar(prev => {
+      if (prev.linksPerfil.length >= 3) return prev;
+      return { ...prev, linksPerfil: [...prev.linksPerfil, criarLinkPerfilVazio()] };
+    });
+  };
+
+  const removerLinkPerfil = (index) => {
+    setDadosEditar(prev => {
+      const linksAtualizados = prev.linksPerfil.filter((_, i) => i !== index);
+      return { ...prev, linksPerfil: linksAtualizados.length ? linksAtualizados : [criarLinkPerfilVazio()] };
+    });
+  };
+
   const salvarPerfil = async (e) => {
     e.preventDefault();
+    const linksPerfil = dadosEditar.linksPerfil
+      .map((link) => ({ tipo: link.tipo || 'outro', url: (link.url || '').trim() }))
+      .filter((link) => link.url)
+      .slice(0, 3);
+    const websitePrincipal = linksPerfil.find((link) => link.tipo === 'website')?.url || '';
+
     try {
       setIsDeleting(true);
       setMostrarModalEditar(false);
-      const res = await api.put('/users/me', dadosEditar);
+      const res = await api.put('/users/me', {
+        bio: dadosEditar.bio,
+        localidade: dadosEditar.localidade,
+        website: websitePrincipal,
+        linksPerfil
+      });
       setUtilizador(res.data);
       if (atualizarUser) atualizarUser(res.data);
     } catch (err) {
@@ -190,6 +281,7 @@ export default function Perfil() {
   const anunciosFiltrados = anuncios.filter(a => a.tipo === abaActiva);
   const totalImoveis = anuncios.filter(a => a.tipo === 'imovel').length;
   const totalCarros = anuncios.filter(a => a.tipo === 'carro').length;
+  const linksPerfilVisiveis = obterLinksVisiveis(utilizador);
 
   if (loading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}><div className="nx-spinner" style={{ borderColor: 'rgba(42, 193, 180, 0.2)', borderTopColor: '#2ac1b4' }} /></div>;
 
@@ -235,9 +327,10 @@ export default function Perfil() {
         .perfil-email { font-size: 13px; color: #64748b; margin: 0 0 16px 0; display: flex; align-items: center; }
         
         .perfil-bio { font-size: 14px; color: #334155; line-height: 1.6; margin: 0 0 16px 0; max-width: 800px; white-space: pre-wrap; }
-        .perfil-link-row { display: flex; gap: 16px; margin-bottom: 20px; }
-        .perfil-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #3b82f6; text-decoration: none; }
-        .perfil-link:hover { text-decoration: underline; }
+        .perfil-link-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .perfil-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #3b82f6; text-decoration: none; border: 1px solid #dbeafe; background: #eff6ff; border-radius: 999px; padding: 8px 12px; max-width: 240px; }
+        .perfil-link span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .perfil-link:hover { border-color: #93c5fd; background: #dbeafe; }
 
         .stars-container { display: flex; align-items: center; gap: 4px; color: #f59e0b; margin-bottom: 24px; }
         .stars-text { font-size: 13px; font-weight: 700; color: #0f172a; margin-left: 4px; }
@@ -305,6 +398,25 @@ export default function Perfil() {
         .modal-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
         .modal-input::placeholder { color: #94a3b8; }
         textarea.modal-input { resize: vertical; min-height: 100px; }
+
+        .links-editor-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+        .links-editor-header label { margin-bottom: 0; }
+        .links-editor-count { font-size: 11px; color: #94a3b8; font-weight: 700; }
+        .link-editor-list { display: flex; flex-direction: column; gap: 10px; }
+        .link-editor-row { display: grid; grid-template-columns: 120px minmax(0, 1fr) 40px; gap: 10px; align-items: center; }
+        .modal-select { width: 100%; height: 48px; padding: 0 34px 0 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; color: #0f172a; outline: none; font-size: 13px; font-weight: 700; font-family: inherit; appearance: none; cursor: pointer; }
+        .modal-select-wrap { position: relative; }
+        .modal-select-wrap::after { content: '\\25BE'; position: absolute; right: 12px; top: 50%; transform: translateY(-55%); color: #64748b; pointer-events: none; font-size: 14px; line-height: 1; }
+        .link-remove-btn { width: 40px; height: 40px; border-radius: 999px; border: 1px solid #e2e8f0; background: #ffffff; color: #94a3b8; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all .2s; }
+        .link-remove-btn:hover { color: #ef4444; border-color: #fecaca; background: #fef2f2; }
+        .link-add-btn { margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; background: #f8fafc; color: #2563eb; border: 1px dashed #93c5fd; border-radius: 8px; padding: 10px 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+        .link-add-btn:hover { background: #eff6ff; }
+        .link-add-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        @media (max-width: 560px) {
+          .link-editor-row { grid-template-columns: 1fr 40px; }
+          .modal-select-wrap { grid-column: 1 / -1; }
+        }
         
         .modal-btn-submit { width: 100%; padding: 16px; background: #3b82f6; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: opacity 0.2s; margin-top: 12px; }
         .modal-btn-submit:hover { opacity: 0.9; }
@@ -390,14 +502,56 @@ export default function Perfil() {
               </div>
 
               <div className="modal-form-group">
-                <label>Website ou Link Oficial</label>
-                <input 
-                  className="modal-input" 
-                  type="url" 
-                  placeholder="Ex: https://www.teusite.pt" 
-                  value={dadosEditar.website}
-                  onChange={e => setDadosEditar({...dadosEditar, website: e.target.value})}
-                />
+                <div className="links-editor-header">
+                  <label>Links do Perfil</label>
+                  <span className="links-editor-count">{dadosEditar.linksPerfil.filter(link => link.url).length}/3</span>
+                </div>
+
+                <div className="link-editor-list">
+                  {dadosEditar.linksPerfil.map((link, index) => {
+                    const meta = obterMetaLinkPerfil(link.tipo);
+                    return (
+                      <div className="link-editor-row" key={index}>
+                        <div className="modal-select-wrap">
+                          <select
+                            className="modal-select"
+                            value={link.tipo}
+                            onChange={e => atualizarLinkPerfil(index, 'tipo', e.target.value)}
+                          >
+                            {TIPOS_LINK_PERFIL.map((opcao) => (
+                              <option key={opcao.value} value={opcao.value}>{opcao.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <input
+                          className="modal-input"
+                          type="text"
+                          inputMode="url"
+                          placeholder={meta.placeholder}
+                          value={link.url}
+                          onChange={e => atualizarLinkPerfil(index, 'url', e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="link-remove-btn"
+                          onClick={() => removerLinkPerfil(index)}
+                          aria-label="Remover link"
+                        >
+                          <Icon path={mdiTrashCanOutline} size={0.72} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  className="link-add-btn"
+                  onClick={adicionarLinkPerfil}
+                  disabled={dadosEditar.linksPerfil.length >= 3}
+                >
+                  <Icon path={mdiPlus} size={0.65} /> Adicionar Link
+                </button>
               </div>
 
               <button className="modal-btn-submit" type="submit">Guardar Alterações</button>
@@ -485,11 +639,17 @@ export default function Perfil() {
                 {/* Biografia e Links Pessoais */}
                 {utilizador?.bio && <p className="perfil-bio">{utilizador.bio}</p>}
                 
-                {utilizador?.website && (
+                {linksPerfilVisiveis.length > 0 && (
                   <div className="perfil-link-row">
-                    <a href={utilizador.website} target="_blank" rel="noopener noreferrer" className="perfil-link">
-                      <Icon path={mdiEarth} size={0.7} /> {utilizador.website.replace(/(^\w+:|^)\/\//, '')}
-                    </a>
+                    {linksPerfilVisiveis.map((link, index) => {
+                      const meta = obterMetaLinkPerfil(link.tipo);
+                      return (
+                        <a key={`${link.tipo}-${index}`} href={normalizarHref(link.url)} target="_blank" rel="noopener noreferrer" className="perfil-link">
+                          <Icon path={meta.icon} size={0.7} />
+                          <span>{formatarTextoLink(link)}</span>
+                        </a>
+                      );
+                    })}
                   </div>
                 )}
 

@@ -3,7 +3,38 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
 import Icon from '@mdi/react';
-import { mdiCheckDecagram, mdiWhatsapp, mdiPhone, mdiMapMarker, mdiEmailOutline, mdiWeb } from '@mdi/js';
+import {
+  mdiCheckDecagram, mdiWhatsapp, mdiPhone, mdiMapMarker, mdiEmailOutline,
+  mdiWeb, mdiInstagram, mdiFacebook, mdiLinkedin, mdiYoutube, mdiMusicNote, mdiEarth
+} from '@mdi/js';
+
+const TIPOS_LINK_PERFIL = [
+  { value: 'website', label: 'Site', icon: mdiWeb },
+  { value: 'instagram', label: 'Instagram', icon: mdiInstagram },
+  { value: 'facebook', label: 'Facebook', icon: mdiFacebook },
+  { value: 'linkedin', label: 'LinkedIn', icon: mdiLinkedin },
+  { value: 'youtube', label: 'YouTube', icon: mdiYoutube },
+  { value: 'tiktok', label: 'TikTok', icon: mdiMusicNote },
+  { value: 'outro', label: 'Link', icon: mdiEarth },
+];
+
+const obterMetaLinkPerfil = (tipo) => (
+  TIPOS_LINK_PERFIL.find((opcao) => opcao.value === tipo) || TIPOS_LINK_PERFIL[TIPOS_LINK_PERFIL.length - 1]
+);
+
+const normalizarHref = (url) => {
+  if (!url) return '#';
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+};
+
+const obterLinksVisiveis = (vendedor) => {
+  const links = Array.isArray(vendedor?.linksPerfil)
+    ? vendedor.linksPerfil.filter((link) => link?.url).slice(0, 3)
+    : [];
+
+  if (links.length > 0) return links;
+  return vendedor?.website ? [{ tipo: 'website', url: vendedor.website }] : [];
+};
 
 export default function PerfilPublico() {
   const { id } = useParams();
@@ -39,6 +70,7 @@ export default function PerfilPublico() {
   const nomeExibicao = isAdmin ? (vendedor.nome.toUpperCase().includes('NOXVELIA') ? vendedor.nome : `NOXVELIA ${vendedor.nome}`) : vendedor?.nome;
   const isProfissional = vendedor?.tipoConta === 'profissional' || isAdmin;
   const telefoneLimpo = vendedor?.telefone?.replace(/\D/g, '');
+  const linksPerfilVisiveis = obterLinksVisiveis(vendedor);
 
   return (
     <>
@@ -47,24 +79,36 @@ export default function PerfilPublico() {
         
         .pp-hero { 
           position: relative; 
-          background: #ffffff; 
+          background: #f1f5f9; 
           border-bottom: 1px solid #e2e8f0; 
-          padding: 64px 24px 80px 24px; 
+          padding: 36px 24px 80px 24px; 
           margin-bottom: 48px; 
+          overflow: hidden;
         }
+        .pp-cover {
+          position: absolute;
+          inset: 0 0 auto 0;
+          height: 270px;
+          background: linear-gradient(135deg, #0f172a, #2563eb);
+          overflow: hidden;
+        }
+        .pp-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .pp-cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,42,0.42), rgba(15,23,42,0.22) 45%, rgba(248,250,252,0.95)); }
         .pp-hero-content { max-width: 1200px; margin: 0 auto; position: relative; z-index: 2; }
         
         .pp-back { 
           display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; 
-          text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; text-decoration: none; 
+          text-transform: uppercase; letter-spacing: 0.05em; color: #ffffff; text-decoration: none; 
           cursor: pointer; background: none; border: none; padding: 0; margin-bottom: 40px; transition: color 0.2s; 
+          text-shadow: 0 1px 2px rgba(15, 23, 42, 0.35);
         }
-        .pp-back:hover { color: #0f172a; }
+        .pp-back:hover { color: #e0f2fe; }
         
         .pp-user-section { 
           display: flex; align-items: flex-start; gap: 40px; background: #ffffff; 
           border: 1px solid #e2e8f0; padding: 40px; border-radius: 24px; 
           box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); 
+          margin-top: 86px;
         }
         @media (max-width: 860px) { .pp-user-section { flex-direction: column; text-align: center; align-items: center; gap: 24px; padding: 32px 20px; } }
         
@@ -96,6 +140,9 @@ export default function PerfilPublico() {
         
         .pp-location { font-size: 15px; color: #475569; font-weight: 500; margin: 0 0 24px 0; display: flex; align-items: center; gap: 6px; }
         @media (max-width: 860px) { .pp-location { justify-content: center; } }
+
+        .pp-bio { max-width: 760px; color: #334155; font-size: 15px; line-height: 1.65; margin: -8px 0 24px; white-space: pre-wrap; }
+        @media (max-width: 860px) { .pp-bio { text-align: center; } }
         
         .pp-actions { display: flex; gap: 12px; flex-wrap: wrap; }
         @media (max-width: 860px) { .pp-actions { justify-content: center; width: 100%; } }
@@ -113,6 +160,8 @@ export default function PerfilPublico() {
         
         .btn-website { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
         .btn-website:hover { background: #e0f2fe; border-color: #7dd3fc; }
+        .btn-social { background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; }
+        .btn-social:hover { background: #f1f5f9; border-color: #94a3b8; transform: translateY(-1px); }
 
         .pp-main { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
         .pp-section-header { 
@@ -126,6 +175,9 @@ export default function PerfilPublico() {
 
       <div className="pp-root">
         <div className="pp-hero">
+          <div className="pp-cover">
+            {vendedor?.capaUrl && <img src={vendedor.capaUrl} alt="" />}
+          </div>
           <div className="pp-hero-content">
             <button onClick={() => navigate(-1)} className="pp-back">← Voltar Atrás</button>
 
@@ -151,6 +203,8 @@ export default function PerfilPublico() {
                   {vendedor?.localidade ? `Distrito de ${vendedor.localidade}` : 'Portugal'}
                 </div>
 
+                {vendedor?.bio && <p className="pp-bio">{vendedor.bio}</p>}
+
                 {!isAdmin && (
                   <div className="pp-actions">
                     {telefoneLimpo && (
@@ -168,11 +222,20 @@ export default function PerfilPublico() {
                         <Icon path={mdiEmailOutline} size={0.8} /> Email
                       </a>
                     )}
-                    {vendedor?.website && (
-                      <a href={vendedor.website.startsWith('http') ? vendedor.website : `https://${vendedor.website}`} target="_blank" rel="noopener noreferrer" className="btn-contact btn-website">
-                        <Icon path={mdiWeb} size={0.8} /> Visitar Site
-                      </a>
-                    )}
+                    {linksPerfilVisiveis.map((link, index) => {
+                      const meta = obterMetaLinkPerfil(link.tipo);
+                      return (
+                        <a
+                          key={`${link.tipo}-${index}`}
+                          href={normalizarHref(link.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`btn-contact ${link.tipo === 'website' ? 'btn-website' : 'btn-social'}`}
+                        >
+                          <Icon path={meta.icon} size={0.8} /> {meta.label}
+                        </a>
+                      );
+                    })}
                   </div>
                 )}
               </div>

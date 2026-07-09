@@ -7,6 +7,43 @@ import { verificarToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
+const TIPOS_LINK_PERFIL = new Set(['website', 'instagram', 'facebook', 'linkedin', 'youtube', 'tiktok', 'outro']);
+
+const normalizarUrlPerfil = (valor) => {
+  if (valor === undefined) return undefined;
+  if (valor === null) return null;
+
+  const texto = String(valor).trim();
+  if (!texto) return null;
+
+  const urlComProtocolo = /^https?:\/\//i.test(texto) ? texto : `https://${texto}`;
+
+  try {
+    const url = new URL(urlComProtocolo);
+    if (!['http:', 'https:'].includes(url.protocol)) {
+      throw new Error('Protocolo invalido.');
+    }
+    return url.href;
+  } catch {
+    throw new Error('Um dos links do perfil nao e valido.');
+  }
+};
+
+const normalizarLinksPerfil = (links = []) => {
+  if (!Array.isArray(links)) {
+    throw new Error('Os links do perfil devem ser enviados numa lista.');
+  }
+
+  return links
+    .slice(0, 3)
+    .map((link) => {
+      const tipo = TIPOS_LINK_PERFIL.has(link?.tipo) ? link.tipo : 'outro';
+      const url = normalizarUrlPerfil(link?.url);
+      return url ? { tipo, url } : null;
+    })
+    .filter(Boolean);
+};
+
 // ─────────────────────────────────────────────────────────────
 // BUSCAR DADOS DO UTILIZADOR CONECTADO
 // ─────────────────────────────────────────────────────────────
@@ -41,7 +78,19 @@ router.get('/me', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.put('/me', verificarToken, async (req, res) => {
   try {
-    const { nome, telefone, email, avatarUrl, website, tipoConta } = req.body;
+    const {
+      nome,
+      telefone,
+      email,
+      avatarUrl,
+      capaUrl,
+      website,
+      linksPerfil,
+      bio,
+      localidade,
+      tipoConta,
+      nif
+    } = req.body;
 
     const userOriginal = await User.findById(req.user.id);
     if (!userOriginal) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
@@ -52,23 +101,53 @@ router.put('/me', verificarToken, async (req, res) => {
       if (emailEmUso) return res.status(400).json({ erro: 'Este email já está registado noutra conta.' });
     }
 
-    const camposParaAtualizar = { nome, telefone };
-    if (email) camposParaAtualizar.email = email;
-    if (avatarUrl) camposParaAtualizar.avatarUrl = avatarUrl;
+    const camposParaAtualizar = {};
 
-    if (tipoConta === 'profissional') camposParaAtualizar.tipoConta = 'profissional';
-    if (userOriginal.tipoConta === 'profissional' || tipoConta === 'profissional') {
-      camposParaAtualizar.website = website;
+    if (nome !== undefined) camposParaAtualizar.nome = String(nome).trim();
+    if (telefone !== undefined) camposParaAtualizar.telefone = String(telefone).trim();
+    if (email !== undefined) camposParaAtualizar.email = String(email).trim().toLowerCase();
+    if (avatarUrl !== undefined) camposParaAtualizar.avatarUrl = avatarUrl || null;
+    if (capaUrl !== undefined) camposParaAtualizar.capaUrl = capaUrl || null;
+    if (localidade !== undefined) camposParaAtualizar.localidade = String(localidade).trim() || null;
+    if (nif !== undefined) camposParaAtualizar.nif = String(nif).trim() || null;
+
+    if (bio !== undefined) {
+      const bioLimpa = String(bio).trim();
+      if (bioLimpa.length > 800) {
+        return res.status(400).json({ erro: 'A biografia pode ter no maximo 800 caracteres.' });
+      }
+      camposParaAtualizar.bio = bioLimpa || null;
+    }
+
+    if (tipoConta === 'profissional') {
+      camposParaAtualizar.tipoConta = 'profissional';
+    }
+
+    if (website !== undefined) {
+      camposParaAtualizar.website = normalizarUrlPerfil(website);
+    }
+
+    if (linksPerfil !== undefined) {
+      const linksNormalizados = normalizarLinksPerfil(linksPerfil);
+      camposParaAtualizar.linksPerfil = linksNormalizados;
+
+      if (website === undefined) {
+        const linkWebsite = linksNormalizados.find((link) => link.tipo === 'website');
+        camposParaAtualizar.website = linkWebsite?.url || null;
+      }
     }
 
     const utilizadorAtualizado = await User.findByIdAndUpdate(
       req.user.id,
       { $set: camposParaAtualizar },
-      { new: true }
+      { new: true, runValidators: true }
     ).select('+premiumAtivo +premiumExpira');
 
     res.json(utilizadorAtualizado);
   } catch (erro) {
+    if (erro.message?.includes('perfil')) {
+      return res.status(400).json({ erro: erro.message });
+    }
     res.status(500).json({ erro: 'Erro ao atualizar perfil.' });
   }
 });
@@ -134,7 +213,7 @@ router.get('/me/guardados', verificarToken, async (req, res) => {
 router.get('/vendedor/:id', async (req, res) => {
   try {
     const vendedor = await User.findById(req.params.id).select(
-      'nome email telefone localidade avatarUrl tipoConta website tipo premiumAtivo rating totalAvaliacoes createdAt'
+      'nome email telefone localidade avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo rating totalAvaliacoes createdAt'
     );
     if (!vendedor) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
     const anuncios = await Anuncio.find({ utilizador: req.params.id }).sort({ createdAt: -1 });

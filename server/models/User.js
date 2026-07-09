@@ -16,6 +16,21 @@ const userSchema = new mongoose.Schema({
   // 🌟 NOVO: CAPA E BIOGRAFIA DO PERFIL
   capaUrl:    { type: String, default: null },
   bio:        { type: String, trim: true, default: null, maxLength: 800 },
+  linksPerfil: {
+    type: [{
+      tipo: {
+        type: String,
+        enum: ['website', 'instagram', 'facebook', 'linkedin', 'youtube', 'tiktok', 'outro'],
+        default: 'website'
+      },
+      url: { type: String, trim: true }
+    }],
+    default: [],
+    validate: {
+      validator: (links) => !links || links.length <= 3,
+      message: 'O perfil pode ter no maximo 3 links.'
+    }
+  },
 
   favoritos:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'Anuncio' }],
   anunciosGuardados: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Anuncio' }],
