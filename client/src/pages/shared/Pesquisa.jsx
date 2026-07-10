@@ -380,11 +380,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
 
         .pesquisa-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
 
-        .pesquisa-root {
-          background:
-            linear-gradient(180deg, rgba(4,7,17,0.96) 0, rgba(4,7,17,0.96) 285px, var(--nx-bg) 285px),
-            var(--nx-bg);
-        }
+        .pesquisa-root { background: var(--nx-bg); }
         .pesquisa-layout {
           max-width: 1480px;
           padding: 28px;
@@ -402,25 +398,22 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
           box-shadow: 0 16px 34px -30px rgba(15,23,42,0.6);
         }
         .pesquisa-command {
-          background:
-            linear-gradient(135deg, rgba(255,255,255,0.13), rgba(255,255,255,0.06)),
-            rgba(4,7,17,0.72);
-          border-color: rgba(255,255,255,0.14);
-          color: #f8fafc;
+          background: #ffffff;
+          border-color: #e2e8f0;
+          color: #0f172a;
           border-radius: 18px;
-          box-shadow: 0 24px 70px -46px rgba(0,0,0,0.9);
-          backdrop-filter: blur(18px);
+          box-shadow: 0 22px 54px -44px rgba(15,23,42,0.45);
         }
-        .pesquisa-command::before { width: 0; }
-        .pesquisa-command-kicker { color: rgba(248,250,252,0.72); }
-        .pesquisa-command h1 { color: #ffffff; }
-        .pesquisa-command p { color: rgba(248,250,252,0.7); }
+        .pesquisa-command::before { width: 4px; }
+        .pesquisa-command-kicker { color: #64748b; }
+        .pesquisa-command h1 { color: #0f172a; }
+        .pesquisa-command p { color: #64748b; }
         .pesquisa-command-metric {
-          background: rgba(255,255,255,0.1);
-          border-color: rgba(255,255,255,0.14);
+          background: #f8fafc;
+          border-color: #e2e8f0;
         }
-        .pesquisa-command-metric strong { color: #ffffff; }
-        .pesquisa-command-metric span { color: rgba(248,250,252,0.62); }
+        .pesquisa-command-metric strong { color: #0f172a; }
+        .pesquisa-command-metric span { color: #64748b; }
         .pesquisa-search-row {
           background: rgba(255,255,255,0.94);
           border: 1px solid #e2e8f0;
@@ -533,17 +526,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
 
           <aside className={`pesquisa-sidebar${isSidebarOpen ? '' : ' collapsed'}`}>
             <div className="pesquisa-sidebar-header"><Icon path={mdiFilterVariant} size={1} /> Filtros Avançados</div>
-            <div className="pesquisa-filter-status">
-              <div className="pesquisa-filter-stat">
-                <strong>{filtrosAtivos.length}</strong>
-                <span>Ativos</span>
-              </div>
-              <div className="pesquisa-filter-stat">
-                <strong>{limite}</strong>
-                <span>Por lote</span>
-              </div>
-            </div>
-
             <div className="pesquisa-filter-group">
               <div className="pesquisa-filter-title">Orçamento Máximo (€)</div>
               <input type="number" min="0" className="pesquisa-filter-input" placeholder="Ex: 120000" value={filtros.precoMax} onChange={(e) => setFiltros(f => ({ ...f, precoMax: e.target.value }))} />
@@ -681,7 +663,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
 
             {/* ── BANNER CTA ── */}
             {/* Remove esta linha e substitui por {!user && <BannerCTA tipo={tipoSeguro} origem={location.pathname} />} se tiveres contexto de autenticação */}
-            <BannerCTA tipo={tipoSeguro} origem={location.pathname} />
+            {tipoSeguro === 'imovel' && <BannerCTA tipo={tipoSeguro} origem={location.pathname} />}
 
             <div className="pesquisa-topbar">
               <div className="pesquisa-results-count">{loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} registos`}</div>

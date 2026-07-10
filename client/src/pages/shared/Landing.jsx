@@ -2,441 +2,266 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '@mdi/react';
 import {
-  mdiArrowRight, mdiCarSports, mdiHomeCityOutline, mdiShieldCheckOutline,
-  mdiCheckCircleOutline, mdiMagnify, mdiCardSearchOutline
+  mdiArrowRight, mdiCarSports, mdiShieldCheckOutline, mdiCardSearchOutline,
+  mdiCheckCircleOutline, mdiHomeCityOutline
 } from '@mdi/js';
+import { useAuth } from '../../context/AuthContext';
 import NavbarLanding from './NavbarLanding';
 import Footer from '../../components/Footer';
 
-const mundos = [
-  {
-    id: 'estate',
-    label: 'Estate',
-    title: 'Casas com leitura clara',
-    desc: 'Pesquisa por zona, preco e tipologia com uma apresentacao limpa para decidir mais depressa.',
-    cta: 'Explorar Estate',
-    route: '/imoveis',
-    color: '#3ecf8e',
-    icon: mdiHomeCityOutline,
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1300&q=86',
-  },
-  {
-    id: 'drive',
-    label: 'Drive',
-    title: 'Carros sem ruido',
-    desc: 'Marca, modelo, km, combustivel e contacto reunidos numa experiencia direta e visual.',
-    cta: 'Explorar Drive',
-    route: '/carros',
-    color: '#2ac1b4',
-    icon: mdiCarSports,
-    image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1300&q=86',
-  },
-];
-
 export default function Landing() {
   const navigate = useNavigate();
+  const { signed } = useAuth();
+
+  const publicarAnuncio = () => {
+    if (signed) {
+      navigate('/publicar');
+      return;
+    }
+    navigate('/login', { state: { from: '/publicar' } });
+  };
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
-
         *, *::before, *::after { box-sizing: border-box; }
 
         .lp-root {
-          --lp-bg: #040711;
-          --lp-panel: rgba(255,255,255,0.08);
-          --lp-panel-strong: rgba(255,255,255,0.12);
-          --lp-border: rgba(255,255,255,0.16);
-          --lp-muted: rgba(248,250,252,0.68);
           min-height: 100vh;
-          background: var(--lp-bg);
-          color: #f8fafc;
+          background: #ffffff;
+          color: #0f172a;
           font-family: 'Inter', sans-serif;
-          overflow: hidden;
-        }
-
-        .lp-root .nl-root {
-          background: rgba(4,7,17,0.82);
-          border-bottom-color: rgba(255,255,255,0.1);
-          backdrop-filter: blur(18px);
-        }
-        .lp-root .nl-btn-ghost,
-        .lp-root .nl-user-trigger {
-          background: rgba(255,255,255,0.08);
-          border-color: rgba(255,255,255,0.16);
-          color: #f8fafc;
-        }
-        .lp-root .nl-btn-ghost:hover,
-        .lp-root .nl-user-trigger:hover,
-        .lp-root .nl-user-trigger.active {
-          background: rgba(255,255,255,0.13);
-          border-color: rgba(255,255,255,0.28);
-        }
-        .lp-root .nl-btn-solid {
-          background: #f8fafc;
-          color: #040711;
-        }
-        .lp-root .nl-username,
-        .lp-root .nl-avatar-initial { color: #f8fafc; }
-
-        .lp-hero {
-          position: relative;
-          min-height: min(760px, calc(100vh - 80px));
-          display: flex;
-          align-items: end;
-          padding: 96px 24px 42px;
-          overflow: hidden;
-        }
-        .lp-hero::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background-image:
-            linear-gradient(90deg, rgba(4,7,17,0.92), rgba(4,7,17,0.54) 54%, rgba(4,7,17,0.22)),
-            linear-gradient(180deg, rgba(4,7,17,0.18), #040711 98%),
-            url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1900&q=88');
-          background-size: cover;
-          background-position: center;
-          transform: scale(1.01);
         }
         .lp-shell {
           width: 100%;
           max-width: 1180px;
           margin: 0 auto;
-          position: relative;
-          z-index: 2;
+          padding: 0 24px;
+        }
+        .lp-hero {
+          padding: 72px 0 52px;
+          background:
+            linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+          border-bottom: 1px solid #e2e8f0;
         }
         .lp-hero-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) 390px;
-          gap: 28px;
-          align-items: end;
+          grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1fr);
+          gap: 40px;
+          align-items: center;
         }
         .lp-kicker {
           display: inline-flex;
           align-items: center;
-          gap: 9px;
-          border: 1px solid var(--lp-border);
-          background: rgba(255,255,255,0.08);
-          backdrop-filter: blur(14px);
+          gap: 8px;
+          color: #0f766e;
+          background: #f0fdfa;
+          border: 1px solid #ccfbf1;
           border-radius: 999px;
-          padding: 9px 13px;
-          color: rgba(248,250,252,0.86);
+          padding: 8px 12px;
           font-size: 12px;
           font-weight: 900;
-          letter-spacing: .1em;
           text-transform: uppercase;
+          letter-spacing: .1em;
           margin-bottom: 18px;
         }
         .lp-hero h1 {
           font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: clamp(54px, 9vw, 116px);
-          line-height: .88;
+          font-size: clamp(44px, 7vw, 88px);
+          line-height: .94;
           margin: 0;
           letter-spacing: 0;
         }
         .lp-hero-copy {
-          max-width: 640px;
-          margin: 24px 0 0;
-          color: rgba(248,250,252,0.78);
+          color: #475569;
           font-size: clamp(16px, 2vw, 20px);
           line-height: 1.65;
+          max-width: 610px;
+          margin: 22px 0 0;
         }
         .lp-actions {
           display: flex;
-          flex-wrap: wrap;
           gap: 12px;
-          margin-top: 32px;
+          flex-wrap: wrap;
+          margin-top: 30px;
         }
         .lp-btn {
-          border: 1px solid transparent;
-          border-radius: 8px;
           min-height: 52px;
+          border-radius: 8px;
+          border: 1px solid transparent;
           padding: 0 18px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           gap: 9px;
-          font-size: 14px;
           font-weight: 900;
+          font-size: 14px;
           cursor: pointer;
-          transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+          transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
         }
         .lp-btn:hover { transform: translateY(-2px); }
-        .lp-btn-estate {
-          background: #3ecf8e;
-          color: #020617;
-          box-shadow: 0 18px 36px -24px rgba(62,207,142,0.95);
-        }
         .lp-btn-drive {
-          background: rgba(42,193,180,0.16);
-          color: #e6fffb;
-          border-color: rgba(42,193,180,0.38);
-          backdrop-filter: blur(14px);
+          background: #2ac1b4;
+          color: #020617;
+          box-shadow: 0 18px 36px -26px rgba(42,193,180,0.8);
         }
-
-        .lp-snapshot {
-          background: rgba(4,7,17,0.5);
-          border: 1px solid var(--lp-border);
+        .lp-btn-light {
+          background: #ffffff;
+          color: #0f172a;
+          border-color: #cbd5e1;
+        }
+        .lp-hero-media {
+          position: relative;
+          min-height: 450px;
           border-radius: 8px;
-          padding: 16px;
-          backdrop-filter: blur(20px);
-          box-shadow: 0 24px 70px -38px rgba(0,0,0,0.9);
+          overflow: hidden;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 28px 70px -48px rgba(15,23,42,0.5);
+          background: #e2e8f0;
         }
-        .lp-snapshot h2 {
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 18px;
-          margin: 0 0 14px;
+        .lp-hero-media img {
+          width: 100%;
+          height: 100%;
+          min-height: 450px;
+          display: block;
+          object-fit: cover;
         }
-        .lp-snapshot-row {
-          display: grid;
-          grid-template-columns: 42px minmax(0, 1fr);
-          gap: 12px;
+        .lp-media-label {
+          position: absolute;
+          left: 18px;
+          bottom: 18px;
+          display: inline-flex;
           align-items: center;
-          padding: 12px;
-          border-radius: 8px;
-          background: rgba(255,255,255,0.07);
-          border: 1px solid rgba(255,255,255,0.12);
+          gap: 8px;
+          background: rgba(255,255,255,0.92);
+          border: 1px solid rgba(255,255,255,0.8);
+          border-radius: 999px;
+          padding: 10px 13px;
+          color: #0f172a;
+          font-size: 12px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: .08em;
         }
-        .lp-snapshot-row + .lp-snapshot-row { margin-top: 10px; }
-        .lp-snapshot-icon {
-          width: 42px;
-          height: 42px;
+        .lp-strip {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+          margin-top: 24px;
+        }
+        .lp-strip-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          border: 1px solid #e2e8f0;
+          background: #ffffff;
           border-radius: 8px;
+          padding: 14px;
+          color: #334155;
+          font-size: 13px;
+          font-weight: 800;
+        }
+        .lp-strip-icon {
+          width: 34px;
+          height: 34px;
+          border-radius: 8px;
+          background: #ccfbf1;
+          color: #0f766e;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #020617;
+          flex-shrink: 0;
         }
-        .lp-snapshot strong {
-          display: block;
-          color: #ffffff;
-          font-size: 14px;
-          line-height: 1.2;
-        }
-        .lp-snapshot span {
-          display: block;
-          margin-top: 4px;
-          color: var(--lp-muted);
-          font-size: 12px;
-          line-height: 1.45;
-        }
-
         .lp-section {
-          position: relative;
-          padding: 76px 24px;
+          padding: 68px 0;
         }
-        .lp-section.compact { padding-top: 34px; }
-        .lp-section-head {
-          display: flex;
-          align-items: end;
-          justify-content: space-between;
-          gap: 24px;
-          margin-bottom: 24px;
+        .lp-section.alt {
+          background: #f8fafc;
+          border-top: 1px solid #e2e8f0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .lp-section-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 390px;
+          gap: 34px;
+          align-items: center;
         }
         .lp-eyebrow {
           display: block;
-          margin-bottom: 10px;
-          color: #3ecf8e;
+          color: #0f766e;
           font-size: 12px;
           font-weight: 900;
           text-transform: uppercase;
           letter-spacing: .12em;
+          margin-bottom: 10px;
         }
         .lp-title {
           font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: clamp(30px, 5vw, 54px);
-          line-height: 1;
+          font-size: clamp(30px, 5vw, 50px);
+          line-height: 1.04;
           margin: 0;
           letter-spacing: 0;
         }
-        .lp-section-copy {
-          max-width: 440px;
-          margin: 0;
-          color: var(--lp-muted);
-          line-height: 1.65;
-          font-size: 15px;
-        }
-
-        .lp-worlds {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 16px;
-        }
-        .lp-world {
-          position: relative;
-          min-height: 390px;
-          overflow: hidden;
-          border-radius: 8px;
-          border: 1px solid var(--lp-border);
-          background: rgba(255,255,255,0.06);
-          cursor: pointer;
-          isolation: isolate;
-        }
-        .lp-world img {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transform: scale(1.02);
-          transition: transform .6s cubic-bezier(.16,1,.3,1);
-          z-index: -2;
-        }
-        .lp-world::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(180deg, rgba(4,7,17,0.08), rgba(4,7,17,0.86));
-          z-index: -1;
-        }
-        .lp-world:hover img { transform: scale(1.07); }
-        .lp-world-body {
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          padding: 26px;
-        }
-        .lp-world-label {
-          width: fit-content;
-          display: inline-flex;
-          align-items: center;
-          gap: 7px;
-          border-radius: 999px;
-          padding: 8px 11px;
-          margin-bottom: 14px;
-          color: #020617;
-          font-size: 11px;
-          font-weight: 900;
-          letter-spacing: .08em;
-          text-transform: uppercase;
-        }
-        .lp-world h3 {
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: clamp(24px, 4vw, 36px);
-          line-height: 1.05;
-          margin: 0 0 10px;
-        }
-        .lp-world p {
-          margin: 0 0 20px;
-          color: rgba(248,250,252,0.78);
-          line-height: 1.58;
-          max-width: 440px;
-        }
-        .lp-world-cta {
-          width: fit-content;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          color: #ffffff;
-          font-size: 13px;
-          font-weight: 900;
-        }
-
-        .lp-carvertical {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) 390px;
-          gap: 30px;
-          align-items: center;
-          padding: 34px;
-          border-radius: 8px;
-          border: 1px solid rgba(42,193,180,0.28);
-          background:
-            linear-gradient(135deg, rgba(42,193,180,0.16), rgba(62,207,142,0.07)),
-            rgba(255,255,255,0.07);
-          backdrop-filter: blur(18px);
-          box-shadow: 0 26px 70px -48px rgba(42,193,180,0.8);
-        }
-        .lp-carvertical h2 {
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: clamp(28px, 4vw, 46px);
-          line-height: 1.04;
-          margin: 0 0 14px;
-        }
-        .lp-carvertical p {
-          max-width: 620px;
-          margin: 0;
-          color: rgba(248,250,252,0.76);
+        .lp-copy {
+          max-width: 640px;
+          margin: 16px 0 0;
+          color: #475569;
           line-height: 1.65;
           font-size: 15px;
         }
         .lp-carvertical-logo {
           min-height: 190px;
+          border: 1px solid #e2e8f0;
+          background: #ffffff;
+          border-radius: 8px;
+          padding: 28px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 8px;
-          background: rgba(255,255,255,0.92);
-          border: 1px solid rgba(255,255,255,0.75);
-          padding: 28px;
+          box-shadow: 0 20px 50px -42px rgba(15,23,42,0.5);
         }
         .lp-carvertical-logo img {
-          width: min(100%, 300px);
+          width: min(100%, 310px);
           height: auto;
           display: block;
         }
-
         .lp-final {
           display: grid;
           grid-template-columns: minmax(0, 1fr) auto;
-          gap: 24px;
+          gap: 22px;
           align-items: center;
-          padding: 28px;
+          border: 1px solid #e2e8f0;
           border-radius: 8px;
-          border: 1px solid var(--lp-border);
-          background: rgba(255,255,255,0.08);
-          backdrop-filter: blur(18px);
+          padding: 28px;
+          background: #ffffff;
+          box-shadow: 0 20px 50px -42px rgba(15,23,42,0.5);
         }
         .lp-final h2 {
           font-family: 'Plus Jakarta Sans', sans-serif;
+          margin: 0 0 8px;
           font-size: clamp(24px, 4vw, 38px);
           line-height: 1.08;
-          margin: 0 0 10px;
         }
         .lp-final p {
           margin: 0;
-          color: var(--lp-muted);
+          color: #475569;
           line-height: 1.6;
         }
-        .lp-mini-list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 9px;
-          margin-top: 18px;
-        }
-        .lp-mini-list span {
-          display: inline-flex;
-          align-items: center;
-          gap: 7px;
-          border: 1px solid rgba(255,255,255,0.16);
-          background: rgba(255,255,255,0.06);
-          border-radius: 999px;
-          padding: 8px 10px;
-          color: rgba(248,250,252,0.84);
-          font-size: 12px;
-          font-weight: 800;
-        }
-
         @media (max-width: 920px) {
-          .lp-hero { min-height: auto; padding-top: 82px; }
           .lp-hero-grid,
-          .lp-carvertical,
+          .lp-section-grid,
           .lp-final { grid-template-columns: 1fr; }
-          .lp-snapshot { max-width: 560px; }
-          .lp-section-head { align-items: start; flex-direction: column; }
-          .lp-worlds { grid-template-columns: 1fr; }
+          .lp-hero-media, .lp-hero-media img { min-height: 320px; }
+          .lp-strip { grid-template-columns: 1fr; }
           .lp-final .lp-btn { width: 100%; }
         }
         @media (max-width: 560px) {
-          .lp-hero { padding: 70px 18px 34px; }
+          .lp-shell { padding: 0 18px; }
+          .lp-hero { padding: 48px 0 42px; }
           .lp-actions { flex-direction: column; }
           .lp-btn { width: 100%; }
-          .lp-section { padding: 56px 18px; }
-          .lp-carvertical, .lp-final { padding: 22px; }
-          .lp-world { min-height: 330px; }
-          .lp-world-body { padding: 22px; }
+          .lp-section { padding: 52px 0; }
         }
       `}</style>
 
@@ -444,85 +269,51 @@ export default function Landing() {
         <NavbarLanding />
 
         <section className="lp-hero">
-          <div className="lp-shell lp-hero-grid">
-            <div>
-              <div className="lp-kicker">
-                <Icon path={mdiShieldCheckOutline} size={0.72} />
-                Mercado premium para comprar melhor
-              </div>
-              <h1>NOXVELIA</h1>
-              <p className="lp-hero-copy">
-                Imoveis e automoveis numa experiencia simples, visual e direta. Menos ruido, melhor leitura, contacto mais rapido.
-              </p>
-              <div className="lp-actions">
-                <button className="lp-btn lp-btn-estate" onClick={() => navigate('/imoveis')}>
-                  NOXVELIA Estate <Icon path={mdiArrowRight} size={0.78} />
-                </button>
-                <button className="lp-btn lp-btn-drive" onClick={() => navigate('/carros')}>
-                  NOXVELIA Drive <Icon path={mdiCarSports} size={0.82} />
-                </button>
-              </div>
-            </div>
-
-            <aside className="lp-snapshot" aria-label="Resumo NOXVELIA">
-              <h2>O essencial, logo a frente.</h2>
-              <div className="lp-snapshot-row">
-                <span className="lp-snapshot-icon" style={{ background: '#3ecf8e' }}><Icon path={mdiHomeCityOutline} size={0.9} /></span>
-                <div><strong>Estate</strong><span>Casas e apartamentos organizados por contexto real.</span></div>
-              </div>
-              <div className="lp-snapshot-row">
-                <span className="lp-snapshot-icon" style={{ background: '#2ac1b4' }}><Icon path={mdiCarSports} size={0.9} /></span>
-                <div><strong>Drive</strong><span>Viaturas com dados claros para comparar sem esforco.</span></div>
-              </div>
-            </aside>
-          </div>
-        </section>
-
-        <section className="lp-section compact">
           <div className="lp-shell">
-            <div className="lp-section-head">
+            <div className="lp-hero-grid">
               <div>
-                <span className="lp-eyebrow">Escolhe a vertical</span>
-                <h2 className="lp-title">Dois caminhos. Uma leitura limpa.</h2>
-              </div>
-              <p className="lp-section-copy">
-                A plataforma foca-se no que interessa: bons anuncios, informacao sem duplicacao e perfis de vendedor mais completos.
-              </p>
-            </div>
-
-            <div className="lp-worlds">
-              {mundos.map((mundo) => (
-                <article className="lp-world" key={mundo.id} onClick={() => navigate(mundo.route)}>
-                  <img src={mundo.image} alt={mundo.label} />
-                  <div className="lp-world-body">
-                    <span className="lp-world-label" style={{ background: mundo.color }}>
-                      <Icon path={mundo.icon} size={0.72} /> {mundo.label}
-                    </span>
-                    <h3>{mundo.title}</h3>
-                    <p>{mundo.desc}</p>
-                    <span className="lp-world-cta">
-                      {mundo.cta} <Icon path={mdiArrowRight} size={0.74} />
-                    </span>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="lp-section">
-          <div className="lp-shell">
-            <div className="lp-carvertical">
-              <div>
-                <span className="lp-eyebrow">Parceria Drive</span>
-                <h2>Verifica o historico do teu carro antes de comprar.</h2>
-                <p>
-                  A parceria com a CarVertical reforca a confianca no processo de compra: mais contexto sobre a viatura, menos surpresas depois da decisao.
+                <div className="lp-kicker">
+                  <Icon path={mdiCarSports} size={0.72} /> NOXVELIA Drive
+                </div>
+                <h1>Compra e vende carros com menos ruido.</h1>
+                <p className="lp-hero-copy">
+                  Pesquisa direta, cards limpos, dados essenciais e perfis de vendedor mais claros para decidir sem perder tempo.
                 </p>
+                <div className="lp-actions">
+                  <button className="lp-btn lp-btn-drive" onClick={() => navigate('/carros')}>
+                    Explorar Drive <Icon path={mdiArrowRight} size={0.78} />
+                  </button>
+                  <button className="lp-btn lp-btn-light" onClick={publicarAnuncio}>
+                    Publicar Anuncio <Icon path={mdiArrowRight} size={0.78} />
+                  </button>
+                </div>
               </div>
-              <div className="lp-carvertical-logo">
-                <img src="/carvertical-logo.png" alt="CarVertical" />
+
+              <div className="lp-hero-media">
+                <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1300&q=86" alt="NOXVELIA Drive" />
+                <div className="lp-media-label"><Icon path={mdiShieldCheckOutline} size={0.7} /> Drive em destaque</div>
               </div>
+            </div>
+
+            <div className="lp-strip">
+              <div className="lp-strip-item"><span className="lp-strip-icon"><Icon path={mdiCardSearchOutline} size={0.78} /></span>Dados essenciais sem repeticao</div>
+              <div className="lp-strip-item"><span className="lp-strip-icon"><Icon path={mdiShieldCheckOutline} size={0.78} /></span>Perfis com bio, links e contacto</div>
+              <div className="lp-strip-item"><span className="lp-strip-icon"><Icon path={mdiCheckCircleOutline} size={0.78} /></span>Pesquisa rapida em grelha ou mapa</div>
+            </div>
+          </div>
+        </section>
+
+        <section className="lp-section alt">
+          <div className="lp-shell lp-section-grid">
+            <div>
+              <span className="lp-eyebrow">Parceria CarVertical</span>
+              <h2 className="lp-title">Verifica o historico do carro antes de comprar.</h2>
+              <p className="lp-copy">
+                A NOXVELIA Drive destaca a verificacao de historico para apoiar decisoes mais informadas antes do contacto ou visita.
+              </p>
+            </div>
+            <div className="lp-carvertical-logo">
+              <img src="/carvertical-logo.png" alt="CarVertical" />
             </div>
           </div>
         </section>
@@ -531,16 +322,12 @@ export default function Landing() {
           <div className="lp-shell">
             <div className="lp-final">
               <div>
-                <h2>Publica com presenca cuidada.</h2>
-                <p>Perfil publico com bio, links e anuncios com dados claros para quem compra.</p>
-                <div className="lp-mini-list">
-                  <span><Icon path={mdiCheckCircleOutline} size={0.62} /> Bio publica</span>
-                  <span><Icon path={mdiMagnify} size={0.62} /> Pesquisa direta</span>
-                  <span><Icon path={mdiCardSearchOutline} size={0.62} /> Cards limpos</span>
-                </div>
+                <span className="lp-eyebrow">Tambem disponivel</span>
+                <h2>Estate continua a um clique.</h2>
+                <p>Se procuras imoveis, podes alternar para a vertical Estate quando quiseres.</p>
               </div>
-              <button className="lp-btn lp-btn-estate" onClick={() => navigate('/publicar')}>
-                Publicar anuncio <Icon path={mdiArrowRight} size={0.78} />
+              <button className="lp-btn lp-btn-light" onClick={() => navigate('/imoveis')}>
+                Explorar Estate <Icon path={mdiHomeCityOutline} size={0.78} />
               </button>
             </div>
           </div>

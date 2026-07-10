@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
+import ProfileView, { obterLinksVisiveisPerfil } from './ProfileView';
 import Icon from '@mdi/react';
 import {
   mdiCheckDecagram, mdiWhatsapp, mdiPhone, mdiMapMarker, mdiEmailOutline,
@@ -54,6 +55,7 @@ export default function PerfilPublico() {
   const [anuncios, setAnuncios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
+  const [linkCopiado, setLinkCopiado] = useState(false);
 
   useEffect(() => {
     let ativo = true;
@@ -74,6 +76,13 @@ export default function PerfilPublico() {
     carregarMontra();
     return () => { ativo = false; };
   }, [id]);
+
+  const copiarLinkMontra = () => {
+    const link = window.location.href;
+    navigator.clipboard.writeText(link);
+    setLinkCopiado(true);
+    setTimeout(() => setLinkCopiado(false), 2000);
+  };
 
   if (loading) {
     return (
@@ -100,19 +109,19 @@ export default function PerfilPublico() {
     : vendedor?.nome;
   const isProfissional = vendedor?.tipoConta === 'profissional' || isAdmin;
   const telefoneLimpo = vendedor?.telefone?.replace(/\D/g, '');
-  const linksPerfilVisiveis = obterLinksVisiveis(vendedor);
+  const linksPerfilVisiveis = obterLinksVisiveisPerfil(vendedor);
 
   return (
     <>
       <style>{`
         .pp-root { background: #f8fafc; min-height: calc(100vh - 80px); font-family: 'Inter', sans-serif; color: #0f172a; padding-bottom: 80px; }
-        .pp-hero { position: relative; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 36px 24px 80px; margin-bottom: 48px; overflow: hidden; }
-        .pp-cover { position: absolute; inset: 0 0 auto 0; height: 270px; background: linear-gradient(135deg, #0f172a, #2563eb); overflow: hidden; }
+        .pp-hero { position: relative; background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 36px 24px 20px; margin-bottom: 48px; overflow: hidden; }
+        .pp-cover { display: none; }
         .pp-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .pp-cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,42,0.42), rgba(15,23,42,0.22) 45%, rgba(248,250,252,0.95)); }
         .pp-hero-content { max-width: 1200px; margin: 0 auto; position: relative; z-index: 2; }
-        .pp-back { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #ffffff; text-decoration: none; cursor: pointer; background: none; border: none; padding: 0; margin-bottom: 40px; transition: color 0.2s; text-shadow: 0 1px 2px rgba(15, 23, 42, 0.35); }
-        .pp-back:hover { color: #e0f2fe; }
+        .pp-back { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; text-decoration: none; cursor: pointer; background: none; border: none; padding: 0; margin-bottom: 24px; transition: color 0.2s; }
+        .pp-back:hover { color: #0f172a; }
         .pp-user-section { display: flex; align-items: flex-start; gap: 40px; background: #ffffff; border: 1px solid #e2e8f0; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); margin-top: 86px; }
         .pp-avatar { width: 140px; height: 140px; border-radius: 24px; background: #f1f5f9; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 48px; font-weight: 800; color: #0f172a; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); flex-shrink: 0; }
         .pp-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -155,6 +164,17 @@ export default function PerfilPublico() {
           <div className="pp-hero-content">
             <button onClick={() => navigate(-1)} className="pp-back">Voltar atras</button>
 
+            <ProfileView
+              user={vendedor}
+              isOwner={false}
+              totalImoveis={anuncios.filter((anuncio) => anuncio.tipo === 'imovel').length}
+              totalCarros={anuncios.filter((anuncio) => anuncio.tipo === 'carro').length}
+              links={linksPerfilVisiveis}
+              onShare={copiarLinkMontra}
+              linkCopiado={linkCopiado}
+            />
+
+            {false && (
             <div className="pp-user-section">
               <div className="pp-avatar">
                 {vendedor?.avatarUrl ? <img src={vendedor.avatarUrl} alt={nomeExibicao} /> : inicial}
@@ -217,6 +237,7 @@ export default function PerfilPublico() {
                 )}
               </div>
             </div>
+            )}
           </div>
         </div>
 

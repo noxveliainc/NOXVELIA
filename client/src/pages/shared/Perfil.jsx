@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import AnuncioCard from '../../pages/shared/AnuncioCard';
+import ProfileView, { obterLinksVisiveisPerfil } from './ProfileView';
 import Icon from '@mdi/react';
 import { 
   mdiCheckDecagram, mdiChartBar, mdiShareVariantOutline, mdiDomain, 
@@ -293,7 +294,7 @@ export default function Perfil() {
   const anunciosFiltrados = anuncios.filter(a => a.tipo === abaActiva);
   const totalImoveis = anuncios.filter(a => a.tipo === 'imovel').length;
   const totalCarros = anuncios.filter(a => a.tipo === 'carro').length;
-  const linksPerfilVisiveis = obterLinksVisiveis(utilizador);
+  const linksPerfilVisiveis = obterLinksVisiveisPerfil(utilizador);
 
   if (loading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}><div className="nx-spinner" style={{ borderColor: 'rgba(42, 193, 180, 0.2)', borderTopColor: '#2ac1b4' }} /></div>;
 
@@ -588,7 +589,27 @@ export default function Perfil() {
             <Icon path={mdiChevronLeft} size={0.7} /> {labelVoltar}
           </button>
 
+          <ProfileView
+            user={utilizador}
+            isOwner
+            totalImoveis={totalImoveis}
+            totalCarros={totalCarros}
+            links={linksPerfilVisiveis}
+            onEditProfile={abrirEdicaoPerfil}
+            onShare={copiarLinkMontra}
+            onLogout={handleLogout}
+            onUpgrade={() => setMostrarModalEvolucao(true)}
+            onAvatarChange={handleAvatarChange}
+            onCapaChange={handleCapaChange}
+            fileInputAvatarRef={fileInputAvatarRef}
+            fileInputCapaRef={fileInputCapaRef}
+            uploadingAvatar={uploadingAvatar}
+            uploadingCapa={uploadingCapa}
+            linkCopiado={linkCopiado}
+          />
+
           {/* NOVO CABEÇALHO DO PERFIL COM CAPA E BIO */}
+          {false && (
           <div className="perfil-header">
             {/* Secção da Capa */}
             <div className="perfil-capa" onClick={() => fileInputCapaRef.current?.click()}>
@@ -700,6 +721,8 @@ export default function Perfil() {
               </div>
             </div>
           </div>
+
+          )}
 
           <div className="tabs-row">
             <button className={`tab-btn${abaActiva === 'imovel' ? ' active-imovel' : ''}`} onClick={() => setAbaActiva('imovel')}>

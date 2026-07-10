@@ -423,9 +423,9 @@ export default function Anuncio() {
         .spec-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
         .spec-value { font-size: 15px; font-weight: 700; color: #0f172a; text-transform: capitalize; }
 
-        .extras-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 10px; }
-        .extra-item { display: flex; align-items: center; gap: 9px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 9px; padding: 11px 14px; font-size: 13px; font-weight: 600; color: #334155; animation: nx-rise .35s ease backwards; }
-        .extra-check { color: ${accent}; flex-shrink: 0; }
+        .extras-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+        .extra-item { display: flex; align-items: center; gap: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; font-size: 13px; font-weight: 700; color: #334155; line-height: 1.35; animation: nx-rise .35s ease backwards; box-shadow: 0 12px 28px -24px rgba(15,23,42,0.35); }
+        .extra-check { width: 28px; height: 28px; border-radius: 8px; background: rgba(42,193,180,0.1); color: ${accent}; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
         .desc-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; margin-top: 4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
         .desc-head { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 16px; display: flex; align-items: center; gap: 7px; }
