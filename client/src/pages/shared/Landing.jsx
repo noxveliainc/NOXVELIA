@@ -727,7 +727,7 @@ export default function Landing() {
             <div className="lp-estate-band">
               <div>
                 <span className="lp-eyebrow">NOXVELIA Estate</span>
-                <h2 className="lp-title">Mais Drive, sem deixar o Estate para trás.</h2>
+                <h2 className="lp-title">Explora também a Noxvelia Estate .</h2>
                 <p className="lp-copy">
                   O foco visual está no Drive, mas a procura por casa continua com uma experiência cuidada: localização, área, tipologia e contacto aparecem com a mesma prioridade.
                 </p>
