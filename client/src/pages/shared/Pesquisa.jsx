@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
 import MapaResultados from '../../components/imoveis/MapaResultados';
@@ -7,8 +7,7 @@ import useDebounce from '../../hooks/useDebounce';
 import Icon from '@mdi/react';
 import {
   mdiMap, mdiViewGrid, mdiMagnify, mdiLoading, mdiFilterVariant, mdiChevronLeft,
-  mdiChevronRight, mdiTuneVariant, mdiChartTimelineVariant, mdiShieldCheckOutline,
-  mdiCloseCircleOutline
+  mdiChevronRight, mdiChartTimelineVariant, mdiShieldCheckOutline, mdiCloseCircleOutline
 } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
@@ -371,7 +370,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
         .pesquisa-mobile-filter-btn { display: none; align-items: center; gap: 6px; padding: 0 18px; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: var(--nx-radius-md); color: var(--nx-text); font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
         .pesquisa-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .pesquisa-results-count { font-family: var(--nx-font-display); font-size: 18px; font-weight: 700; color: var(--nx-text); }
+        .pesquisa-results-count { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 900; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 999px; padding: 8px 11px; text-transform: uppercase; letter-spacing: .06em; }
         .pesquisa-sort { border: 1px solid #e2e8f0; background: #ffffff; border-radius: 12px; padding: 10px 34px 10px 12px; font-family: var(--nx-font-body); font-size: 13px; font-weight: 800; color: var(--nx-text); cursor: pointer; outline: none; }
         .pesquisa-active-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: -8px 0 22px; min-height: 34px; }
         .pesquisa-active-chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #dbeafe; background: #eff6ff; color: #2563eb; border-radius: 999px; padding: 8px 11px; font-size: 12px; font-weight: 800; }
@@ -606,6 +605,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
           </button>
 
           <main className="pesquisa-main-content">
+            {false && (
             <section className="pesquisa-command">
               <div>
                 <div className="pesquisa-command-kicker">
@@ -625,6 +625,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
                 </div>
               </div>
             </section>
+            )}
 
             <div className="pesquisa-search-row">
               <button type="button" className="pesquisa-mobile-filter-btn" onClick={() => setSidebarMobileAberta(true)}>
@@ -663,8 +664,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
 
             {/* ── BANNER CTA ── */}
             {/* Remove esta linha e substitui por {!user && <BannerCTA tipo={tipoSeguro} origem={location.pathname} />} se tiveres contexto de autenticação */}
-            {tipoSeguro === 'imovel' && <BannerCTA tipo={tipoSeguro} origem={location.pathname} />}
-
             <div className="pesquisa-topbar">
               <div className="pesquisa-results-count">{loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} registos`}</div>
               <div className="pesquisa-view-tools">

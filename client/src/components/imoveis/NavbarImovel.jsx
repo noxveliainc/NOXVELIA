@@ -198,6 +198,8 @@ export default function NavbarImovel() {
         .nim-btn-login { display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; color: #0f172a; font-size: 13px; font-weight: 600; padding: 9px 20px; text-decoration: none; }
 
         .nim-burger-btn { display: none; background: none; border: none; color: #475569; cursor: pointer; padding: 6px; align-items: center; justify-content: center; }
+        .nim-burger-btn.with-avatar { padding: 3px; border: 1px solid #e2e8f0; border-radius: 999px; background: #ffffff; box-shadow: 0 8px 18px -16px rgba(15,23,42,0.5); }
+        .nim-burger-btn.with-avatar .nim-avatar { width: 34px; height: 34px; }
         .nim-mobile-drawer { position: fixed; inset: 0; z-index: 9999; pointer-events: none; visibility: hidden; }
         .nim-mobile-drawer.active { visibility: visible; pointer-events: auto; }
         .nim-drawer-overlay { position: absolute; inset: 0; background: rgba(4, 7, 17, 0.4); opacity: 0; backdrop-filter: blur(4px); transition: opacity 0.3s ease; pointer-events: none; }
@@ -326,8 +328,12 @@ export default function NavbarImovel() {
         </div>
 
         {/* 🌟 MOBILE BURGER BUTTON */}
-        <button type="button" className="nim-burger-btn" onClick={() => setMenuMobileAberto(true)}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        <button type="button" className={`nim-burger-btn${signed ? ' with-avatar' : ''}`} onClick={() => setMenuMobileAberto(true)} aria-label="Abrir menu">
+          {signed ? (
+            <div className="nim-avatar">{avatarImg ? <img src={avatarImg} alt="Perfil" /> : <span className="nim-avatar-initial">{inicial}</span>}</div>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          )}
         </button>
 
         {/* 🌟 MOBILE DRAWER (GAVETA NATIVA) */}

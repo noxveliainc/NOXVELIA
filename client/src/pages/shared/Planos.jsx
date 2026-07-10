@@ -32,6 +32,20 @@ export default function Planos() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  useEffect(() => {
+    const idUtilizador = user?._id || user?.id;
+    if (!idUtilizador) return;
+
+    let ativo = true;
+    setASincronizar(true);
+    sincronizarUser().finally(() => {
+      if (ativo) setASincronizar(false);
+    });
+
+    return () => { ativo = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?._id, user?.id]);
+
   const iniciarAssinatura = async () => {
     setLoadingStripe(true);
     try {

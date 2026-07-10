@@ -232,7 +232,9 @@ router.get('/vendedor/:id', async (req, res) => {
       'nome email telefone localidade avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo rating totalAvaliacoes createdAt'
     );
     if (!vendedor) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
-    const anuncios = await Anuncio.find({ utilizador: req.params.id }).sort({ createdAt: -1 });
+    const anuncios = await Anuncio.find({ utilizador: req.params.id })
+      .sort({ createdAt: -1 })
+      .populate('utilizador', 'nome avatarUrl tipo premiumAtivo');
     res.json({ vendedor, anuncios });
   } catch (erro) {
     res.status(500).json({ erro: 'Erro ao carregar montra do vendedor.' });

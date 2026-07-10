@@ -208,7 +208,11 @@ export default function Publicar() {
       };
 
       const res = await api.post('/anuncios', payload);
-      navigate('/sucesso/' + res.data._id);
+      if (user?.premiumAtivo === true || user?.tipo === 'admin') {
+        navigate('/anuncio/' + res.data._id, { replace: true });
+      } else {
+        navigate('/sucesso/' + res.data._id);
+      }
 
     } catch (err) {
       if (err.response?.data?.erro === 'LIMITE_ATINGIDO') {

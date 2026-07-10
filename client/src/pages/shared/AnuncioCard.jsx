@@ -5,7 +5,7 @@ import api from '../../services/api';
 import Icon from '@mdi/react';
 import { mdiStarCircle, mdiCameraOutline, mdiTrashCanOutline, mdiCheckDecagram, mdiMapMarkerOutline } from '@mdi/js';
 
-export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioEliminado }) {
+export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioEliminado, forceSellerIdentity = false }) {
   const { user, signed } = useAuth();
 
   const [eliminando, setEliminando] = useState(false);
@@ -27,7 +27,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
   const idDono   = anuncio?.utilizador?._id || anuncio?.utilizador?.id || anuncio?.utilizador;
   const idLogado = user?._id || user?.id;
-  const eMeuAnuncio = signed && ((idDono && idLogado && String(idDono) === String(idLogado)) || !!onAnuncioEliminado);
+  const eMeuAnuncio = !forceSellerIdentity && signed && ((idDono && idLogado && String(idDono) === String(idLogado)) || !!onAnuncioEliminado);
   const isPremium   = anuncio?.destacado === true;
   const isVerificado = anuncio?.utilizador?.tipo === 'admin' || anuncio?.utilizador?.premiumAtivo === true;
   const isCarro = anuncio?.tipo === 'carro';

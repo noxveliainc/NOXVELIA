@@ -248,9 +248,19 @@ export default function PerfilPublico() {
           </div>
 
           <div className="pp-grid">
-            {anuncios.map((anuncio) => (
-              <AnuncioCard key={anuncio._id} anuncio={anuncio} />
-            ))}
+            {anuncios.map((anuncio) => {
+              const utilizadorPopulado = anuncio?.utilizador && typeof anuncio.utilizador === 'object'
+                ? anuncio.utilizador
+                : vendedor;
+
+              return (
+                <AnuncioCard
+                  key={anuncio._id}
+                  anuncio={{ ...anuncio, utilizador: utilizadorPopulado }}
+                  forceSellerIdentity
+                />
+              );
+            })}
           </div>
         </div>
       </div>

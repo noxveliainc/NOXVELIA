@@ -280,9 +280,12 @@ export default function Anuncio() {
   const anoRegistoUser = donoDoAnuncio?.createdAt ? new Date(donoDoAnuncio.createdAt).getFullYear() : new Date().getFullYear();
   const vendedorVerificado = donoDoAnuncio?.tipo === 'admin';
   const referencia = anuncio._id?.slice(-6).toUpperCase();
+  const dataPublicacao = anuncio.createdAt
+    ? new Date(anuncio.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
+    : null;
   const resumoDecisao = [
-    { label: 'Localizacao', value: localizacaoString, icon: mdiMapMarkerOutline },
-    { label: isCarro ? 'Perfil' : 'Preco / m2', value: isCarro ? (anuncio.carro?.marca || 'Viatura') : (precoPorM2 || 'Sob analise'), icon: isCarro ? mdiCar : mdiRulerSquare },
+    { label: 'Localização', value: localizacaoString, icon: mdiMapMarkerOutline },
+    { label: isCarro ? 'Perfil' : 'Preço / m²', value: isCarro ? (anuncio.carro?.marca || 'Viatura') : (precoPorM2 || 'Sob análise'), icon: isCarro ? mdiCar : mdiRulerSquare },
     { label: 'Vendedor', value: vendedorVerificado ? 'Verificado' : (rating > 0 ? `${rating.toFixed(1)} estrelas` : 'Novo vendedor'), icon: mdiShieldCheckOutline },
     { label: 'Contacto', value: telefoneContacto !== 'Nao fornecido' && telefoneContacto !== 'Não fornecido' ? 'Disponivel' : 'Por mensagem', icon: mdiPhone },
   ];
@@ -314,8 +317,8 @@ export default function Anuncio() {
       </Helmet>
 
       <style>{`
-        .ano-page { background: #f8fafc; color: #0f172a; min-height: calc(100vh - 72px); padding: 28px 20px 72px; font-family: 'Inter', sans-serif; }
-        .ano-container { max-width: 1240px; margin: 0 auto; }
+        .ano-page { background: linear-gradient(180deg, #ffffff 0%, #f8fafc 34%, #ffffff 100%); color: #0f172a; min-height: calc(100vh - 72px); padding: 28px 20px 72px; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .ano-container { max-width: 1280px; margin: 0 auto; }
         .ano-breadcrumb { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
         .ano-back { display: inline-flex; align-items: center; gap: 6px; color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; text-decoration: none; transition: color .2s; }
         .ano-back:hover, .ano-back:focus-visible { color: #0f172a; }
@@ -326,10 +329,10 @@ export default function Anuncio() {
         .btn-icon.saved { color: #ef4444; background: rgba(239,68,68,.05); border-color: rgba(239,68,68,.2); }
         .toast-copy { position: absolute; top: 110%; right: 0; background: #0f172a; color: #ffffff; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 6px; white-space: nowrap; pointer-events: none; animation: nx-fade-in .2s; z-index: 20; display: flex; align-items: center; gap: 4px; }
 
-        .ano-grid { display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start; }
+        .ano-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 390px); gap: 32px; align-items: start; }
         @media (max-width: 960px) { .ano-grid { grid-template-columns: 1fr; } }
 
-        .gallery-wrap { border-radius: 18px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .gallery-wrap { border-radius: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; margin-bottom: 18px; box-shadow: 0 28px 70px -52px rgba(15,23,42,0.55); }
         .gallery-main { position: relative; aspect-ratio: 16/9; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; }
         .gallery-main img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease, opacity .3s; }
         .gallery-main:hover img { transform: scale(1.025); }
@@ -352,9 +355,9 @@ export default function Anuncio() {
         .thumb.active { border-color: ${accent}; opacity: 1; }
         .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-        .title-block { margin-bottom: 22px; }
+        .title-block { margin-bottom: 18px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 22px; box-shadow: 0 20px 50px -42px rgba(15,23,42,0.5); }
         .listing-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 4vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 5px; }
-        .listing-subtitle { font-size: 16px; color: #475569; font-weight: 500; margin-bottom: 12px; line-height: 1.4; }
+        .listing-subtitle { font-size: clamp(18px, 2vw, 24px); color: #0f172a; font-weight: 800; margin-bottom: 14px; line-height: 1.25; letter-spacing: -0.01em; }
         .meta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
         .meta-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; }
         .meta-ref { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
@@ -411,11 +414,11 @@ export default function Anuncio() {
           white-space: nowrap;
         }
 
-        .tabs-wrap { display: flex; gap: 2px; border-bottom: 1px solid #e2e8f0; margin-bottom: 22px; overflow-x: auto; scrollbar-width: none; }
+        .tabs-wrap { display: flex; gap: 4px; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 16px; padding: 5px; margin-bottom: 22px; overflow-x: auto; scrollbar-width: none; box-shadow: 0 16px 34px -30px rgba(15,23,42,0.5); }
         .tabs-wrap::-webkit-scrollbar { display: none; }
-        .tab-btn { padding: 10px 18px; background: none; border: none; border-bottom: 2px solid transparent; color: #64748b; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all .2s; letter-spacing: .01em; }
+        .tab-btn { padding: 10px 18px; background: transparent; border: none; border-radius: 11px; color: #64748b; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: all .2s; letter-spacing: .01em; }
         .tab-btn:hover { color: #0f172a; }
-        .tab-btn.active { color: ${accent}; border-bottom-color: ${accent}; }
+        .tab-btn.active { color: #020617; background: ${accent}; }
 
         .specs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
         .spec-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; transition: border-color .2s, transform .2s, box-shadow .2s; animation: nx-rise .35s ease backwards; }
@@ -433,8 +436,8 @@ export default function Anuncio() {
 
         .tab-panel { animation: nx-fade-in .35s ease; }
 
-        .sidebar-sticky { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 16px; }
-        .price-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 26px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+        .sidebar-sticky { position: sticky; top: 88px; display: flex; flex-direction: column; gap: 16px; max-height: calc(100vh - 104px); overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; scrollbar-width: thin; }
+        .price-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 22px; padding: 26px; box-shadow: 0 28px 70px -52px rgba(15,23,42,0.7); }
         .panel-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 3.5vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 4px; }
         .panel-price-m2 { font-size: 13px; color: #64748b; font-weight: 600; margin-bottom: 16px; }
 
@@ -527,6 +530,7 @@ export default function Anuncio() {
         .lightbox-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
         @media (max-width: 700px) { .lightbox-img-wrap { padding: 70px 16px; } .arrow-btn { width: 34px; height: 34px; } }
         @media (max-width: 900px) { .decision-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 960px) { .sidebar-sticky { position: static; max-height: none; overflow: visible; padding-right: 0; } }
         @media (max-width: 520px) { .decision-strip { grid-template-columns: 1fr; } }
 
         .mobile-cta-bar { display: none; }
@@ -641,6 +645,7 @@ export default function Anuncio() {
                 <div className="listing-price">{preco}</div>
                 <div className="listing-subtitle">{anuncio.titulo}</div>
                 <div className="meta-row">
+                  {dataPublicacao && <span className="meta-item"><Icon path={mdiClockOutline} size={0.65} /> Publicado em {dataPublicacao}</span>}
                   <span className="estado-badge"><span className="estado-dot" />{anuncio.estado || 'Disponível'}</span>
                   <span className="meta-item"><Icon path={mdiEyeOutline} size={0.65} /> {anuncio.visitas || 0} visualizações</span>
                   <span className="meta-dot">·</span>
