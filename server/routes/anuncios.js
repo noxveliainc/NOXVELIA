@@ -6,6 +6,18 @@ import { verificarToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
+const normalizarFiltroTexto = (valor) => String(valor || '')
+  .trim()
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace('electrico', 'eletrico');
+
+const dividirFiltroTexto = (valor) => String(valor || '')
+  .split(',')
+  .map(normalizarFiltroTexto)
+  .filter(Boolean);
+
 // ─────────────────────────────────────────────────────────────
 // HELPER: Geocoding no backend via Nominatim
 // ─────────────────────────────────────────────────────────────
@@ -48,8 +60,8 @@ router.get('/', async (req, res) => {
     if (tipo === 'carro') {
       if (marca) query['carro.marca'] = marca;
       if (modelo) query['carro.modelo'] = modelo;
-      if (combustivel) query['carro.combustivel'] = { $in: combustivel.split(',') };
-      if (transmissao) query['carro.transmissao'] = { $in: transmissao.split(',') };
+      if (combustivel) query['carro.combustivel'] = { $in: dividirFiltroTexto(combustivel) };
+      if (transmissao) query['carro.transmissao'] = { $in: dividirFiltroTexto(transmissao) };
     }
 
     if (tipo === 'imovel') {
@@ -82,12 +94,25 @@ router.get('/', async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.get('/pesquisa/mapa', async (req, res) => {
   try {
-    const { tipo, distrito, cidade, q } = req.query;
+    const {
+      tipo, distrito, cidade, q, precoMax,
+      marca, modelo, combustivel, transmissao, tipologia
+    } = req.query;
     const query = { estado: { $ne: 'apagado' } };
     if (tipo) query.tipo = tipo;
     if (distrito && distrito !== 'Todos') query['localizacao.distrito'] = distrito;
     if (cidade) query['localizacao.cidade'] = cidade;
+    if (precoMax) query.preco = { $lte: Number(precoMax) };
     if (q) query.$text = { $search: q };
+    if (tipo === 'carro') {
+      if (marca) query['carro.marca'] = marca;
+      if (modelo) query['carro.modelo'] = modelo;
+      if (combustivel) query['carro.combustivel'] = { $in: dividirFiltroTexto(combustivel) };
+      if (transmissao) query['carro.transmissao'] = { $in: dividirFiltroTexto(transmissao) };
+    }
+    if (tipo === 'imovel' && tipologia) {
+      query['imovel.tipologia'] = { $in: tipologia.split(',') };
+    }
 
     const anuncios = await Anuncio.find(query).select('_id titulo preco localizacao fotos tipo');
     res.json(anuncios);

@@ -114,24 +114,14 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
     return () => window.removeEventListener('toggle-filtros', toggleSidebar);
   }, []);
 
-  useEffect(() => {
-    if (tipoSeguro !== 'imovel') {
-      setVistaAtiva('grelha');
-    }
-  }, [tipoSeguro]);
-
   const carregarDadosMapa = useCallback(async () => {
-    if (tipoSeguro !== 'imovel') {
-      setDadosMapa([]);
-      return;
-    }
-
     try {
       const filtrosAtuais = filtrosRef.current;
       const buscaAtual = buscaRef.current;
+      const tipoFinal = filtrosAtuais.tipo || tipoSeguro;
 
       const params = new URLSearchParams();
-      params.set('tipo', 'imovel');
+      params.set('tipo', tipoFinal);
 
       if (filtrosAtuais.distrito && filtrosAtuais.distrito !== 'Todos') {
         params.set('distrito', filtrosAtuais.distrito);
@@ -147,6 +137,15 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
       }
       if (buscaAtual && buscaAtual.trim()) {
         params.set('q', buscaAtual.trim());
+      }
+      if (tipoFinal === 'carro') {
+        if (filtrosAtuais.marca) params.set('marca', filtrosAtuais.marca);
+        if (filtrosAtuais.modelo) params.set('modelo', filtrosAtuais.modelo);
+        if (filtrosAtuais.combustiveis.length) params.set('combustivel', filtrosAtuais.combustiveis.join(','));
+        if (filtrosAtuais.transmissao.length) params.set('transmissao', filtrosAtuais.transmissao.join(','));
+      }
+      if (tipoFinal === 'imovel' && filtrosAtuais.tipologias.length) {
+        params.set('tipologia', filtrosAtuais.tipologias.join(','));
       }
 
       const { data } = await api.get(`/anuncios/pesquisa/mapa?${params.toString()}`);
@@ -216,8 +215,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
   }, [debouncedQuery]);
 
   useEffect(() => {
-    if (tipoSeguro !== 'imovel') return;
-
     const timer = setTimeout(() => {
       carregarDadosMapa();
     }, 60);
@@ -228,7 +225,11 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
     filtros.distrito,
     filtros.cidade,
     filtros.precoMax,
+    filtros.marca,
+    filtros.modelo,
     filtros.tipologias,
+    filtros.combustiveis,
+    filtros.transmissao,
     debouncedQuery,
     carregarDadosMapa,
   ]);
@@ -257,7 +258,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
     setSidebarMobileAberta(false);
   };
 
-  const isImovel = tipoSeguro === 'imovel';
   const modelosDisponiveis = filtros.marca ? getModelosPorMarca(filtros.marca) : [];
   const cidadesDisponiveis = (filtros.distrito && filtros.distrito !== 'Todos') ? DISTRITOS_CIDADES_PT[filtros.distrito] : [];
   const accent = tipoSeguro === 'carro' ? 'var(--nx-accent-car)' : 'var(--nx-accent-home)';
@@ -380,6 +380,130 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
 
         .pesquisa-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
 
+        .pesquisa-root {
+          background:
+            linear-gradient(180deg, rgba(4,7,17,0.96) 0, rgba(4,7,17,0.96) 285px, var(--nx-bg) 285px),
+            var(--nx-bg);
+        }
+        .pesquisa-layout {
+          max-width: 1480px;
+          padding: 28px;
+          gap: 18px;
+        }
+        .pesquisa-sidebar {
+          background: rgba(255,255,255,0.92);
+          border-color: rgba(226,232,240,0.92);
+          border-radius: 18px;
+          box-shadow: 0 28px 70px -52px rgba(15,23,42,0.8);
+        }
+        .pesquisa-sidebar-toggle {
+          background: rgba(255,255,255,0.92);
+          border-color: rgba(226,232,240,0.92);
+          box-shadow: 0 16px 34px -30px rgba(15,23,42,0.6);
+        }
+        .pesquisa-command {
+          background:
+            linear-gradient(135deg, rgba(255,255,255,0.13), rgba(255,255,255,0.06)),
+            rgba(4,7,17,0.72);
+          border-color: rgba(255,255,255,0.14);
+          color: #f8fafc;
+          border-radius: 18px;
+          box-shadow: 0 24px 70px -46px rgba(0,0,0,0.9);
+          backdrop-filter: blur(18px);
+        }
+        .pesquisa-command::before { width: 0; }
+        .pesquisa-command-kicker { color: rgba(248,250,252,0.72); }
+        .pesquisa-command h1 { color: #ffffff; }
+        .pesquisa-command p { color: rgba(248,250,252,0.7); }
+        .pesquisa-command-metric {
+          background: rgba(255,255,255,0.1);
+          border-color: rgba(255,255,255,0.14);
+        }
+        .pesquisa-command-metric strong { color: #ffffff; }
+        .pesquisa-command-metric span { color: rgba(248,250,252,0.62); }
+        .pesquisa-search-row {
+          background: rgba(255,255,255,0.94);
+          border: 1px solid #e2e8f0;
+          border-radius: 18px;
+          padding: 10px;
+          box-shadow: 0 22px 54px -46px rgba(15,23,42,0.7);
+        }
+        .pesquisa-omnibar-wrapper {
+          border: none;
+          box-shadow: none;
+          background: #f8fafc;
+        }
+        .pesquisa-topbar {
+          gap: 16px;
+          flex-wrap: wrap;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 18px;
+          padding: 12px 14px;
+          box-shadow: 0 18px 42px -36px rgba(15,23,42,0.45);
+        }
+        .pesquisa-view-tools {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .pesquisa-view-switch {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px;
+          border: 1px solid #e2e8f0;
+          border-radius: 14px;
+          background: #f8fafc;
+        }
+        .pesquisa-view-switch button {
+          min-height: 36px;
+          border: none;
+          border-radius: 10px;
+          padding: 0 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          background: transparent;
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 900;
+          cursor: pointer;
+          transition: background .2s ease, color .2s ease, transform .2s ease;
+        }
+        .pesquisa-view-switch button:hover { color: #0f172a; }
+        .pesquisa-view-switch button.active {
+          background: ${accent};
+          color: #020617;
+          box-shadow: 0 8px 18px -14px ${accent};
+        }
+        .pesquisa-map-shell {
+          position: relative;
+          height: min(720px, calc(100vh - 260px));
+          min-height: 520px;
+          border: 1px solid #e2e8f0;
+          border-radius: 18px;
+          overflow: hidden;
+          background: #e2e8f0;
+          box-shadow: 0 24px 64px -46px rgba(15,23,42,0.55);
+        }
+        .pesquisa-map-empty {
+          position: absolute;
+          left: 50%;
+          top: 22px;
+          transform: translateX(-50%);
+          z-index: 500;
+          background: rgba(15,23,42,0.88);
+          color: #f8fafc;
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 999px;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 800;
+          box-shadow: 0 14px 30px -20px rgba(0,0,0,0.9);
+        }
+
         .sidebar-mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9998; backdrop-filter: blur(4px); }
 
         @media (max-width: 1024px) {
@@ -405,7 +529,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
       <div className="pesquisa-root">
         <div className="sidebar-mobile-overlay" onClick={() => setSidebarMobileAberta(false)}></div>
 
-        <div className="pesquisa-layout" style={{ display: vistaAtiva === 'mapa' ? 'none' : 'flex' }}>
+        <div className={`pesquisa-layout vista-${vistaAtiva}`}>
 
           <aside className={`pesquisa-sidebar${isSidebarOpen ? '' : ' collapsed'}`}>
             <div className="pesquisa-sidebar-header"><Icon path={mdiFilterVariant} size={1} /> Filtros Avançados</div>
@@ -561,13 +685,33 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
 
             <div className="pesquisa-topbar">
               <div className="pesquisa-results-count">{loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} registos`}</div>
+              <div className="pesquisa-view-tools">
+                <div className="pesquisa-view-switch" aria-label="Alternar vista">
+                  <button type="button" className={vistaAtiva === 'grelha' ? 'active' : ''} onClick={() => setVistaAtiva('grelha')}>
+                    <Icon path={mdiViewGrid} size={0.72} /> Grelha
+                  </button>
+                  <button type="button" className={vistaAtiva === 'mapa' ? 'active' : ''} onClick={() => setVistaAtiva('mapa')}>
+                    <Icon path={mdiMap} size={0.72} /> Mapa
+                  </button>
+                </div>
               <select className="pesquisa-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
                 <option value="relevancia" style={{ background: 'var(--nx-bg-2)' }}>Relevância</option>
                 <option value="preco_asc" style={{ background: 'var(--nx-bg-2)' }}>Preço: Mais Baixo</option>
                 <option value="preco_desc" style={{ background: 'var(--nx-bg-2)' }}>Preço: Mais Alto</option>
               </select>
+              </div>
             </div>
 
+            {vistaAtiva === 'mapa' ? (
+              <div className="pesquisa-map-shell">
+                <MapaResultados anuncios={dadosMapa} tipo={tipoSeguro} />
+                {dadosMapa.length === 0 && !loading && (
+                  <div className="pesquisa-map-empty">
+                    Sem resultados com coordenadas para mostrar no mapa.
+                  </div>
+                )}
+              </div>
+            ) : (
             <div className="pesquisa-grid">
               {resultados.map(anuncio => <AnuncioCard key={anuncio._id} anuncio={anuncio} showStatus={false} />)}
               {temMais && !loading && resultados.length > 0 && (
@@ -576,14 +720,15 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
                 </div>
               )}
             </div>
+            )}
 
-            {loadingMais && (
+            {vistaAtiva === 'grelha' && loadingMais && (
               <div className="infinite-spinner-container" style={{ marginTop: '24px' }}>
                 <div className="infinite-dot-pulse"></div><div className="infinite-dot-pulse"></div><div className="infinite-dot-pulse"></div>
               </div>
             )}
 
-            {!loading && resultados.length === 0 && (
+            {vistaAtiva === 'grelha' && !loading && resultados.length === 0 && (
               <div className="pesquisa-empty">
                 <div style={{ fontSize: '32px', color: 'var(--nx-text-muted)', marginBottom: '16px' }}>&empty;</div>
                 <h3 style={{ fontFamily: 'var(--nx-font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--nx-text)', margin: '0 0 8px 0' }}>Sem correspondências</h3>
@@ -593,12 +738,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
           </main>
         </div>
 
-        {vistaAtiva === 'mapa' && <div style={{ flex: 1, height: 'calc(100vh - 72px)' }}><MapaResultados imoveis={dadosMapa} /></div>}
-        {isImovel && (
-          <button className="btn-view-toggle" style={{ position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', background: 'var(--nx-text)', color: 'var(--nx-bg)', padding: '14px 28px', borderRadius: '40px', fontFamily: 'var(--nx-font-body)', fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', border: 'none', zIndex: 1000 }} onClick={() => setVistaAtiva(prev => prev === 'grelha' ? 'mapa' : 'grelha')}>
-            {vistaAtiva === 'grelha' ? <><Icon path={mdiMap} size={0.8} /> Mostrar Mapa</> : <><Icon path={mdiViewGrid} size={0.8} /> Mostrar Lista</>}
-          </button>
-        )}
       </div>
     </>
   );

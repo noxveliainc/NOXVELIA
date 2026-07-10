@@ -1,44 +1,110 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import Icon from '@mdi/react';
-import {
-  mdiArrowRight, mdiCarSports, mdiHomeCityOutline, mdiShieldCheckOutline,
-  mdiCheckCircleOutline, mdiMagnify, mdiCardSearchOutline
-} from '@mdi/js';
-import NavbarLanding from './NavbarLanding';
-import Footer from '../../components/Footer';
+import{u as k,a as y,r as c,j as e,L as n,b as N,F as z}from"./index-CSt87IlI.js";import{I as r,m as C,a as d,b as x,c as b,d as E,e as P,f as I}from"./mdi-BSZVeaFy.js";function L(){var m,f;const{user:l,signed:a,logout:u}=k(),v=y(),[t,o]=c.useState(!1),p=c.useRef(null);c.useEffect(()=>{const s=w=>{p.current&&!p.current.contains(w.target)&&o(!1)};return window.addEventListener("click",s),()=>window.removeEventListener("click",s)},[]);const i=l||(()=>{try{const s=localStorage.getItem("@App:user");return s?JSON.parse(s):null}catch{return null}})(),g=(i==null?void 0:i.avatarUrl)||(i==null?void 0:i.avatar),j=((m=i==null?void 0:i.nome)==null?void 0:m.charAt(0).toUpperCase())||"U",h=((f=i==null?void 0:i.nome)==null?void 0:f.split(" ")[0])||"";return e.jsxs(e.Fragment,{children:[e.jsx("style",{children:`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-const mundos = [
-  {
-    id: 'estate',
-    label: 'Estate',
-    title: 'Casas com leitura clara',
-    desc: 'Pesquisa por zona, preco e tipologia com uma apresentacao limpa para decidir mais depressa.',
-    cta: 'Explorar Estate',
-    route: '/imoveis',
-    color: '#3ecf8e',
-    icon: mdiHomeCityOutline,
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1300&q=86',
-  },
-  {
-    id: 'drive',
-    label: 'Drive',
-    title: 'Carros sem ruido',
-    desc: 'Marca, modelo, km, combustivel e contacto reunidos numa experiencia direta e visual.',
-    cta: 'Explorar Drive',
-    route: '/carros',
-    color: '#2ac1b4',
-    icon: mdiCarSports,
-    image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1300&q=86',
-  },
-];
+        .nl-root {
+          position: sticky;
+          top: 0;
+          z-index: 1000;
+          display: grid;
+          grid-template-columns: 1fr auto 1fr;
+          align-items: center;
+          height: 80px;
+          padding: 0 32px;
+          background: #ffffff;
+          border-bottom: 1px solid #e2e8f0;
+          font-family: 'Inter', sans-serif;
+        }
 
-export default function Landing() {
-  const navigate = useNavigate();
+        .nl-side { display: flex; align-items: center; height: 100%; }
+        .nl-side.right { justify-content: flex-end; gap: 12px; position: relative; }
 
-  return (
-    <>
-      <style>{`
+        .nl-logo {
+          grid-column: 2;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-decoration: none;
+        }
+        .nl-logo img {
+          height: 38px;
+          width: auto;
+          object-fit: contain;
+        }
+
+        .nl-btn-ghost {
+          display: inline-flex; align-items: center; justify-content: center;
+          padding: 10px 20px;
+          border-radius: 999px;
+          border: 1px solid #cbd5e1;
+          background: #ffffff;
+          color: #0f172a;
+          font-size: 13px; font-weight: 600;
+          text-decoration: none;
+          transition: all .2s ease;
+        }
+        .nl-btn-ghost:hover { background: #f8fafc; border-color: #94a3b8; }
+
+        .nl-btn-solid {
+          display: inline-flex; align-items: center; justify-content: center;
+          padding: 10px 24px;
+          border-radius: 999px;
+          border: none;
+          background: #0f172a;
+          color: #ffffff;
+          font-size: 13px; font-weight: 700;
+          text-decoration: none;
+          transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .nl-btn-solid:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(15,23,42,0.15); }
+
+        .nl-user-trigger {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 4px 14px 4px 4px;
+          border-radius: 999px;
+          border: 1px solid #e2e8f0;
+          background: #ffffff;
+          cursor: pointer;
+          transition: all .2s ease;
+        }
+        .nl-user-trigger:hover, .nl-user-trigger.active { background: #f8fafc; border-color: #cbd5e1; }
+
+        .nl-avatar {
+          width: 32px; height: 32px; border-radius: 50%;
+          overflow: hidden; display: flex; align-items: center; justify-content: center;
+          background: #f1f5f9; border: 1px solid #e2e8f0; flex-shrink: 0;
+        }
+        .nl-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .nl-avatar-initial { font-size: 12px; font-weight: 700; color: #0f172a; }
+        .nl-username { font-size: 13px; font-weight: 600; color: #0f172a; }
+        .nl-chevron { stroke: #64748b; }
+
+        .nl-user-dropdown {
+          position: absolute; top: calc(100% + 12px); right: 0;
+          background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
+          box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+          width: 200px; padding: 8px; display: flex; flex-direction: column;
+          z-index: 1020;
+        }
+        .nl-ud-item {
+          display: flex; align-items: center; gap: 10px;
+          padding: 10px 12px; border-radius: 8px;
+          font-size: 13px; font-weight: 600; color: #475569;
+          text-decoration: none; border: none; background: transparent;
+          width: 100%; text-align: left; cursor: pointer; transition: all .2s;
+        }
+        .nl-ud-item:hover { background: #f8fafc; color: #0f172a; }
+        .nl-ud-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .nl-ud-divider { height: 1px; background: #e2e8f0; margin: 6px 0; }
+        .nl-ud-item.logout:hover { background: #fef2f2; color: #dc2626; }
+
+        @media (max-width: 768px) {
+          .nl-root { padding: 0 16px; height: 70px; }
+          .nl-logo img { height: 32px; }
+          .nl-actions { right: 16px; gap: 8px; }
+          .nl-btn-ghost, .nl-btn-solid { padding: 8px 16px; font-size: 12px; }
+          .nl-username { display: none; }
+        }
+      `}),e.jsxs("nav",{className:"nl-root",children:[e.jsx("div",{className:"nl-side left"}),e.jsx(n,{to:"/",className:"nl-logo",children:e.jsx("img",{src:"/logo-noxvelia.png",alt:"NOXVELIA"})}),e.jsx("div",{className:"nl-side right",children:a?e.jsxs("div",{ref:p,style:{position:"relative"},children:[e.jsxs("button",{className:`nl-user-trigger ${t?"active":""}`,onClick:()=>o(!t),children:[e.jsx("div",{className:"nl-avatar",children:g?e.jsx("img",{src:g,alt:"Perfil"}):e.jsx("span",{className:"nl-avatar-initial",children:j})}),h&&e.jsx("span",{className:"nl-username",children:h}),e.jsx("svg",{className:"nl-chevron",width:"14",height:"14",viewBox:"0 0 24 24",fill:"none",strokeWidth:"2",children:e.jsx("path",{d:"M6 9l6 6 6-6"})})]}),t&&e.jsxs("div",{className:"nl-user-dropdown",onClick:s=>s.stopPropagation(),children:[e.jsxs(n,{to:"/perfil",onClick:()=>o(!1),className:"nl-ud-item",children:[e.jsxs("svg",{viewBox:"0 0 24 24",children:[e.jsx("path",{d:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"}),e.jsx("circle",{cx:"12",cy:"7",r:"4"})]}),"O Meu Perfil"]}),e.jsx("div",{className:"nl-ud-divider"}),e.jsxs("button",{onClick:()=>{o(!1),u()},className:"nl-ud-item logout",children:[e.jsxs("svg",{viewBox:"0 0 24 24",children:[e.jsx("path",{d:"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"}),e.jsx("polyline",{points:"16 17 21 12 16 7"}),e.jsx("line",{x1:"21",y1:"12",x2:"9",y2:"12"})]}),"Terminar Sessão"]})]})]}):e.jsxs(e.Fragment,{children:[e.jsx(n,{to:"/login",state:{from:v.pathname},className:"nl-btn-ghost",children:"Entrar"}),e.jsx(n,{to:"/registo",className:"nl-btn-solid",children:"Registar"})]})})]})]})}const S=[{id:"estate",label:"Estate",title:"Casas com leitura clara",desc:"Pesquisa por zona, preco e tipologia com uma apresentacao limpa para decidir mais depressa.",cta:"Explorar Estate",route:"/imoveis",color:"#3ecf8e",icon:b,image:"https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1300&q=86"},{id:"drive",label:"Drive",title:"Carros sem ruido",desc:"Marca, modelo, km, combustivel e contacto reunidos numa experiencia direta e visual.",cta:"Explorar Drive",route:"/carros",color:"#2ac1b4",icon:x,image:"https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1300&q=86"}];function V(){const l=N();return e.jsxs(e.Fragment,{children:[e.jsx("style",{children:`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -438,116 +504,5 @@ export default function Landing() {
           .lp-world { min-height: 330px; }
           .lp-world-body { padding: 22px; }
         }
-      `}</style>
-
-      <div className="lp-root">
-        <NavbarLanding />
-
-        <section className="lp-hero">
-          <div className="lp-shell lp-hero-grid">
-            <div>
-              <div className="lp-kicker">
-                <Icon path={mdiShieldCheckOutline} size={0.72} />
-                Mercado premium para comprar melhor
-              </div>
-              <h1>NOXVELIA</h1>
-              <p className="lp-hero-copy">
-                Imoveis e automoveis numa experiencia simples, visual e direta. Menos ruido, melhor leitura, contacto mais rapido.
-              </p>
-              <div className="lp-actions">
-                <button className="lp-btn lp-btn-estate" onClick={() => navigate('/imoveis')}>
-                  NOXVELIA Estate <Icon path={mdiArrowRight} size={0.78} />
-                </button>
-                <button className="lp-btn lp-btn-drive" onClick={() => navigate('/carros')}>
-                  NOXVELIA Drive <Icon path={mdiCarSports} size={0.82} />
-                </button>
-              </div>
-            </div>
-
-            <aside className="lp-snapshot" aria-label="Resumo NOXVELIA">
-              <h2>O essencial, logo a frente.</h2>
-              <div className="lp-snapshot-row">
-                <span className="lp-snapshot-icon" style={{ background: '#3ecf8e' }}><Icon path={mdiHomeCityOutline} size={0.9} /></span>
-                <div><strong>Estate</strong><span>Casas e apartamentos organizados por contexto real.</span></div>
-              </div>
-              <div className="lp-snapshot-row">
-                <span className="lp-snapshot-icon" style={{ background: '#2ac1b4' }}><Icon path={mdiCarSports} size={0.9} /></span>
-                <div><strong>Drive</strong><span>Viaturas com dados claros para comparar sem esforco.</span></div>
-              </div>
-            </aside>
-          </div>
-        </section>
-
-        <section className="lp-section compact">
-          <div className="lp-shell">
-            <div className="lp-section-head">
-              <div>
-                <span className="lp-eyebrow">Escolhe a vertical</span>
-                <h2 className="lp-title">Dois caminhos. Uma leitura limpa.</h2>
-              </div>
-              <p className="lp-section-copy">
-                A plataforma foca-se no que interessa: bons anuncios, informacao sem duplicacao e perfis de vendedor mais completos.
-              </p>
-            </div>
-
-            <div className="lp-worlds">
-              {mundos.map((mundo) => (
-                <article className="lp-world" key={mundo.id} onClick={() => navigate(mundo.route)}>
-                  <img src={mundo.image} alt={mundo.label} />
-                  <div className="lp-world-body">
-                    <span className="lp-world-label" style={{ background: mundo.color }}>
-                      <Icon path={mundo.icon} size={0.72} /> {mundo.label}
-                    </span>
-                    <h3>{mundo.title}</h3>
-                    <p>{mundo.desc}</p>
-                    <span className="lp-world-cta">
-                      {mundo.cta} <Icon path={mdiArrowRight} size={0.74} />
-                    </span>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="lp-section">
-          <div className="lp-shell">
-            <div className="lp-carvertical">
-              <div>
-                <span className="lp-eyebrow">Parceria Drive</span>
-                <h2>Verifica o historico do teu carro antes de comprar.</h2>
-                <p>
-                  A parceria com a CarVertical reforca a confianca no processo de compra: mais contexto sobre a viatura, menos surpresas depois da decisao.
-                </p>
-              </div>
-              <div className="lp-carvertical-logo">
-                <img src="/carvertical-logo.png" alt="CarVertical" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="lp-section">
-          <div className="lp-shell">
-            <div className="lp-final">
-              <div>
-                <h2>Publica com presenca cuidada.</h2>
-                <p>Perfil publico com bio, links e anuncios com dados claros para quem compra.</p>
-                <div className="lp-mini-list">
-                  <span><Icon path={mdiCheckCircleOutline} size={0.62} /> Bio publica</span>
-                  <span><Icon path={mdiMagnify} size={0.62} /> Pesquisa direta</span>
-                  <span><Icon path={mdiCardSearchOutline} size={0.62} /> Cards limpos</span>
-                </div>
-              </div>
-              <button className="lp-btn lp-btn-estate" onClick={() => navigate('/publicar')}>
-                Publicar anuncio <Icon path={mdiArrowRight} size={0.78} />
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <Footer />
-      </div>
-    </>
-  );
-}
+      `}),e.jsxs("div",{className:"lp-root",children:[e.jsx(L,{}),e.jsx("section",{className:"lp-hero",children:e.jsxs("div",{className:"lp-shell lp-hero-grid",children:[e.jsxs("div",{children:[e.jsxs("div",{className:"lp-kicker",children:[e.jsx(r,{path:C,size:.72}),"Mercado premium para comprar melhor"]}),e.jsx("h1",{children:"NOXVELIA"}),e.jsx("p",{className:"lp-hero-copy",children:"Imoveis e automoveis numa experiencia simples, visual e direta. Menos ruido, melhor leitura, contacto mais rapido."}),e.jsxs("div",{className:"lp-actions",children:[e.jsxs("button",{className:"lp-btn lp-btn-estate",onClick:()=>l("/imoveis"),children:["NOXVELIA Estate ",e.jsx(r,{path:d,size:.78})]}),e.jsxs("button",{className:"lp-btn lp-btn-drive",onClick:()=>l("/carros"),children:["NOXVELIA Drive ",e.jsx(r,{path:x,size:.82})]})]})]}),e.jsxs("aside",{className:"lp-snapshot","aria-label":"Resumo NOXVELIA",children:[e.jsx("h2",{children:"O essencial, logo a frente."}),e.jsxs("div",{className:"lp-snapshot-row",children:[e.jsx("span",{className:"lp-snapshot-icon",style:{background:"#3ecf8e"},children:e.jsx(r,{path:b,size:.9})}),e.jsxs("div",{children:[e.jsx("strong",{children:"Estate"}),e.jsx("span",{children:"Casas e apartamentos organizados por contexto real."})]})]}),e.jsxs("div",{className:"lp-snapshot-row",children:[e.jsx("span",{className:"lp-snapshot-icon",style:{background:"#2ac1b4"},children:e.jsx(r,{path:x,size:.9})}),e.jsxs("div",{children:[e.jsx("strong",{children:"Drive"}),e.jsx("span",{children:"Viaturas com dados claros para comparar sem esforco."})]})]})]})]})}),e.jsx("section",{className:"lp-section compact",children:e.jsxs("div",{className:"lp-shell",children:[e.jsxs("div",{className:"lp-section-head",children:[e.jsxs("div",{children:[e.jsx("span",{className:"lp-eyebrow",children:"Escolhe a vertical"}),e.jsx("h2",{className:"lp-title",children:"Dois caminhos. Uma leitura limpa."})]}),e.jsx("p",{className:"lp-section-copy",children:"A plataforma foca-se no que interessa: bons anuncios, informacao sem duplicacao e perfis de vendedor mais completos."})]}),e.jsx("div",{className:"lp-worlds",children:S.map(a=>e.jsxs("article",{className:"lp-world",onClick:()=>l(a.route),children:[e.jsx("img",{src:a.image,alt:a.label}),e.jsxs("div",{className:"lp-world-body",children:[e.jsxs("span",{className:"lp-world-label",style:{background:a.color},children:[e.jsx(r,{path:a.icon,size:.72})," ",a.label]}),e.jsx("h3",{children:a.title}),e.jsx("p",{children:a.desc}),e.jsxs("span",{className:"lp-world-cta",children:[a.cta," ",e.jsx(r,{path:d,size:.74})]})]})]},a.id))})]})}),e.jsx("section",{className:"lp-section",children:e.jsx("div",{className:"lp-shell",children:e.jsxs("div",{className:"lp-carvertical",children:[e.jsxs("div",{children:[e.jsx("span",{className:"lp-eyebrow",children:"Parceria Drive"}),e.jsx("h2",{children:"Verifica o historico do teu carro antes de comprar."}),e.jsx("p",{children:"A parceria com a CarVertical reforca a confianca no processo de compra: mais contexto sobre a viatura, menos surpresas depois da decisao."})]}),e.jsx("div",{className:"lp-carvertical-logo",children:e.jsx("img",{src:"/carvertical-logo.png",alt:"CarVertical"})})]})})}),e.jsx("section",{className:"lp-section",children:e.jsx("div",{className:"lp-shell",children:e.jsxs("div",{className:"lp-final",children:[e.jsxs("div",{children:[e.jsx("h2",{children:"Publica com presenca cuidada."}),e.jsx("p",{children:"Perfil publico com bio, links e anuncios com dados claros para quem compra."}),e.jsxs("div",{className:"lp-mini-list",children:[e.jsxs("span",{children:[e.jsx(r,{path:E,size:.62})," Bio publica"]}),e.jsxs("span",{children:[e.jsx(r,{path:P,size:.62})," Pesquisa direta"]}),e.jsxs("span",{children:[e.jsx(r,{path:I,size:.62})," Cards limpos"]})]})]}),e.jsxs("button",{className:"lp-btn lp-btn-estate",onClick:()=>l("/publicar"),children:["Publicar anuncio ",e.jsx(r,{path:d,size:.78})]})]})})}),e.jsx(z,{})]})]})}export{V as default};
+//# sourceMappingURL=Landing-Dzd39mDt.js.map

@@ -8,7 +8,7 @@ import Icon from '@mdi/react';
 import { 
   mdiCheckDecagram, mdiChartBar, mdiShareVariantOutline, mdiDomain, 
   mdiClose, mdiCrown, mdiStar, mdiChevronLeft, mdiPencil, mdiEarth,
-  mdiWeb, mdiInstagram, mdiFacebook, mdiLinkedin, mdiYoutube, mdiMusicNote,
+  mdiWeb, mdiInstagram, mdiFacebook, mdiLinkedin, mdiYoutube, mdiMusicNote, mdiWhatsapp,
   mdiPlus, mdiTrashCanOutline
 } from '@mdi/js';
 
@@ -19,6 +19,7 @@ const TIPOS_LINK_PERFIL = [
   { value: 'linkedin', label: 'LinkedIn', icon: mdiLinkedin, placeholder: 'Ex: https://linkedin.com/in/oteuperfil' },
   { value: 'youtube', label: 'YouTube', icon: mdiYoutube, placeholder: 'Ex: https://youtube.com/@oteucanal' },
   { value: 'tiktok', label: 'TikTok', icon: mdiMusicNote, placeholder: 'Ex: https://tiktok.com/@oteuperfil' },
+  { value: 'whatsapp', label: 'WhatsApp', icon: mdiWhatsapp, placeholder: 'Ex: 912345678 ou https://wa.me/351912345678' },
   { value: 'outro', label: 'Outro', icon: mdiEarth, placeholder: 'Ex: https://www.outrolink.pt' },
 ];
 
@@ -52,8 +53,19 @@ const normalizarHref = (url) => {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
 };
 
+const normalizarHrefLinkPerfil = (link) => {
+  if (link?.tipo !== 'whatsapp') return normalizarHref(link?.url);
+
+  const digitos = String(link.url || '').replace(/\D/g, '');
+  if (!digitos) return '#';
+  const numero = digitos.length === 9 ? `351${digitos}` : digitos;
+  return `https://wa.me/${numero}`;
+};
+
 const formatarTextoLink = (link) => {
-  const href = normalizarHref(link.url);
+  if (link.tipo === 'whatsapp') return 'WhatsApp';
+
+  const href = normalizarHrefLinkPerfil(link);
   try {
     const url = new URL(href);
     const primeiroSegmento = url.pathname.split('/').filter(Boolean)[0];
@@ -644,7 +656,7 @@ export default function Perfil() {
                     {linksPerfilVisiveis.map((link, index) => {
                       const meta = obterMetaLinkPerfil(link.tipo);
                       return (
-                        <a key={`${link.tipo}-${index}`} href={normalizarHref(link.url)} target="_blank" rel="noopener noreferrer" className="perfil-link">
+                        <a key={`${link.tipo}-${index}`} href={normalizarHrefLinkPerfil(link)} target="_blank" rel="noopener noreferrer" className="perfil-link">
                           <Icon path={meta.icon} size={0.7} />
                           <span>{formatarTextoLink(link)}</span>
                         </a>

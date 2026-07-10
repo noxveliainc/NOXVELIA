@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
     type: [{
       tipo: {
         type: String,
-        enum: ['website', 'instagram', 'facebook', 'linkedin', 'youtube', 'tiktok', 'outro'],
+        enum: ['website', 'instagram', 'facebook', 'linkedin', 'youtube', 'tiktok', 'whatsapp', 'outro'],
         default: 'website'
       },
       url: { type: String, trim: true }

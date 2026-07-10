@@ -7,14 +7,30 @@ import { verificarToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-const TIPOS_LINK_PERFIL = new Set(['website', 'instagram', 'facebook', 'linkedin', 'youtube', 'tiktok', 'outro']);
+const TIPOS_LINK_PERFIL = new Set(['website', 'instagram', 'facebook', 'linkedin', 'youtube', 'tiktok', 'whatsapp', 'outro']);
 
-const normalizarUrlPerfil = (valor) => {
+const normalizarWhatsappPerfil = (valor) => {
+  const digitos = String(valor || '').replace(/\D/g, '');
+  if (!digitos) return null;
+
+  const numero = digitos.length === 9 ? `351${digitos}` : digitos;
+  if (numero.length < 10 || numero.length > 15) {
+    throw new Error('O link de WhatsApp do perfil nao e valido.');
+  }
+
+  return `https://wa.me/${numero}`;
+};
+
+const normalizarUrlPerfil = (valor, tipo = 'website') => {
   if (valor === undefined) return undefined;
   if (valor === null) return null;
 
   const texto = String(valor).trim();
   if (!texto) return null;
+
+  if (tipo === 'whatsapp') {
+    return normalizarWhatsappPerfil(texto);
+  }
 
   const urlComProtocolo = /^https?:\/\//i.test(texto) ? texto : `https://${texto}`;
 
@@ -38,7 +54,7 @@ const normalizarLinksPerfil = (links = []) => {
     .slice(0, 3)
     .map((link) => {
       const tipo = TIPOS_LINK_PERFIL.has(link?.tipo) ? link.tipo : 'outro';
-      const url = normalizarUrlPerfil(link?.url);
+      const url = normalizarUrlPerfil(link?.url, tipo);
       return url ? { tipo, url } : null;
     })
     .filter(Boolean);

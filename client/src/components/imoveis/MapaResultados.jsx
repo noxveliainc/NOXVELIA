@@ -13,32 +13,36 @@ function ChangeView({ bounds }) {
   return null;
 }
 
-export default function MapaResultados({ imoveis }) {
+export default function MapaResultados({ imoveis, anuncios, tipo = 'imovel' }) {
   const [bounds, setBounds] = useState([]);
+  const itens = anuncios || imoveis || [];
 
   useEffect(() => {
-    if (imoveis && imoveis.length > 0) {
-      const pontas = imoveis
+    if (itens && itens.length > 0) {
+      const pontas = itens
         .filter(i => i.localizacao?.coordenadas?.lat && i.localizacao?.coordenadas?.lng)
         .map(i => [i.localizacao.coordenadas.lat, i.localizacao.coordenadas.lng]);
       
-      if (pontas.length > 0) setBounds(pontas);
+      setBounds(pontas);
+    } else {
+      setBounds([]);
     }
-  }, [imoveis]);
+  }, [itens]);
 
   // Se não houver imóveis com coordenadas, mostra o centro de Portugal
   const centroDefault = [39.3999, -8.2245];
   const zoomDefault = 6;
 
   // Função para criar o Pin com o Preço (Design NOXVELIA Estate)
-  const criarIconePreco = (precoNum) => {
+  const criarIconePreco = (precoNum, tipoAnuncio = tipo) => {
     const precoFormatado = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(precoNum);
+    const corPin = tipoAnuncio === 'carro' ? '#2ac1b4' : '#3ecf8e';
     
     return L.divIcon({
       className: 'custom-NOXVELIA-pin',
       html: `
         <div style="
-          background: #3ecf8e; 
+          background: ${corPin}; 
           color: #020617; 
           font-family: 'Inter', sans-serif;
           font-weight: 800; 
@@ -75,14 +79,14 @@ export default function MapaResultados({ imoveis }) {
         {/* 🌟 A CORREÇÃO DE OURO ESTÁ AQUI: O uso do ternário (? : null) evita a tela branca! */}
         {bounds.length > 0 ? <ChangeView bounds={bounds} /> : null}
 
-        {imoveis.map(imovel => {
+        {itens.map(imovel => {
           if (!imovel.localizacao?.coordenadas?.lat || !imovel.localizacao?.coordenadas?.lng) return null;
           
           return (
             <Marker 
               key={imovel._id}
               position={[imovel.localizacao.coordenadas.lat, imovel.localizacao.coordenadas.lng]}
-              icon={criarIconePreco(imovel.preco)}
+              icon={criarIconePreco(imovel.preco, imovel.tipo)}
             >
               <Popup closeButton={false} className="NOXVELIA-popup">
                 <Link to={`/anuncio/${imovel._id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '200px' }}>
@@ -90,7 +94,7 @@ export default function MapaResultados({ imoveis }) {
                     {imovel.fotos?.[0] ? (
                       <img src={imovel.fotos[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
-                      <div style={{ width: '100%', height: '100%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🏠</div>
+                      <div style={{ width: '100%', height: '100%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontWeight: 800 }}>{imovel.tipo === 'carro' ? 'Drive' : 'Estate'}</div>
                     )}
                   </div>
                   <div style={{ fontFamily: "'Inter', sans-serif" }}>
