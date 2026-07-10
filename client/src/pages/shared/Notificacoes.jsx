@@ -155,6 +155,17 @@ export default function Notificacoes() {
         .notif-titulo { font-size: 13px; font-weight: 600; color: var(--nx-text); margin-bottom: 3px; }
         .notif-msg { font-size: 12px; color: var(--nx-text-muted); line-height: 1.4;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        @media (max-width: 420px) {
+          .notif-dropdown {
+            position: fixed;
+            top: 70px;
+            left: 12px;
+            right: 12px;
+            width: auto;
+            max-height: calc(100dvh - 88px);
+          }
+          .notif-list { max-height: calc(100dvh - 150px); }
+        }
       `}</style>
 
       <div className="notif-wrap" ref={dropdownRef}>

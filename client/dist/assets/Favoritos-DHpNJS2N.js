@@ -1,48 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Icon from '@mdi/react';
-import { mdiArrowRight, mdiHeartOutline, mdiMagnify } from '@mdi/js';
-import api from '../../services/api';
-import AnuncioCard from './AnuncioCard';
-
-export default function Favoritos() {
-  const [favoritos, setFavoritos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState('');
-  const navigate = useNavigate();
-
-  const contextoVisualAtual = localStorage.getItem('@App:contexto_visual') || 'carro';
-  const veioDeCarros = contextoVisualAtual === 'carro';
-  const rotaVoltar = veioDeCarros ? '/carros' : '/imoveis';
-  const labelVoltar = veioDeCarros ? 'automóveis' : 'imóveis';
-
-  useEffect(() => {
-    const carregarFavoritos = async () => {
-      try {
-        const { data } = await api.get('/anuncios/favoritos');
-        setFavoritos(data || []);
-      } catch (err) {
-        console.error(err);
-        setErro('Não foi possível carregar a tua lista de favoritos.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    carregarFavoritos();
-  }, []);
-
-  if (loading) {
-    return (
-      <div style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff' }}>
-        <div className="nx-spinner" style={{ borderColor: '#e2e8f0', borderTopColor: '#0f172a' }} />
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <style>{`
+import{r as e,b as v,j as a,L as u,c as h}from"./index-B1n1uUR6.js";import{I as t,K as b,l as y,a as f}from"./mdi-xYj-u21I.js";import{A as j}from"./AnuncioCard-DpZjY9U5.js";function A(){const[r,c]=e.useState([]),[p,d]=e.useState(!0),[s,x]=e.useState(""),n=v(),l=(localStorage.getItem("@App:contexto_visual")||"carro")==="carro",m=l?"/carros":"/imoveis",g=l?"automóveis":"imóveis";return e.useEffect(()=>{(async()=>{try{const{data:o}=await h.get("/anuncios/favoritos");c(o||[])}catch(o){console.error(o),x("Não foi possível carregar a tua lista de favoritos.")}finally{d(!1)}})()},[]),p?a.jsx("div",{style:{minHeight:"calc(100vh - 72px)",display:"flex",alignItems:"center",justifyContent:"center",background:"#ffffff"},children:a.jsx("div",{className:"nx-spinner",style:{borderColor:"#e2e8f0",borderTopColor:"#0f172a"}})}):a.jsxs(a.Fragment,{children:[a.jsx("style",{children:`
         .fav-outer {
           background: #ffffff;
           min-height: calc(100vh - 72px);
@@ -207,56 +163,5 @@ export default function Favoritos() {
           .fav-hero { grid-template-columns: 1fr; }
           .fav-count { width: fit-content; }
         }
-      `}</style>
-
-      <div className="fav-outer">
-        <div className="fav-shell">
-          <Link to={rotaVoltar} className="fav-back">
-            Voltar aos {labelVoltar}
-          </Link>
-
-          <div className="fav-hero">
-            <div>
-              <span className="fav-eyebrow"><Icon path={mdiHeartOutline} size={0.65} /> Favoritos</span>
-              <h1 className="fav-title">Os teus anúncios guardados</h1>
-              <p className="fav-subtitle">
-                Junta aqui os carros e imóveis que queres comparar com calma. Quando voltares, tens a lista pronta para decidir sem repetir a pesquisa.
-              </p>
-            </div>
-            <div className="fav-count">
-              {favoritos.length}<span>guardados</span>
-            </div>
-          </div>
-
-          {erro && <div className="fav-error">{erro}</div>}
-
-          {favoritos.length > 0 ? (
-            <div className="fav-grid">
-              {favoritos.map((anuncio) => (
-                <AnuncioCard key={anuncio._id} anuncio={anuncio} />
-              ))}
-            </div>
-          ) : (
-            <div className="fav-empty">
-              <div>
-                <div className="fav-empty-mark"><Icon path={mdiMagnify} size={1.45} /></div>
-                <h2 className="fav-empty-title">Ainda não guardaste nenhum anúncio.</h2>
-                <p className="fav-empty-text">
-                  Explora a pesquisa, abre os anúncios que te interessam e guarda os melhores para comparar preço, localização, vendedor e características.
-                </p>
-                <div className="fav-empty-actions">
-                  <button type="button" className="fav-btn primary" onClick={() => navigate('/carros')}>
-                    Ver Drive <Icon path={mdiArrowRight} size={0.72} />
-                  </button>
-                  <button type="button" className="fav-btn" onClick={() => navigate('/imoveis')}>
-                    Ver Estate <Icon path={mdiArrowRight} size={0.72} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </>
-  );
-}
+      `}),a.jsx("div",{className:"fav-outer",children:a.jsxs("div",{className:"fav-shell",children:[a.jsxs(u,{to:m,className:"fav-back",children:["Voltar aos ",g]}),a.jsxs("div",{className:"fav-hero",children:[a.jsxs("div",{children:[a.jsxs("span",{className:"fav-eyebrow",children:[a.jsx(t,{path:b,size:.65})," Favoritos"]}),a.jsx("h1",{className:"fav-title",children:"Os teus anúncios guardados"}),a.jsx("p",{className:"fav-subtitle",children:"Junta aqui os carros e imóveis que queres comparar com calma. Quando voltares, tens a lista pronta para decidir sem repetir a pesquisa."})]}),a.jsxs("div",{className:"fav-count",children:[r.length,a.jsx("span",{children:"guardados"})]})]}),s&&a.jsx("div",{className:"fav-error",children:s}),r.length>0?a.jsx("div",{className:"fav-grid",children:r.map(i=>a.jsx(j,{anuncio:i},i._id))}):a.jsx("div",{className:"fav-empty",children:a.jsxs("div",{children:[a.jsx("div",{className:"fav-empty-mark",children:a.jsx(t,{path:y,size:1.45})}),a.jsx("h2",{className:"fav-empty-title",children:"Ainda não guardaste nenhum anúncio."}),a.jsx("p",{className:"fav-empty-text",children:"Explora a pesquisa, abre os anúncios que te interessam e guarda os melhores para comparar preço, localização, vendedor e características."}),a.jsxs("div",{className:"fav-empty-actions",children:[a.jsxs("button",{type:"button",className:"fav-btn primary",onClick:()=>n("/carros"),children:["Ver Drive ",a.jsx(t,{path:f,size:.72})]}),a.jsxs("button",{type:"button",className:"fav-btn",onClick:()=>n("/imoveis"),children:["Ver Estate ",a.jsx(t,{path:f,size:.72})]})]})]})})]})})]})}export{A as default};
+//# sourceMappingURL=Favoritos-DHpNJS2N.js.map

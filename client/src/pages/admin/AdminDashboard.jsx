@@ -6,10 +6,11 @@ import { useAuth } from '../../context/AuthContext';
 import Icon from '@mdi/react';
 import { 
   mdiAccountMultiple, mdiFileDocumentOutline, mdiCar, mdiHomeOutline, 
-  mdiTrashCanOutline, mdiShieldOutline, mdiLoading, mdiCheck, mdiClose, 
-  mdiOpenInNew, mdiCurrencyEur, mdiMagnify, mdiChevronDown, mdiStar, 
-  mdiClockOutline, mdiAlertOutline, mdiCrown, mdiChartTimelineVariant, 
-  mdiFilterVariant, mdiPhoneOutline, mdiEmailOutline, mdiContentCopy
+  mdiTrashCanOutline, mdiShieldOutline, mdiLoading, mdiCheck,
+  mdiOpenInNew, mdiCurrencyEur, mdiMagnify, mdiStar,
+  mdiAlertOutline, mdiCrown, mdiChartTimelineVariant,
+  mdiFilterVariant, mdiPhoneOutline, mdiEmailOutline, mdiRefresh,
+  mdiEyeOutline, mdiViewDashboardOutline
 } from '@mdi/js';
 
 /* ------------------------------------------------------------------ */
@@ -50,12 +51,13 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [utilizadores, setUtilizadores] = useState([]);
   const [anuncios, setAnuncios] = useState([]);
-  const [pedidosDestaque, setPedidosDestaque] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
-  const [activeTab, setActiveTab] = useState('contas');
+  const [activeTab, setActiveTab] = useState('visao-geral');
   const [isDeleting, setIsDeleting] = useState(null);
+  const [reloading, setReloading] = useState(false);
+  const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null);
   
   // Feedback visual para quando se copia um contacto
   const [copiadoFeedback, setCopiadoFeedback] = useState(null);
@@ -65,30 +67,33 @@ export default function AdminDashboard() {
   const [searchAnuncios, setSearchAnuncios] = useState('');
   const [filterTipo, setFilterTipo] = useState('todos');
 
+  const carregarQuartelGeneral = async (atualizacaoManual = false) => {
+    if (atualizacaoManual) setReloading(true);
+    setErro('');
+
+    try {
+      const [resStats, resUsers, resAnuncios] = await Promise.all([
+        api.get('/admin/dashboard/stats'),
+        api.get('/admin/utilizadores'),
+        api.get('/admin/anuncios')
+      ]);
+      setStats(resStats.data);
+      setUtilizadores(resUsers.data);
+      setAnuncios(resAnuncios.data);
+      setUltimaAtualizacao(new Date());
+    } catch (err) {
+      setErro('Não foi possível atualizar os dados operacionais. Tenta novamente.');
+    } finally {
+      setLoading(false);
+      setReloading(false);
+    }
+  };
+
   useEffect(() => {
     if (!signed || user?.tipo !== 'admin') {
       navigate('/');
       return;
     }
-
-    const carregarQuartelGeneral = async () => {
-      try {
-        const [resStats, resUsers, resAnuncios, resPedidos] = await Promise.all([
-          api.get('/admin/dashboard/stats'),
-          api.get('/admin/utilizadores'),
-          api.get('/admin/anuncios'),
-          api.get('/admin/destaques/pedidos')
-        ]);
-        setStats(resStats.data);
-        setUtilizadores(resUsers.data);
-        setAnuncios(resAnuncios.data);
-        setPedidosDestaque(resPedidos.data);
-      } catch (err) {
-        setErro('Erro ao ligar aos servidores da NOXVELIA.');
-      } finally {
-        setLoading(false);
-      }
-    };
 
     carregarQuartelGeneral();
   }, [signed, user, navigate]);
@@ -105,41 +110,9 @@ export default function AdminDashboard() {
       try {
         await api.delete(`/admin/anuncios/${id}`);
         setAnuncios(anuncios.filter(a => a._id !== id));
-        setPedidosDestaque(pedidosDestaque.filter(p => p._id !== id));
         setStats(prev => ({ ...prev, totalAnuncios: prev.totalAnuncios - 1 }));
       } catch (err) {
         alert(err.response?.data?.erro || 'Erro ao eliminar anúncio.');
-      } finally {
-        setIsDeleting(null);
-      }
-    }
-  };
-
-  const aprovarDestaque = async (id, titulo) => {
-    if (window.confirm(`Confirmas o recebimento do pagamento para destacar: "${titulo}"?`)) {
-      setIsDeleting(id);
-      try {
-        await api.put(`/admin/anuncios/${id}/aprovar-destaque`);
-        setPedidosDestaque(pedidosDestaque.filter(p => p._id !== id));
-        setAnuncios(anuncios.map(a => a._id === id ? { ...a, destacado: true } : a));
-        setStats(prev => ({ ...prev, receitaTotal: (prev.receitaTotal || 0) + 2.99 }));
-        alert('Destaque dourado injetado com sucesso por 7 dias!');
-      } catch (err) {
-        alert(err.response?.data?.erro || 'Erro ao aprovar destaque.');
-      } finally {
-        setIsDeleting(null);
-      }
-    }
-  };
-
-  const rejeitarDestaque = async (id) => {
-    if (window.confirm(`Tens a certeza que queres REJEITAR este pedido de destaque?`)) {
-      setIsDeleting(id);
-      try {
-        await api.put(`/admin/anuncios/${id}/rejeitar-destaque`);
-        setPedidosDestaque(pedidosDestaque.filter(p => p._id !== id));
-      } catch (err) {
-        alert(err.response?.data?.erro || 'Erro ao rejeitar destaque.');
       } finally {
         setIsDeleting(null);
       }
@@ -173,14 +146,17 @@ export default function AdminDashboard() {
       const matchSearch = !searchAnuncios ||
         (a.titulo?.toLowerCase().includes(searchAnuncios.toLowerCase()) ||
          a.utilizador?.nome?.toLowerCase().includes(searchAnuncios.toLowerCase()));
-      const matchTipo = filterTipo === 'todos' || a.tipo === filterTipo;
+      const matchTipo =
+        filterTipo === 'todos' ||
+        a.tipo === filterTipo ||
+        a.estado === filterTipo;
       return matchSearch && matchTipo;
     });
   }, [anuncios, searchAnuncios, filterTipo]);
 
-  const totalPremium = utilizadores.filter(u => u.tipo !== 'admin' && u.premiumAtivo).length;
+  const totalPremium = stats?.premiumAtivos ?? utilizadores.filter(u => u.tipo !== 'admin' && u.premiumAtivo).length;
   const conversao = stats?.totalUsers ? ((totalPremium / stats.totalUsers) * 100).toFixed(1) : '0.0';
-  const receitaPotencial = pedidosDestaque.length * 2.99;
+  const topAnuncios = stats?.topAnuncios || [];
 
   // ---- Loading state ---------------------------------------------------
 
@@ -210,7 +186,7 @@ export default function AdminDashboard() {
   // ---- Render ------------------------------------------------------------
 
   return (
-    <div style={{
+    <div className="nx-admin-root" style={{
       background: COLORS.bg,
       backgroundImage: `radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,180,41,0.06), transparent)`,
       minHeight: '100vh', color: COLORS.text, fontFamily: FONT_BODY, padding: '32px 24px 80px'
@@ -235,12 +211,44 @@ export default function AdminDashboard() {
         .contact-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; font-family: ${FONT_MONO}; font-size: 11px; color: ${COLORS.textDim}; cursor: pointer; transition: all 0.2s; }
         .contact-badge:hover { background: rgba(255,255,255,0.08); color: #fff; border-color: rgba(255,255,255,0.2); }
         .contact-badge.copied { background: ${COLORS.greenDim}; color: ${COLORS.green}; border-color: rgba(34,211,165,0.3); }
+        .nx-status-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 999px; font-family: ${FONT_MONO}; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+        .nx-status-chip.ativo { color: ${COLORS.green}; background: ${COLORS.greenDim}; border: 1px solid rgba(34,211,165,.22); }
+        .nx-status-chip.pendente { color: ${COLORS.gold}; background: ${COLORS.goldDim}; border: 1px solid rgba(240,180,41,.22); }
+        .nx-status-chip.pausado, .nx-status-chip.expirado { color: ${COLORS.textDim}; background: rgba(255,255,255,.04); border: 1px solid ${COLORS.borderStrong}; }
+        .nx-overview-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr); gap: 18px; }
+        .nx-overview-card { border: 1px solid ${COLORS.border}; border-radius: 12px; background: ${COLORS.panelAlt}; padding: 18px; min-width: 0; }
+        .nx-overview-title { margin: 0 0 15px; color: #fff; font-family: ${FONT_DISPLAY}; font-size: 16px; }
+        .nx-signal-list { display: grid; gap: 10px; }
+        .nx-signal { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px; border: 1px solid ${COLORS.border}; border-radius: 10px; background: rgba(255,255,255,.018); }
+        .nx-signal strong { color: #fff; font-size: 13px; }
+        .nx-signal span { color: ${COLORS.textDim}; font-size: 12px; }
+        .nx-top-list { display: grid; gap: 8px; }
+        .nx-top-item { display: grid; grid-template-columns: 34px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 10px; border-radius: 9px; color: inherit; text-decoration: none; }
+        .nx-top-item:hover { background: rgba(255,255,255,.035); }
+        .nx-top-rank { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: ${COLORS.gold}; background: ${COLORS.goldDim}; font-family: ${FONT_MONO}; font-weight: 900; }
+        .nx-top-copy { min-width: 0; }
+        .nx-top-copy strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; font-size: 13px; }
+        .nx-top-copy span, .nx-top-metrics { color: ${COLORS.textDim}; font-size: 11px; }
+        @media (max-width: 860px) {
+          .nx-overview-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+          .nx-admin-root { padding: 22px 14px 64px !important; }
+          .nx-admin-header { align-items: flex-start !important; }
+          .nx-admin-title { font-size: 27px !important; }
+          .nx-admin-panel { padding: 14px !important; }
+          .nx-admin-table { min-width: 680px !important; }
+          .nx-admin-refresh { width: 100%; justify-content: center; }
+          .nx-signal { align-items: flex-start; flex-direction: column; }
+          .nx-top-item { grid-template-columns: 34px minmax(0,1fr); }
+          .nx-top-metrics { grid-column: 2; }
+        }
       `}</style>
 
       <div style={{ maxWidth: '1320px', margin: '0 auto' }}>
 
         {/* ===================== HEADER ===================== */}
-        <div style={{
+        <div className="nx-admin-header" style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
           borderBottom: `1px solid ${COLORS.border}`, paddingBottom: '24px', marginBottom: '32px',
           flexWrap: 'wrap', gap: '16px'
@@ -257,7 +265,7 @@ export default function AdminDashboard() {
               }} />
               Sistema operacional
             </div>
-            <h1 style={{
+            <h1 className="nx-admin-title" style={{
               margin: 0, fontSize: '34px', fontFamily: FONT_DISPLAY, fontWeight: 700,
               color: '#fff', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '12px'
             }}>
@@ -268,14 +276,20 @@ export default function AdminDashboard() {
               Bem-vindo ao quartel-general, <span style={{ color: COLORS.text, fontWeight: 600 }}>{user?.nome}</span>.
             </p>
           </div>
-          <div style={{
+          <button
+            type="button"
+            className="nx-btn nx-admin-refresh"
+            onClick={() => carregarQuartelGeneral(true)}
+            disabled={reloading}
+            style={{
             display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 18px',
             background: COLORS.goldDim, color: COLORS.gold, border: `1px solid rgba(240,180,41,0.25)`,
             borderRadius: '10px', fontSize: '12px', fontWeight: 700, fontFamily: FONT_MONO,
-            letterSpacing: '0.1em', textTransform: 'uppercase'
+            letterSpacing: '0.08em', textTransform: 'uppercase', cursor: reloading ? 'wait' : 'pointer'
           }}>
-            <Icon path={mdiShieldOutline} size={0.7} /> Nível: Máximo
-          </div>
+            <Icon path={reloading ? mdiLoading : mdiRefresh} size={0.7} style={reloading ? { animation: 'spin 1s linear infinite' } : undefined} />
+            {reloading ? 'A atualizar' : 'Atualizar dados'}
+          </button>
         </div>
 
         {erro && (
@@ -293,11 +307,12 @@ export default function AdminDashboard() {
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '28px'
         }}>
           {[
-            { label: 'Utilizadores', value: stats?.totalUsers ?? 0, sub: `${totalPremium} premium`, color: COLORS.blue, icon: <Icon path={mdiAccountMultiple} size={0.8} /> },
-            { label: 'Anúncios', value: stats?.totalAnuncios ?? 0, sub: `${anuncios.filter(a => a.destacado).length} destacados`, color: COLORS.purple, icon: <Icon path={mdiFileDocumentOutline} size={0.8} /> },
+            { label: 'Utilizadores', value: stats?.totalUsers ?? 0, sub: `+${stats?.novosUsers7d ?? 0} nos últimos 7 dias`, color: COLORS.blue, icon: <Icon path={mdiAccountMultiple} size={0.8} /> },
+            { label: 'Anúncios ativos', value: stats?.anunciosAtivos ?? 0, sub: `${stats?.anunciosPendentes ?? 0} pendentes`, color: COLORS.purple, icon: <Icon path={mdiFileDocumentOutline} size={0.8} /> },
+            { label: 'Visualizações', value: new Intl.NumberFormat('pt-PT').format(stats?.totalVisitas ?? 0), sub: 'interesse acumulado', color: COLORS.blue, icon: <Icon path={mdiEyeOutline} size={0.8} /> },
             { label: 'Drive', value: stats?.carrosAtivos ?? 0, sub: 'carros ativos', color: '#2ac1b4', icon: <Icon path={mdiCar} size={0.8} /> },
             { label: 'Estate', value: stats?.imoveisAtivos ?? 0, sub: 'imóveis ativos', color: '#3ecf8e', icon: <Icon path={mdiHomeOutline} size={0.8} /> },
-            { label: 'Faturação', value: `${(stats?.receitaTotal ?? 0).toFixed(2)}€`, sub: `conv. ${conversao}%`, color: COLORS.gold, icon: <Icon path={mdiCurrencyEur} size={0.8} /> },
+            { label: 'Receita confirmada', value: `${(stats?.receitaTotal ?? 0).toFixed(2)}€`, sub: `${(stats?.receita30Dias ?? 0).toFixed(2)}€ nos últimos 30 dias`, color: COLORS.gold, icon: <Icon path={mdiCurrencyEur} size={0.8} /> },
           ].map((m, i) => (
             <div key={i} className="nx-card" style={{
               background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: '14px',
@@ -322,39 +337,15 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* ===================== ALERT BAR ===================== */}
-        {pedidosDestaque.length > 0 && activeTab !== 'pedidos' && (
-          <div
-            onClick={() => setActiveTab('pedidos')}
-            style={{
-              cursor: 'pointer', background: COLORS.goldDim, border: `1px solid rgba(240,180,41,0.25)`,
-              borderRadius: '12px', padding: '14px 20px', marginBottom: '24px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px'
-            }}
-            className="nx-card"
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Icon path={mdiStar} size={0.9} color={COLORS.gold} />
-              <span style={{ fontSize: '14px', color: COLORS.text }}>
-                <strong style={{ color: COLORS.gold }}>{pedidosDestaque.length}</strong> pedido(s) de destaque à espera de validação
-                {' '}— receita potencial <strong style={{ color: COLORS.gold }}>{receitaPotencial.toFixed(2)}€</strong>
-              </span>
-            </div>
-            <span style={{ color: COLORS.gold, fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-              Rever agora <Icon path={mdiChevronDown} size={0.7} style={{ transform: 'rotate(-90deg)' }} />
-            </span>
-          </div>
-        )}
-
         {/* ===================== TABS ===================== */}
         <div style={{
           display: 'flex', gap: '6px', marginBottom: '20px', borderBottom: `1px solid ${COLORS.border}`,
           paddingBottom: '0px', overflowX: 'auto'
         }}>
           {[
+            { id: 'visao-geral', label: 'Visão geral', icon: <Icon path={mdiViewDashboardOutline} size={0.7} /> },
             { id: 'contas', label: 'Gestão & Auditoria', icon: <Icon path={mdiAccountMultiple} size={0.7} />, count: utilizadores.length },
             { id: 'anuncios', label: 'Moderação de Anúncios', icon: <Icon path={mdiFileDocumentOutline} size={0.7} />, count: anuncios.length },
-            { id: 'pedidos', label: 'Pedidos de Destaque', icon: <Icon path={mdiStar} size={0.7} />, count: pedidosDestaque.length, premium: true },
           ].map(tab => {
             const isActive = activeTab === tab.id;
             return (
@@ -391,7 +382,77 @@ export default function AdminDashboard() {
         <div style={{
           background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: '14px',
           padding: '24px', overflowX: 'auto'
-        }} className="nx-scroll">
+        }} className="nx-scroll nx-admin-panel">
+
+          {activeTab === 'visao-geral' && (
+            <div className="nx-overview-grid">
+              <section className="nx-overview-card">
+                <h2 className="nx-overview-title">Prioridades operacionais</h2>
+                <div className="nx-signal-list">
+                  <button
+                    type="button"
+                    className="nx-signal nx-btn"
+                    onClick={() => { setFilterTipo('pendente'); setActiveTab('anuncios'); }}
+                    style={{ width: '100%', cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <div>
+                      <strong>Anúncios pendentes</strong>
+                      <span style={{ display: 'block', marginTop: 3 }}>Rever conteúdo ainda marcado como pendente.</span>
+                    </div>
+                    <span className="nx-status-chip pendente">{stats?.anunciosPendentes ?? 0}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="nx-signal nx-btn"
+                    onClick={() => { setFilterTipo('pausado'); setActiveTab('anuncios'); }}
+                    style={{ width: '100%', cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <div>
+                      <strong>Anúncios pausados</strong>
+                      <span style={{ display: 'block', marginTop: 3 }}>Monitorizar inventário temporariamente indisponível.</span>
+                    </div>
+                    <span className="nx-status-chip pausado">{stats?.anunciosPausados ?? 0}</span>
+                  </button>
+                  <div className="nx-signal">
+                    <div>
+                      <strong>Base profissional e premium</strong>
+                      <span style={{ display: 'block', marginTop: 3 }}>{stats?.profissionais ?? 0} profissionais · {totalPremium} premium</span>
+                    </div>
+                    <span>{conversao}% conversão</span>
+                  </div>
+                  <div className="nx-signal">
+                    <div>
+                      <strong>Pagamentos por confirmar</strong>
+                      <span style={{ display: 'block', marginTop: 3 }}>Registos de pagamento que exigem acompanhamento.</span>
+                    </div>
+                    <span className={`nx-status-chip ${(stats?.pagamentosPendentes ?? 0) > 0 ? 'pendente' : 'ativo'}`}>
+                      {stats?.pagamentosPendentes ?? 0}
+                    </span>
+                  </div>
+                </div>
+              </section>
+
+              <section className="nx-overview-card">
+                <h2 className="nx-overview-title">Anúncios com mais alcance</h2>
+                {topAnuncios.length > 0 ? (
+                  <div className="nx-top-list">
+                    {topAnuncios.map((anuncio, index) => (
+                      <Link key={anuncio._id} to={`/anuncio/${anuncio._id}`} className="nx-top-item">
+                        <span className="nx-top-rank">{index + 1}</span>
+                        <span className="nx-top-copy">
+                          <strong>{anuncio.titulo}</strong>
+                          <span>{anuncio.tipo === 'carro' ? 'Drive' : 'Estate'} · {anuncio.utilizador?.nome || 'Sem proprietário'}</span>
+                        </span>
+                        <span className="nx-top-metrics">{anuncio.visitas || 0} visitas · {anuncio.guardados || 0} favoritos</span>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ color: COLORS.textDim, fontSize: 13, padding: '28px 0' }}>Ainda não existem anúncios ativos com dados de alcance.</div>
+                )}
+              </section>
+            </div>
+          )}
 
           {/* ---------- CONTAS / AUDITORIA ---------- */}
           {activeTab === 'contas' && (
@@ -412,7 +473,7 @@ export default function AdminDashboard() {
                 resultCount={utilizadoresFiltrados.length}
                 totalCount={utilizadores.length}
               />
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
+              <table className="nx-admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
                 <thead>
                   <tr style={{ color: COLORS.textFaint, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: `1px solid ${COLORS.border}`, fontFamily: FONT_MONO }}>
                     <th style={{ padding: '10px 12px' }}>Utilizador & Contactos</th>
@@ -506,29 +567,34 @@ export default function AdminDashboard() {
                   { id: 'todos', label: 'Todos' },
                   { id: 'carro', label: 'Drive' },
                   { id: 'imovel', label: 'Estate' },
+                  { id: 'ativo', label: 'Ativos' },
+                  { id: 'pendente', label: 'Pendentes' },
+                  { id: 'pausado', label: 'Pausados' },
                 ]}
                 activeFilter={filterTipo}
                 onFilter={setFilterTipo}
                 resultCount={anunciosFiltrados.length}
                 totalCount={anuncios.length}
               />
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
+              <table className="nx-admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '820px' }}>
                 <thead>
                   <tr style={{ color: COLORS.textFaint, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: `1px solid ${COLORS.border}`, fontFamily: FONT_MONO }}>
                     <th style={{ padding: '10px 12px' }}>Anúncio</th>
-                    <th style={{ padding: '10px 12px' }}>Universo</th>
+                    <th style={{ padding: '10px 12px' }}>Área / Estado</th>
                     <th style={{ padding: '10px 12px' }}>Proprietário</th>
+                    <th style={{ padding: '10px 12px' }}>Interação</th>
+                    <th style={{ padding: '10px 12px' }}>Publicado</th>
                     <th style={{ padding: '10px 12px', textAlign: 'right' }}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {anunciosFiltrados.length === 0 ? (
-                    <EmptyRow colSpan={4} text="Nenhum anúncio corresponde aos filtros aplicados." />
+                    <EmptyRow colSpan={6} text="Nenhum anúncio corresponde aos filtros aplicados." />
                   ) : (
                     anunciosFiltrados.map((a, idx) => (
                       <tr key={a._id} className="nx-row" style={{ borderBottom: `1px solid ${COLORS.border}`, color: '#cbd5e1', animationDelay: `${idx * 0.02}s` }}>
                         <td style={{ padding: '14px 12px', fontWeight: 500, color: '#fff', fontSize: '14px' }}>
-                          <Link to={`/anuncio/${a._id}`} target="_blank" style={{ color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Link to={`/anuncio/${a._id}`} target="_blank" rel="noreferrer" style={{ color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <span style={{ textDecoration: 'underline', textUnderlineOffset: '4px' }}>{a.titulo || 'Anúncio Sem Título'}</span>
                             <Icon path={mdiOpenInNew} size={0.5} color={COLORS.textDim} />
                             {a.destacado && (
@@ -543,12 +609,21 @@ export default function AdminDashboard() {
                           </Link>
                         </td>
                         <td style={{ padding: '14px 12px' }}>
-                          {a.tipo === 'carro'
-                            ? <TipoTag color="#2ac1b4" icon={<Icon path={mdiCar} size={0.6} />} label="Drive" />
-                            : <TipoTag color="#3ecf8e" icon={<Icon path={mdiHomeOutline} size={0.6} />} label="Estate" />}
+                          <div style={{ display: 'grid', gap: 7 }}>
+                            {a.tipo === 'carro'
+                              ? <TipoTag color="#2ac1b4" icon={<Icon path={mdiCar} size={0.6} />} label="Drive" />
+                              : <TipoTag color="#3ecf8e" icon={<Icon path={mdiHomeOutline} size={0.6} />} label="Estate" />}
+                            <span className={`nx-status-chip ${a.estado || 'pendente'}`}>{a.estado || 'pendente'}</span>
+                          </div>
                         </td>
                         <td style={{ padding: '14px 12px', color: COLORS.textDim, fontSize: '13px' }}>
                           {a.utilizador?.nome || 'Utilizador Removido'}
+                        </td>
+                        <td style={{ padding: '14px 12px', color: COLORS.textDim, fontSize: '12px', fontFamily: FONT_MONO, whiteSpace: 'nowrap' }}>
+                          {a.visitas || 0} visitas<br />{a.guardados || 0} favoritos · {a.contactos || 0} contactos
+                        </td>
+                        <td style={{ padding: '14px 12px', color: COLORS.textDim, fontSize: '12px', fontFamily: FONT_MONO, whiteSpace: 'nowrap' }}>
+                          {a.createdAt ? formatarData(a.createdAt) : '—'}
                         </td>
                         <td style={{ padding: '14px 12px', textAlign: 'right' }}>
                           <ActionButton
@@ -566,101 +641,6 @@ export default function AdminDashboard() {
               </table>
             </>
           )}
-
-          {/* ---------- PEDIDOS DE DESTAQUE ---------- */}
-          {activeTab === 'pedidos' && (
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
-              <thead>
-                <tr style={{ color: COLORS.textFaint, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: `1px solid ${COLORS.border}`, fontFamily: FONT_MONO }}>
-                  <th style={{ padding: '10px 12px' }}>Anúncio Alvo</th>
-                  <th style={{ padding: '10px 12px' }}>Proprietário</th>
-                  <th style={{ padding: '10px 12px' }}>Método / Referência</th>
-                  <th style={{ padding: '10px 12px' }}>Comprovativo</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'right' }}>Decisão Real</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pedidosDestaque.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" style={{ padding: '48px', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-                        <Icon path={mdiClockOutline} size={1.5} color={COLORS.textFaint} />
-                      </div>
-                      <div style={{ color: COLORS.textDim, fontStyle: 'italic', fontSize: '14px' }}>
-                        Nenhum pagamento pendente de validação.
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  pedidosDestaque.map((p, idx) => (
-                    <tr key={p._id} className="nx-row" style={{ borderBottom: `1px solid ${COLORS.border}`, color: '#cbd5e1', animationDelay: `${idx * 0.02}s` }}>
-                      <td style={{ padding: '16px 12px' }}>
-                        <div style={{ fontWeight: 600, color: '#fff', fontSize: '14px' }}>{p.titulo}</div>
-                        <div style={{ fontSize: '12px', color: p.tipo === 'carro' ? '#2ac1b4' : '#3ecf8e', marginTop: '2px' }}>
-                          {p.tipo === 'carro' ? '🚗 Drive' : '🏠 Estate'} • {p.preco}€
-                        </div>
-                      </td>
-                      <td style={{ padding: '16px 12px' }}>
-                        <div style={{ color: '#fff', fontSize: '14px' }}>{p.utilizador?.nome}</div>
-                        <div style={{ fontSize: '12px', color: COLORS.textFaint, fontFamily: FONT_MONO }}>{p.utilizador?.email}</div>
-                      </td>
-                      <td style={{ padding: '16px 12px' }}>
-                        <span style={{
-                          textTransform: 'uppercase', fontSize: '10px', fontWeight: 800, background: 'rgba(255,255,255,0.04)',
-                          padding: '4px 7px', borderRadius: '5px', marginRight: '8px',
-                          color: p.pedidoDestaque?.metodo === 'mbway' ? COLORS.green : COLORS.blue,
-                          fontFamily: FONT_MONO, letterSpacing: '0.05em'
-                        }}>
-                          {p.pedidoDestaque?.metodo}
-                        </span>
-                        <span style={{ fontFamily: FONT_MONO, fontSize: '13px', color: '#fff' }}>
-                          {p.pedidoDestaque?.referencia}
-                        </span>
-                      </td>
-                      <td style={{ padding: '16px 12px' }}>
-                        {p.pedidoDestaque?.comprovativoUrl ? (
-                          <a
-                            href={p.pedidoDestaque.comprovativoUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              color: COLORS.blue, textDecoration: 'none', display: 'inline-flex',
-                              alignItems: 'center', gap: '5px', fontSize: '13px', fontWeight: 500,
-                              padding: '5px 10px', borderRadius: '6px', background: COLORS.blueDim,
-                              border: `1px solid rgba(91,157,255,0.2)`
-                            }}
-                          >
-                            Abrir Imagem <Icon path={mdiOpenInNew} size={0.6} />
-                          </a>
-                        ) : (
-                          <span style={{ color: COLORS.textFaint, fontSize: '13px', fontStyle: 'italic' }}>Não anexado</span>
-                        )}
-                      </td>
-                      <td style={{ padding: '16px 12px', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                          <ActionButton
-                            onClick={() => aprovarDestaque(p._id, p.titulo)}
-                            loading={isDeleting === p._id}
-                            color={COLORS.green}
-                            solid
-                            icon={<Icon path={mdiCheck} size={0.6} />}
-                            label="Aprovar"
-                          />
-                          <ActionButton
-                            onClick={() => rejeitarDestaque(p._id)}
-                            loading={isDeleting === p._id}
-                            color={COLORS.red}
-                            icon={<Icon path={mdiClose} size={0.6} />}
-                            label="Recusar"
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          )}
         </div>
 
         {/* ===================== FOOTER STRIP ===================== */}
@@ -669,9 +649,12 @@ export default function AdminDashboard() {
           color: COLORS.textFaint, fontSize: '12px', fontFamily: FONT_MONO, flexWrap: 'wrap', gap: '8px'
         }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Icon path={mdiChartTimelineVariant} size={0.6} /> Painel atualizado em tempo real
+            <Icon path={mdiChartTimelineVariant} size={0.6} />
+            {ultimaAtualizacao
+              ? `Última atualização às ${ultimaAtualizacao.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
+              : 'Dados operacionais'}
           </span>
-          <span>NOXVELIA &middot; Soberania v2</span>
+          <span>NOXVELIA &middot; Administração</span>
         </div>
       </div>
     </div>

@@ -41,7 +41,7 @@ export default function SucessoUpsell() {
         .upsell-header { text-align: center; margin-bottom: 48px; max-width: 600px; animation: slideDown 0.4s ease-out; }
         .upsell-title { font-family: var(--nx-font-display); font-size: 36px; font-weight: 800; letter-spacing: -0.02em; margin: 16px 0 8px 0; }
         .upsell-subtitle { font-size: 16px; color: var(--nx-text-sub); line-height: 1.5; }
-        .upsell-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; width: 100%; max-width: 800px; animation: fadeIn 0.6s ease-out; }
+        .upsell-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 24px; width: 100%; max-width: 800px; animation: fadeIn 0.6s ease-out; }
         .upsell-card { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: var(--nx-radius-lg); padding: 40px 32px; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: var(--nx-shadow-card); transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .upsell-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         .upsell-card.premium { border-color: var(--nx-gold); background: linear-gradient(180deg, var(--nx-card-bg) 0%, rgba(234, 179, 8, 0.03) 100%); }
@@ -61,6 +61,12 @@ export default function SucessoUpsell() {
         .btn-free:hover { background: var(--nx-bg-2); color: var(--nx-text); border-color: var(--nx-text); }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @media (max-width: 560px) {
+          .upsell-root { padding: 38px 16px 56px; }
+          .upsell-header { margin-bottom: 30px; }
+          .upsell-title { font-size: 30px; }
+          .upsell-card { padding: 32px 22px; }
+        }
       `}</style>
 
       <div className="upsell-root">

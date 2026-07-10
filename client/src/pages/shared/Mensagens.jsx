@@ -186,6 +186,7 @@ export default function Mensagens() {
         .chat-main-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; text-align: center; }
         .chat-main-header { padding: 18px 32px; background: white; border-bottom: 1px solid #e5e3e0; display: flex; align-items: center; justify-content: space-between; }
         .chat-main-header-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: #0d0d0d; }
+        .chat-mobile-back { display: none; border: 1px solid #e5e3e0; background: #ffffff; color: #0d0d0d; border-radius: 8px; width: 40px; height: 40px; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         
         .chat-body { flex: 1; padding: 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
         .msg-row { display: flex; width: 100%; }
@@ -210,9 +211,23 @@ export default function Mensagens() {
         .chat-input:focus { border-color: #0d0d0d; }
         .chat-btn { padding: 0 24px; background: #0d0d0d; color: white; border: none; border-radius: 6px; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; }
         .chat-btn:disabled { background: #ccc; cursor: not-allowed; }
+        @media (max-width: 760px) {
+          .chat-root { min-height: calc(100dvh - 68px); }
+          .chat-sidebar { width: 100%; border-right: 0; }
+          .chat-root.has-active .chat-sidebar { display: none; }
+          .chat-root:not(.has-active) .chat-main { display: none; }
+          .chat-main-header { padding: 13px 14px; justify-content: flex-start; gap: 10px; }
+          .chat-mobile-back { display: inline-flex; }
+          .chat-body { padding: 18px 14px; gap: 12px; }
+          .msg-bubble { max-width: 86%; overflow-wrap: anywhere; }
+          .chat-footer { padding: 12px 14px max(12px, env(safe-area-inset-bottom)); }
+          .chat-input-form { gap: 8px; }
+          .chat-input { min-width: 0; padding: 12px; }
+          .chat-btn { min-width: 76px; padding: 0 14px; }
+        }
       `}</style>
 
-      <div className="chat-root">
+      <div className={`chat-root${conversaAtiva ? ' has-active' : ''}`}>
         <div className="chat-sidebar">
           <Link to={rotaVoltar} className="chat-sidebar-back-btn">
             ← Voltar aos {labelVoltar}
@@ -275,6 +290,9 @@ export default function Mensagens() {
           {conversaAtiva ? (
             <>
               <div className="chat-main-header">
+                <button type="button" className="chat-mobile-back" onClick={() => setConversaAtiva(null)} aria-label="Voltar às conversas">
+                  ←
+                </button>
                 <div>
                   <div className="chat-main-header-title">{conversaAtiva.anuncio?.titulo}</div>
                   <div style={{ fontSize: '11px', color: '#666', marginTop: '2px' }}>

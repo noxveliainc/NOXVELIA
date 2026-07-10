@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '@mdi/react';
 import {
@@ -12,44 +12,6 @@ import Footer from '../../components/Footer';
 
 const formatarMoeda = (valor) =>
   new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
-
-const fallbackDrive = [
-  {
-    titulo: 'Porsche 911 Carrera S',
-    preco: 82900,
-    tipo: 'carro',
-    fotos: ['https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=84'],
-    localizacao: { cidade: 'Porto' },
-    carro: { marca: 'Porsche', modelo: '911', km: 42000, combustivel: 'Gasolina' },
-  },
-  {
-    titulo: 'Tesla Model 3 Long Range',
-    preco: 34900,
-    tipo: 'carro',
-    fotos: ['https://images.unsplash.com/photo-1619767886558-efdc259b6e09?auto=format&fit=crop&w=900&q=84'],
-    localizacao: { cidade: 'Lisboa' },
-    carro: { marca: 'Tesla', modelo: 'Model 3', km: 68000, combustivel: 'Eléctrico' },
-  },
-];
-
-const fallbackEstate = [
-  {
-    titulo: 'Apartamento T3 com varanda',
-    preco: 415000,
-    tipo: 'imovel',
-    fotos: ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=84'],
-    localizacao: { cidade: 'Cascais' },
-    imovel: { tipologia: 'T3', area: 128 },
-  },
-  {
-    titulo: 'Moradia contemporânea com jardim',
-    preco: 690000,
-    tipo: 'imovel',
-    fotos: ['https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=84'],
-    localizacao: { cidade: 'Braga' },
-    imovel: { tipoImovel: 'Moradia', area: 214 },
-  },
-];
 
 const tendencias = [
   {
@@ -72,24 +34,29 @@ const tendencias = [
 export default function Landing() {
   const navigate = useNavigate();
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
+  const [loadingExemplos, setLoadingExemplos] = useState(true);
+  const [erroExemplos, setErroExemplos] = useState(false);
 
   useEffect(() => {
     let ativo = true;
 
     const carregarExemplos = async () => {
       try {
-        const [drive, estate] = await Promise.all([
-          api.get('/anuncios', { params: { tipo: 'carro', limit: 2 } }),
-          api.get('/anuncios', { params: { tipo: 'imovel', limit: 2 } }),
-        ]);
+        const { data } = await api.get('/anuncios/em-alta/semana');
 
         if (!ativo) return;
         setExemplos({
-          carro: (drive.data?.anuncios || drive.data || []).slice(0, 2),
-          imovel: (estate.data?.anuncios || estate.data || []).slice(0, 2),
+          carro: (data?.carro || []).slice(0, 2),
+          imovel: (data?.imovel || []).slice(0, 2),
         });
+        setErroExemplos(false);
       } catch {
-        if (ativo) setExemplos({ carro: [], imovel: [] });
+        if (ativo) {
+          setExemplos({ carro: [], imovel: [] });
+          setErroExemplos(true);
+        }
+      } finally {
+        if (ativo) setLoadingExemplos(false);
       }
     };
 
@@ -97,23 +64,15 @@ export default function Landing() {
     return () => { ativo = false; };
   }, []);
 
-  const exemplosDrive = useMemo(() => exemplos.carro.length ? exemplos.carro : fallbackDrive, [exemplos.carro]);
-  const exemplosEstate = useMemo(() => exemplos.imovel.length ? exemplos.imovel : fallbackEstate, [exemplos.imovel]);
-
   const abrirExemplo = (anuncio, origem) => {
     localStorage.setItem('@App:contexto_visual', origem === '/carros' ? 'carro' : 'imovel');
-    if (!anuncio?._id) {
-      navigate(origem);
-      return;
-    }
-
     window.history.replaceState(window.history.state, '', origem);
     navigate(`/anuncio/${anuncio._id}`);
   };
 
-  const renderExemplo = (anuncio, origem, fallbackIndex) => {
+  const renderExemplo = (anuncio, origem) => {
     const isCarro = anuncio.tipo === 'carro';
-    const foto = anuncio.fotos?.[0] || anuncio.imagens?.[0] || (isCarro ? fallbackDrive : fallbackEstate)[fallbackIndex]?.fotos?.[0];
+    const foto = anuncio.fotos?.[0] || anuncio.imagens?.[0];
     const detalhe = isCarro
       ? [
           anuncio.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null,
@@ -127,12 +86,17 @@ export default function Landing() {
     return (
       <button
         type="button"
-        key={anuncio._id || `${origem}-${fallbackIndex}`}
+        key={anuncio._id}
         className={`lp-example-card ${isCarro ? 'drive' : 'estate'}`}
         onClick={() => abrirExemplo(anuncio, origem)}
       >
         <span className="lp-example-img">
-          {foto && <img src={foto} alt={anuncio.titulo} loading="lazy" />}
+          {foto ? (
+            <img src={foto} alt={anuncio.titulo} loading="lazy" />
+          ) : (
+            <span className="lp-example-no-photo">Sem fotografia</span>
+          )}
+          <span className="lp-example-weekly">{anuncio.visitasSemana || 0} visitas esta semana</span>
         </span>
         <span className="lp-example-body">
           <span className="lp-example-price">{formatarMoeda(anuncio.preco)}</span>
@@ -147,6 +111,22 @@ export default function Landing() {
           </span>
         </span>
       </button>
+    );
+  };
+
+  const renderEstadoLista = (tipo, rota) => {
+    if (loadingExemplos) {
+      return <div className="lp-example-state">A carregar os anúncios com mais interesse…</div>;
+    }
+
+    return (
+      <div className="lp-example-state">
+        <strong>{erroExemplos ? 'Não foi possível carregar esta seleção.' : `Ainda não existem anúncios publicados em ${tipo}.`}</strong>
+        <span>{erroExemplos ? 'Podes explorar diretamente a pesquisa.' : 'Assim que forem publicados, aparecem aqui sem conteúdo fictício.'}</span>
+        <button type="button" className="lp-column-link" onClick={() => navigate(rota)}>
+          Explorar {tipo} <Icon path={mdiArrowRight} size={0.58} />
+        </button>
+      </div>
     );
   };
 
@@ -359,7 +339,7 @@ export default function Landing() {
         }
         .lp-examples-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 18px;
         }
         .lp-example-column {
@@ -400,9 +380,6 @@ export default function Landing() {
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 12px;
         }
-        .lp-example-column.estate .lp-example-list {
-          grid-template-columns: 1fr;
-        }
         .lp-example-card {
           border: 1px solid #e2e8f0;
           background: #ffffff;
@@ -427,6 +404,7 @@ export default function Landing() {
           aspect-ratio: 16/10;
           background: #f1f5f9;
           overflow: hidden;
+          position: relative;
         }
         .lp-example-img img {
           width: 100%;
@@ -434,6 +412,50 @@ export default function Landing() {
           object-fit: cover;
           display: block;
         }
+        .lp-example-no-photo {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #94a3b8;
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: .08em;
+        }
+        .lp-example-weekly {
+          position: absolute;
+          left: 9px;
+          bottom: 9px;
+          max-width: calc(100% - 18px);
+          padding: 6px 8px;
+          border-radius: 999px;
+          background: rgba(15,23,42,.84);
+          color: #ffffff;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: .04em;
+          backdrop-filter: blur(8px);
+        }
+        .lp-example-state {
+          grid-column: 1 / -1;
+          min-height: 190px;
+          border: 1px dashed #cbd5e1;
+          border-radius: 12px;
+          background: #f8fafc;
+          padding: 26px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          gap: 8px;
+          color: #64748b;
+          font-size: 13px;
+          line-height: 1.5;
+        }
+        .lp-example-state strong { color: #0f172a; font-size: 15px; }
+        .lp-example-state .lp-column-link { padding: 7px 0; color: #0f766e; }
         .lp-example-body {
           display: grid;
           gap: 6px;
@@ -629,10 +651,10 @@ export default function Landing() {
           <div className="lp-shell">
             <div className="lp-section-head">
               <div>
-                <span className="lp-eyebrow">Exemplos em destaque</span>
-                <h2 className="lp-title">Do primeiro olhar ao clique no anúncio.</h2>
+                <span className="lp-eyebrow">Mais vistos esta semana</span>
+                <h2 className="lp-title">O que está a despertar mais interesse.</h2>
                 <p className="lp-copy">
-                  Exemplos de apresentação nas duas verticais. Se o anúncio vier da base de dados, o clique abre a página real e o voltar do browser regressa à vertical certa.
+                  Até dois anúncios publicados e reais de cada área, ordenados pelas visitas dos últimos sete dias. A seleção atualiza-se automaticamente com o interesse dos visitantes.
                 </p>
               </div>
             </div>
@@ -640,21 +662,25 @@ export default function Landing() {
             <div className="lp-examples-grid">
               <div className="lp-example-column drive">
                 <div className="lp-column-top">
-                  <h3 className="lp-column-title">Drive em primeiro plano</h3>
+                  <h3 className="lp-column-title">Noxvelia Drive</h3>
                   <button className="lp-column-link" onClick={() => navigate('/carros')}>Ver carros <Icon path={mdiArrowRight} size={0.58} /></button>
                 </div>
                 <div className="lp-example-list">
-                  {exemplosDrive.map((anuncio, index) => renderExemplo(anuncio, '/carros', index))}
+                  {exemplos.carro.length > 0
+                    ? exemplos.carro.map((anuncio) => renderExemplo(anuncio, '/carros'))
+                    : renderEstadoLista('Drive', '/carros')}
                 </div>
               </div>
 
               <div className="lp-example-column estate">
                 <div className="lp-column-top">
-                  <h3 className="lp-column-title">Estate com presença real</h3>
+                  <h3 className="lp-column-title">Noxvelia Estate</h3>
                   <button className="lp-column-link" onClick={() => navigate('/imoveis')}>Ver imóveis <Icon path={mdiArrowRight} size={0.58} /></button>
                 </div>
                 <div className="lp-example-list">
-                  {exemplosEstate.map((anuncio, index) => renderExemplo(anuncio, '/imoveis', index))}
+                  {exemplos.imovel.length > 0
+                    ? exemplos.imovel.map((anuncio) => renderExemplo(anuncio, '/imoveis'))
+                    : renderEstadoLista('Estate', '/imoveis')}
                 </div>
               </div>
             </div>

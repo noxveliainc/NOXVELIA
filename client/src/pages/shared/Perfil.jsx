@@ -373,15 +373,32 @@ export default function Perfil() {
         .tab-btn.active-imovel { background: #3ecf8e; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .tab-btn.active-carro { background: #2ac1b4; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 24px; }
         .card-wrapper { display: flex; flex-direction: column; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px; gap: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); transition: border-color .2s; }
         .card-wrapper:hover { border-color: #cbd5e1; }
         
-        .btn-destacar { width: 100%; padding: 10px; background: #fefce8; color: #a16207; border: 1px solid #fde047; border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+        .btn-destacar,
+        .badge-destacado,
+        .analytics-trigger-btn {
+          width: 100%;
+          min-height: 42px;
+          padding: 10px 12px;
+          border-radius: 8px;
+          box-sizing: border-box;
+          font-size: 11px;
+          font-weight: 800;
+          line-height: 1.2;
+          text-transform: uppercase;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        }
+        .btn-destacar { background: #fefce8; color: #a16207; border: 1px solid #fde047; cursor: pointer; transition: all 0.2s; }
         .btn-destacar:hover { background: #fef08a; }
-        .badge-destacado { width: 100%; padding: 10px; background: #fefce8; color: #ca8a04; border: 1px dashed #fde047; border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; text-align: center; }
+        .badge-destacado { background: #fefce8; color: #ca8a04; border: 1px dashed #fde047; text-align: center; }
         
-        .analytics-trigger-btn { width: 100%; padding: 10px; background: #f8fafc; border: 1px dashed #cbd5e1; color: #64748b; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;}
+        .analytics-trigger-btn { background: #f8fafc; border: 1px dashed #cbd5e1; color: #64748b; cursor: pointer; transition: all 0.2s;}
         .analytics-trigger-btn:hover { border-color: #2ac1b4; color: #0d9488; background: #f1f5f9; }
         
         .analytics-panel { margin-top: 4px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }

@@ -377,7 +377,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
         .pesquisa-clear-btn { display: inline-flex; align-items: center; gap: 6px; background: #ffffff; color: #64748b; border: 1px solid #e2e8f0; border-radius: 999px; padding: 8px 11px; font-size: 12px; font-weight: 800; cursor: pointer; }
         .pesquisa-clear-btn:hover { border-color: #cbd5e1; color: #0f172a; }
 
-        .pesquisa-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+        .pesquisa-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 24px; }
 
         .pesquisa-root { background: var(--nx-bg); }
         .pesquisa-layout {

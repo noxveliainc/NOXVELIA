@@ -89,6 +89,66 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Anúncios reais com maior interesse nos últimos 7 dias para a landing page.
+// Em caso de empate, privilegiamos o interesse acumulado, os favoritos e a recência.
+router.get('/em-alta/semana', async (req, res) => {
+  try {
+    const inicio = new Date();
+    inicio.setUTCDate(inicio.getUTCDate() - 6);
+    const inicioStr = inicio.toISOString().slice(0, 10);
+
+    const ranking = [
+      {
+        $addFields: {
+          visitasSemana: {
+            $sum: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: { $ifNull: ['$historicoVisitas', []] },
+                    as: 'visita',
+                    cond: { $gte: ['$$visita.data', inicioStr] }
+                  }
+                },
+                as: 'visita',
+                in: { $ifNull: ['$$visita.quantidade', 0] }
+              }
+            }
+          }
+        }
+      },
+      { $sort: { visitasSemana: -1, visitas: -1, guardados: -1, createdAt: -1 } },
+      { $limit: 2 }
+    ];
+
+    const [resultado] = await Anuncio.aggregate([
+      { $match: { estado: { $ne: 'apagado' }, tipo: { $in: ['carro', 'imovel'] } } },
+      {
+        $facet: {
+          carro: [{ $match: { tipo: 'carro' } }, ...ranking],
+          imovel: [{ $match: { tipo: 'imovel' } }, ...ranking]
+        }
+      }
+    ]);
+
+    const [carro, imovel] = await Promise.all([
+      Anuncio.populate(resultado?.carro || [], {
+        path: 'utilizador',
+        select: 'nome avatarUrl tipo telefone premiumAtivo'
+      }),
+      Anuncio.populate(resultado?.imovel || [], {
+        path: 'utilizador',
+        select: 'nome avatarUrl tipo telefone premiumAtivo'
+      })
+    ]);
+
+    res.json({ carro, imovel });
+  } catch (error) {
+    console.error('Erro ao carregar anúncios em alta:', error);
+    res.status(500).json({ erro: 'Erro ao carregar os anúncios em alta.' });
+  }
+});
+
 // ─────────────────────────────────────────────────────────────
 // 2. MAPA DE RESULTADOS
 // ─────────────────────────────────────────────────────────────
@@ -145,13 +205,62 @@ router.get('/favoritos', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
   try {
-    const anuncio = await Anuncio.findById(req.params.id)
-      .populate('utilizador', 'nome email avatarUrl tipo telefone premiumAtivo');
-    if (!anuncio || anuncio.estado === 'apagado')
+    const hoje = new Date().toISOString().slice(0, 10);
+    const anuncio = await Anuncio.findOneAndUpdate(
+      { _id: req.params.id, estado: { $ne: 'apagado' } },
+      [
+        {
+          $set: {
+            visitas: { $add: [{ $ifNull: ['$visitas', 0] }, 1] },
+            historicoVisitas: {
+              $let: {
+                vars: { historico: { $ifNull: ['$historicoVisitas', []] } },
+                in: {
+                  $cond: [
+                    {
+                      $in: [
+                        hoje,
+                        {
+                          $map: {
+                            input: '$$historico',
+                            as: 'visita',
+                            in: '$$visita.data'
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      $map: {
+                        input: '$$historico',
+                        as: 'visita',
+                        in: {
+                          $cond: [
+                            { $eq: ['$$visita.data', hoje] },
+                            {
+                              $mergeObjects: [
+                                '$$visita',
+                                { quantidade: { $add: [{ $ifNull: ['$$visita.quantidade', 0] }, 1] } }
+                              ]
+                            },
+                            '$$visita'
+                          ]
+                        }
+                      }
+                    },
+                    { $concatArrays: ['$$historico', [{ data: hoje, quantidade: 1 }]] }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ],
+      { new: true }
+    ).populate('utilizador', 'nome email avatarUrl tipo telefone premiumAtivo');
+
+    if (!anuncio)
       return res.status(404).json({ erro: 'Anúncio removido.' });
 
-    anuncio.visitas += 1;
-    await anuncio.save({ validateBeforeSave: false });
     res.json(anuncio);
   } catch (err) {
     res.status(500).json({ erro: 'Erro ao buscar o anúncio.' });

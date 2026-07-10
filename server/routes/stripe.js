@@ -35,7 +35,7 @@ router.post('/checkout', verificarToken, async (req, res) => {
       // 🆕 NOVO PACOTE — 1.99€, 5 dias de destaque
       preco = 199;
       nomeProduto = 'Destaque (5 dias)';
-      tipoPagamento = 'destaque5';
+      tipoPagamento = 'destaque';
     } else if (pacote === 'gold') {
       preco = 799;
       nomeProduto = 'Destaque Gold (7 dias)';
