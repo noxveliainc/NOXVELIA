@@ -10,6 +10,7 @@ import NavbarCarro from './components/carros/NavbarCarro';
 import NavbarImovel from './components/imoveis/NavbarImovel';
 import PageTransition from './components/PageTransition'; 
 import Footer from './components/Footer';
+import CookieConsent from './components/CookieConsent';
 
 // --- PÁGINAS (lazy) ---
 const Landing        = lazy(() => import('./pages/shared/Landing'));
@@ -102,6 +103,7 @@ function AppShell() {
         </Suspense>
       </main>
       {!esconderFooter && <Footer />}
+      <CookieConsent />
     </div>
   );
 }

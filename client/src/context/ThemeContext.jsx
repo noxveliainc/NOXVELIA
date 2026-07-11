@@ -5,7 +5,11 @@ const ThemeContext = createContext();
 export function ThemeProvider({ children }) {
   // O padrão é sempre o imaculado Modo Escuro
   const [tema, setTema] = useState(() => {
-    return localStorage.getItem('@App:tema') || 'nx-dark';
+    try {
+      return localStorage.getItem('@App:tema') || 'nx-dark';
+    } catch {
+      return 'nx-dark';
+    }
   });
 
   useEffect(() => {
@@ -13,13 +17,18 @@ export function ThemeProvider({ children }) {
     const root = document.documentElement;
     root.classList.remove('nx-dark', 'nx-light');
     root.classList.add(tema);
-    
-    // Guarda na memória para não haver "flashes" ao recarregar a página
-    localStorage.setItem('@App:tema', tema);
   }, [tema]);
 
   const toggleTema = () => {
-    setTema(prev => prev === 'nx-dark' ? 'nx-light' : 'nx-dark');
+    setTema((prev) => {
+      const proximoTema = prev === 'nx-dark' ? 'nx-light' : 'nx-dark';
+      try {
+        localStorage.setItem('@App:tema', proximoTema);
+      } catch {
+        // O tema continua a funcionar nesta sessão se o navegador bloquear armazenamento.
+      }
+      return proximoTema;
+    });
   };
 
   return (

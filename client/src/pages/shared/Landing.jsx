@@ -1033,16 +1033,6 @@ export default function Landing() {
         }
 
         @media (max-width: 700px) {
-          #bmc-wbtn {
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-          }
-
-          body > div:has(> #bmc-iframe) {
-            display: none !important;
-          }
-
           .lp-shell {
             width: min(100% - 32px, 1260px);
           }

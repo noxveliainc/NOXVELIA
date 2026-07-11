@@ -6,7 +6,9 @@ export default function UserMenu({ theme }) {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem('@App:token');
+    localStorage.removeItem('@App:user');
+    localStorage.removeItem('user');
     navigate('/');
     window.location.reload();
   };
