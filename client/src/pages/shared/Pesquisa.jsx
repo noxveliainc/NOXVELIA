@@ -74,6 +74,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
 
   const tipoSeguro = location.pathname.includes('carro') ? 'carro' : (tipoPadrao || 'imovel');
   const tipoInicial = searchParams.get('tipo') || tipoSeguro;
+  const marcaUrl = searchParams.get('marca') || '';
+  const marcaInicial = tipoSeguro === 'carro' && MARCAS.includes(marcaUrl) ? marcaUrl : '';
 
   const [resultados, setResultados] = useState([]);
   const [dadosMapa, setDadosMapa] = useState([]);
@@ -90,7 +92,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
   const [vistaAtiva, setVistaAtiva] = useState('grelha');
 
   const [filtros, setFiltros] = useState({
-    tipo: tipoInicial, precoMin: '', precoMax: '', distrito: 'Todos', cidade: '', marca: '', modelo: '', tipologias: [], combustiveis: [], transmissao: [],
+    tipo: tipoInicial, precoMin: '', precoMax: '', distrito: 'Todos', cidade: '', marca: marcaInicial, modelo: '', tipologias: [], combustiveis: [], transmissao: [],
   });
 
   const sentinelaRef = useRef(null);
@@ -99,6 +101,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
   const paginaRef = useRef(1);
   const filtrosRef = useRef(filtros);
   const sortRef = useRef(sort);
+  const sortAnteriorRef = useRef(sort);
   const buscaRef = useRef('');
   const isMounted = useRef(false);
 
@@ -200,11 +203,50 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
   }, [tipoPadrao, location.pathname]);
 
   useEffect(() => {
-    setFiltros(f => ({ ...f, tipo: tipoSeguro, marca: '', modelo: '', cidade: '', tipologias: [], combustiveis: [], transmissao: [] }));
+    const filtrosIniciais = {
+      ...filtrosRef.current,
+      tipo: tipoSeguro,
+      marca: marcaInicial,
+      modelo: '',
+      cidade: '',
+      tipologias: [],
+      combustiveis: [],
+      transmissao: [],
+    };
+
+    filtrosRef.current = filtrosIniciais;
+    setFiltros(filtrosIniciais);
     setSidebarMobileAberta(false); setTemMais(false); setResultados([]); setSearchQuery(''); buscaRef.current = ''; paginaRef.current = 1;
     const timer = setTimeout(() => { puxarDadosServidor(1, false, tipoSeguro); }, 50);
     return () => clearTimeout(timer);
-  }, [tipoSeguro, sort, puxarDadosServidor]);
+  }, [tipoSeguro, marcaInicial, puxarDadosServidor]);
+
+  useEffect(() => {
+    if (sortAnteriorRef.current === sort) return;
+
+    sortAnteriorRef.current = sort;
+    let cancelado = false;
+    let timer;
+
+    const aplicarOrdenacao = () => {
+      if (cancelado) return;
+      if (isFetchingRef.current) {
+        timer = setTimeout(aplicarOrdenacao, 80);
+        return;
+      }
+
+      setTemMais(false);
+      setResultados([]);
+      paginaRef.current = 1;
+      puxarDadosServidor(1, false, filtrosRef.current.tipo);
+    };
+
+    aplicarOrdenacao();
+    return () => {
+      cancelado = true;
+      clearTimeout(timer);
+    };
+  }, [sort, puxarDadosServidor]);
 
   useEffect(() => {
     buscaRef.current = debouncedQuery;
