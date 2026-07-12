@@ -1,5 +1,31 @@
 import mongoose from 'mongoose';
 
+const videoUrlSuportado = (value) => {
+  if (!value) return true;
+  try {
+    const url = new URL(value);
+    if (!['http:', 'https:'].includes(url.protocol)) return false;
+    const host = url.hostname.toLowerCase().replace(/^www\./, '');
+    const youtubeHosts = new Set(['youtube.com', 'm.youtube.com', 'youtu.be', 'youtube-nocookie.com']);
+    const idValido = (id) => /^[a-zA-Z0-9_-]{6,32}$/.test(id || '');
+    if (youtubeHosts.has(host)) {
+      let id = '';
+      if (host === 'youtu.be') id = url.pathname.split('/').filter(Boolean)[0] || '';
+      else if (url.pathname === '/watch') id = url.searchParams.get('v') || '';
+      else {
+        const parts = url.pathname.split('/').filter(Boolean);
+        if (['embed', 'shorts', 'live'].includes(parts[0])) id = parts[1] || '';
+      }
+      return idValido(id);
+    }
+    return host === 'my.matterport.com'
+      && url.pathname.startsWith('/show')
+      && idValido(url.searchParams.get('m'));
+  } catch {
+    return false;
+  }
+};
+
 const anuncioSchema = new mongoose.Schema({
   tipo: { type: String, enum: ['imovel', 'carro'], required: true },
   titulo: { type: String, required: true },
@@ -65,7 +91,16 @@ const anuncioSchema = new mongoose.Schema({
   },
   
   fotos: [String], 
-  videoUrl: String,
+  videoUrl: {
+    type: String,
+    trim: true,
+    maxlength: 500,
+    default: '',
+    validate: {
+      validator: videoUrlSuportado,
+      message: 'O vídeo deve ser um link válido do YouTube ou Matterport.'
+    }
+  },
   visitaVirtualUrl: String, 
   equipamento: [{ type: String }],
 

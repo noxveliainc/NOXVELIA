@@ -205,58 +205,10 @@ router.get('/favoritos', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
   try {
-    const hoje = new Date().toISOString().slice(0, 10);
-    const anuncio = await Anuncio.findOneAndUpdate(
-      { _id: req.params.id, estado: { $ne: 'apagado' } },
-      [
-        {
-          $set: {
-            visitas: { $add: [{ $ifNull: ['$visitas', 0] }, 1] },
-            historicoVisitas: {
-              $let: {
-                vars: { historico: { $ifNull: ['$historicoVisitas', []] } },
-                in: {
-                  $cond: [
-                    {
-                      $in: [
-                        hoje,
-                        {
-                          $map: {
-                            input: '$$historico',
-                            as: 'visita',
-                            in: '$$visita.data'
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      $map: {
-                        input: '$$historico',
-                        as: 'visita',
-                        in: {
-                          $cond: [
-                            { $eq: ['$$visita.data', hoje] },
-                            {
-                              $mergeObjects: [
-                                '$$visita',
-                                { quantidade: { $add: [{ $ifNull: ['$$visita.quantidade', 0] }, 1] } }
-                              ]
-                            },
-                            '$$visita'
-                          ]
-                        }
-                      }
-                    },
-                    { $concatArrays: ['$$historico', [{ data: hoje, quantidade: 1 }]] }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      ],
-      { new: true }
-    ).populate('utilizador', 'nome email avatarUrl tipo telefone premiumAtivo');
+    const anuncio = await Anuncio.findOne({
+      _id: req.params.id,
+      estado: { $ne: 'apagado' }
+    }).populate('utilizador', 'nome email avatarUrl tipo telefone premiumAtivo');
 
     if (!anuncio)
       return res.status(404).json({ erro: 'Anúncio removido.' });
@@ -459,7 +411,43 @@ router.post('/:id/guardar', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.post('/:id/visita', async (req, res) => {
   try {
-    await Anuncio.findByIdAndUpdate(req.params.id, { $inc: { visitas: 1 } });
+    const hoje = new Date().toISOString().slice(0, 10);
+    const atualizado = await Anuncio.findOneAndUpdate(
+      { _id: req.params.id, estado: { $ne: 'apagado' } },
+      [
+        {
+          $set: {
+            visitas: { $add: [{ $ifNull: ['$visitas', 0] }, 1] },
+            historicoVisitas: {
+              $let: {
+                vars: { historico: { $ifNull: ['$historicoVisitas', []] } },
+                in: {
+                  $cond: [
+                    { $in: [hoje, { $map: { input: '$$historico', as: 'visita', in: '$$visita.data' } }] },
+                    {
+                      $map: {
+                        input: '$$historico',
+                        as: 'visita',
+                        in: {
+                          $cond: [
+                            { $eq: ['$$visita.data', hoje] },
+                            { $mergeObjects: ['$$visita', { quantidade: { $add: [{ $ifNull: ['$$visita.quantidade', 0] }, 1] } }] },
+                            '$$visita'
+                          ]
+                        }
+                      }
+                    },
+                    { $concatArrays: ['$$historico', [{ data: hoje, quantidade: 1 }]] }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ],
+      { new: false }
+    );
+    if (!atualizado) return res.status(404).json({ erro: 'Anúncio removido.' });
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ erro: 'Erro ao contabilizar visita.' });

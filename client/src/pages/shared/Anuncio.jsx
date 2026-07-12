@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useComparison } from '../../context/ComparisonContext';
+import { getVideoEmbedData } from '../../utils/videoEmbed';
 import { Helmet } from 'react-helmet-async';
 import Icon from '@mdi/react';
 import {
@@ -32,6 +34,7 @@ export default function Anuncio() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, signed } = useAuth();
+  const { items: comparisonItems, adicionar, remover, isCompared } = useComparison();
 
   const [anuncio, setAnuncio] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +46,7 @@ export default function Anuncio() {
   const [guardado, setGuardado] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [refCopiado, setRefCopiado] = useState(false);
+  const [comparisonFeedback, setComparisonFeedback] = useState('');
   const [lightboxAberto, setLightboxAberto] = useState(false);
 
   const [mostrarModalVendido, setMostrarModalVendido] = useState(false);
@@ -66,7 +70,15 @@ export default function Anuncio() {
         setAnuncio(data);
         if (data?.preco) setEntrada(0);
 
-        api.post(`/anuncios/${id}/visita`).catch(() => {});
+        const visitKey = '@Noxvelia:visit:' + id;
+        try {
+          if (!sessionStorage.getItem(visitKey)) {
+            sessionStorage.setItem(visitKey, '1');
+            api.post(`/anuncios/${id}/visita`).catch(() => sessionStorage.removeItem(visitKey));
+          }
+        } catch {
+          api.post(`/anuncios/${id}/visita`).catch(() => {});
+        }
 
         api.get('/anuncios')
           .then(res => {
@@ -153,6 +165,21 @@ export default function Anuncio() {
     } catch {}
   };
 
+  const handleComparar = () => {
+    if (!anuncio?._id) return;
+    if (isCompared(anuncio._id)) {
+      remover(anuncio._id);
+      setComparisonFeedback('Anúncio removido da comparação.');
+    } else {
+      const result = adicionar(anuncio);
+      if (result.code === 'limit') setComparisonFeedback('O comparador já tem o máximo de 3 anúncios.');
+      else if (result.code === 'duplicate') setComparisonFeedback('Este anúncio já está na comparação.');
+      else if (result.ok) setComparisonFeedback('Anúncio adicionado à comparação.');
+      else setComparisonFeedback('Não foi possível adicionar este anúncio.');
+    }
+    window.setTimeout(() => setComparisonFeedback(''), 2600);
+  };
+
   const handleConfirmarVendido = async () => {
     setEliminandoVendido(true);
     try {
@@ -216,6 +243,8 @@ export default function Anuncio() {
   const donoDoAnuncio = anuncio.utilizador || anuncio.user;
   const isDono = signed && (user?.id === donoDoAnuncio?._id || user?._id === donoDoAnuncio?._id);
   const isCarro = anuncio.tipo === 'carro';
+  const comparado = isCompared(anuncio._id);
+  const videoEmbed = getVideoEmbedData(anuncio.videoUrl || anuncio.visitaVirtualUrl);
 
   const precoValor = anuncio.preco || 0;
   const preco = formatarMoeda(precoValor);
@@ -362,6 +391,14 @@ export default function Anuncio() {
         .meta-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; }
         .meta-ref { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
         .meta-ref:hover { color: #0f172a; }
+        .comparison-row { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 18px; padding-top: 16px; border-top: 1px solid #e2e8f0; }
+        .comparison-btn, .comparison-link { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 12px; font-weight: 850; cursor: pointer; text-decoration: none; transition: all .2s; }
+        .comparison-btn { color: #0f172a; background: #f8fafc; border: 1px solid #cbd5e1; }
+        .comparison-btn:hover { background: #f1f5f9; border-color: \${accent}; }
+        .comparison-btn.active { color: #062d2a; background: \${accent}; border-color: \${accent}; }
+        .comparison-link { color: #475569; background: #fff; border: 1px solid #e2e8f0; }
+        .comparison-link:hover { color: #0f172a; border-color: #cbd5e1; }
+        .comparison-feedback { flex-basis: 100%; color: #64748b; font-size: 11px; font-weight: 700; }
         .estado-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
         .estado-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
         .meta-dot { color: #cbd5e1; font-size: 10px; }
@@ -433,6 +470,13 @@ export default function Anuncio() {
         .desc-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; margin-top: 4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
         .desc-head { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 16px; display: flex; align-items: center; gap: 7px; }
         .desc-text { font-size: 14px; line-height: 1.8; color: #334155; white-space: pre-wrap; }
+
+        .tour-card { margin-top: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 20px 48px -42px rgba(15,23,42,.55); }
+        .tour-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #e2e8f0; }
+        .tour-title { display: flex; align-items: center; gap: 8px; color: #0f172a; font-size: 15px; font-weight: 850; }
+        .tour-provider { padding: 4px 9px; border-radius: 999px; color: \${accent}; background: rgba(42,193,180,.08); border: 1px solid rgba(42,193,180,.18); font-size: 10px; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; }
+        .tour-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #020617; }
+        .tour-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
         .tab-panel { animation: nx-fade-in .35s ease; }
 
@@ -653,6 +697,16 @@ export default function Anuncio() {
                     <Icon path={refCopiado ? mdiCheck : mdiContentCopy} size={0.6} /> Ref: #{referencia}
                   </button>
                 </div>
+                <div className="comparison-row">
+                  <button type="button" className={'comparison-btn ' + (comparado ? 'active' : '')} onClick={handleComparar} aria-pressed={comparado}>
+                    <Icon path={mdiSwapHorizontal} size={0.72} />
+                    {comparado ? 'Remover da comparação' : 'Adicionar à comparação'}
+                  </button>
+                  {comparisonItems.length > 0 && (
+                    <Link to="/comparador" className="comparison-link">Ver comparador ({comparisonItems.length}/3)</Link>
+                  )}
+                  {comparisonFeedback && <span className="comparison-feedback" role="status">{comparisonFeedback}</span>}
+                </div>
               </div>
 
               <div className="decision-strip">
@@ -699,6 +753,28 @@ export default function Anuncio() {
                   <div className="desc-head"><Icon path={mdiFileDocumentOutline} size={0.8} />Descrição do Anunciante</div>
                   <div className="desc-text">{anuncio.descricao || 'Nenhuma descrição detalhada providenciada.'}</div>
                 </div>
+              )}
+
+              {videoEmbed && (
+                <section className="tour-card" aria-labelledby="tour-virtual-title">
+                  <div className="tour-head">
+                    <div className="tour-title" id="tour-virtual-title">
+                      <Icon path={mdiCamera} size={0.82} />
+                      Tour Virtual / Vídeo
+                    </div>
+                    <span className="tour-provider">{videoEmbed.provider}</span>
+                  </div>
+                  <div className="tour-frame">
+                    <iframe
+                      src={videoEmbed.embedUrl}
+                      title={videoEmbed.title}
+                      loading="lazy"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      allowFullScreen
+                    />
+                  </div>
+                </section>
               )}
             </div>
 

@@ -1,42 +1,49 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
-const ThemeContext = createContext();
+const ThemeContext = createContext(null);
+const THEME_KEY = '@App:tema';
+
+const getInitialTheme = () => {
+  try {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === 'dark' || stored === 'nx-dark') return 'dark';
+    if (stored === 'light' || stored === 'nx-light') return 'light';
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  } catch {
+    return 'light';
+  }
+};
 
 export function ThemeProvider({ children }) {
-  // O padrão é sempre o imaculado Modo Escuro
-  const [tema, setTema] = useState(() => {
-    try {
-      return localStorage.getItem('@App:tema') || 'nx-dark';
-    } catch {
-      return 'nx-dark';
-    }
-  });
+  const [tema, setTema] = useState(getInitialTheme);
 
   useEffect(() => {
-    // Aplica a classe diretamente na raiz do documento HTML
     const root = document.documentElement;
+    const isDark = tema === 'dark';
+    root.classList.toggle('dark', isDark);
     root.classList.remove('nx-dark', 'nx-light');
-    root.classList.add(tema);
+    root.dataset.theme = tema;
+    root.style.colorScheme = tema;
+
+    try {
+      localStorage.setItem(THEME_KEY, tema);
+    } catch {
+      // A escolha continua ativa nesta sessão se o armazenamento estiver bloqueado.
+    }
   }, [tema]);
 
-  const toggleTema = () => {
-    setTema((prev) => {
-      const proximoTema = prev === 'nx-dark' ? 'nx-light' : 'nx-dark';
-      try {
-        localStorage.setItem('@App:tema', proximoTema);
-      } catch {
-        // O tema continua a funcionar nesta sessão se o navegador bloquear armazenamento.
-      }
-      return proximoTema;
-    });
-  };
+  const toggleTema = () => setTema((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  const value = useMemo(() => ({ tema, isDark: tema === 'dark', toggleTema }), [tema]);
 
   return (
-    <ThemeContext.Provider value={{ tema, toggleTema }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
-// Hook personalizado para usares em qualquer página
-export const useTheme = () => useContext(ThemeContext);
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) throw new Error('useTheme deve ser utilizado dentro de ThemeProvider.');
+  return context;
+};

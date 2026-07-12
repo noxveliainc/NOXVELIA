@@ -1,3 +1,5 @@
+@tailwind utilities;
+
 /* ==========================================================================
    NOXVELIA · DESIGN SYSTEM v2.0
    ========================================================================== */
@@ -151,4 +153,185 @@ h1, h2, h3, h4 {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Dark mode: superfícies principais que ainda usam estilos locais legados. */
+.dark .ncr-root,
+.dark .nim-root,
+.dark .nl-root {
+  background: rgba(15, 23, 42, 0.94) !important;
+  border-color: #334155 !important;
+}
+
+.dark .ncr-root.scrolled,
+.dark .nim-root.scrolled {
+  background: #0f172a !important;
+}
+
+.dark .ncr-logo-brand-text,
+.dark .nim-logo-brand-text,
+.dark .nl-brand,
+.dark .nl-links a,
+.dark .ncr-username,
+.dark .nim-username {
+  color: #f8fafc !important;
+}
+
+.dark .ncr-icon-btn,
+.dark .nim-icon-btn,
+.dark .ncr-user-trigger,
+.dark .nim-user-trigger,
+.dark .nl-user-trigger {
+  color: #cbd5e1 !important;
+}
+
+.dark .ncr-icon-btn:hover,
+.dark .nim-icon-btn:hover,
+.dark .ncr-user-trigger:hover,
+.dark .nim-user-trigger:hover,
+.dark .nl-user-trigger:hover {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #ffffff !important;
+}
+
+.dark .ncr-switcher-dropdown,
+.dark .nim-switcher-dropdown,
+.dark .ncr-user-dropdown,
+.dark .nim-user-dropdown,
+.dark .nl-user-dropdown,
+.dark .ncr-sino-dropdown,
+.dark .nim-sino-dropdown,
+.dark .ncr-drawer-content,
+.dark .nim-drawer-content,
+.dark .nl-mobile-menu {
+  background: #111c30 !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+.dark .ncr-switcher-item,
+.dark .nim-switcher-item,
+.dark .ncr-ud-item,
+.dark .nim-ud-item,
+.dark .nl-ud-item,
+.dark .ncr-drawer-link,
+.dark .nim-drawer-link,
+.dark .nl-mobile-menu a {
+  color: #cbd5e1 !important;
+}
+
+.dark .ncr-switcher-item:hover,
+.dark .nim-switcher-item:hover,
+.dark .ncr-ud-item:hover,
+.dark .nim-ud-item:hover,
+.dark .nl-ud-item:hover,
+.dark .ncr-drawer-link:hover,
+.dark .nim-drawer-link:hover,
+.dark .nl-mobile-menu a:hover {
+  background: #1e293b !important;
+  color: #ffffff !important;
+}
+
+.dark .pesquisa-sidebar,
+.dark .pesquisa-sidebar-toggle {
+  background: rgba(30, 41, 59, 0.96) !important;
+  border-color: #334155 !important;
+}
+
+.dark .pesquisa-filter-stat {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+.dark .ano-page {
+  background: linear-gradient(180deg, #020617 0%, #0f172a 38%, #020617 100%) !important;
+  color: #f8fafc !important;
+}
+
+.dark .title-block,
+.dark .gallery-wrap,
+.dark .thumbs-row,
+.dark .decision-item,
+.dark .tabs-wrap,
+.dark .spec-card,
+.dark .extra-item,
+.dark .desc-box,
+.dark .price-panel,
+.dark .tour-card,
+.dark .btn-icon,
+.dark .comparison-btn,
+.dark .comparison-link {
+  background: #111c30 !important;
+  border-color: #334155 !important;
+}
+
+.dark .listing-subtitle,
+.dark .decision-value,
+.dark .spec-value,
+.dark .tour-title,
+.dark .contact-phone,
+.dark .meta-ref:hover,
+.dark .tab-btn:hover {
+  color: #f8fafc !important;
+}
+
+.dark .meta-item,
+.dark .meta-ref,
+.dark .decision-label,
+.dark .spec-label,
+.dark .desc-head,
+.dark .comparison-feedback {
+  color: #94a3b8 !important;
+}
+
+.dark .extra-item,
+.dark .desc-text,
+.dark .comparison-link,
+.dark .comparison-btn {
+  color: #cbd5e1 !important;
+}
+
+.dark .tab-btn.active,
+.dark .comparison-btn.active {
+  color: #020617 !important;
+}
+
+.dark .lp-root {
+  --lp-ink: #082126 !important;
+  --lp-ink-soft: #cbd5e1 !important;
+  --lp-stone: #071317 !important;
+  --lp-cream: #0f1f24 !important;
+  background: #071317 !important;
+}
+
+.dark .lp-title {
+  color: #ecfdfb !important;
+}
+
+.dark .lp-hero {
+  background:
+    radial-gradient(circle at 8% 14%, rgba(198, 168, 106, 0.14), transparent 28%),
+    radial-gradient(circle at 92% 88%, rgba(42, 193, 180, 0.16), transparent 28%),
+    linear-gradient(180deg, #0f1f24 0%, #071317 100%) !important;
+}
+
+.dark .lp-brands-section,
+.dark .lp-popular-section {
+  background: #0b1b20 !important;
+  border-color: rgba(148, 163, 184, 0.16) !important;
+}
+
+.dark .lp-brand-card,
+.dark .lp-trust-item,
+.dark .lp-round-btn {
+  background: rgba(30, 41, 59, 0.78) !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+.dark .lp-brand-name,
+.dark .lp-copy,
+.dark .lp-trust-item {
+  color: #b7c7cb !important;
 }

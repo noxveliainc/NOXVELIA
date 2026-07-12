@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ThemeToggle from '../../components/ThemeToggle';
+import ComparisonNavButton from '../../components/ComparisonNavButton';
 
 export default function NavbarLanding() {
   const { user, signed, logout } = useAuth();
@@ -190,19 +192,25 @@ export default function NavbarLanding() {
           box-shadow: 0 22px 54px -30px rgba(8, 33, 38, 0.5);
         }
 
-        .nl-mobile-menu a {
+        .nl-mobile-menu a,
+        .nl-mobile-menu button {
           display: flex;
           align-items: center;
           min-height: 42px;
+          width: 100%;
           padding: 0 12px;
           color: #355158;
+          border: 0;
           border-radius: 9px;
           text-decoration: none;
           font-size: 12px;
           font-weight: 780;
+          background: transparent;
+          cursor: pointer;
         }
 
-        .nl-mobile-menu a:hover {
+        .nl-mobile-menu a:hover,
+        .nl-mobile-menu button:hover {
           color: #082126;
           background: #edf6f3;
         }
@@ -409,13 +417,8 @@ export default function NavbarLanding() {
           }
 
           .nl-btn-ghost,
-          .nl-btn-solid {
-            min-height: 36px;
-            padding: 0 11px;
-            font-size: 11px;
-          }
-
-          .nl-username {
+          .nl-btn-solid,
+          .nl-user-wrap {
             display: none;
           }
 
@@ -463,6 +466,9 @@ export default function NavbarLanding() {
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
               )}
             </button>
+
+            <ComparisonNavButton />
+            <ThemeToggle />
 
             {signed ? (
               <div ref={userMenuRef} className="nl-user-wrap">
@@ -519,6 +525,17 @@ export default function NavbarLanding() {
             <a href="#carvertical" onClick={() => setMenuMobileAberto(false)}>carVertical</a>
             <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Drive</Link>
             <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Estate</Link>
+            {signed ? (
+              <>
+                <Link to="/perfil" onClick={() => setMenuMobileAberto(false)}>O meu perfil</Link>
+                <button type="button" onClick={() => { setMenuMobileAberto(false); logout(); }}>Terminar sessão</button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" state={{ from: location.pathname }} onClick={() => setMenuMobileAberto(false)}>Entrar</Link>
+                <Link to="/registo" onClick={() => setMenuMobileAberto(false)}>Registar</Link>
+              </>
+            )}
           </div>
         )}
       </nav>

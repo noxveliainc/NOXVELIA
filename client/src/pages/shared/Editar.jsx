@@ -6,6 +6,7 @@ import Icon from '@mdi/react';
 import { mdiAlertCircleOutline, mdiCloudUploadOutline, mdiClose } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes'; 
+import { isSupportedVideoUrl } from '../../utils/videoEmbed';
 
 export default function Editar() {
   const { id } = useParams();
@@ -24,6 +25,7 @@ export default function Editar() {
     tipo: 'carro', 
     titulo: '',
     descricao: '',
+    videoUrl: '',
     preco: '',
     telefone: '',
     email: '', 
@@ -60,6 +62,7 @@ export default function Editar() {
           tipo: data.tipo,
           titulo: data.titulo || '',
           descricao: data.descricao || '',
+          videoUrl: data.videoUrl || '',
           preco: data.preco || '',
           telefone: data.telefone || '',
           email: data.email || '', 
@@ -161,10 +164,15 @@ export default function Editar() {
       setErro('O ano de matrícula tem de ser igual ou superior a 1930.');
       setLoading(false); return;
     }
+    if (form.videoUrl && !isSupportedVideoUrl(form.videoUrl)) {
+      setErro('Utiliza um link válido do YouTube ou de um tour Matterport.');
+      setLoading(false); return;
+    }
     try {
       const payload = {
         titulo: form.titulo, descricao: form.descricao, preco: Number(form.preco),
         telefone: form.telefone, email: form.email, fotos,
+        videoUrl: form.videoUrl.trim(),
         equipamento: form.tipo === 'carro' ? equipamento : [],
         localizacao: { cidade: form.cidade, distrito: form.distrito },
       };
@@ -349,6 +357,23 @@ export default function Editar() {
                   ))}
                 </div>
               )}
+
+              <div style={{ paddingTop: '24px', marginTop: '24px', borderTop: '1px solid var(--nx-border)' }}>
+                <label className="pub-label">Tour Virtual / Vídeo</label>
+                <input
+                  type="url"
+                  className="pub-input"
+                  name="videoUrl"
+                  value={form.videoUrl}
+                  onChange={handle}
+                  placeholder="https://www.youtube.com/watch?v=... ou https://my.matterport.com/show/?m=..."
+                  inputMode="url"
+                  maxLength={500}
+                />
+                <span style={{ display: 'block', fontSize: '11px', color: 'var(--nx-text-sub)', marginTop: '7px', lineHeight: 1.5 }}>
+                  Opcional. Aceitamos ligações públicas do YouTube e tours Matterport.
+                </span>
+              </div>
             </div>
 
             {/* SECÇÃO 3 — Parâmetros Comerciais */}

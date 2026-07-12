@@ -10,6 +10,7 @@ import {
 } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
+import { isSupportedVideoUrl } from '../../utils/videoEmbed';
 
 const OPCOES_GARANTIA = ['6 meses', '12 meses', '18 meses', '24 meses', 'Garantia de fábrica'];
 const MESES_ANO = [
@@ -41,6 +42,7 @@ export default function Publicar() {
     tipo: contextoFocado,
     titulo: '',
     descricao: '',
+    videoUrl: '',
     preco: '',
     telefone: '',
     email: '',
@@ -158,6 +160,12 @@ export default function Publicar() {
       return;
     }
 
+    if (form.videoUrl && !isSupportedVideoUrl(form.videoUrl)) {
+      setErro('Utiliza um link válido do YouTube ou de um tour Matterport.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload = {
         tipo: form.tipo,
@@ -168,6 +176,7 @@ export default function Publicar() {
         email: form.email,
         fotos,
         equipamento: equipamento,
+        videoUrl: form.videoUrl.trim(),
         localizacao: {
           cidade: form.cidade,
           distrito: form.distrito,
@@ -731,6 +740,23 @@ export default function Publicar() {
                     ))}
                   </div>
                 )}
+              </div>
+
+              <div style={{ paddingTop: '24px', marginTop: '24px', borderTop: '1px solid var(--nx-border)' }}>
+                <label className="pub-label">Tour Virtual / Vídeo</label>
+                <input
+                  type="url"
+                  className="pub-input"
+                  name="videoUrl"
+                  value={form.videoUrl}
+                  onChange={handle}
+                  placeholder="https://www.youtube.com/watch?v=... ou https://my.matterport.com/show/?m=..."
+                  inputMode="url"
+                  maxLength={500}
+                />
+                <span style={{ display: 'block', fontSize: '11px', color: 'var(--nx-text-sub)', marginTop: '7px', lineHeight: 1.5 }}>
+                  Opcional. Aceitamos ligações públicas do YouTube e tours Matterport; o vídeo é incorporado diretamente no anúncio.
+                </span>
               </div>
             </div>
 

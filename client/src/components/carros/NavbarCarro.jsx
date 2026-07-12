@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import ThemeToggle from '../ThemeToggle';
+import ComparisonNavButton from '../ComparisonNavButton';
 
 export default function NavbarCarro() {
   const { user, signed, logout } = useAuth();
@@ -262,6 +264,8 @@ export default function NavbarCarro() {
 
         {/* 🌟 DESKTOP ACTIONS */}
         <div className="ncr-actions">
+          <ComparisonNavButton />
+          <ThemeToggle />
           {signed ? (
             <>
               <Link to="/publicar" className="ncr-btn-publish">
@@ -356,6 +360,10 @@ export default function NavbarCarro() {
             </div>
 
             <div className="ncr-drawer-menu">
+              <div className="mb-2 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
+                <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">Aspeto da plataforma</span>
+                <div className="flex items-center gap-2"><ComparisonNavButton /><ThemeToggle /></div>
+              </div>
               {signed ? (
                 <>
                   <Link to="/publicar" className="ncr-drawer-link publish" onClick={() => setMenuMobileAberto(false)}>
