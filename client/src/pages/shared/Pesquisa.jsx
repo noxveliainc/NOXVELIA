@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
+import Seo from '../../components/Seo';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
 import SponsorBanner from '../../components/SponsorBanner';
@@ -7,7 +8,7 @@ import MapaResultados from '../../components/imoveis/MapaResultados';
 import useDebounce from '../../hooks/useDebounce';
 import { Icon } from '@mdi/react';
 import {
-  mdiMap, mdiViewGrid, mdiMagnify, mdiLoading, mdiFilterVariant, mdiChevronLeft,
+  mdiMap, mdiViewGrid, mdiMagnify, mdiLoading, mdiFilterVariant, mdiTuneVariant, mdiChevronLeft,
   mdiChevronRight, mdiChartTimelineVariant, mdiShieldCheckOutline, mdiCloseCircleOutline
 } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
@@ -69,13 +70,14 @@ const BannerCTA = ({ tipo, origem }) => {
   );
 };
 
-export default function Pesquisa({ tipoPadrao = 'imovel' }) {
+export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
 
   const tipoSeguro = location.pathname.includes('carro') ? 'carro' : (tipoPadrao || 'imovel');
   const tipoInicial = searchParams.get('tipo') || tipoSeguro;
-  const marcaUrl = searchParams.get('marca') || '';
+  const getParam = (name) => seoParams?.get(name) || searchParams.get(name) || '';
+  const marcaUrl = getParam('marca');
   const marcaInicial = tipoSeguro === 'carro' && MARCAS.includes(marcaUrl) ? marcaUrl : '';
 
   const [resultados, setResultados] = useState([]);
@@ -93,7 +95,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
   const [vistaAtiva, setVistaAtiva] = useState('grelha');
 
   const [filtros, setFiltros] = useState({
-    tipo: tipoInicial, precoMin: '', precoMax: '', distrito: 'Todos', cidade: '', marca: marcaInicial, modelo: '', tipologias: [], combustiveis: [], transmissao: [],
+    tipo: tipoInicial, precoMin: '', precoMax: '', distrito: 'Todos', cidade: getParam('cidade'), marca: marcaInicial, modelo: getParam('modelo'), tipologias: getParam('tipologia') ? [getParam('tipologia')] : [], combustiveis: [], transmissao: [],
   });
 
   const sentinelaRef = useRef(null);
@@ -344,6 +346,12 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
   };
 
   return (
+    <>
+      {!seoParams && <Seo
+        title={tipoSeguro === 'carro' ? 'Carros usados e novos em Portugal | Noxvelia' : 'Imóveis para venda em Portugal | Noxvelia'}
+        description={tipoSeguro === 'carro' ? 'Pesquisa carros usados e novos em Portugal por marca, modelo, preço e localização.' : 'Pesquisa apartamentos, moradias e terrenos em Portugal por tipologia, preço e localização.'}
+        path={tipoSeguro === 'carro' ? '/carros' : '/imoveis'}
+      />}
     <>
       <style>{`
         .pesquisa-root { background: var(--nx-bg); font-family: var(--nx-font-body); color: var(--nx-text); min-height: 100vh; display: flex; flex-direction: column; }
@@ -765,6 +773,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
         </div>
 
       </div>
+    </>
     </>
   );
 }

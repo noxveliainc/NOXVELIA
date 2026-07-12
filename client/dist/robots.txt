@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /perfil
+Disallow: /favoritos
+Disallow: /editar/
+Disallow: /sucesso/
 
 Sitemap: https://www.noxvelia.com/sitemap.xml

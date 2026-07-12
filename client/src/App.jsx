@@ -35,6 +35,7 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const SucessoUpsell  = lazy(() => import('./pages/shared/SucessoUpsell'));
 const Planos         = lazy(() => import('./pages/shared/Planos'));
 const Comparador     = lazy(() => import('./pages/shared/Comparador'));
+const SeoPesquisa    = lazy(() => import('./pages/shared/SeoPesquisa'));
 
 // 🌟 NOVA PÁGINA IMPORTADA
 const PoliticaPrivacidade = lazy(() => import('./pages/shared/PoliticaPrivacidade'));
@@ -81,12 +82,18 @@ function AppShell() {
             <Route path="/" element={<Landing />} />
             <Route path="/carros" element={<PesquisaCarro />} />
             <Route path="/imoveis" element={<PesquisaImovel />} />
+            <Route path="/carros/marca/:marca" element={<SeoPesquisa tipo="carro" />} />
+            <Route path="/carros/marca/:marca/:modelo" element={<SeoPesquisa tipo="carro" />} />
+            <Route path="/carros/em/:cidade" element={<SeoPesquisa tipo="carro" />} />
+            <Route path="/imoveis/:tipologia/em/:cidade" element={<SeoPesquisa tipo="imovel" />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registo" element={<Registo />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/verificar-email/:token" element={<VerificarEmail />} />
             <Route path="/anuncio/:id" element={<Anuncio />} />
+            <Route path="/carros/:marca/:modelo/:cidade/:id" element={<Anuncio />} />
+            <Route path="/imoveis/:categoria/:cidade/:id" element={<Anuncio />} />
             <Route path="/vendedor/:id" element={<PerfilPublico />} />
             
             {/* 🌟 ROTA DA POLÍTICA E TERMOS */}

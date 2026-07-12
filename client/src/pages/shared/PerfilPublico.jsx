@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Seo from '../../components/Seo';
+import { absoluteUrl } from '../../utils/seo';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
 import ProfileView, { obterLinksVisiveisPerfil } from './ProfileView';
@@ -113,6 +115,14 @@ export default function PerfilPublico() {
 
   return (
     <>
+      <Seo
+        title={`${nomeExibicao} — vendedor na Noxvelia`}
+        description={(vendedor?.bio || `Consulta os anúncios de ${nomeExibicao} na Noxvelia.`).slice(0, 160)}
+        path={`/vendedor/${id}`}
+        image={vendedor?.avatarUrl || undefined}
+        type="profile"
+        jsonLd={{ '@context': 'https://schema.org', '@type': isProfissional ? 'Organization' : 'Person', name: nomeExibicao, description: vendedor?.bio, image: vendedor?.avatarUrl, url: absoluteUrl(`/vendedor/${id}`) }}
+      />
       <style>{`
         .pp-root { background: #f8fafc; min-height: calc(100vh - 80px); font-family: 'Inter', sans-serif; color: #0f172a; padding-bottom: 80px; }
         .pp-hero { position: relative; background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 36px 24px 20px; margin-bottom: 48px; overflow: hidden; }

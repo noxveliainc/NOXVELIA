@@ -20,6 +20,8 @@ import api from '../../services/api';
 import { MARCAS } from '../../data/marcasModelos';
 import NavbarLanding from './NavbarLanding';
 import Footer from '../../components/Footer';
+import Seo from '../../components/Seo';
+import { anuncioPath } from '../../utils/seo';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 
@@ -88,7 +90,7 @@ export default function Landing() {
     } catch {
       // A navegação continua disponível quando o armazenamento local está bloqueado.
     }
-    navigate(`/anuncio/${anuncio._id}`);
+    navigate(anuncioPath(anuncio));
   };
 
   const moverMarcas = (direcao) => {
@@ -166,6 +168,7 @@ export default function Landing() {
 
   return (
     <div className="lp-root">
+      <Seo title="Noxvelia — Carros e imóveis em Portugal" description="Encontra, compara e publica anúncios de carros e imóveis em Portugal na Noxvelia." path="/" jsonLd={[{ '@context': 'https://schema.org', '@type': 'Organization', name: 'Noxvelia', url: 'https://www.noxvelia.com', logo: 'https://www.noxvelia.com/logo-noxvelia.png' }, { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Noxvelia', url: 'https://www.noxvelia.com' }]} />
       <style>{`
         .lp-root,
         .lp-root * {

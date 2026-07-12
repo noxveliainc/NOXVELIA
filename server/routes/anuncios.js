@@ -3,6 +3,7 @@ import rateLimit from 'express-rate-limit';
 import Anuncio from '../models/Anuncio.js';
 import User from '../models/User.js';
 import { verificarToken } from '../middleware/auth.js';
+import { parsePagination } from '../utils/pagination.js';
 
 const router = express.Router();
 const visitLimiter = rateLimit({
@@ -51,12 +52,12 @@ async function resolverCoordenadas(cidade, distrito) {
 router.get('/', async (req, res) => {
   try {
     const {
-      page = 1, limit = 12, sort = 'relevancia', q,
+      sort = 'relevancia', q,
       tipo, distrito, cidade, precoMax,
       marca, modelo, combustivel, transmissao, tipologia
     } = req.query;
 
-    const query = { estado: { $ne: 'apagado' } };
+    const query = { estado: 'ativo' };
 
     if (tipo && tipo !== 'Todos') query.tipo = tipo;
     if (distrito && distrito !== 'Todos') query['localizacao.distrito'] = distrito;
@@ -80,16 +81,16 @@ router.get('/', async (req, res) => {
     if (sort === 'preco_desc') sortOption = { preco: -1 };
     if (q && sort === 'relevancia') sortOption = { score: { $meta: 'textScore' } };
 
-    const skip = (Number(page) - 1) * Number(limit);
+    const { page, limit, skip } = parsePagination(req.query);
 
     const anuncios = await Anuncio.find(query)
       .sort(sortOption)
       .skip(skip)
-      .limit(Number(limit))
+      .limit(limit)
       .populate('utilizador', 'nome avatarUrl tipo telefone premiumAtivo');
 
     const totalAnuncios = await Anuncio.countDocuments(query);
-    res.json({ anuncios, totalAnuncios });
+    res.json({ anuncios, totalAnuncios, pagination: { page, limit, totalPages: Math.ceil(totalAnuncios / limit), hasNextPage: page * limit < totalAnuncios } });
 
   } catch (error) {
     res.status(500).json({ erro: 'Erro interno ao processar a pesquisa.' });

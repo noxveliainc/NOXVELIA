@@ -1,5 +1,6 @@
 // Este middleware captura qualquer erro que "fuja" das rotas
 export const errorHandler = (err, req, res, next) => {
+  const requestId = res.getHeader('X-Request-Id');
   // 1. Imprime o erro no terminal com cores e destaque
   console.error('\n❌ [ERRO CRÍTICO ENCONTRADO]');
   console.error(`📍 Rota: ${req.method} ${req.originalUrl}`);
@@ -16,6 +17,7 @@ export const errorHandler = (err, req, res, next) => {
     : (err.message || 'Erro interno do servidor.');
   res.status(statusCode).json({
     erro: mensagemPublica,
+    requestId,
     // Só envia os detalhes técnicos para o frontend se estiveres em desenvolvimento
     detalhes: process.env.NODE_ENV !== 'production' ? err.stack : undefined
   });

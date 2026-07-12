@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { Icon } from '@mdi/react';
 import { mdiStarCircle, mdiCameraOutline, mdiTrashCanOutline, mdiCheckDecagram, mdiMapMarkerOutline } from '@mdi/js';
+import { anuncioPath } from '../../utils/seo';
 
 export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioEliminado, forceSellerIdentity = false }) {
   const { user, signed } = useAuth();
@@ -419,7 +420,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-modal-delete:hover { background: #dc2626; }
       `}</style>
 
-      <Link to={`/anuncio/${anuncio?._id}`} className={`nxc-wrap${isPremium ? ' premium' : ''}`}>
+      <Link to={anuncioPath(anuncio)} className={`nxc-wrap${isPremium ? ' premium' : ''}`}>
 
         {/* ── IMAGEM ── */}
         <div className="nxc-img">

@@ -20,6 +20,8 @@ import adminRoutes from './routes/admin.js';
 import notificacoesRoutes from './routes/notificacoes.js';
 import analyticsRoutes from './routes/analytics.js';
 import sponsorsRoutes from './routes/sponsors.js';
+import systemRoutes from './routes/system.js';
+import { requestMetrics } from './middleware/metrics.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { verificarJwt } from './utils/jwt.js';
 
@@ -80,6 +82,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(compression());
+app.use(requestMetrics);
 
 // ─────────────────────────────────────────────────────────────
 // WEBHOOK ANTES DO JSON — obrigatório para o Stripe validar a assinatura
@@ -115,6 +118,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sponsors', sponsorsRoutes);
+app.use('/api/system', systemRoutes);
 
 app.get('/', (req, res) => res.status(200).json({ status: 'OK', mensagem: 'API NOXVELIA ativa!' }));
 

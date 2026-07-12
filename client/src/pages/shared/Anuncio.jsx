@@ -5,7 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useComparison } from '../../context/ComparisonContext';
 import { getVideoEmbedData } from '../../utils/videoEmbed';
 import SponsorBanner from '../../components/SponsorBanner';
-import { Helmet } from 'react-helmet-async';
+import Seo from '../../components/Seo';
+import { absoluteUrl, anuncioPath } from '../../utils/seo';
 import { Icon } from '@mdi/react';
 import {
   mdiCheckDecagram, mdiShareVariantOutline, mdiHeartOutline, mdiHeart,
@@ -326,25 +327,38 @@ export default function Anuncio() {
     name: anuncio.titulo,
     description: anuncio.descricao?.slice(0, 300),
     image: fotos.filter(Boolean),
+    url: absoluteUrl(anuncioPath(anuncio)),
+    sku: anuncio._id,
+    category: isCarro ? 'Automóveis' : 'Imóveis',
     offers: {
       '@type': 'Offer',
       priceCurrency: 'EUR',
       price: precoValor,
       availability: 'https://schema.org/InStock',
+      url: absoluteUrl(anuncioPath(anuncio)),
+      seller: donoDoAnuncio?.nome ? { '@type': donoDoAnuncio?.tipoConta === 'profissional' ? 'Organization' : 'Person', name: donoDoAnuncio.nome } : undefined,
     },
+  };
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Noxvelia', item: absoluteUrl('/') },
+      { '@type': 'ListItem', position: 2, name: isCarro ? 'Carros' : 'Imóveis', item: absoluteUrl(isCarro ? '/carros' : '/imoveis') },
+      { '@type': 'ListItem', position: 3, name: anuncio.titulo, item: absoluteUrl(anuncioPath(anuncio)) },
+    ],
   };
 
   return (
     <>
-      <Helmet>
-        <title>{anuncio.titulo ? `${anuncio.titulo} | Noxvelia` : 'Noxvelia'}</title>
-        <meta name="description" content={anuncio.descricao?.substring(0, 155)} />
-        <meta property="og:title" content={`NOXVELIA | ${anuncio.titulo}`} />
-        <meta property="og:description" content={anuncio.descricao?.substring(0, 100)} />
-        <meta property="og:image" content={fotos[0] || ''} />
-        <meta property="og:url" content={window.location.href} />
-        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      </Helmet>
+      <Seo
+        title={`${anuncio.titulo} | Noxvelia`}
+        description={(anuncio.descricao || `${anuncio.titulo} em ${anuncio.localizacao?.cidade || 'Portugal'}`).slice(0, 160)}
+        path={anuncioPath(anuncio)}
+        image={fotos[0]}
+        type="product"
+        jsonLd={[jsonLd, breadcrumbLd]}
+      />
 
       <style>{`
         .ano-page { background: linear-gradient(180deg, #ffffff 0%, #f8fafc 34%, #ffffff 100%); color: #0f172a; min-height: calc(100vh - 72px); padding: 28px 20px 72px; font-family: 'Inter', sans-serif; overflow-x: hidden; }
