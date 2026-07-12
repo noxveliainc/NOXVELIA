@@ -12,6 +12,7 @@
 - Campos de métricas, destaque e estado não podem ser alterados no body de anúncios.
 - Erros internos ficam genéricos em produção e inputs MongoDB são sanitizados.
 - Campanhas patrocinadas são dados estruturados; nunca executam HTML ou scripts externos.
+- Google AdSense é carregado apenas pelo componente controlado do frontend, depois de consentimento para serviços externos, e não por JSON de patrocinadores.
 
 ## Variáveis obrigatórias
 

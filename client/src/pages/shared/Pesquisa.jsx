@@ -3,6 +3,7 @@ import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
+import GoogleAdSlot from '../../components/GoogleAdSlot';
 import SponsorBanner from '../../components/SponsorBanner';
 import MapaResultados from '../../components/imoveis/MapaResultados';
 import useDebounce from '../../hooks/useDebounce';
@@ -734,7 +735,12 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               </div>
             </div>
 
-            <SponsorBanner placement="search_results_top" vertical={tipoSeguro} className="!my-6 !px-0" />
+            <SponsorBanner
+              placement="search_results_top"
+              vertical={tipoSeguro}
+              className="!my-6 !px-0"
+              fallback={<GoogleAdSlot placement="search_results_top" className="!my-6 !px-0" minHeight={96} />}
+            />
 
             {vistaAtiva === 'mapa' ? (
               <div className="pesquisa-map-shell">

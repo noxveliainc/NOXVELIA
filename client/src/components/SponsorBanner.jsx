@@ -14,14 +14,14 @@ const withUtm = (targetUrl, campaignId, placement) => {
   }
 };
 
-export default function SponsorBanner({ placement, vertical = 'all', className = '' }) {
+export default function SponsorBanner({ placement, vertical = 'all', className = '', fallback = null }) {
   const { campaigns } = useSponsors();
   const campaign = campaigns.find((item) => (
     item.placements?.includes(placement)
     && (item.vertical === 'all' || item.vertical === vertical || vertical === 'all')
   ));
 
-  if (!campaign) return null;
+  if (!campaign) return fallback;
 
   return (
     <aside className={`mx-auto my-8 w-full max-w-7xl px-4 sm:px-6 ${className}`} aria-label="Conteúdo patrocinado">

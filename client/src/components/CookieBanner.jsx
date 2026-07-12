@@ -1,49 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  OPEN_COOKIE_SETTINGS_EVENT,
+  dispatchCookieConsentChanged,
+  readCookieConsent,
+  writeCookieConsent,
+} from '../utils/cookieConsent';
 
-const CONSENT_KEY = 'noxvelia_cookies_accepted';
-const LEGACY_KEY = '@Noxvelia:cookie-consent';
-const CONSENT_VERSION = '2026-07-12.2';
-const CONSENT_DURATION_MS = 180 * 24 * 60 * 60 * 1000;
-const OPEN_SETTINGS_EVENT = 'noxvelia:open-cookie-settings';
 const BMC_SCRIPT_ID = 'noxvelia-bmc-widget';
-
-const createRecord = (external) => {
-  const now = new Date();
-  return {
-    version: CONSENT_VERSION,
-    accepted: true,
-    external: Boolean(external),
-    updatedAt: now.toISOString(),
-    expiresAt: new Date(now.getTime() + CONSENT_DURATION_MS).toISOString(),
-  };
-};
-
-const readConsent = () => {
-  try {
-    const raw = localStorage.getItem(CONSENT_KEY);
-    if (raw === 'true') return createRecord(true);
-    if (raw) {
-      const record = JSON.parse(raw);
-      const valid = record?.accepted === true
-        && record?.version === CONSENT_VERSION
-        && new Date(record.expiresAt).getTime() > Date.now();
-      if (valid) return record;
-      localStorage.removeItem(CONSENT_KEY);
-    }
-
-    const legacyRaw = localStorage.getItem(LEGACY_KEY);
-    if (legacyRaw) {
-      // A versão anterior podia ficar invisível durante a animação.
-      // Pedimos uma nova decisão para garantir que todos veem o aviso corrigido.
-      localStorage.removeItem(LEGACY_KEY);
-      return null;
-    }
-  } catch {
-    return null;
-  }
-  return null;
-};
 
 const removeExternalWidget = () => {
   document.getElementById('bmc-wbtn')?.remove();
@@ -74,21 +38,15 @@ const loadExternalWidget = () => {
 
 export default function CookieBanner() {
   const initialConsent = useRef(undefined);
-  if (initialConsent.current === undefined) initialConsent.current = readConsent();
+  if (initialConsent.current === undefined) initialConsent.current = readCookieConsent();
   const [consent, setConsent] = useState(initialConsent.current);
   const [isOpen, setIsOpen] = useState(!initialConsent.current);
 
   const saveChoice = (external) => {
-    const record = createRecord(external);
-    try {
-      localStorage.setItem(CONSENT_KEY, JSON.stringify(record));
-      localStorage.removeItem(LEGACY_KEY);
-    } catch {
-      // A escolha mantém-se nesta abertura se o armazenamento estiver bloqueado.
-    }
+    const record = writeCookieConsent(external);
     setConsent(record);
     setIsOpen(false);
-    window.dispatchEvent(new CustomEvent('noxvelia:cookie-consent-changed', { detail: record }));
+    dispatchCookieConsentChanged(record);
   };
 
   useEffect(() => {
@@ -105,8 +63,8 @@ export default function CookieBanner() {
 
   useEffect(() => {
     const openSettings = () => setIsOpen(true);
-    window.addEventListener(OPEN_SETTINGS_EVENT, openSettings);
-    return () => window.removeEventListener(OPEN_SETTINGS_EVENT, openSettings);
+    window.addEventListener(OPEN_COOKIE_SETTINGS_EVENT, openSettings);
+    return () => window.removeEventListener(OPEN_COOKIE_SETTINGS_EVENT, openSettings);
   }, []);
 
   return (
@@ -129,7 +87,7 @@ export default function CookieBanner() {
             <div className="min-w-0">
               <h2 id="cookie-banner-title" className="m-0 text-base font-extrabold tracking-tight sm:text-lg">A tua privacidade na NOXVELIA</h2>
               <p id="cookie-banner-description" className="mt-2 max-w-3xl text-xs leading-6 text-slate-300 sm:text-sm">
-                Utilizamos armazenamento essencial para autenticação, segurança e preferências. Só carregamos serviços externos opcionais com a tua autorização. Podes rejeitá-los sem perder acesso à plataforma.
+                Utilizamos armazenamento essencial para autenticação, segurança e preferências. Só carregamos serviços externos opcionais, incluindo apoio externo e publicidade Google, com a tua autorização. Podes rejeitá-los sem perder acesso à plataforma.
               </p>
               {consent && (
                 <p className="mt-2 text-xs font-semibold text-slate-400">

@@ -11,7 +11,7 @@ import {
   mdiAlertCircleOutline
 } from '@mdi/js';
 
-const POLITICA_ATUALIZADA_EM = '11 de julho de 2026';
+const POLITICA_ATUALIZADA_EM = '13 de julho de 2026';
 const OPEN_COOKIE_SETTINGS_EVENT = 'noxvelia:open-cookie-settings';
 
 export default function PoliticaPrivacidade() {
@@ -151,6 +151,7 @@ export default function PoliticaPrivacidade() {
               <li><strong>CARTO e OpenStreetMap/Nominatim:</strong> Apresentação dos mapas e geocodificação das localizações pesquisadas ou associadas a anúncios. Os pedidos de mosaicos podem incluir IP e informação técnica do navegador.</li>
               <li><strong>carVertical:</strong> Serviço externo acedido por ligação de afiliação. Quando existe VIN no anúncio, esse identificador pode ser incluído na ligação aberta pelo Utilizador.</li>
               <li><strong>Buy Me a Coffee:</strong> Widget de apoio carregado apenas após consentimento para serviços externos.</li>
+              <li><strong>Google AdSense:</strong> Apresentação de publicidade em zonas públicas da plataforma, carregada apenas após consentimento para serviços externos. A Google pode tratar identificadores técnicos, endereço IP, informação do navegador e sinais necessários à entrega e medição dos anúncios.</li>
               <li><strong>Google Fonts:</strong> Entrega remota de tipos de letra em algumas áreas da plataforma, podendo o pedido técnico revelar IP e dados do navegador ao fornecedor.</li>
             </ul>
 
@@ -186,7 +187,7 @@ export default function PoliticaPrivacidade() {
 
             <h2 id="cookies"><Icon path={mdiCookieOutline} size={1.1} color="#2ac1b4" /> 4. Política de Cookies e Armazenamento Local</h2>
             <p>
-              A NOXVELIA utiliza <strong>cookies e tecnologias com função semelhante</strong>, incluindo armazenamento local do navegador (<em>localStorage</em>), para disponibilizar funções essenciais e guardar escolhas feitas pelo Utilizador. O widget externo Buy Me a Coffee só é carregado mediante autorização. A expressão “cookies” nesta secção abrange estas tecnologias sempre que armazenem ou consultem informação no dispositivo.
+              A NOXVELIA utiliza <strong>cookies e tecnologias com função semelhante</strong>, incluindo armazenamento local do navegador (<em>localStorage</em>), para disponibilizar funções essenciais e guardar escolhas feitas pelo Utilizador. Serviços externos opcionais, como Buy Me a Coffee e Google AdSense, só são carregados mediante autorização. A expressão “cookies” nesta secção abrange estas tecnologias sempre que armazenem ou consultem informação no dispositivo.
             </p>
 
             <h3>4.1. Objetivos destas tecnologias</h3>
@@ -194,7 +195,7 @@ export default function PoliticaPrivacidade() {
               <li><strong>Autenticação e segurança:</strong> manter a sessão iniciada, associar os pedidos autenticados à conta correta e proteger áreas reservadas.</li>
               <li><strong>Funcionamento e preferências solicitadas:</strong> recordar se o Utilizador está a navegar em Drive ou Estate e conservar o tema visual escolhido.</li>
               <li><strong>Prova e gestão do consentimento:</strong> guardar a versão, data, validade e categorias aceites ou rejeitadas, permitindo demonstrar e respeitar a escolha.</li>
-              <li><strong>Serviços externos opcionais:</strong> carregar o widget Buy Me a Coffee apenas quando o Utilizador autoriza expressamente essa categoria.</li>
+              <li><strong>Serviços externos opcionais:</strong> carregar o widget Buy Me a Coffee e publicidade Google apenas quando o Utilizador autoriza expressamente essa categoria.</li>
             </ul>
 
             <h3>4.2. Tecnologias utilizadas atualmente</h3>
@@ -251,6 +252,12 @@ export default function PoliticaPrivacidade() {
                     <td>Definida pelo fornecedor externo e respetiva política; o carregamento na NOXVELIA cessa quando a autorização é retirada.</td>
                     <td><span className="legal-cookie-badge optional">Opcional</span></td>
                   </tr>
+                  <tr>
+                    <td>Google AdSense<br /><small>Serviço externo de publicidade</small></td>
+                    <td>Apresentar anúncios em páginas públicas e medir a entrega publicitária. Pode usar cookies, identificadores ou pedidos técnicos próprios da Google quando carregado.</td>
+                    <td>Definida pela Google e respetivas políticas; o carregamento na NOXVELIA cessa quando a autorização é retirada.</td>
+                    <td><span className="legal-cookie-badge optional">Opcional</span></td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -266,7 +273,7 @@ export default function PoliticaPrivacidade() {
 
             <h3>4.4. Analítica, ligações externas e controlo no navegador</h3>
             <p>
-              A NOXVELIA <strong>não instala atualmente cookies próprios de analítica nem de publicidade comportamental</strong>. A contagem interna de visitas aos anúncios não depende da ativação de um cookie analítico no navegador. Se esta realidade mudar, as categorias e o mecanismo de consentimento serão atualizados antes de qualquer tecnologia opcional ser utilizada.
+              A NOXVELIA não instala cookies próprios de analítica comportamental. A publicidade Google é carregada apenas nas páginas públicas configuradas e só depois de autorização para serviços externos. A contagem interna de visitas aos anúncios da plataforma não depende da ativação de um cookie analítico no navegador.
             </p>
             <p>
               Ao iniciar um pagamento Stripe ou seguir ligações para carVertical, redes sociais ou outros sites, o Utilizador abandona o contexto direto da NOXVELIA e passa a estar sujeito às políticas desses terceiros. A retirada de consentimento na NOXVELIA impede carregamentos opcionais futuros, mas cookies já criados diretamente por um terceiro poderão ter de ser eliminados nas definições do navegador ou junto desse fornecedor.
