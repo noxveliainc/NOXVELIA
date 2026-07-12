@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 export default function PageTransition() {
@@ -8,14 +8,14 @@ export default function PageTransition() {
 
   // 🛡️ A TUA LISTA VIP: A cortina só vai cair quando o utilizador entrar nestas páginas exatas.
   // Podes adicionar ou remover caminhos conforme o que achares melhor.
-  const rotasComTransicao = [
+  const rotasComTransicao = useMemo(() => [
     '/',
     '/carros',
     '/imoveis',
     '/login',
     '/registo',
     '/publicar'
-  ];
+  ], []);
 
   useEffect(() => {
     // 1. Verifica se a rota atual está na nossa lista VIP
@@ -41,7 +41,7 @@ export default function PageTransition() {
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [location.pathname]); // O gatilho é a mudança de URL
+  }, [location.pathname, rotasComTransicao]); // O gatilho é a mudança de URL
 
   // Se não for para renderizar, não mostramos nada
   if (!render) return null;

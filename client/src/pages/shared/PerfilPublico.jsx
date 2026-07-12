@@ -40,15 +40,6 @@ const normalizarHrefLinkPerfil = (link) => {
   return `https://wa.me/${numero}`;
 };
 
-const obterLinksVisiveis = (vendedor) => {
-  const links = Array.isArray(vendedor?.linksPerfil)
-    ? vendedor.linksPerfil.filter((link) => link?.url).slice(0, 3)
-    : [];
-
-  if (links.length > 0) return links;
-  return vendedor?.website ? [{ tipo: 'website', url: vendedor.website }] : [];
-};
-
 export default function PerfilPublico() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -68,7 +59,7 @@ export default function PerfilPublico() {
         if (!ativo) return;
         setVendedor(data.vendedor);
         setAnuncios(data.anuncios || []);
-      } catch (err) {
+      } catch {
         if (ativo) setErro('Erro ao carregar a montra do vendedor.');
       } finally {
         if (ativo) setLoading(false);
@@ -254,7 +245,7 @@ export default function PerfilPublico() {
         <div className="pp-main">
           <div className="pp-section-header">
             <h2 className="pp-section-title">Portfolio de Ativos</h2>
-            <div className="pp-count">{anuncios.length} Disponiveis</div>
+            <div className="pp-count">{anuncios.length} disponíveis</div>
           </div>
 
           <div className="pp-grid">

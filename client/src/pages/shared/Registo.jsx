@@ -74,8 +74,15 @@ export default function Registo() {
     setErro('');
 
     try {
-      const { confirmarPassword, ...dadosReais } = formData;
-      const dadosParaSubmeter = { ...dadosReais, tipo: 'cliente', tipoConta: 'particular' };
+      const dadosParaSubmeter = {
+        nome: formData.nome,
+        email: formData.email,
+        password: formData.password,
+        telefone: formData.telefone,
+        localidade: formData.localidade,
+        tipo: 'cliente',
+        tipoConta: 'particular'
+      };
       
       await api.post('/auth/register', dadosParaSubmeter);
       navigate('/login', { state: { mensagemRegisto: 'Conta criada com sucesso! Verifica o teu email para ativares o acesso.' } });

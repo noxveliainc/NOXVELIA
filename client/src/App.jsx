@@ -5,7 +5,6 @@ import { HelmetProvider } from 'react-helmet-async';
 
 // --- COMPONENTES ---
 import ProtectedRoute from './components/ProtectedRoute';
-import PremiumRoute from './components/PremiumRoute';
 import NavbarCarro from './components/carros/NavbarCarro';
 import NavbarImovel from './components/imoveis/NavbarImovel';
 import PageTransition from './components/PageTransition'; 

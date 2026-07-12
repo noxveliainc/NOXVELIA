@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 export default function Footer() {
   // 🌟 ESTADO PARA CONTROLAR OS TICKETS DE SUPORTE
   const [modalSuporteAberto, setModalSuporteAberto] = useState(false);
-  const [suporteSucesso, setSuporteSucesso] = useState(false); // Fica a true se o form for submetido
+  const [suporteSucesso] = useState(false); // Fica a true se o form for submetido
 
   return (
     <>

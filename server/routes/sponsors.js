@@ -56,7 +56,7 @@ const obterCampanhas = () => {
       };
     }).filter(Boolean).sort((a, b) => b.priority - a.priority);
   } catch {
-    console.error('[SPONSORS] SPONSOR_CAMPAIGNS_JSON invalido. Nenhuma campanha foi publicada.');
+    console.error('[SPONSORS] SPONSOR_CAMPAIGNS_JSON inválido. Nenhuma campanha foi publicada.');
     return [];
   }
 };

@@ -88,7 +88,7 @@ export default function Editar() {
         setFotos(data.fotos || []);
         setEquipamento(data.equipamento || []);
         setFetchingData(false);
-      } catch (err) {
+      } catch {
         setErro('Não foi possível carregar os dados do anúncio para edição.');
         setFetchingData(false);
       }

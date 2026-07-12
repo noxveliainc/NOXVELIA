@@ -1,5 +1,5 @@
 // src/components/Notificacoes.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Check } from 'lucide-react';
 import api from '../../services/api';
@@ -20,19 +20,19 @@ export default function Notificacoes() {
     return () => document.removeEventListener('mousedown', handleClickFora);
   }, []);
 
-  const carregarNotificacoes = async () => {
+  const carregarNotificacoes = useCallback(async () => {
     if (!signed) return;
     try {
       const { data } = await api.get('/notificacoes');
       setNotificacoes(data);
     } catch {}
-  };
+  }, [signed]);
 
   useEffect(() => {
     carregarNotificacoes();
     const interval = setInterval(carregarNotificacoes, 30000);
     return () => clearInterval(interval);
-  }, [signed]);
+  }, [carregarNotificacoes]);
 
   const marcarComoLida = async (id, link) => {
     try {

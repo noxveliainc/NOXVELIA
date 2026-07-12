@@ -53,7 +53,7 @@ export default function Planos() {
       if (res.data && res.data.url) {
         window.location.href = res.data.url;
       }
-    } catch (error) {
+    } catch {
       alert('Erro ao iniciar pagamento. Tenta novamente.');
       setLoadingStripe(false);
     }
@@ -67,7 +67,7 @@ export default function Planos() {
       if (res.data && res.data.url) {
         window.location.href = res.data.url;
       }
-    } catch (error) {
+    } catch {
       alert('Erro ao abrir o portal de gestão. Tenta novamente.');
       setLoadingStripe(false);
     }

@@ -7,7 +7,7 @@ import api from '../../services/api';
 export default function SucessoUpsell() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [anuncio, setAnuncio] = useState(null);
+  const [, setAnuncio] = useState(null);
   const [loadingStripe, setLoadingStripe] = useState(false);
 
   useEffect(() => {

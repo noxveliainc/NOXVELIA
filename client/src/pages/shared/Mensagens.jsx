@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { BadgeCheck } from 'lucide-react';
@@ -8,9 +8,6 @@ import { getAuthToken } from '../../utils/authSession';
 
 export default function Mensagens() {
   const { user } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
-  
   const [socket, setSocket] = useState(null);
   const [conversas, setConversas] = useState([]);
   const [conversaAtiva, setConversaAtiva] = useState(null);

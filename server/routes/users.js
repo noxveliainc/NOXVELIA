@@ -15,7 +15,7 @@ const normalizarWhatsappPerfil = (valor) => {
 
   const numero = digitos.length === 9 ? `351${digitos}` : digitos;
   if (numero.length < 10 || numero.length > 15) {
-    throw new Error('O link de WhatsApp do perfil nao e valido.');
+    throw new Error('O link de WhatsApp do perfil não é válido.');
   }
 
   return `https://wa.me/${numero}`;
@@ -37,11 +37,11 @@ const normalizarUrlPerfil = (valor, tipo = 'website') => {
   try {
     const url = new URL(urlComProtocolo);
     if (!['http:', 'https:'].includes(url.protocol)) {
-      throw new Error('Protocolo invalido.');
+      throw new Error('Protocolo inválido.');
     }
     return url.href;
   } catch {
-    throw new Error('Um dos links do perfil nao e valido.');
+    throw new Error('Um dos links do perfil não é válido.');
   }
 };
 
@@ -232,7 +232,7 @@ router.get('/vendedor/:id', async (req, res) => {
       'nome email telefone localidade avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo rating totalAvaliacoes createdAt'
     );
     if (!vendedor) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
-    const anuncios = await Anuncio.find({ utilizador: req.params.id })
+    const anuncios = await Anuncio.find({ utilizador: req.params.id, estado: 'ativo' })
       .sort({ createdAt: -1 })
       .populate('utilizador', 'nome avatarUrl tipo premiumAtivo');
     res.json({ vendedor, anuncios });

@@ -81,7 +81,7 @@ export default function AdminDashboard() {
       setUtilizadores(resUsers.data);
       setAnuncios(resAnuncios.data);
       setUltimaAtualizacao(new Date());
-    } catch (err) {
+    } catch {
       setErro('Não foi possível atualizar os dados operacionais. Tenta novamente.');
     } finally {
       setLoading(false);
@@ -487,7 +487,6 @@ export default function AdminDashboard() {
                     <EmptyRow colSpan={4} text="Nenhum utilizador corresponde aos filtros aplicados." />
                   ) : (
                     utilizadoresFiltrados.map((u, idx) => {
-                      const isSoberano = u._id === user?.id || u._id === user?._id;
                       return (
                         <tr key={u._id} className="nx-row" style={{ borderBottom: `1px solid ${COLORS.border}`, color: '#cbd5e1', animationDelay: `${idx * 0.02}s` }}>
                           

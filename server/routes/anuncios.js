@@ -130,7 +130,7 @@ router.get('/em-alta/semana', async (req, res) => {
     ];
 
     const [resultado] = await Anuncio.aggregate([
-      { $match: { estado: { $ne: 'apagado' }, tipo: { $in: ['carro', 'imovel'] } } },
+      { $match: { estado: 'ativo', tipo: { $in: ['carro', 'imovel'] } } },
       {
         $facet: {
           carro: [{ $match: { tipo: 'carro' } }, ...ranking],
@@ -166,7 +166,7 @@ router.get('/pesquisa/mapa', async (req, res) => {
       tipo, distrito, cidade, q, precoMax,
       marca, modelo, combustivel, transmissao, tipologia
     } = req.query;
-    const query = { estado: { $ne: 'apagado' } };
+    const query = { estado: 'ativo' };
     if (tipo) query.tipo = tipo;
     if (distrito && distrito !== 'Todos') query['localizacao.distrito'] = distrito;
     if (cidade) query['localizacao.cidade'] = cidade;

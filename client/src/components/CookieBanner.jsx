@@ -6,6 +6,7 @@ import {
   readCookieConsent,
   writeCookieConsent,
 } from '../utils/cookieConsent';
+import { removeAdsenseScript } from '../utils/googleAdsense';
 
 const BMC_SCRIPT_ID = 'noxvelia-bmc-widget';
 
@@ -56,6 +57,7 @@ export default function CookieBanner() {
     }
 
     removeExternalWidget();
+    removeAdsenseScript();
     const observer = new MutationObserver(removeExternalWidget);
     observer.observe(document.body, { childList: true });
     return () => observer.disconnect();

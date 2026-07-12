@@ -40,15 +40,6 @@ const prepararLinksParaEdicao = (linksPerfil, website) => {
   return [criarLinkPerfilVazio()];
 };
 
-const obterLinksVisiveis = (utilizador) => {
-  const links = Array.isArray(utilizador?.linksPerfil)
-    ? utilizador.linksPerfil.filter((link) => link?.url).slice(0, 3)
-    : [];
-
-  if (links.length > 0) return links;
-  return utilizador?.website ? [{ tipo: 'website', url: utilizador.website }] : [];
-};
-
 const normalizarHref = (url) => {
   if (!url) return '#';
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -156,7 +147,7 @@ export default function Perfil() {
       const updateRes = await api.put('/users/me', { avatarUrl: novaUrl });
       if (atualizarAvatar) atualizarAvatar(novaUrl);
       setUtilizador(updateRes.data);
-    } catch (error) {
+    } catch {
       alert('Erro ao processar a imagem do avatar.');
     } finally {
       setUploadingAvatar(false);
@@ -176,7 +167,7 @@ export default function Perfil() {
       const updateRes = await api.put('/users/me', { capaUrl: novaUrl });
       setUtilizador(updateRes.data);
       if (atualizarUser) atualizarUser(updateRes.data);
-    } catch (error) {
+    } catch {
       alert('Erro ao processar a imagem de capa.');
     } finally {
       setUploadingCapa(false);
@@ -199,7 +190,7 @@ export default function Perfil() {
       setUtilizador(res.data);
       if (atualizarUser) atualizarUser(res.data);
       alert('A tua conta foi evoluída para Profissional com sucesso.');
-    } catch (err) {
+    } catch {
       alert('Ocorreu um erro ao evoluir a tua conta.');
     } finally {
       setIsDeleting(false);
@@ -259,7 +250,7 @@ export default function Perfil() {
       });
       setUtilizador(res.data);
       if (atualizarUser) atualizarUser(res.data);
-    } catch (err) {
+    } catch {
       alert('Erro ao guardar as alterações do perfil.');
     } finally {
       setIsDeleting(false);
@@ -272,7 +263,7 @@ export default function Perfil() {
     try {
       const { data } = await api.get(`/analytics/anuncio/${idAnuncio}`);
       setDadosGrafico(data);
-    } catch (err) {
+    } catch {
       alert('Erro ao carregar dados.');
       setAnuncioAnalisado(null);
     }
@@ -592,6 +583,11 @@ export default function Perfil() {
 
       <div className="perfil-outer">
         <div className="perfil-moldura">
+          {erro && (
+            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '14px 16px', borderRadius: 12, marginBottom: 24, fontSize: 14, fontWeight: 600 }}>
+              {erro}
+            </div>
+          )}
           
           {isDeleting && (
             <div className="perfil-loading-overlay">

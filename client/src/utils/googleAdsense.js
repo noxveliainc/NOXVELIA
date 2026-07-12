@@ -41,3 +41,15 @@ export const ensureAdsenseScript = () => {
 
   return adsenseScriptPromise;
 };
+
+export const removeAdsenseScript = () => {
+  document.getElementById(ADSENSE_SCRIPT_ID)?.remove();
+  adsenseScriptPromise = null;
+  if (window.adsbygoogle) {
+    try {
+      delete window.adsbygoogle;
+    } catch {
+      window.adsbygoogle = undefined;
+    }
+  }
+};

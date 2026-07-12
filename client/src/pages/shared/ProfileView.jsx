@@ -351,7 +351,7 @@ export default function ProfileView({
               </div>
               <div className={`profile-badge ${isPremium ? 'premium' : ''}`}>
                 {isPremium ? <Icon path={mdiStar} size={0.45} /> : null}
-                {isPremium ? 'Premium' : 'Nao Premium'}
+                {isPremium ? 'Premium' : 'Não Premium'}
               </div>
               {isOwner && !isProfissional && user?.tipo !== 'admin' && onUpgrade && (
                 <button type="button" className="profile-upgrade" onClick={onUpgrade}>

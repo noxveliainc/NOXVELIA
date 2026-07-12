@@ -43,7 +43,7 @@ const allowedOrigins = new Set([
 ].filter(Boolean));
 const corsOrigin = (origin, callback) => {
   if (!origin || allowedOrigins.has(origin)) return callback(null, true);
-  return callback(new Error('Origem nao autorizada por CORS.'));
+  return callback(new Error('Origem não autorizada por CORS.'));
 };
 
 app.use(cors({

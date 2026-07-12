@@ -12,7 +12,7 @@ const normalizarWebsite = (valor) => {
   if (!valor) return undefined;
   const texto = String(valor).trim();
   const url = new URL(/^https?:\/\//i.test(texto) ? texto : `https://${texto}`);
-  if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Website invalido.');
+  if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Website inválido.');
   return url.href;
 };
 
@@ -28,7 +28,7 @@ export const register = async (req, res) => {
     const conta = tipoConta === 'profissional' ? 'profissional' : 'particular';
 
     if (nomeLimpo.length < 2 || nomeLimpo.length > 100 || !EMAIL_PATTERN.test(emailLower)) {
-      return res.status(400).json({ erro: 'Nome ou email invalido.' });
+      return res.status(400).json({ erro: 'Nome ou email inválido.' });
     }
     if (!validarPasswordSegura(password)) {
       return res.status(400).json({ erro: 'A palavra-passe tem de ter 9 a 128 caracteres, 1 maiuscula, 1 numero e 1 caracter especial.' });
@@ -97,15 +97,15 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
     const emailLimpo = typeof email === 'string' ? email.trim().toLowerCase() : '';
     if (!EMAIL_PATTERN.test(emailLimpo) || typeof password !== 'string' || password.length > 128) {
-      return res.status(401).json({ erro: 'Email ou palavra-passe invalidos.' });
+      return res.status(401).json({ erro: 'Email ou palavra-passe inválidos.' });
     }
 
     const utilizador = await User.findOne({ email: emailLimpo }).select('+password');
 
-    if (!utilizador) return res.status(401).json({ erro: 'Email ou palavra-passe invalidos.' });
+    if (!utilizador) return res.status(401).json({ erro: 'Email ou palavra-passe inválidos.' });
 
     const passwordValida = await argon2.verify(utilizador.password, password);
-    if (!passwordValida) return res.status(401).json({ erro: 'Email ou palavra-passe invalidos.' });
+    if (!passwordValida) return res.status(401).json({ erro: 'Email ou palavra-passe inválidos.' });
 
     if (!utilizador.verificado && utilizador.tipo !== 'admin') {
       return res.status(403).json({

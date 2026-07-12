@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
@@ -18,58 +18,6 @@ import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 const TIPOLOGIAS = ['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'];
 const COMBUSTIVEIS = ['Gasolina', 'Diesel', 'Eléctrico', 'Híbrido', 'GPL'];
 const TRANSMISSAO = ['Manual', 'Automático'];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// BANNER CTA — convida utilizadores não autenticados a publicar um anúncio
-// Adapta-se automaticamente ao tipo de divisão (carro / imóvel)
-// Para mostrar apenas a utilizadores não autenticados, envolve com: {!user && <BannerCTA ... />}
-// ─────────────────────────────────────────────────────────────────────────────
-const BannerCTA = ({ tipo, origem }) => {
-  const navigate = useNavigate();
-  const isCarro = tipo === 'carro';
-  const accent = isCarro ? 'var(--nx-accent-car)' : 'var(--nx-accent-home)';
-  const textoAnuncio = isCarro ? 'veículo' : 'imóvel';
-  const divisao = isCarro ? 'NOXVELIA Drive' : 'NOXVELIA Estate';
-
-  return (
-    <div style={{
-      background: 'var(--nx-bg-2)',
-      border: `1px solid var(--nx-border)`,
-      borderLeft: `3px solid ${accent}`,
-      borderRadius: 'var(--nx-radius-md)',
-      padding: '18px 24px',
-      marginBottom: '24px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: '24px',
-      flexWrap: 'wrap',
-    }}>
-      <div>
-        <p style={{
-          margin: 0,
-          fontSize: '13px',
-          fontWeight: 700,
-          color: 'var(--nx-text)',
-          lineHeight: 1.5,
-          letterSpacing: '0.01em',
-        }}>
-          Publica o teu {textoAnuncio} em {divisao}{' '}
-          <span style={{ color: accent }}>gratuitamente.</span>
-        </p>
-        <p style={{
-          margin: '4px 0 0 0',
-          fontSize: '12px',
-          color: 'var(--nx-text-sub)',
-          lineHeight: 1.5,
-          fontWeight: 400,
-        }}>
-          Acede à tua conta e chega a milhares de compradores em Portugal. Sem comissões.
-        </p>
-      </div>
-    </div>
-  );
-};
 
 export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [searchParams] = useSearchParams();
@@ -202,7 +150,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
       setTemMais(maisDisponivel);
       if (maisDisponivel) paginaRef.current = paginaAlvo;
 
-    } catch (err) { setError('Falha ao atualizar dados.'); setTemMais(false);
+    } catch { setError('Falha ao atualizar dados.'); setTemMais(false);
     } finally { setLoading(false); setLoadingMais(false); isFetchingRef.current = false; }
   }, [tipoPadrao, location.pathname]);
 

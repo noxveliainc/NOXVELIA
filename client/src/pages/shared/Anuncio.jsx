@@ -319,7 +319,7 @@ export default function Anuncio() {
     { label: 'Localização', value: localizacaoString, icon: mdiMapMarkerOutline },
     { label: isCarro ? 'Perfil' : 'Preço / m²', value: isCarro ? (anuncio.carro?.marca || 'Viatura') : (precoPorM2 || 'Sob análise'), icon: isCarro ? mdiCar : mdiRulerSquare },
     { label: 'Vendedor', value: vendedorVerificado ? 'Verificado' : (rating > 0 ? `${rating.toFixed(1)} estrelas` : 'Novo vendedor'), icon: mdiShieldCheckOutline },
-    { label: 'Contacto', value: telefoneContacto !== 'Nao fornecido' && telefoneContacto !== 'Não fornecido' ? 'Disponivel' : 'Por mensagem', icon: mdiPhone },
+    { label: 'Contacto', value: telefoneContacto !== 'Não fornecido' ? 'Disponível' : 'Por mensagem', icon: mdiPhone },
   ];
 
   const jsonLd = {
