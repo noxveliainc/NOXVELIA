@@ -44,7 +44,7 @@ export default function NavbarLanding() {
 
   const obterUserLocal = () => {
     try {
-      const guardado = localStorage.getItem('@App:user');
+      const guardado = sessionStorage.getItem('@App:user');
       return guardado ? JSON.parse(guardado) : null;
     } catch {
       return null;

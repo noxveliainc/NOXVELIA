@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../services/api';
+import { clearAuth, clearLegacyAuth, getAuthToken, getStoredUser, storeAuth, storeUser } from '../utils/authSession';
 
 const AuthContext = createContext({});
 
@@ -9,22 +10,25 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const carregarDadosArmazenados = () => {
-      const token = localStorage.getItem('@App:token');
-      const userLocal = localStorage.getItem('@App:user');
+      clearLegacyAuth();
+      const token = getAuthToken();
+      const userLocal = getStoredUser();
       if (token && userLocal) {
         try {
-          setUser(JSON.parse(userLocal));
+          setUser(userLocal);
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           sincronizarUser();
         } catch (e) {
           console.error("Erro ao ler localStorage no arranque", e);
-          localStorage.removeItem('@App:token');
-          localStorage.removeItem('@App:user');
+          clearAuth();
         }
       }
       setLoading(false);
     };
     carregarDadosArmazenados();
+    const expirada = () => setUser(null);
+    window.addEventListener('noxvelia:auth-expired', expirada);
+    return () => window.removeEventListener('noxvelia:auth-expired', expirada);
   }, []);
 
   const login = async (email, password) => {
@@ -37,8 +41,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Resposta do servidor inválida.');
       }
       
-      localStorage.setItem('@App:token', token);
-      localStorage.setItem('@App:user', JSON.stringify(dadosUtilizador));
+      storeAuth(token, dadosUtilizador);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(dadosUtilizador);
       return response.data;
@@ -48,8 +51,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('@App:token');
-    localStorage.removeItem('@App:user');
+    clearAuth();
     delete api.defaults.headers.common['Authorization'];
     const rotasPrivadas = ['/perfil', '/publicar', '/mensagens', '/favoritos', '/admin'];
     const pathAtual = window.location.pathname;
@@ -66,7 +68,7 @@ export const AuthProvider = ({ children }) => {
     setUser((prev) => {
       if (!prev) return null;
       const utilizadorAtualizado = { ...prev, avatarUrl: novoAvatarUrl };
-      localStorage.setItem('@App:user', JSON.stringify(utilizadorAtualizado));
+      storeUser(utilizadorAtualizado);
       return utilizadorAtualizado;
     });
   };
@@ -75,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     setUser((prev) => {
       if (!prev) return novosDados;
       const utilizadorAtualizado = { ...prev, ...novosDados };
-      localStorage.setItem('@App:user', JSON.stringify(utilizadorAtualizado));
+      storeUser(utilizadorAtualizado);
       return utilizadorAtualizado;
     });
   };

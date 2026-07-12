@@ -72,7 +72,7 @@ router.post('/checkout', verificarToken, async (req, res) => {
     res.json({ url: session.url });
   } catch (error) {
     console.error('❌ Erro no Stripe Checkout (one-time):', error);
-    res.status(500).json({ erro: 'Erro ao processar a página de pagamento.', detalhe: error.message });
+    res.status(500).json({ erro: 'Erro ao processar a página de pagamento.' });
   }
 });
 
@@ -126,7 +126,7 @@ router.post('/criar-checkout-premium', verificarToken, async (req, res) => {
     res.json({ url: session.url });
   } catch (error) {
     console.error('❌ ERRO FINAL DA STRIPE:', error.message);
-    res.status(500).json({ erro: 'Erro na Stripe', detalhe: error.message });
+    res.status(500).json({ erro: 'Erro ao iniciar a subscrição.' });
   }
 });
 
@@ -162,7 +162,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     console.error(`❌ Assinatura do webhook inválida: ${err.message}`);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).send('Assinatura de webhook invalida.');
   }
 
   if (event.type === 'checkout.session.completed') {

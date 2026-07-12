@@ -11,8 +11,11 @@ export const errorHandler = (err, req, res, next) => {
 
   // 2. Devolve uma resposta estruturada ao Frontend
   const statusCode = err.status || 500;
+  const mensagemPublica = process.env.NODE_ENV === 'production' && statusCode >= 500
+    ? 'Erro interno do servidor.'
+    : (err.message || 'Erro interno do servidor.');
   res.status(statusCode).json({
-    erro: err.message || 'Erro interno do servidor.',
+    erro: mensagemPublica,
     // Só envia os detalhes técnicos para o frontend se estiveres em desenvolvimento
     detalhes: process.env.NODE_ENV !== 'production' ? err.stack : undefined
   });
@@ -21,6 +24,6 @@ export const errorHandler = (err, req, res, next) => {
 // Este middleware captura rotas que não existem
 export const notFoundHandler = (req, res, next) => {
   res.status(404).json({
-    erro: `A rota ${req.method} ${req.originalUrl} não existe no servidor.`
+    erro: 'O recurso pedido não existe.'
   });
 };

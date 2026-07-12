@@ -5,7 +5,7 @@ import { verificarToken } from '../middleware/auth.js';
 const router = express.Router();
 
 // Aqui o 'upload' já foi importado e inicializado com sucesso no outro ficheiro
-router.post('/imagens', verificarToken, upload.array('imagens', 6), async (req, res) => {
+router.post('/imagens', verificarToken, upload.array('imagens', 10), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ sucesso: false, erro: 'Nenhuma imagem enviada.' });

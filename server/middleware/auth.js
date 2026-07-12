@@ -1,24 +1,23 @@
-import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { verificarJwt } from '../utils/jwt.js';
 
 // 1. O Segurança da Porta (Verifica se o user tem sessão iniciada)
 export const verificarToken = (req, res, next) => {
   try {
-    let token = req.header('Authorization');
+    const authorization = req.header('Authorization');
 
-    if (!token) {
-      return res.status(403).json({ erro: 'Acesso Negado. Nenhum token fornecido.' });
+    if (!authorization?.startsWith('Bearer ')) {
+      return res.status(401).json({ erro: 'Autenticacao necessaria.' });
     }
 
-    if (token.startsWith('Bearer ')) {
-      token = token.slice(7, token.length).trimLeft();
-    }
+    const token = authorization.slice(7).trim();
+    if (!token) return res.status(401).json({ erro: 'Autenticacao necessaria.' });
 
-    const verificado = jwt.verify(token, process.env.JWT_SECRET);
+    const verificado = verificarJwt(token);
     req.user = verificado;
     
     next();
-  } catch (erro) {
+  } catch {
     res.status(401).json({ erro: 'Token inválido ou expirado.' });
   }
 };

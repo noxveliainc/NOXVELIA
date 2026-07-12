@@ -33,7 +33,7 @@ export default function Login() {
       setSucesso(true);
 
       setTimeout(() => {
-        const userGuardado = JSON.parse(localStorage.getItem('@App:user') || '{}');
+        const userGuardado = JSON.parse(sessionStorage.getItem('@App:user') || '{}');
 
         if (userGuardado?.tipo === 'admin') {
           navigate('/admin', { replace: true });

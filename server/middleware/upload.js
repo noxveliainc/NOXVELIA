@@ -18,7 +18,14 @@ const storage = new CloudinaryStorage({
 // Inicializar o Multer de forma assíncrona
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // Proteção: Limite de 5mb por payload de foto
+  limits: { fileSize: 5 * 1024 * 1024, files: 10, fields: 5, parts: 15 },
+  fileFilter: (req, file, callback) => {
+    const permitidos = new Set(['image/jpeg', 'image/png', 'image/webp']);
+    if (!permitidos.has(file.mimetype)) {
+      return callback(new multer.MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname));
+    }
+    return callback(null, true);
+  },
 });
 
 export default upload;

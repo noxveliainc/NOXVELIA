@@ -12,6 +12,7 @@ import PageTransition from './components/PageTransition';
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
 import { ComparisonProvider } from './context/ComparisonContext';
+import { SponsorProvider } from './context/SponsorContext';
 
 // --- PÁGINAS (lazy) ---
 const Landing        = lazy(() => import('./pages/shared/Landing'));
@@ -116,9 +117,11 @@ export default function App() {
     <HelmetProvider>
       <AuthProvider>
         <Router>
-          <ComparisonProvider>
-            <AppShell />
-          </ComparisonProvider>
+          <SponsorProvider>
+            <ComparisonProvider>
+              <AppShell />
+            </ComparisonProvider>
+          </SponsorProvider>
         </Router>
       </AuthProvider>
     </HelmetProvider>

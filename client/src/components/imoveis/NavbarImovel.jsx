@@ -129,7 +129,7 @@ export default function NavbarImovel() {
     }
   };
 
-  const obterUserLocal = () => { try { const guardado = localStorage.getItem('@App:user'); return guardado ? JSON.parse(guardado) : null; } catch { return null; } };
+  const obterUserLocal = () => { try { const guardado = sessionStorage.getItem('@App:user'); return guardado ? JSON.parse(guardado) : null; } catch { return null; } };
   const dadosUser = user || obterUserLocal();
   const avatarImg = dadosUser?.avatarUrl || dadosUser?.avatar;
   const inicial = dadosUser?.nome?.charAt(0).toUpperCase() || 'U';

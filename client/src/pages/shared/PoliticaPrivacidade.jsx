@@ -210,13 +210,13 @@ export default function PoliticaPrivacidade() {
                 </thead>
                 <tbody>
                   <tr>
-                    <td><em>localStorage</em><br /><code>@App:token</code></td>
+                    <td><em>sessionStorage</em><br /><code>@App:token</code></td>
                     <td>Autenticar pedidos à API e permitir o acesso seguro à conta.</td>
                     <td>Até terminar sessão, limpar os dados do navegador ou deixar de ser válido no servidor.</td>
                     <td><span className="legal-cookie-badge">Necessário</span></td>
                   </tr>
                   <tr>
-                    <td><em>localStorage</em><br /><code>@App:user</code></td>
+                    <td><em>sessionStorage</em><br /><code>@App:user</code></td>
                     <td>Manter localmente os dados básicos necessários para apresentar e gerir a sessão do Utilizador.</td>
                     <td>Até terminar sessão, atualizar a conta ou limpar os dados do navegador.</td>
                     <td><span className="legal-cookie-badge">Necessário</span></td>

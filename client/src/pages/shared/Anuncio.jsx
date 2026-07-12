@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useComparison } from '../../context/ComparisonContext';
 import { getVideoEmbedData } from '../../utils/videoEmbed';
+import SponsorBanner from '../../components/SponsorBanner';
 import { Helmet } from 'react-helmet-async';
 import Icon from '@mdi/react';
 import {
@@ -916,6 +917,8 @@ export default function Anuncio() {
               </div>
             </div>
           </div>
+
+          <SponsorBanner placement="listing_before_suggestions" vertical={anuncio.tipo || 'all'} className="!px-0" />
 
           {sugeridos.length > 0 && (
             <div className="sugeridos-section">

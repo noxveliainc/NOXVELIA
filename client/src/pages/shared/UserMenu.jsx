@@ -8,6 +8,8 @@ export default function UserMenu({ theme }) {
   const handleLogout = () => {
     localStorage.removeItem('@App:token');
     localStorage.removeItem('@App:user');
+    sessionStorage.removeItem('@App:token');
+    sessionStorage.removeItem('@App:user');
     localStorage.removeItem('user');
     navigate('/');
     window.location.reload();

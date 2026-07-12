@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { BadgeCheck } from 'lucide-react';
 import { io } from 'socket.io-client'; // 🌟 Antena do WebSockets
+import { getAuthToken } from '../../utils/authSession';
 
 export default function Mensagens() {
   const { user } = useAuth();
@@ -57,7 +58,7 @@ export default function Mensagens() {
 
     // Conecta ao Backend
     const socketURL = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace('/api', '');
-    const novoSocket = io(socketURL);
+    const novoSocket = io(socketURL, { auth: { token: getAuthToken() }, transports: ['websocket', 'polling'] });
     setSocket(novoSocket);
 
     // Entra na sala pessoal com o ID do utilizador

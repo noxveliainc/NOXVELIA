@@ -1,10 +1,17 @@
 import express from 'express';
-import fetch from 'node-fetch'; // ← certifica-te que tens: npm install node-fetch
+import rateLimit from 'express-rate-limit';
 import Anuncio from '../models/Anuncio.js';
 import User from '../models/User.js';
 import { verificarToken } from '../middleware/auth.js';
 
 const router = express.Router();
+const visitLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { erro: 'Limite de visitas atingido temporariamente.' },
+});
 
 const normalizarFiltroTexto = (valor) => String(valor || '')
   .trim()
@@ -291,6 +298,14 @@ router.post('/', verificarToken, async (req, res) => {
       visitas: _ignore4,
       guardados: _ignore5,
       estado: _ignore6,
+      contactos: _ignore7,
+      historicoVisitas: _ignore8,
+      scoreQualidade: _ignore9,
+      scoreDetalhes: _ignore10,
+      scoreAnaliseIA: _ignore11,
+      planoPublicacao: _ignore12,
+      expiresAt: _ignore13,
+      apagadoEm: _ignore14,
       ...bodyLimpo
     } = req.body;
 
@@ -342,6 +357,15 @@ router.put('/:id', verificarToken, async (req, res) => {
       utilizador: _ig3,
       visitas: _ig4,
       guardados: _ig5,
+      estado: _ig6,
+      contactos: _ig7,
+      historicoVisitas: _ig8,
+      scoreQualidade: _ig9,
+      scoreDetalhes: _ig10,
+      scoreAnaliseIA: _ig11,
+      planoPublicacao: _ig12,
+      expiresAt: _ig13,
+      apagadoEm: _ig14,
       ...bodyLimpo
     } = req.body;
 
@@ -409,7 +433,7 @@ router.post('/:id/guardar', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 // 10. REGISTAR VISITA
 // ─────────────────────────────────────────────────────────────
-router.post('/:id/visita', async (req, res) => {
+router.post('/:id/visita', visitLimiter, async (req, res) => {
   try {
     const hoje = new Date().toISOString().slice(0, 10);
     const atualizado = await Anuncio.findOneAndUpdate(

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
+import SponsorBanner from '../../components/SponsorBanner';
 import MapaResultados from '../../components/imoveis/MapaResultados';
 import useDebounce from '../../hooks/useDebounce';
 import Icon from '@mdi/react';
@@ -724,6 +725,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel' }) {
               </select>
               </div>
             </div>
+
+            <SponsorBanner placement="search_results_top" vertical={tipoSeguro} className="!my-6 !px-0" />
 
             {vistaAtiva === 'mapa' ? (
               <div className="pesquisa-map-shell">
