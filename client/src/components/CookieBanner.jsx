@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const CONSENT_KEY = 'noxvelia_cookies_accepted';
 const LEGACY_KEY = '@Noxvelia:cookie-consent';
-const CONSENT_VERSION = '2026-07-12';
+const CONSENT_VERSION = '2026-07-12.2';
 const CONSENT_DURATION_MS = 180 * 24 * 60 * 60 * 1000;
 const OPEN_SETTINGS_EVENT = 'noxvelia:open-cookie-settings';
 const BMC_SCRIPT_ID = 'noxvelia-bmc-widget';
@@ -34,11 +34,10 @@ const readConsent = () => {
 
     const legacyRaw = localStorage.getItem(LEGACY_KEY);
     if (legacyRaw) {
-      const legacy = JSON.parse(legacyRaw);
-      const migrated = createRecord(Boolean(legacy?.categories?.external));
-      localStorage.setItem(CONSENT_KEY, JSON.stringify(migrated));
+      // A versão anterior podia ficar invisível durante a animação.
+      // Pedimos uma nova decisão para garantir que todos veem o aviso corrigido.
       localStorage.removeItem(LEGACY_KEY);
-      return migrated;
+      return null;
     }
   } catch {
     return null;
@@ -114,7 +113,7 @@ export default function CookieBanner() {
     <>
       {isOpen && (
         <section
-          className="fixed bottom-4 left-4 right-4 z-[90000] mx-auto grid max-w-6xl gap-5 rounded-2xl border border-white/15 bg-slate-950 p-5 text-white shadow-2xl md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-6"
+          className="fixed bottom-4 left-4 right-4 z-[2147483000] mx-auto grid max-w-6xl gap-5 rounded-2xl border border-white/15 bg-slate-950 p-5 text-white shadow-2xl md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-6"
           role="dialog"
           aria-modal="false"
           aria-labelledby="cookie-banner-title"
@@ -158,7 +157,7 @@ export default function CookieBanner() {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 left-4 z-[89990] inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-700 bg-slate-950 px-4 text-xs font-extrabold text-white shadow-xl transition hover:bg-slate-900"
+          className="fixed bottom-4 left-4 z-[2147482990] inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-700 bg-slate-950 px-4 text-xs font-extrabold text-white shadow-xl transition hover:bg-slate-900"
           aria-label="Gerir preferências de cookies"
         >
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
