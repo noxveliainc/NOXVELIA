@@ -5,7 +5,7 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import AnuncioCard from '../../pages/shared/AnuncioCard';
 import ProfileView, { obterLinksVisiveisPerfil } from './ProfileView';
-import Icon from '@mdi/react';
+import { Icon } from '@mdi/react';
 import { 
   mdiCheckDecagram, mdiChartBar, mdiShareVariantOutline, mdiDomain, 
   mdiClose, mdiCrown, mdiStar, mdiChevronLeft, mdiPencil, mdiEarth,

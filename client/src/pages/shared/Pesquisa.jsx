@@ -5,7 +5,7 @@ import AnuncioCard from './AnuncioCard';
 import SponsorBanner from '../../components/SponsorBanner';
 import MapaResultados from '../../components/imoveis/MapaResultados';
 import useDebounce from '../../hooks/useDebounce';
-import Icon from '@mdi/react';
+import { Icon } from '@mdi/react';
 import {
   mdiMap, mdiViewGrid, mdiMagnify, mdiLoading, mdiFilterVariant, mdiChevronLeft,
   mdiChevronRight, mdiChartTimelineVariant, mdiShieldCheckOutline, mdiCloseCircleOutline

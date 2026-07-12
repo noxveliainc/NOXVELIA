@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SponsorBanner from '../../components/SponsorBanner';
-import Icon from '@mdi/react';
+import { Icon } from '@mdi/react';
 import {
   mdiArrowRight,
   mdiCarSports,

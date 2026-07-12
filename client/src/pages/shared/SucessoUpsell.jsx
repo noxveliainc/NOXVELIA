@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Icon from '@mdi/react';
+import { Icon } from '@mdi/react';
 import { mdiCheckCircle, mdiStarCircle, mdiArrowRight } from '@mdi/js';
 import api from '../../services/api';
 

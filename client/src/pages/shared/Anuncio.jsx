@@ -6,7 +6,7 @@ import { useComparison } from '../../context/ComparisonContext';
 import { getVideoEmbedData } from '../../utils/videoEmbed';
 import SponsorBanner from '../../components/SponsorBanner';
 import { Helmet } from 'react-helmet-async';
-import Icon from '@mdi/react';
+import { Icon } from '@mdi/react';
 import {
   mdiCheckDecagram, mdiShareVariantOutline, mdiHeartOutline, mdiHeart,
   mdiCalendarBlank, mdiSpeedometer, mdiGasStation, mdiCarShiftPattern, mdiEngineOutline,

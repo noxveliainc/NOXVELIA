@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Icon from '@mdi/react';
+import { Icon } from '@mdi/react';
 import { mdiArrowRight, mdiHeartOutline, mdiMagnify } from '@mdi/js';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import Icon from '@mdi/react';
+import { Icon } from '@mdi/react';
 import { 
   mdiAlertCircleOutline, mdiCloudUploadOutline, mdiClose, mdiCrown, 
   mdiShieldCheckOutline, mdiSwapHorizontal 

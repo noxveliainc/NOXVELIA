@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
-import Icon from '@mdi/react';
+import { Icon } from '@mdi/react';
 import { 
   mdiAccountMultiple, mdiFileDocumentOutline, mdiCar, mdiHomeOutline, 
   mdiTrashCanOutline, mdiShieldOutline, mdiLoading, mdiCheck,
