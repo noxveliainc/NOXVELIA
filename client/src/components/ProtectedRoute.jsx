@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { pathWithSearch, publicReturnPath } from '../utils/navigationState';
 
 export default function ProtectedRoute({ children }) {
   const { signed, loading } = useAuth();
@@ -14,7 +15,16 @@ export default function ProtectedRoute({ children }) {
 
   // 2. Se o utilizador não estiver autenticado, recambiá-lo para o Login
   if (!signed) {
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+    return (
+      <Navigate
+        to="/login"
+        state={{
+          from: pathWithSearch(location),
+          returnTo: location.state?.returnTo || publicReturnPath(location, '/'),
+        }}
+        replace
+      />
+    );
   }
 
   // 3. Se estiver tudo OK, deixa-o entrar na página!

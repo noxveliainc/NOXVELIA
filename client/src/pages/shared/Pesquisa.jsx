@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
@@ -13,22 +13,41 @@ import {
 } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
+import { publishIntentState } from '../../utils/navigationState';
 
 const TIPOLOGIAS = ['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'];
 const COMBUSTIVEIS = ['Gasolina', 'Diesel', 'Eléctrico', 'Híbrido', 'GPL'];
 const TRANSMISSAO = ['Manual', 'Automático'];
 
 const MapaResultados = lazy(() => import('../../components/imoveis/MapaResultados'));
+const dividirParamLista = (valor) => String(valor || '')
+  .split(',')
+  .map((item) => item.trim())
+  .filter(Boolean);
 
 export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
 
   const tipoSeguro = location.pathname.includes('carro') ? 'carro' : (tipoPadrao || 'imovel');
-  const tipoInicial = searchParams.get('tipo') || tipoSeguro;
   const getParam = (name) => seoParams?.get(name) || searchParams.get(name) || '';
+  const seoParamsKey = seoParams?.toString() || '';
   const marcaUrl = getParam('marca');
   const marcaInicial = tipoSeguro === 'carro' && MARCAS.includes(marcaUrl) ? marcaUrl : '';
+  const obterFiltrosDaRota = () => ({
+    tipo: tipoSeguro,
+    precoMin: '',
+    precoMax: getParam('precoMax'),
+    distrito: getParam('distrito') || 'Todos',
+    cidade: getParam('cidade'),
+    marca: marcaInicial,
+    modelo: getParam('modelo'),
+    tipologias: dividirParamLista(getParam('tipologia')),
+    combustiveis: dividirParamLista(getParam('combustivel')),
+    transmissao: dividirParamLista(getParam('transmissao')),
+  });
+  const filtrosIniciais = obterFiltrosDaRota();
+  const publicarState = publishIntentState(location, tipoSeguro === 'carro' ? '/carros' : '/imoveis');
 
   const [resultados, setResultados] = useState([]);
   const [dadosMapa, setDadosMapa] = useState([]);
@@ -37,16 +56,14 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [error, setError] = useState(null);
   const [totalResultados, setTotalResultados] = useState(0);
   const [sort, setSort] = useState('relevancia');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(getParam('q'));
   const [temMais, setTemMais] = useState(false);
 
   const [sidebarMobileAberta, setSidebarMobileAberta] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [vistaAtiva, setVistaAtiva] = useState('grelha');
 
-  const [filtros, setFiltros] = useState({
-    tipo: tipoInicial, precoMin: '', precoMax: '', distrito: 'Todos', cidade: getParam('cidade'), marca: marcaInicial, modelo: getParam('modelo'), tipologias: getParam('tipologia') ? [getParam('tipologia')] : [], combustiveis: [], transmissao: [],
-  });
+  const [filtros, setFiltros] = useState(filtrosIniciais);
 
   const sentinelaRef = useRef(null);
   const limite = 12;
@@ -156,23 +173,15 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   }, [tipoPadrao, location.pathname]);
 
   useEffect(() => {
-    const filtrosIniciais = {
-      ...filtrosRef.current,
-      tipo: tipoSeguro,
-      marca: marcaInicial,
-      modelo: '',
-      cidade: '',
-      tipologias: [],
-      combustiveis: [],
-      transmissao: [],
-    };
+    const filtrosIniciais = obterFiltrosDaRota();
+    const queryInicial = getParam('q');
 
     filtrosRef.current = filtrosIniciais;
     setFiltros(filtrosIniciais);
-    setSidebarMobileAberta(false); setTemMais(false); setResultados([]); setSearchQuery(''); buscaRef.current = ''; paginaRef.current = 1;
+    setSidebarMobileAberta(false); setTemMais(false); setResultados([]); setSearchQuery(queryInicial); buscaRef.current = queryInicial; paginaRef.current = 1;
     const timer = setTimeout(() => { puxarDadosServidor(1, false, tipoSeguro); }, 50);
     return () => clearTimeout(timer);
-  }, [tipoSeguro, marcaInicial, puxarDadosServidor]);
+  }, [tipoSeguro, marcaInicial, location.search, seoParamsKey, puxarDadosServidor]);
 
   useEffect(() => {
     if (sortAnteriorRef.current === sort) return;
@@ -571,6 +580,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         }
 
         .pesquisa-empty { text-align: center; padding: 100px 20px; color: var(--nx-text-sub); }
+        .pesquisa-empty-action { margin-top: 18px; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border-radius: 12px; background: ${accent}; color: #020617; text-decoration: none; font-size: 13px; font-weight: 900; }
+        .pesquisa-empty-action:hover { filter: brightness(0.96); }
         .infinite-spinner-container { text-align: center; padding: 40px 0; font-size: 13px; color: var(--nx-text-sub); font-weight: 500; grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .infinite-dot-pulse { width: 6px; height: 6px; background: var(--nx-text-sub); border-radius: 50%; display: inline-block; animation: pulse 0.6s infinite alternate; }
         .infinite-dot-pulse:nth-child(2) { animation-delay: 0.2s; }
@@ -759,8 +770,9 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
             {vistaAtiva === 'grelha' && !loading && resultados.length === 0 && (
               <div className="pesquisa-empty">
                 <div style={{ fontSize: '32px', color: 'var(--nx-text-muted)', marginBottom: '16px' }}>&empty;</div>
-                <h3 style={{ fontFamily: 'var(--nx-font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--nx-text)', margin: '0 0 8px 0' }}>Sem correspondências</h3>
-                <p style={{ fontSize: '14px', margin: 0 }}>Tenta limpar alguns filtros na barra lateral.</p>
+                <h3 style={{ fontFamily: 'var(--nx-font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--nx-text)', margin: '0 0 8px 0' }}>{tipoSeguro === 'carro' ? 'Ainda não há carros ativos no Drive' : 'Ainda não há imóveis ativos no Estate'}</h3>
+                <p style={{ fontSize: '14px', margin: 0 }}>{filtrosAtivos.length > 0 ? 'Tenta limpar alguns filtros na barra lateral.' : 'Quando houver anúncios ativos, aparecem aqui automaticamente.'}</p>
+                <Link to="/publicar" state={publicarState} className="pesquisa-empty-action">Publicar anúncio</Link>
               </div>
             )}
           </main>

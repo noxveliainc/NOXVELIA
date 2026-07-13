@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
 import SponsorBanner from '../../components/SponsorBanner';
 import { Icon } from '@mdi/react';
@@ -24,6 +24,8 @@ import NavbarLanding from './NavbarLanding';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
 import { anuncioPath } from '../../utils/seo';
+import { useAuth } from '../../context/AuthContext';
+import { publishIntentState } from '../../utils/navigationState';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 
@@ -91,7 +93,11 @@ const iniciaisMarca = (marca) => marca
 
 export default function Landing() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { signed } = useAuth();
   const marcasRef = useRef(null);
+  const publicarTo = signed ? '/publicar' : '/login';
+  const publicarState = signed ? undefined : publishIntentState(location, '/');
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
   const [loadingExemplos, setLoadingExemplos] = useState(true);
   const [erroExemplos, setErroExemplos] = useState(false);
@@ -1802,11 +1808,11 @@ export default function Landing() {
         <section className="lp-promo-section" id="anunciar" aria-label="Anunciar grátis na Noxvelia">
           <div className="lp-shell">
             <div className="lp-promo-grid">
-              <Link className="lp-promo-link" to="/publicar">
+              <Link className="lp-promo-link" to={publicarTo} state={publicarState}>
                 <img src="/social/noxvelia-drive-page-card.png" alt="Anunciar carro grátis na Noxvelia Drive" loading="lazy" />
                 <span className="lp-promo-overlay">Publicar carro <Icon path={mdiArrowRight} size={0.62} /></span>
               </Link>
-              <Link className="lp-promo-link" to="/publicar">
+              <Link className="lp-promo-link" to={publicarTo} state={publicarState}>
                 <img src="/social/noxvelia-estate-page-card.png" alt="Anunciar imóvel grátis na Noxvelia Estate" loading="lazy" />
                 <span className="lp-promo-overlay">Publicar imóvel <Icon path={mdiArrowRight} size={0.62} /></span>
               </Link>
@@ -2070,7 +2076,7 @@ export default function Landing() {
                 </p>
               </div>
               <div className="lp-closing-actions">
-                <Link className="lp-btn lp-btn-drive" to="/publicar">
+                <Link className="lp-btn lp-btn-drive" to={publicarTo} state={publicarState}>
                   <Icon path={mdiPlus} size={0.74} /> Publicar anúncio
                 </Link>
                 <Link className="lp-btn lp-btn-estate" to="/carros">

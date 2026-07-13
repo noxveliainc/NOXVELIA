@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
 import ComparisonNavButton from '../../components/ComparisonNavButton';
+import { publishIntentState } from '../../utils/navigationState';
 
 export default function NavbarLanding() {
   const { user, signed, logout } = useAuth();
@@ -55,6 +56,8 @@ export default function NavbarLanding() {
   const avatarImg = dadosUser?.avatarUrl || dadosUser?.avatar;
   const inicial = dadosUser?.nome?.charAt(0).toUpperCase() || 'U';
   const primeiroNome = dadosUser?.nome?.split(' ')[0] || '';
+  const publicarTo = signed ? '/publicar' : '/login';
+  const publicarState = signed ? undefined : publishIntentState(location, '/');
 
   return (
     <>
@@ -469,7 +472,7 @@ export default function NavbarLanding() {
 
             <ComparisonNavButton />
             <ThemeToggle />
-            <Link to="/publicar" className="nl-btn-solid">Anunciar grátis</Link>
+            <Link to={publicarTo} state={publicarState} className="nl-btn-solid">Anunciar grátis</Link>
 
             {signed ? (
               <div ref={userMenuRef} className="nl-user-wrap">
@@ -527,7 +530,7 @@ export default function NavbarLanding() {
             <a href="#guias" onClick={() => setMenuMobileAberto(false)}>Guias</a>
             <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Drive</Link>
             <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Estate</Link>
-            <Link to="/publicar" onClick={() => setMenuMobileAberto(false)}>Publicar anúncio</Link>
+            <Link to={publicarTo} state={publicarState} onClick={() => setMenuMobileAberto(false)}>Publicar anúncio</Link>
             {signed ? (
               <>
                 <Link to="/perfil" onClick={() => setMenuMobileAberto(false)}>O meu perfil</Link>

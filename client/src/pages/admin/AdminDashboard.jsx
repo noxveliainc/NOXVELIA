@@ -56,6 +56,7 @@ export default function AdminDashboard() {
   const [erro, setErro] = useState('');
   const [activeTab, setActiveTab] = useState('visao-geral');
   const [isDeleting, setIsDeleting] = useState(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(null);
   const [reloading, setReloading] = useState(false);
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null);
   
@@ -116,6 +117,18 @@ export default function AdminDashboard() {
       } finally {
         setIsDeleting(null);
       }
+    }
+  };
+
+  const alterarEstadoAnuncio = async (id, estado) => {
+    setIsUpdatingStatus(id);
+    try {
+      await api.put(`/admin/anuncios/${id}/estado`, { estado });
+      await carregarQuartelGeneral(true);
+    } catch (err) {
+      alert(err.response?.data?.erro || 'Erro ao atualizar o estado do anúncio.');
+    } finally {
+      setIsUpdatingStatus(null);
     }
   };
 
@@ -625,13 +638,33 @@ export default function AdminDashboard() {
                           {a.createdAt ? formatarData(a.createdAt) : '—'}
                         </td>
                         <td style={{ padding: '14px 12px', textAlign: 'right' }}>
-                          <ActionButton
-                            onClick={() => apagarAnuncio(a._id, a.titulo)}
-                            loading={isDeleting === a._id}
-                            color="#f97316"
-                            icon={<Icon path={mdiTrashCanOutline} size={0.6} />}
-                            label="Eliminar"
-                          />
+                          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+                            {a.estado !== 'ativo' ? (
+                              <ActionButton
+                                onClick={() => alterarEstadoAnuncio(a._id, 'ativo')}
+                                loading={isUpdatingStatus === a._id}
+                                color={COLORS.green}
+                                icon={<Icon path={mdiCheck} size={0.6} />}
+                                label="Ativar"
+                                solid
+                              />
+                            ) : (
+                              <ActionButton
+                                onClick={() => alterarEstadoAnuncio(a._id, 'pausado')}
+                                loading={isUpdatingStatus === a._id}
+                                color={COLORS.textDim}
+                                icon={<Icon path={mdiAlertOutline} size={0.6} />}
+                                label="Pausar"
+                              />
+                            )}
+                            <ActionButton
+                              onClick={() => apagarAnuncio(a._id, a.titulo)}
+                              loading={isDeleting === a._id}
+                              color="#f97316"
+                              icon={<Icon path={mdiTrashCanOutline} size={0.6} />}
+                              label="Eliminar"
+                            />
+                          </div>
                         </td>
                       </tr>
                     ))

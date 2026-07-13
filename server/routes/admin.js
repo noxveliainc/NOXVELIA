@@ -133,6 +133,29 @@ router.delete('/anuncios/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ erro: 'Erro ao eliminar anúncio.' }); }
 });
 
+router.put('/anuncios/:id/estado', async (req, res) => {
+  try {
+    const estadosPermitidos = ['ativo', 'pendente', 'pausado', 'expirado'];
+    const { estado } = req.body || {};
+
+    if (!estadosPermitidos.includes(estado)) {
+      return res.status(400).json({ erro: 'Estado de anúncio inválido.' });
+    }
+
+    const anuncio = await Anuncio.findByIdAndUpdate(
+      req.params.id,
+      { estado },
+      { new: true }
+    ).populate('utilizador', 'nome email');
+
+    if (!anuncio) return res.status(404).json({ erro: 'Anúncio não encontrado.' });
+
+    res.json({ sucesso: true, mensagem: `Anúncio marcado como ${estado}.`, anuncio });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao atualizar o estado do anúncio.' });
+  }
+});
+
 // 5. LISTAR PEDIDOS DE DESTAQUE
 router.get('/destaques/pedidos', async (req, res) => {
   try {

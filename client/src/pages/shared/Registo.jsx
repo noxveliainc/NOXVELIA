@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { loginBackPath } from '../../utils/navigationState';
 
 const DISTRITOS_PT = [
   'Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco', 'Coimbra',
@@ -21,6 +22,8 @@ export default function Registo() {
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
   const [contactoConfirmado, setContactoConfirmado] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const destinoVoltar = loginBackPath(location.state, '/');
 
   const handleTelefoneChange = (e) => {
     const apenasNumeros = e.target.value.replace(/\D/g, ''); 
@@ -85,7 +88,13 @@ export default function Registo() {
       };
       
       await api.post('/auth/register', dadosParaSubmeter);
-      navigate('/login', { state: { mensagemRegisto: 'Conta criada com sucesso! Verifica o teu email para ativares o acesso.' } });
+      navigate('/login', {
+        state: {
+          mensagemRegisto: 'Conta criada com sucesso! Verifica o teu email para ativares o acesso.',
+          from: location.state?.from,
+          returnTo: location.state?.returnTo,
+        }
+      });
     } catch (err) {
       const erroBackend = err.response?.data?.erro || err.response?.data?.message || err.response?.data?.detalhes;
       if (Array.isArray(erroBackend)) setErro(erroBackend.join(' | '));
@@ -307,7 +316,7 @@ export default function Registo() {
 
       <div className="auth-root">
         <div className="auth-card">
-          <Link to="/" className="auth-back">← Voltar</Link>
+          <Link to={destinoVoltar} className="auth-back">← Voltar</Link>
 
           <div style={{ marginBottom: '24px' }}>
             <img src="/logo-noxvelia.png" alt="NOXVELIA" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
@@ -383,7 +392,7 @@ export default function Registo() {
             </button>
           </form>
           
-          <Link to="/login" className="auth-link">Já tens conta? <span style={{fontWeight: 700, color: '#0f172a'}}>Inicia sessão aqui.</span></Link>
+          <Link to="/login" state={{ from: location.state?.from, returnTo: location.state?.returnTo }} className="auth-link">Já tens conta? <span style={{fontWeight: 700, color: '#0f172a'}}>Inicia sessão aqui.</span></Link>
         </div>
       </div>
     </>

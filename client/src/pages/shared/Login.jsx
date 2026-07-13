@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { loginBackPath, loginDestinationPath } from '../../utils/navigationState';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -16,9 +17,10 @@ export default function Login() {
 
   const mensagemRegisto = location.state?.mensagemRegisto;
 
-  const destinoVoltar =
-    location.state?.from ||
-    (localStorage.getItem('@App:contexto_visual') === 'carro' ? '/carros' : '/imoveis');
+  const destinoVoltar = loginBackPath(
+    location.state,
+    localStorage.getItem('@App:contexto_visual') === 'carro' ? '/carros' : '/imoveis'
+  );
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -42,7 +44,7 @@ export default function Login() {
 
         const contextoSalvo = localStorage.getItem('@App:contexto_visual');
         const fallbackUniverso = contextoSalvo === 'carro' ? '/carros' : '/imoveis';
-        const destino = location.state?.from || fallbackUniverso;
+        const destino = loginDestinationPath(location.state, fallbackUniverso);
 
         navigate(destino, { replace: true });
       }, 1000);
@@ -317,7 +319,7 @@ export default function Login() {
 
                 <Link
                   to="/registo"
-                  state={{ from: location.state?.from || destinoVoltar }}
+                  state={{ from: location.state?.from || destinoVoltar, returnTo: location.state?.returnTo || destinoVoltar }}
                   className="auth-link"
                 >
                   Ainda não tens conta? <span style={{color: '#0f172a', fontWeight: '700'}}>Regista-te aqui.</span>
