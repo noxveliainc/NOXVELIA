@@ -7,9 +7,13 @@ import { Link } from 'react-router-dom';
 // Componente para ajustar o zoom automaticamente aos pins
 function ChangeView({ bounds }) {
   const map = useMap();
-  if (bounds && bounds.length > 0) {
-    map.fitBounds(bounds, { padding: [50, 50] });
-  }
+
+  useEffect(() => {
+    if (bounds && bounds.length > 0) {
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [bounds, map]);
+
   return null;
 }
 
@@ -92,7 +96,7 @@ export default function MapaResultados({ imoveis, anuncios, tipo = 'imovel' }) {
                 <Link to={`/anuncio/${imovel._id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '200px' }}>
                   <div style={{ height: '120px', width: '100%', borderRadius: '8px', overflow: 'hidden', marginBottom: '8px' }}>
                     {imovel.fotos?.[0] ? (
-                      <img src={imovel.fotos[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={imovel.fotos[0]} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       <div style={{ width: '100%', height: '100%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontWeight: 800 }}>{imovel.tipo === 'carro' ? 'Drive' : 'Estate'}</div>
                     )}

@@ -335,3 +335,138 @@ h1, h2, h3, h4 {
 .dark .lp-trust-item {
   color: #b7c7cb !important;
 }
+
+/* Dark mode: paginas antigas com CSS local hardcoded. */
+.dark .auth-root,
+.dark .pub-root,
+.dark .pl-root,
+.dark .legal-root,
+.dark .perfil-outer,
+.dark .pp-root,
+.dark .pp-hero {
+  background: #020617 !important;
+  color: #f8fafc !important;
+}
+
+.dark .auth-card,
+.dark .modal-box,
+.dark .pub-form,
+.dark .pub-trust-card,
+.dark .premium-modal-card,
+.dark .pl-card,
+.dark .legal-container,
+.dark .legal-info-box,
+.dark .perfil-moldura,
+.dark .modal-card,
+.dark .pp-user-section,
+.dark .pp-main .pp-section-header {
+  background: #111c30 !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+  box-shadow: 0 24px 64px -42px rgba(0, 0, 0, 0.95) !important;
+}
+
+.dark .auth-title,
+.dark .auth-success h2,
+.dark .modal-box h2,
+.dark .pub-title,
+.dark .pub-section-title,
+.dark .pub-trust-card-title,
+.dark .premium-title,
+.dark .pl-header h1,
+.dark .pl-plan-name,
+.dark .pl-price,
+.dark .legal-title,
+.dark .legal-content h2,
+.dark .legal-content strong,
+.dark .perfil-name,
+.dark .modal-title,
+.dark .pp-name,
+.dark .pp-section-title {
+  color: #f8fafc !important;
+}
+
+.dark .auth-subtitle,
+.dark .auth-hint,
+.dark .auth-link,
+.dark .modal-box p,
+.dark .pub-subtitle,
+.dark .pub-label,
+.dark .pub-trust-card-copy,
+.dark .premium-desc,
+.dark .pl-header p,
+.dark .pl-plan-desc,
+.dark .pl-features li,
+.dark .pl-note,
+.dark .legal-updated,
+.dark .legal-content,
+.dark .legal-info-box,
+.dark .perfil-email,
+.dark .modal-desc,
+.dark .pp-location,
+.dark .pp-bio,
+.dark .pp-count {
+  color: #cbd5e1 !important;
+}
+
+.dark .auth-input,
+.dark .modal-input,
+.dark .modal-select,
+.dark .pub-input,
+.dark .pub-toggle-box,
+.dark .pub-upload-zone,
+.dark .pub-extra-tag,
+.dark .auth-confirm-check,
+.dark .modal-data-box,
+.dark .pl-btn--ghost,
+.dark .btn-cancel,
+.dark .btn-action-outline,
+.dark .btn-secondary,
+.dark .legal-cookie-table,
+.dark .legal-cookie-table th,
+.dark .legal-cookie-table td {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+.dark select.pub-input option,
+.dark select.auth-input option,
+.dark .modal-select option {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+.dark .auth-back,
+.dark .legal-back,
+.dark .perfil-back,
+.dark .pp-back,
+.dark .premium-close-btn,
+.dark .modal-close {
+  color: #94a3b8 !important;
+}
+
+.dark .auth-back:hover,
+.dark .legal-back:hover,
+.dark .perfil-back:hover,
+.dark .pp-back:hover,
+.dark .premium-close-btn:hover,
+.dark .modal-close:hover {
+  color: #f8fafc !important;
+}
+
+.dark .auth-btn,
+.dark .pub-btn-add,
+.dark .btn-action-solid,
+.dark .pl-btn--dark,
+.dark .modal-btn-submit {
+  background: #f8fafc !important;
+  color: #020617 !important;
+}
+
+.dark .auth-error,
+.dark .pub-error {
+  background: rgba(239, 68, 68, 0.13) !important;
+  border-color: rgba(248, 113, 113, 0.3) !important;
+  color: #fca5a5 !important;
+}

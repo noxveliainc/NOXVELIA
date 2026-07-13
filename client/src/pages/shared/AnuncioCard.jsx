@@ -418,6 +418,55 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-modal-cancel:hover { background: #f8fafc; color: #0f172a; border-color: #94a3b8; }
         .nxc-modal-delete { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #ef4444; color: #fff; font-weight: 800; cursor: pointer; transition: all .2s; }
         .nxc-modal-delete:hover { background: #dc2626; }
+
+        .dark .nxc-wrap {
+          background: #111c30;
+          border-color: #334155;
+          color: #f8fafc;
+          box-shadow: 0 18px 42px -30px rgba(0,0,0,0.95);
+        }
+        .dark .nxc-wrap::after { box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); }
+        .dark .nxc-wrap:hover {
+          border-color: #475569;
+          box-shadow: 0 26px 54px -30px rgba(0,0,0,0.95);
+        }
+        .dark .nxc-img,
+        .dark .nxc-placeholder {
+          background: #0f172a;
+          color: #64748b;
+        }
+        .dark .nxc-price,
+        .dark .nxc-insight-value,
+        .dark .nxc-username.mine,
+        .dark .nxc-modal-title {
+          color: #f8fafc;
+        }
+        .dark .nxc-title,
+        .dark .nxc-username,
+        .dark .nxc-loc,
+        .dark .nxc-modal-text {
+          color: #cbd5e1;
+        }
+        .dark .nxc-insight,
+        .dark .nxc-tag,
+        .dark .nxc-footer,
+        .dark .nxc-modal-box {
+          background: #0f172a;
+          border-color: #334155;
+        }
+        .dark .nxc-insight-label { color: #94a3b8; }
+        .dark .nxc-avatar {
+          background: #111c30;
+          border-color: #475569;
+          color: #cbd5e1;
+        }
+        .dark .nxc-badge-tipo,
+        .dark .nxc-delete-btn,
+        .dark .nxc-modal-cancel {
+          background: rgba(15, 23, 42, 0.86);
+          border-color: rgba(148, 163, 184, 0.24);
+          color: #f8fafc;
+        }
       `}</style>
 
       <Link to={anuncioPath(anuncio)} className={`nxc-wrap${isPremium ? ' premium' : ''}`}>
@@ -425,7 +474,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         {/* ── IMAGEM ── */}
         <div className="nxc-img">
           {anuncio?.fotos?.[0]
-            ? <img src={anuncio.fotos[0]} alt={anuncio.titulo} loading="lazy" />
+            ? <img src={anuncio.fotos[0]} alt={anuncio.titulo} loading="lazy" decoding="async" />
             : <div className="nxc-placeholder">{isCarro ? '🚗' : '🏠'}</div>
           }
           <div className="nxc-img-overlay" />

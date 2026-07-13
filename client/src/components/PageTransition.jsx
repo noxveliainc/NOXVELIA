@@ -32,15 +32,19 @@ export default function PageTransition() {
     setRender(true);
     setIsRouting(true);
 
-    // 3. Mantém a cortina o tempo suficiente para a página carregar (400ms)
+    // 3. Mantém a cortina só o suficiente para suavizar a navegação.
+    let fadeTimer;
     const timer = setTimeout(() => {
       setIsRouting(false); // Inicia o desvanecimento
       
-      // 4. Destrói o componente depois da animação (500ms)
-      setTimeout(() => setRender(false), 500); 
-    }, 400);
+      // 4. Destrói o componente depois da animação.
+      fadeTimer = setTimeout(() => setRender(false), 220);
+    }, 140);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(fadeTimer);
+    };
   }, [location.pathname, rotasComTransicao]); // O gatilho é a mudança de URL
 
   // Se não for para renderizar, não mostramos nada
@@ -62,8 +66,8 @@ export default function PageTransition() {
           align-items: center;
           justify-content: center;
           opacity: 1;
-          transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1), backdrop-filter 0.5s ease;
-          backdrop-filter: blur(12px); 
+          transition: opacity 0.22s cubic-bezier(0.25, 1, 0.5, 1), backdrop-filter 0.22s ease;
+          backdrop-filter: blur(8px);
           pointer-events: all;
         }
         

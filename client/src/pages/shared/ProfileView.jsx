@@ -304,6 +304,58 @@ export default function ProfileView({
         .profile-btn-primary { background: rgba(42,193,180,0.1); color: #0d9488; border: 1px solid rgba(42,193,180,0.2); }
         .profile-btn-outline { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; }
         .profile-btn-outline.danger:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+        .dark .profile-card {
+          background: #111c30;
+          border-color: #334155;
+          box-shadow: 0 22px 54px -34px rgba(0,0,0,0.95);
+        }
+        .dark .profile-cover {
+          background: linear-gradient(135deg, #0f172a, #1e293b);
+        }
+        .dark .profile-avatar {
+          background: #0f172a;
+          border-color: #111c30;
+          color: #2ac1b4;
+        }
+        .dark .profile-name,
+        .dark .profile-stars-text,
+        .dark .profile-stat-val {
+          color: #f8fafc;
+        }
+        .dark .profile-contact-line,
+        .dark .profile-contact-line span,
+        .dark .profile-contact-line a,
+        .dark .profile-bio,
+        .dark .profile-stars-count,
+        .dark .profile-stat-label {
+          color: #cbd5e1;
+        }
+        .dark .profile-badge,
+        .dark .profile-link,
+        .dark .profile-btn-outline {
+          background: #0f172a;
+          border-color: #334155;
+          color: #e2e8f0;
+        }
+        .dark .profile-badge.profissional,
+        .dark .profile-link.whatsapp,
+        .dark .profile-btn-primary {
+          background: rgba(42,193,180,0.14);
+          border-color: rgba(42,193,180,0.32);
+          color: #5eead4;
+        }
+        .dark .profile-badge.premium {
+          background: rgba(234,179,8,0.16);
+          border-color: rgba(234,179,8,0.34);
+          color: #facc15;
+        }
+        .dark .profile-btn-solid {
+          background: #f8fafc;
+          color: #020617;
+        }
+        .dark .profile-stat-divider {
+          background: #334155;
+        }
         @media (max-width: 768px) {
           .profile-body { padding: 0 22px 28px; }
           .profile-actions { width: 100%; padding-top: 0; }
@@ -316,7 +368,7 @@ export default function ProfileView({
           className={`profile-cover${isOwner && onCapaChange ? ' is-editable' : ''}`}
           onClick={() => isOwner && fileInputCapaRef?.current?.click()}
         >
-          {user?.capaUrl ? <img src={user.capaUrl} alt="Capa" /> : null}
+          {user?.capaUrl ? <img src={user.capaUrl} alt="Capa" loading="lazy" decoding="async" /> : null}
           {isOwner && onCapaChange && (
             <>
               <div className="profile-cover-overlay">
@@ -334,7 +386,7 @@ export default function ProfileView({
             onClick={() => isOwner && fileInputAvatarRef?.current?.click()}
           >
             <div className="profile-avatar">
-              {user?.avatarUrl ? <img src={user.avatarUrl} alt={nomeExibicao || 'Perfil'} /> : inicial}
+              {user?.avatarUrl ? <img src={user.avatarUrl} alt={nomeExibicao || 'Perfil'} loading="lazy" decoding="async" /> : inicial}
             </div>
             {isOwner && onAvatarChange && (
               <>

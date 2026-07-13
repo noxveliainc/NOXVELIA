@@ -84,10 +84,12 @@ router.get('/', async (req, res) => {
     const { page, limit, skip } = parsePagination(req.query);
 
     const anuncios = await Anuncio.find(query)
+      .select('_id titulo preco fotos tipo estado destacado utilizador carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area localizacao.cidade localizacao.distrito createdAt')
       .sort(sortOption)
       .skip(skip)
       .limit(limit)
-      .populate('utilizador', 'nome avatarUrl tipo telefone premiumAtivo');
+      .populate('utilizador', 'nome avatarUrl tipo telefone premiumAtivo')
+      .lean();
 
     const totalAnuncios = await Anuncio.countDocuments(query);
     res.json({ anuncios, totalAnuncios, pagination: { page, limit, totalPages: Math.ceil(totalAnuncios / limit), hasNextPage: page * limit < totalAnuncios } });
@@ -182,7 +184,7 @@ router.get('/pesquisa/mapa', async (req, res) => {
       query['imovel.tipologia'] = { $in: tipologia.split(',') };
     }
 
-    const anuncios = await Anuncio.find(query).select('_id titulo preco localizacao fotos tipo');
+    const anuncios = await Anuncio.find(query).select('_id titulo preco localizacao fotos tipo').slice('fotos', 1).lean();
     res.json(anuncios);
   } catch (err) {
     res.status(500).json({ erro: 'Erro ao carregar mapa.' });
@@ -200,7 +202,7 @@ router.get('/favoritos', verificarToken, async (req, res) => {
     const anunciosFavoritos = await Anuncio.find({
       _id: { $in: user.favoritos },
       estado: { $ne: 'apagado' }
-    }).populate('utilizador', 'nome avatarUrl');
+    }).populate('utilizador', 'nome avatarUrl').lean();
 
     res.json(anunciosFavoritos);
   } catch (error) {
@@ -216,7 +218,7 @@ router.get('/:id', async (req, res) => {
     const anuncio = await Anuncio.findOne({
       _id: req.params.id,
       estado: { $ne: 'apagado' }
-    }).populate('utilizador', 'nome email avatarUrl tipo telefone premiumAtivo');
+    }).populate('utilizador', 'nome email avatarUrl tipo telefone premiumAtivo').lean();
 
     if (!anuncio)
       return res.status(404).json({ erro: 'Anúncio removido.' });

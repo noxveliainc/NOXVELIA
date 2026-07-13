@@ -202,7 +202,7 @@ router.put('/me/password', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.get('/me/anuncios', verificarToken, async (req, res) => {
   try {
-    const meusAnuncios = await Anuncio.find({ utilizador: req.user.id }).sort({ createdAt: -1 });
+    const meusAnuncios = await Anuncio.find({ utilizador: req.user.id }).sort({ createdAt: -1 }).lean();
     res.json(meusAnuncios);
   } catch (erro) {
     res.status(500).json({ erro: 'Erro ao carregar os teus anúncios.' });
@@ -215,7 +215,7 @@ router.get('/me/guardados', verificarToken, async (req, res) => {
     // (ver routes/anuncios.js → POST /:id/guardar). O campo
     // "anunciosGuardados" nunca é escrito, por isso esta rota
     // devolvia sempre [] mesmo havendo favoritos guardados.
-    const userComFavoritos = await User.findById(req.user.id).populate('favoritos');
+    const userComFavoritos = await User.findById(req.user.id).populate('favoritos').lean();
     if (!userComFavoritos) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
     res.json(userComFavoritos.favoritos || []);
   } catch (erro) {
@@ -230,11 +230,13 @@ router.get('/vendedor/:id', async (req, res) => {
   try {
     const vendedor = await User.findById(req.params.id).select(
       'nome email telefone localidade avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo rating totalAvaliacoes createdAt'
-    );
+    ).lean();
     if (!vendedor) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
     const anuncios = await Anuncio.find({ utilizador: req.params.id, estado: 'ativo' })
+      .select('_id titulo preco fotos tipo estado destacado utilizador carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area localizacao.cidade localizacao.distrito createdAt')
       .sort({ createdAt: -1 })
-      .populate('utilizador', 'nome avatarUrl tipo premiumAtivo');
+      .populate('utilizador', 'nome avatarUrl tipo premiumAtivo')
+      .lean();
     res.json({ vendedor, anuncios });
   } catch (erro) {
     res.status(500).json({ erro: 'Erro ao carregar montra do vendedor.' });

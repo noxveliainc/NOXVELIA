@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
 import SponsorBanner from '../../components/SponsorBanner';
-import MapaResultados from '../../components/imoveis/MapaResultados';
 import useDebounce from '../../hooks/useDebounce';
 import { Icon } from '@mdi/react';
 import {
-  mdiMap, mdiViewGrid, mdiMagnify, mdiLoading, mdiFilterVariant, mdiTuneVariant, mdiChevronLeft,
+  mdiMap, mdiViewGrid, mdiMagnify, mdiLoading, mdiFilterVariant, mdiChevronLeft,
   mdiChevronRight, mdiChartTimelineVariant, mdiShieldCheckOutline, mdiCloseCircleOutline
 } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
@@ -18,6 +17,8 @@ import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 const TIPOLOGIAS = ['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'];
 const COMBUSTIVEIS = ['Gasolina', 'Diesel', 'Eléctrico', 'Híbrido', 'GPL'];
 const TRANSMISSAO = ['Manual', 'Automático'];
+
+const MapaResultados = lazy(() => import('../../components/imoveis/MapaResultados'));
 
 export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [searchParams] = useSearchParams();
@@ -208,6 +209,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   }, [debouncedQuery]);
 
   useEffect(() => {
+    if (vistaAtiva !== 'mapa') return undefined;
+
     const timer = setTimeout(() => {
       carregarDadosMapa();
     }, 60);
@@ -225,6 +228,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     filtros.transmissao,
     debouncedQuery,
     carregarDadosMapa,
+    vistaAtiva,
   ]);
 
   useEffect(() => {
@@ -254,10 +258,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const modelosDisponiveis = filtros.marca ? getModelosPorMarca(filtros.marca) : [];
   const cidadesDisponiveis = (filtros.distrito && filtros.distrito !== 'Todos') ? DISTRITOS_CIDADES_PT[filtros.distrito] : [];
   const accent = tipoSeguro === 'carro' ? 'var(--nx-accent-car)' : 'var(--nx-accent-home)';
-  const nomeDivisao = tipoSeguro === 'carro' ? 'NOXVELIA Drive' : 'NOXVELIA Estate';
-  const contextoBusca = tipoSeguro === 'carro'
-    ? 'Automoveis selecionados para comparar, filtrar e contactar sem ruido.'
-    : 'Imoveis organizados para encontrar localizacao, preco e tipologia com rapidez.';
 
   const filtrosAtivos = [
     filtros.precoMax && `Ate ${Number(filtros.precoMax).toLocaleString('pt-PT')} EUR`,
@@ -495,6 +495,66 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           font-weight: 800;
           box-shadow: 0 14px 30px -20px rgba(0,0,0,0.9);
         }
+        .pesquisa-map-loading {
+          min-height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--nx-bg-2);
+          color: var(--nx-text-sub);
+          font-size: 13px;
+          font-weight: 800;
+        }
+
+        .dark .pesquisa-root { background: #020617; }
+        .dark .pesquisa-sidebar,
+        .dark .pesquisa-sidebar-toggle,
+        .dark .pesquisa-search-row,
+        .dark .pesquisa-topbar {
+          background: rgba(15, 23, 42, 0.94) !important;
+          border-color: rgba(71, 85, 105, 0.8) !important;
+          box-shadow: 0 24px 64px -48px rgba(0,0,0,0.95) !important;
+        }
+        .dark .pesquisa-omnibar-wrapper,
+        .dark .pesquisa-filter-stat,
+        .dark .pesquisa-view-switch,
+        .dark .pesquisa-results-count,
+        .dark .pesquisa-sort,
+        .dark .pesquisa-clear-btn,
+        .dark .pesquisa-active-chip {
+          background: rgba(30, 41, 59, 0.92) !important;
+          border-color: rgba(71, 85, 105, 0.9) !important;
+          color: #e2e8f0 !important;
+        }
+        .dark .pesquisa-filter-stat strong,
+        .dark .pesquisa-command h1,
+        .dark .pesquisa-command-metric strong {
+          color: #f8fafc !important;
+        }
+        .dark .pesquisa-filter-stat span,
+        .dark .pesquisa-command-kicker,
+        .dark .pesquisa-command p,
+        .dark .pesquisa-command-metric span {
+          color: #94a3b8 !important;
+        }
+        .dark .pesquisa-view-switch button,
+        .dark .pesquisa-filter-title,
+        .dark .pesquisa-tag {
+          color: #cbd5e1 !important;
+        }
+        .dark .pesquisa-view-switch button:hover,
+        .dark .pesquisa-clear-btn:hover {
+          color: #ffffff !important;
+        }
+        .dark .pesquisa-view-switch button.active,
+        .dark .pesquisa-tag.active {
+          color: #020617 !important;
+        }
+        .dark .pesquisa-map-shell {
+          background: #0f172a;
+          border-color: #334155;
+          box-shadow: 0 28px 70px -48px rgba(0,0,0,0.95);
+        }
 
         .sidebar-mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9998; backdrop-filter: blur(4px); }
 
@@ -605,28 +665,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           </button>
 
           <main className="pesquisa-main-content">
-            {false && (
-            <section className="pesquisa-command">
-              <div>
-                <div className="pesquisa-command-kicker">
-                  <Icon path={mdiTuneVariant} size={0.7} /> {nomeDivisao}
-                </div>
-                <h1>{tipoSeguro === 'carro' ? 'Encontra o carro certo sem perder ritmo.' : 'Encontra o imovel certo com mais clareza.'}</h1>
-                <p>{contextoBusca}</p>
-              </div>
-              <div className="pesquisa-command-metrics" aria-label="Resumo da pesquisa">
-                <div className="pesquisa-command-metric">
-                  <strong>{totalResultados}</strong>
-                  <span>Registos</span>
-                </div>
-                <div className="pesquisa-command-metric">
-                  <strong>{filtrosAtivos.length}</strong>
-                  <span>Filtros</span>
-                </div>
-              </div>
-            </section>
-            )}
-
             <div className="pesquisa-search-row">
               <button type="button" className="pesquisa-mobile-filter-btn" onClick={() => setSidebarMobileAberta(true)}>
                 <Icon path={mdiFilterVariant} size={0.8} />
@@ -692,7 +730,9 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
             {vistaAtiva === 'mapa' ? (
               <div className="pesquisa-map-shell">
-                <MapaResultados anuncios={dadosMapa} tipo={tipoSeguro} />
+                <Suspense fallback={<div className="pesquisa-map-loading">A carregar mapa...</div>}>
+                  <MapaResultados anuncios={dadosMapa} tipo={tipoSeguro} />
+                </Suspense>
                 {dadosMapa.length === 0 && !loading && (
                   <div className="pesquisa-map-empty">
                     Sem resultados com coordenadas para mostrar no mapa.
