@@ -108,7 +108,7 @@ const anuncioSchema = new mongoose.Schema({
   scoreDetalhes: { fotos: Number, descricao: Number, preco: Number, localizacao: Number, extras: Number, disponibilidade: Number },
   scoreAnaliseIA: { pontosFuertes: [String], pontosMelhorar: [String], sentimento: String, qualidadeDescricao: String, recomendacao: String },
   
-  estado: { type: String, enum: ['ativo','pausado','expirado','pendente','apagado'], default: 'pendente' },
+  estado: { type: String, enum: ['ativo','pausado','expirado','pendente','apagado'], default: 'ativo' },
   apagadoEm: Date, 
   
   // 🌟 Motor de Destaques

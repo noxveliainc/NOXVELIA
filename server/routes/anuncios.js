@@ -26,6 +26,9 @@ const dividirFiltroTexto = (valor) => String(valor || '')
   .map(normalizarFiltroTexto)
   .filter(Boolean);
 
+const ESTADOS_PUBLICOS = ['ativo', 'pendente'];
+const filtroPublico = () => ({ estado: { $in: ESTADOS_PUBLICOS } });
+
 // ─────────────────────────────────────────────────────────────
 // HELPER: Geocoding no backend via Nominatim
 // ─────────────────────────────────────────────────────────────
@@ -34,7 +37,7 @@ async function resolverCoordenadas(cidade, distrito) {
     const query = `${cidade}, ${distrito}, Portugal`;
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`,
-      { headers: { 'User-Agent': 'NOXVELIA/1.0 (noxvelia.pt)' } } // Nominatim exige User-Agent
+      { headers: { 'User-Agent': 'NOXVELIA/1.0 (noxvelia.com)' } } // Nominatim exige User-Agent
     );
     const data = await res.json();
     if (data && data.length > 0) {
@@ -57,7 +60,7 @@ router.get('/', async (req, res) => {
       marca, modelo, combustivel, transmissao, tipologia
     } = req.query;
 
-    const query = { estado: 'ativo' };
+    const query = filtroPublico();
 
     if (tipo && tipo !== 'Todos') query.tipo = tipo;
     if (distrito && distrito !== 'Todos') query['localizacao.distrito'] = distrito;
@@ -132,7 +135,7 @@ router.get('/em-alta/semana', async (req, res) => {
     ];
 
     const [resultado] = await Anuncio.aggregate([
-      { $match: { estado: 'ativo', tipo: { $in: ['carro', 'imovel'] } } },
+      { $match: { estado: { $in: ESTADOS_PUBLICOS }, tipo: { $in: ['carro', 'imovel'] } } },
       {
         $facet: {
           carro: [{ $match: { tipo: 'carro' } }, ...ranking],
@@ -168,7 +171,7 @@ router.get('/pesquisa/mapa', async (req, res) => {
       tipo, distrito, cidade, q, precoMax,
       marca, modelo, combustivel, transmissao, tipologia
     } = req.query;
-    const query = { estado: 'ativo' };
+    const query = filtroPublico();
     if (tipo) query.tipo = tipo;
     if (distrito && distrito !== 'Todos') query['localizacao.distrito'] = distrito;
     if (cidade) query['localizacao.cidade'] = cidade;
@@ -318,6 +321,7 @@ router.post('/', verificarToken, async (req, res) => {
       garantia: req.body.garantia || null,
       aceitaRetoma: !!req.body.aceitaRetoma,
       utilizador: req.user.id,
+      estado: 'ativo',
       localizacao: {
         cidade,
         distrito,

@@ -84,7 +84,7 @@ Regras importantes:
     const textoJson = await chamarGemini({ system: systemPrompt, user: userPrompt });
     const filtros = JSON.parse(textoJson);
 
-    const mongoQuery = { estado: 'ativo', apagadoEm: null };
+    const mongoQuery = { estado: { $in: ['ativo', 'pendente'] }, apagadoEm: null };
 
     if (filtros.tipo) mongoQuery.tipo = filtros.tipo;
 

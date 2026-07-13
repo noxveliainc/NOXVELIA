@@ -22,7 +22,7 @@ router.get('/metrics', verificarToken, verificarAdmin, (_req, res) => res.json(m
 
 router.get('/sitemap.xml', async (_req, res, next) => {
   try {
-    const anuncios = await Anuncio.find({ estado: 'ativo' }).select('_id tipo carro.marca carro.modelo imovel.tipoImovel imovel.tipologia localizacao.cidade updatedAt').sort({ updatedAt: -1 }).limit(45000).lean();
+    const anuncios = await Anuncio.find({ estado: { $in: ['ativo', 'pendente'] } }).select('_id tipo carro.marca carro.modelo imovel.tipoImovel imovel.tipologia localizacao.cidade updatedAt').sort({ updatedAt: -1 }).limit(45000).lean();
     const fixed = ['/', '/carros', '/imoveis', '/privacidade'];
     const entries = [
       ...fixed.map((path) => ({ loc: `${SITE_URL}${path}`, lastmod: null })),

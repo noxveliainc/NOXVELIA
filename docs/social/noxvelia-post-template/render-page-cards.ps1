@@ -151,7 +151,7 @@ function New-PageCard($item) {
   Draw-Text $g $item.Cta $ctaFont $navyBrush 76 570
 
   Draw-Text $g "Drive. Estate." $smallFont $goldBrush 50 704
-  Draw-Text $g "noxvelia.pt" $smallFont $navyBrush 50 730
+  Draw-Text $g "noxvelia.com" $smallFont $navyBrush 50 730
 
   $cornerFill = [System.Drawing.SolidBrush]::new((Color-Html "#ffffff" 222))
   Fill-RoundRect $g 1052 38 92 54 18 $cornerFill
@@ -194,7 +194,7 @@ $items = @(
     HeadlineB = "VENDER"
     HeadlineBLight = "CARRO."
     Support = "Publica gratis e chega a mais compradores."
-    Cta = "www.noxvelia.pt"
+    Cta = "www.noxvelia.com"
   },
   [pscustomobject]@{
     Background = "assets/page-card-estate-bg.png"
@@ -208,7 +208,7 @@ $items = @(
     HeadlineB = "VENDER"
     HeadlineBLight = $imovel
     Support = "Mostra o teu imovel de forma simples."
-    Cta = "www.noxvelia.pt"
+    Cta = "www.noxvelia.com"
   }
 )
 
