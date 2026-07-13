@@ -75,7 +75,7 @@ export default function NavbarImovel() {
   const handleIrParaHome = (e) => {
     e.preventDefault();
     setMenuMobileAberto(false);
-    navigate('/imoveis');
+    navigate('/');
   };
 
   const handlePremium = (e) => {
@@ -156,6 +156,9 @@ export default function NavbarImovel() {
         .nim-switcher-item.current { background: rgba(62, 207, 142, 0.08); color: #3ecf8e; pointer-events: none; }
 
         .nim-actions { display: flex; align-items: center; gap: 8px; }
+        .nim-btn-menu { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; background: #ffffff; color: #0f172a; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; }
+        .nim-btn-menu:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
+        .nim-btn-menu svg { width: 17px; height: 17px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
         .nim-btn-publish { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #059669; color: #ffffff; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s ease; margin-right: 12px; }
         .nim-btn-publish:hover { background: #047857; }
         .nim-divider { width: 1px; height: 20px; background: #e2e8f0; margin: 0 8px; flex-shrink: 0; }
@@ -265,6 +268,10 @@ export default function NavbarImovel() {
         <div className="nim-actions">
           <ComparisonNavButton />
           <ThemeToggle />
+          <button type="button" onClick={handleIrParaHome} className="nim-btn-menu" aria-label="Voltar ao menu principal">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /><path d="M9 12h12" /><path d="M3 5v14" /></svg>
+            Menu
+          </button>
           {signed ? (
             <>
               <Link to="/publicar" className="nim-btn-publish">
@@ -276,7 +283,6 @@ export default function NavbarImovel() {
                   <svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
                 </Link>
               )}
-              <button type="button" onClick={handleIrParaHome} className="nim-icon-btn"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" /><polyline points="9 21 9 12 15 12 15 21" /></svg></button>
               <button type="button" onClick={handlePremium} className={`nim-btn-premium${isPremium ? ' active' : ''}`}><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" /></svg></button>
               <Link to="/favoritos" className="nim-icon-btn"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg></Link>
 
@@ -363,6 +369,10 @@ export default function NavbarImovel() {
                 <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">Aspeto da plataforma</span>
                 <div className="flex items-center gap-2"><ComparisonNavButton /><ThemeToggle /></div>
               </div>
+              <button type="button" className="nim-drawer-link" onClick={handleIrParaHome}>
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /><path d="M9 12h12" /><path d="M3 5v14" /></svg>
+                Voltar ao menu
+              </button>
               {signed ? (
                 <>
                   <Link to="/publicar" className="nim-drawer-link publish" onClick={() => setMenuMobileAberto(false)}>
@@ -379,10 +389,6 @@ export default function NavbarImovel() {
                     <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     O Meu Perfil {isPremium && <span className="nim-ud-pro">PRO</span>}
                   </Link>
-                  <button type="button" className="nim-drawer-link" onClick={handleIrParaHome}>
-                    <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" /><polyline points="9 21 9 12 15 12 15 21" /></svg>
-                    Início (Estate)
-                  </button>
                   <button type="button" className="nim-drawer-link" onClick={handlePremium}>
                     <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" /></svg>
                     Plano Profissional {isPremium && <span className="nim-ud-pro">PRO</span>}
