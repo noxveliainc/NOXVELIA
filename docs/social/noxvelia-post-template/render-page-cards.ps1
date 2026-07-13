@@ -184,7 +184,7 @@ $imovel = "IM" + [char]0x00D3 + "VEL."
 $items = @(
   [pscustomobject]@{
     Background = "assets/page-card-drive-bg.png"
-    Output = "output/noxvelia-drive-page-card.png"
+    Output = "output/noxvelia-drive-page-card-com.png"
     Accent = "#1495dc"
     BrandLine = "anuncios auto simples"
     Badge = "ANUNCIA " + $gratis
@@ -198,7 +198,7 @@ $items = @(
   },
   [pscustomobject]@{
     Background = "assets/page-card-estate-bg.png"
-    Output = "output/noxvelia-estate-page-card.png"
+    Output = "output/noxvelia-estate-page-card-com.png"
     Accent = "#0b9f78"
     BrandLine = "imoveis simples para todos"
     Badge = "ANUNCIA " + $gratis

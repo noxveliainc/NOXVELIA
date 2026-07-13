@@ -1809,11 +1809,11 @@ export default function Landing() {
           <div className="lp-shell">
             <div className="lp-promo-grid">
               <Link className="lp-promo-link" to={publicarTo} state={publicarState}>
-                <img src="/social/noxvelia-drive-page-card.png" alt="Anunciar carro grátis na Noxvelia Drive" loading="lazy" />
+                <img src="/social/noxvelia-drive-page-card-com.png" alt="Anunciar carro grátis na Noxvelia Drive" loading="lazy" />
                 <span className="lp-promo-overlay">Publicar carro <Icon path={mdiArrowRight} size={0.62} /></span>
               </Link>
               <Link className="lp-promo-link" to={publicarTo} state={publicarState}>
-                <img src="/social/noxvelia-estate-page-card.png" alt="Anunciar imóvel grátis na Noxvelia Estate" loading="lazy" />
+                <img src="/social/noxvelia-estate-page-card-com.png" alt="Anunciar imóvel grátis na Noxvelia Estate" loading="lazy" />
                 <span className="lp-promo-overlay">Publicar imóvel <Icon path={mdiArrowRight} size={0.62} /></span>
               </Link>
             </div>
