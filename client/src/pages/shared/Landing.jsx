@@ -18,13 +18,51 @@ import {
   mdiShieldCheckOutline,
 } from '@mdi/js';
 import api from '../../services/api';
-import { MARCAS } from '../../data/marcasModelos';
+import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
+import { DISTRITOS } from '../../data/localizacoes';
 import NavbarLanding from './NavbarLanding';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
 import { anuncioPath } from '../../utils/seo';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
+
+const MARCAS_POPULARES = ['Peugeot', 'Renault', 'Mercedes-Benz', 'BMW', 'Volkswagen', 'Audi', 'Toyota', 'Tesla'];
+const MODELOS_POPULARES = [
+  ['Renault', 'Clio'],
+  ['Peugeot', '208'],
+  ['Peugeot', '2008'],
+  ['Mercedes-Benz', 'A 180'],
+  ['BMW', '116'],
+  ['Opel', 'Corsa'],
+];
+const COMBUSTIVEIS_POPULARES = ['Diesel', 'Gasolina', 'Eléctrico', 'Híbrido', 'GPL'];
+const DISTRITOS_POPULARES = ['Lisboa', 'Porto', 'Braga', 'Setúbal', 'Aveiro', 'Faro', 'Coimbra', 'Leiria'];
+const TIPOLOGIAS_POPULARES = ['T1', 'T2', 'T3', 'T4', 'T5+'];
+const PRECOS_RAPIDOS = [
+  { label: 'Até 10.000 €', value: '10000' },
+  { label: 'Até 20.000 €', value: '20000' },
+  { label: 'Até 150.000 €', value: '150000' },
+  { label: 'Até 300.000 €', value: '300000' },
+];
+
+const GUIAS_NOXVELIA = [
+  {
+    tema: 'Comprar melhor',
+    titulo: 'Antes de contactar, confirma o essencial.',
+    texto: 'Preço, localização, fotografias, histórico e detalhes técnicos ajudam a evitar visitas perdidas.',
+  },
+  {
+    tema: 'Vender mais rápido',
+    titulo: 'Um bom anúncio começa em imagens claras.',
+    texto: 'Mostra exterior, interior, pontos fortes e informação concreta para receber contactos mais preparados.',
+  },
+  {
+    tema: 'Guardar oportunidades',
+    titulo: 'Favoritos tornam a pesquisa menos confusa.',
+    texto: 'Guarda anúncios interessantes e compara depois com calma quando estiveres com sessão iniciada.',
+  },
+];
 
 const formatarMoeda = (valor) =>
   new Intl.NumberFormat('pt-PT', {
@@ -57,6 +95,65 @@ export default function Landing() {
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
   const [loadingExemplos, setLoadingExemplos] = useState(true);
   const [erroExemplos, setErroExemplos] = useState(false);
+  const [pesquisaRapida, setPesquisaRapida] = useState({
+    tipo: 'carro',
+    marca: '',
+    modelo: '',
+    combustivel: '',
+    tipologia: '',
+    distrito: '',
+    precoMax: '',
+  });
+
+  const modelosPesquisa = pesquisaRapida.tipo === 'carro' && pesquisaRapida.marca
+    ? getModelosPorMarca(pesquisaRapida.marca).map((modelo) => (typeof modelo === 'object' ? modelo.modelo || modelo.nome : modelo)).filter(Boolean)
+    : [];
+
+  const criarLinkPesquisa = (tipo, filtros = {}) => {
+    const params = new URLSearchParams();
+    params.set('tipo', tipo);
+
+    Object.entries(filtros).forEach(([chave, valor]) => {
+      if (valor) params.set(chave, valor);
+    });
+
+    return `${tipo === 'carro' ? '/carros' : '/imoveis'}?${params.toString()}`;
+  };
+
+  const atualizarPesquisaRapida = (campo, valor) => {
+    setPesquisaRapida((atual) => {
+      const proximo = { ...atual, [campo]: valor };
+
+      if (campo === 'tipo') {
+        return {
+          ...proximo,
+          marca: '',
+          modelo: '',
+          combustivel: '',
+          tipologia: '',
+        };
+      }
+
+      if (campo === 'marca') {
+        proximo.modelo = '';
+      }
+
+      return proximo;
+    });
+  };
+
+  const submeterPesquisaRapida = (evento) => {
+    evento.preventDefault();
+
+    const { tipo, marca, modelo, combustivel, tipologia, distrito, precoMax } = pesquisaRapida;
+    const filtros = {
+      distrito,
+      precoMax,
+      ...(tipo === 'carro' ? { marca, modelo, combustivel } : { tipologia }),
+    };
+
+    navigate(criarLinkPesquisa(tipo, filtros));
+  };
 
   useEffect(() => {
     let ativo = true;
@@ -423,6 +520,313 @@ export default function Landing() {
           color: #0d766e;
           border-radius: 10px;
           background: rgba(42, 193, 180, 0.14);
+        }
+
+        .lp-quick-section {
+          position: relative;
+          z-index: 4;
+          padding: 0 0 72px;
+          background:
+            radial-gradient(circle at 8% 0%, rgba(42, 193, 180, 0.13), transparent 28%),
+            var(--lp-stone);
+        }
+
+        .lp-quick-card {
+          margin-top: -34px;
+          padding: 18px;
+          border: 1px solid rgba(8, 33, 38, 0.1);
+          border-radius: 22px;
+          background: rgba(255, 255, 255, 0.92);
+          box-shadow: 0 28px 70px -48px rgba(8, 33, 38, 0.62);
+          backdrop-filter: blur(14px);
+        }
+
+        .lp-quick-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 18px;
+          margin-bottom: 16px;
+        }
+
+        .lp-quick-title {
+          margin: 0;
+          color: var(--lp-ink);
+          font-size: 18px;
+          font-weight: 850;
+          letter-spacing: -0.02em;
+        }
+
+        .lp-type-tabs {
+          display: inline-grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 5px;
+          padding: 5px;
+          border: 1px solid rgba(8, 33, 38, 0.09);
+          border-radius: 13px;
+          background: #f4f7f4;
+        }
+
+        .lp-type-tab {
+          min-height: 38px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          padding: 0 14px;
+          color: #4a656b;
+          border: 0;
+          border-radius: 9px;
+          background: transparent;
+          font-size: 12px;
+          font-weight: 820;
+          cursor: pointer;
+        }
+
+        .lp-type-tab.active {
+          color: #042326;
+          background: #fff;
+          box-shadow: 0 10px 22px -18px rgba(8, 33, 38, 0.55);
+        }
+
+        .lp-search-form {
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+          gap: 10px;
+          align-items: end;
+        }
+
+        .lp-field {
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .lp-field label {
+          color: #60767c;
+          font-size: 10px;
+          font-weight: 850;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .lp-field select,
+        .lp-field input {
+          width: 100%;
+          min-height: 46px;
+          padding: 0 12px;
+          color: var(--lp-ink);
+          border: 1px solid rgba(8, 33, 38, 0.13);
+          border-radius: 11px;
+          background: #fff;
+          font-size: 13px;
+          font-weight: 680;
+        }
+
+        .lp-field select:disabled {
+          color: #87979b;
+          background: #f4f6f5;
+        }
+
+        .lp-search-submit {
+          min-height: 46px;
+          min-width: 148px;
+          color: #062326;
+          border: 0;
+          border-radius: 11px;
+          background: var(--lp-drive);
+          font-size: 13px;
+          font-weight: 850;
+          cursor: pointer;
+          box-shadow: 0 16px 34px -24px rgba(42, 193, 180, 0.95);
+        }
+
+        .lp-promo-section {
+          padding: 0 0 78px;
+          background: var(--lp-stone);
+        }
+
+        .lp-promo-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 18px;
+        }
+
+        .lp-promo-link {
+          position: relative;
+          min-height: 320px;
+          overflow: hidden;
+          display: block;
+          border: 1px solid rgba(8, 33, 38, 0.1);
+          border-radius: 22px;
+          background: #fff;
+          text-decoration: none;
+          box-shadow: 0 24px 62px -48px rgba(8, 33, 38, 0.62);
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .lp-promo-link:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 30px 70px -48px rgba(8, 33, 38, 0.7);
+        }
+
+        .lp-promo-link img {
+          width: 100%;
+          height: 100%;
+          min-height: 320px;
+          display: block;
+          object-fit: cover;
+        }
+
+        .lp-promo-overlay {
+          position: absolute;
+          left: 18px;
+          bottom: 18px;
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          padding: 10px 13px;
+          color: var(--lp-ink);
+          border: 1px solid rgba(255, 255, 255, 0.72);
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.88);
+          box-shadow: 0 16px 32px -24px rgba(8, 33, 38, 0.6);
+          font-size: 12px;
+          font-weight: 850;
+        }
+
+        .lp-shortcuts-section {
+          background:
+            radial-gradient(circle at 92% 12%, rgba(42, 193, 180, 0.12), transparent 24%),
+            #f8f6ef;
+          border-top: 1px solid rgba(8, 33, 38, 0.08);
+          border-bottom: 1px solid rgba(8, 33, 38, 0.08);
+        }
+
+        .lp-shortcut-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 14px;
+        }
+
+        .lp-shortcut-group {
+          min-width: 0;
+          padding: 18px;
+          border: 1px solid rgba(8, 33, 38, 0.1);
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.72);
+        }
+
+        .lp-shortcut-group.wide {
+          grid-column: span 2;
+        }
+
+        .lp-shortcut-group h3 {
+          margin: 0 0 13px;
+          color: var(--lp-ink);
+          font-size: 14px;
+          font-weight: 850;
+        }
+
+        .lp-chip-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .lp-chip {
+          min-height: 34px;
+          display: inline-flex;
+          align-items: center;
+          padding: 0 11px;
+          color: #315057;
+          border: 1px solid rgba(8, 33, 38, 0.1);
+          border-radius: 999px;
+          background: #fff;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 760;
+          transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        .lp-chip:hover {
+          transform: translateY(-2px);
+          color: var(--lp-ink);
+          border-color: rgba(42, 193, 180, 0.52);
+        }
+
+        .lp-guides-section {
+          background: #edf4f2;
+        }
+
+        .lp-guides-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 14px;
+        }
+
+        .lp-guide-card {
+          min-height: 210px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          gap: 22px;
+          padding: 20px;
+          color: var(--lp-ink);
+          border: 1px solid rgba(8, 33, 38, 0.1);
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.72);
+        }
+
+        .lp-guide-card span {
+          color: #16776f;
+          font-size: 10px;
+          font-weight: 850;
+          letter-spacing: 0.09em;
+          text-transform: uppercase;
+        }
+
+        .lp-guide-card h3 {
+          margin: 0;
+          font-size: 20px;
+          line-height: 1.12;
+          letter-spacing: -0.03em;
+        }
+
+        .lp-guide-card p {
+          margin: 10px 0 0;
+          color: #526b72;
+          font-size: 13px;
+          line-height: 1.55;
+        }
+
+        .lp-favorites-strip {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 24px;
+          align-items: center;
+          margin-top: 18px;
+          padding: 22px;
+          border: 1px solid rgba(8, 33, 38, 0.1);
+          border-radius: 19px;
+          background:
+            linear-gradient(115deg, rgba(42, 193, 180, 0.13), rgba(198, 168, 106, 0.12)),
+            #fff;
+        }
+
+        .lp-favorites-strip h3 {
+          margin: 0;
+          color: var(--lp-ink);
+          font-size: 20px;
+          letter-spacing: -0.02em;
+        }
+
+        .lp-favorites-strip p {
+          margin: 7px 0 0;
+          color: #526b72;
+          font-size: 13px;
+          line-height: 1.55;
         }
 
         .lp-section {
@@ -1022,9 +1426,23 @@ export default function Landing() {
           }
 
           .lp-examples-grid,
+          .lp-promo-grid,
+          .lp-guides-grid,
           .lp-cv-card,
           .lp-closing-card {
             grid-template-columns: 1fr;
+          }
+
+          .lp-search-form {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .lp-search-submit {
+            grid-column: span 2;
+          }
+
+          .lp-shortcut-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
 
           .lp-cv-panel {
@@ -1097,6 +1515,46 @@ export default function Landing() {
 
           .lp-trust-item {
             min-height: 54px;
+          }
+
+          .lp-quick-section,
+          .lp-promo-section {
+            padding-bottom: 58px;
+          }
+
+          .lp-quick-card {
+            margin-top: -22px;
+            padding: 14px;
+            border-radius: 18px;
+          }
+
+          .lp-quick-top,
+          .lp-favorites-strip {
+            grid-template-columns: 1fr;
+            align-items: flex-start;
+          }
+
+          .lp-quick-top {
+            flex-direction: column;
+          }
+
+          .lp-type-tabs {
+            width: 100%;
+          }
+
+          .lp-search-form,
+          .lp-shortcut-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .lp-search-submit,
+          .lp-shortcut-group.wide {
+            grid-column: auto;
+          }
+
+          .lp-promo-link,
+          .lp-promo-link img {
+            min-height: 245px;
           }
 
           .lp-section,
@@ -1218,7 +1676,7 @@ export default function Landing() {
               <div className="lp-hero-media">
                 <img
                   src="/noxvelia-hero-coast.webp"
-                  alt="Automóvel premium junto a uma casa contemporânea na costa portuguesa"
+                  alt="Automóvel junto a uma casa contemporânea na costa portuguesa"
                   fetchPriority="high"
                   decoding="async"
                 />
@@ -1241,6 +1699,117 @@ export default function Landing() {
                 <span className="lp-trust-icon"><Icon path={mdiShieldCheckOutline} size={0.72} /></span>
                 Mais contexto antes de cada contacto
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="lp-quick-section" id="pesquisa" aria-labelledby="lp-quick-title">
+          <div className="lp-shell">
+            <form className="lp-quick-card" onSubmit={submeterPesquisaRapida}>
+              <div className="lp-quick-top">
+                <div>
+                  <span className="lp-eyebrow">Pesquisa rápida</span>
+                  <h2 className="lp-quick-title" id="lp-quick-title">Entra logo nos anúncios certos.</h2>
+                </div>
+                <div className="lp-type-tabs" role="tablist" aria-label="Tipo de pesquisa">
+                  <button
+                    type="button"
+                    className={`lp-type-tab ${pesquisaRapida.tipo === 'carro' ? 'active' : ''}`}
+                    onClick={() => atualizarPesquisaRapida('tipo', 'carro')}
+                  >
+                    <Icon path={mdiCarSports} size={0.62} /> Drive
+                  </button>
+                  <button
+                    type="button"
+                    className={`lp-type-tab ${pesquisaRapida.tipo === 'imovel' ? 'active' : ''}`}
+                    onClick={() => atualizarPesquisaRapida('tipo', 'imovel')}
+                  >
+                    <Icon path={mdiHomeCityOutline} size={0.62} /> Estate
+                  </button>
+                </div>
+              </div>
+
+              <div className="lp-search-form">
+                {pesquisaRapida.tipo === 'carro' ? (
+                  <>
+                    <div className="lp-field">
+                      <label htmlFor="lp-marca">Marca</label>
+                      <select id="lp-marca" value={pesquisaRapida.marca} onChange={(evento) => atualizarPesquisaRapida('marca', evento.target.value)}>
+                        <option value="">Todas as marcas</option>
+                        {MARCAS.map((marca) => <option key={marca} value={marca}>{marca}</option>)}
+                      </select>
+                    </div>
+                    <div className="lp-field">
+                      <label htmlFor="lp-modelo">Modelo</label>
+                      <select id="lp-modelo" value={pesquisaRapida.modelo} onChange={(evento) => atualizarPesquisaRapida('modelo', evento.target.value)} disabled={!pesquisaRapida.marca}>
+                        <option value="">{pesquisaRapida.marca ? 'Todos os modelos' : 'Escolhe a marca'}</option>
+                        {modelosPesquisa.map((modelo) => <option key={modelo} value={modelo}>{modelo}</option>)}
+                      </select>
+                    </div>
+                    <div className="lp-field">
+                      <label htmlFor="lp-combustivel">Combustível</label>
+                      <select id="lp-combustivel" value={pesquisaRapida.combustivel} onChange={(evento) => atualizarPesquisaRapida('combustivel', evento.target.value)}>
+                        <option value="">Todos</option>
+                        {COMBUSTIVEIS_POPULARES.map((combustivel) => <option key={combustivel} value={combustivel}>{combustivel}</option>)}
+                      </select>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="lp-field">
+                      <label htmlFor="lp-tipologia">Tipologia</label>
+                      <select id="lp-tipologia" value={pesquisaRapida.tipologia} onChange={(evento) => atualizarPesquisaRapida('tipologia', evento.target.value)}>
+                        <option value="">Todas</option>
+                        {TIPOLOGIAS_POPULARES.map((tipologia) => <option key={tipologia} value={tipologia}>{tipologia}</option>)}
+                      </select>
+                    </div>
+                    <div className="lp-field">
+                      <label htmlFor="lp-estate-preco">Preço máximo</label>
+                      <select id="lp-estate-preco" value={pesquisaRapida.precoMax} onChange={(evento) => atualizarPesquisaRapida('precoMax', evento.target.value)}>
+                        <option value="">Qualquer preço</option>
+                        {PRECOS_RAPIDOS.slice(2).map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                <div className="lp-field">
+                  <label htmlFor="lp-distrito">Distrito</label>
+                  <select id="lp-distrito" value={pesquisaRapida.distrito} onChange={(evento) => atualizarPesquisaRapida('distrito', evento.target.value)}>
+                    <option value="">Portugal inteiro</option>
+                    {DISTRITOS.map((distrito) => <option key={distrito} value={distrito}>{distrito}</option>)}
+                  </select>
+                </div>
+
+                {pesquisaRapida.tipo === 'carro' && (
+                  <div className="lp-field">
+                    <label htmlFor="lp-preco">Preço máximo</label>
+                    <select id="lp-preco" value={pesquisaRapida.precoMax} onChange={(evento) => atualizarPesquisaRapida('precoMax', evento.target.value)}>
+                      <option value="">Qualquer preço</option>
+                      {PRECOS_RAPIDOS.slice(0, 2).map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}
+                    </select>
+                  </div>
+                )}
+
+                <button type="submit" className="lp-search-submit">
+                  Ver anúncios
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section className="lp-promo-section" id="anunciar" aria-label="Anunciar grátis na Noxvelia">
+          <div className="lp-shell">
+            <div className="lp-promo-grid">
+              <Link className="lp-promo-link" to="/publicar">
+                <img src="/social/noxvelia-drive-page-card.png" alt="Anunciar carro grátis na Noxvelia Drive" loading="lazy" />
+                <span className="lp-promo-overlay">Publicar carro <Icon path={mdiArrowRight} size={0.62} /></span>
+              </Link>
+              <Link className="lp-promo-link" to="/publicar">
+                <img src="/social/noxvelia-estate-page-card.png" alt="Anunciar imóvel grátis na Noxvelia Estate" loading="lazy" />
+                <span className="lp-promo-overlay">Publicar imóvel <Icon path={mdiArrowRight} size={0.62} /></span>
+              </Link>
             </div>
           </div>
         </section>
@@ -1292,6 +1861,72 @@ export default function Landing() {
           </div>
         </section>
 
+        <section className="lp-section lp-shortcuts-section" id="atalhos" aria-labelledby="lp-shortcuts-title">
+          <div className="lp-shell">
+            <div className="lp-section-head">
+              <div>
+                <span className="lp-eyebrow">Atalhos populares</span>
+                <h2 className="lp-title" id="lp-shortcuts-title">Chega mais depressa ao que muita gente procura.</h2>
+                <p className="lp-copy">
+                  Marcas, modelos, combustíveis, distritos e tipologias reunidos para reduzir passos entre a intenção e o anúncio certo.
+                </p>
+              </div>
+            </div>
+
+            <div className="lp-shortcut-grid">
+              <div className="lp-shortcut-group">
+                <h3>Marcas mais procuradas</h3>
+                <div className="lp-chip-list">
+                  {MARCAS_POPULARES.map((marca) => (
+                    <Link key={marca} className="lp-chip" to={criarLinkPesquisa('carro', { marca })}>{marca}</Link>
+                  ))}
+                </div>
+              </div>
+
+              <div className="lp-shortcut-group wide">
+                <h3>Modelos rápidos</h3>
+                <div className="lp-chip-list">
+                  {MODELOS_POPULARES.map(([marca, modelo]) => (
+                    <Link key={`${marca}-${modelo}`} className="lp-chip" to={criarLinkPesquisa('carro', { marca, modelo })}>
+                      {marca} {modelo}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <div className="lp-shortcut-group">
+                <h3>Combustíveis</h3>
+                <div className="lp-chip-list">
+                  {COMBUSTIVEIS_POPULARES.map((combustivel) => (
+                    <Link key={combustivel} className="lp-chip" to={criarLinkPesquisa('carro', { combustivel })}>{combustivel}</Link>
+                  ))}
+                </div>
+              </div>
+
+              <div className="lp-shortcut-group">
+                <h3>Distritos</h3>
+                <div className="lp-chip-list">
+                  {DISTRITOS_POPULARES.map((distrito) => (
+                    <Link key={distrito} className="lp-chip" to={criarLinkPesquisa('carro', { distrito })}>{distrito}</Link>
+                  ))}
+                </div>
+              </div>
+
+              <div className="lp-shortcut-group">
+                <h3>Imóveis</h3>
+                <div className="lp-chip-list">
+                  {TIPOLOGIAS_POPULARES.map((tipologia) => (
+                    <Link key={tipologia} className="lp-chip" to={criarLinkPesquisa('imovel', { tipologia })}>{tipologia}</Link>
+                  ))}
+                  {DISTRITOS_POPULARES.slice(0, 4).map((distrito) => (
+                    <Link key={`imovel-${distrito}`} className="lp-chip" to={criarLinkPesquisa('imovel', { distrito })}>{distrito}</Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="lp-section lp-popular-section" id="destaques" aria-labelledby="lp-popular-title">
           <div className="lp-shell">
             <div className="lp-section-head">
@@ -1337,6 +1972,52 @@ export default function Landing() {
                     ? exemplos.imovel.map((anuncio) => renderExemplo(anuncio, '/imoveis'))
                     : renderEstadoLista('Estate', '/imoveis')}
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="lp-section lp-guides-section" id="guias" aria-labelledby="lp-guides-title">
+          <div className="lp-shell">
+            <div className="lp-section-head">
+              <div>
+                <span className="lp-eyebrow">Guias rápidos</span>
+                <h2 className="lp-title" id="lp-guides-title">Conteúdo útil antes do contacto.</h2>
+                <p className="lp-copy">
+                  A página ganha uma área editorial leve para apoiar quem compra, vende ou guarda anúncios para decidir depois.
+                </p>
+              </div>
+            </div>
+
+            <div className="lp-guides-grid">
+              {GUIAS_NOXVELIA.map((guia) => (
+                <article className="lp-guide-card" key={guia.titulo}>
+                  <div>
+                    <span>{guia.tema}</span>
+                    <h3>{guia.titulo}</h3>
+                    <p>{guia.texto}</p>
+                  </div>
+                  <Link className="lp-column-link" to={guia.tema === 'Guardar oportunidades' ? '/favoritos' : '/carros'}>
+                    Continuar <Icon path={mdiArrowRight} size={0.58} />
+                  </Link>
+                </article>
+              ))}
+            </div>
+
+            <div className="lp-favorites-strip">
+              <div>
+                <h3>Guarda favoritos e volta quando quiseres.</h3>
+                <p>
+                  Com sessão iniciada podes guardar anúncios, comparar opções e continuar a pesquisa mais tarde sem perder oportunidades.
+                </p>
+              </div>
+              <div className="lp-actions">
+                <Link className="lp-btn lp-btn-drive" to="/favoritos">
+                  Ver favoritos <Icon path={mdiArrowRight} size={0.7} />
+                </Link>
+                <Link className="lp-btn lp-btn-estate" to="/registo">
+                  Criar conta
+                </Link>
               </div>
             </div>
           </div>

@@ -1,12 +1,19 @@
 import { Resend } from 'resend';
 import 'dotenv/config';
 
-// Inicializa o Resend com a chave de API guardada no teu ambiente (.env ou Render)
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+const garantirResend = () => {
+  if (resend) return true;
+  console.warn('[RESEND] RESEND_API_KEY ausente; envio de email ignorado em desenvolvimento.');
+  return false;
+};
 
 // ── 1. EMAIL DE RECUPERAÇÃO DE PASSWORD ──────────────────────
 export const enviarEmailReset = async (emailDestino, nomeUtilizador, linkRecuperacao) => {
   try {
+    if (!garantirResend()) return { skipped: true };
+
     await resend.emails.send({
       from: '"NOXVELIA" <suporte@noxvelia.com>', 
       to: emailDestino,
@@ -44,6 +51,8 @@ export const enviarEmailReset = async (emailDestino, nomeUtilizador, linkRecuper
 // ── 2. EMAIL DE VERIFICAÇÃO DE CONTA ─────────────────────────
 export const enviarEmailVerificacao = async (emailDestino, nomeUtilizador, linkVerificacao) => {
   try {
+    if (!garantirResend()) return { skipped: true };
+
     await resend.emails.send({
       from: '"NOXVELIA" <suporte@noxvelia.com>',
       to: emailDestino,

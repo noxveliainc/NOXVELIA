@@ -441,11 +441,11 @@ export default function NavbarLanding() {
           </Link>
 
           <div className="nl-links">
-            <a href="#marcas">Marcas</a>
+            <a href="#pesquisa">Pesquisar</a>
+            <a href="#anunciar">Anunciar grátis</a>
+            <a href="#atalhos">Atalhos</a>
             <a href="#destaques">Em destaque</a>
-            <a href="#carvertical">carVertical</a>
-            <Link to="/carros">Drive</Link>
-            <Link to="/imoveis">Estate</Link>
+            <a href="#guias">Guias</a>
           </div>
 
           <div className="nl-actions">
@@ -469,6 +469,7 @@ export default function NavbarLanding() {
 
             <ComparisonNavButton />
             <ThemeToggle />
+            <Link to="/publicar" className="nl-btn-solid">Anunciar grátis</Link>
 
             {signed ? (
               <div ref={userMenuRef} className="nl-user-wrap">
@@ -512,7 +513,6 @@ export default function NavbarLanding() {
             ) : (
               <>
                 <Link to="/login" state={{ from: location.pathname }} className="nl-btn-ghost">Entrar</Link>
-                <Link to="/registo" className="nl-btn-solid">Registar</Link>
               </>
             )}
           </div>
@@ -520,11 +520,14 @@ export default function NavbarLanding() {
 
         {menuMobileAberto && (
           <div className="nl-mobile-menu" id="nl-mobile-menu">
-            <a href="#marcas" onClick={() => setMenuMobileAberto(false)}>Marcas</a>
+            <a href="#pesquisa" onClick={() => setMenuMobileAberto(false)}>Pesquisar</a>
+            <a href="#anunciar" onClick={() => setMenuMobileAberto(false)}>Anunciar grátis</a>
+            <a href="#atalhos" onClick={() => setMenuMobileAberto(false)}>Atalhos</a>
             <a href="#destaques" onClick={() => setMenuMobileAberto(false)}>Em destaque</a>
-            <a href="#carvertical" onClick={() => setMenuMobileAberto(false)}>carVertical</a>
+            <a href="#guias" onClick={() => setMenuMobileAberto(false)}>Guias</a>
             <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Drive</Link>
             <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Estate</Link>
+            <Link to="/publicar" onClick={() => setMenuMobileAberto(false)}>Publicar anúncio</Link>
             {signed ? (
               <>
                 <Link to="/perfil" onClick={() => setMenuMobileAberto(false)}>O meu perfil</Link>
