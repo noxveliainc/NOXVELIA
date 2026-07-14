@@ -56,6 +56,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   ] : [
     { label: 'Tipo', value: anuncio?.imovel?.tipologia || anuncio?.imovel?.tipoImovel },
     { label: 'Area', value: anuncio?.imovel?.area ? `${anuncio.imovel.area} m2` : null },
+    { label: 'Quartos', value: anuncio?.imovel?.quartos != null ? `${anuncio.imovel.quartos}` : null },
     { label: 'Zona', value: anuncio?.localizacao?.cidade },
   ]).filter(item => item.value).slice(0, 3);
 

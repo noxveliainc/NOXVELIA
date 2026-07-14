@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 import 'dotenv/config';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const transactionalFrom = process.env.RESEND_TRANSACTIONAL_FROM || '"NOXVELIA" <suporte@noxvelia.com>';
 
 const garantirResend = () => {
   if (resend) return true;
@@ -15,7 +16,7 @@ export const enviarEmailReset = async (emailDestino, nomeUtilizador, linkRecuper
     if (!garantirResend()) return { skipped: true };
 
     await resend.emails.send({
-      from: '"NOXVELIA" <suporte@noxvelia.com>', 
+      from: transactionalFrom, 
       to: emailDestino,
       subject: 'Recuperação de Acesso - NOXVELIA',
       html: `
@@ -54,7 +55,7 @@ export const enviarEmailVerificacao = async (emailDestino, nomeUtilizador, linkV
     if (!garantirResend()) return { skipped: true };
 
     await resend.emails.send({
-      from: '"NOXVELIA" <suporte@noxvelia.com>',
+      from: transactionalFrom,
       to: emailDestino,
       subject: 'Confirma a tua conta - NOXVELIA',
       html: `

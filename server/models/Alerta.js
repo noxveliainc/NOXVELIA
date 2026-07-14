@@ -13,6 +13,7 @@ const alertaSchema = new mongoose.Schema({
     tipologia: String,
     tipologias: [String],
     tipoImovel: String,
+    tiposImovel: [String],
     marca: String,
     modelo: String,
     combustiveis: [String],

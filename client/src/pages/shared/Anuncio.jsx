@@ -8,6 +8,7 @@ import GoogleAdSlot from '../../components/GoogleAdSlot';
 import SponsorBanner from '../../components/SponsorBanner';
 import Seo from '../../components/Seo';
 import { absoluteUrl, anuncioPath } from '../../utils/seo';
+import { normalizarExtras } from '../../utils/extras';
 import { Icon } from '@mdi/react';
 import {
   mdiCheckDecagram, mdiShareVariantOutline, mdiHeartOutline, mdiHeart,
@@ -260,7 +261,11 @@ export default function Anuncio() {
   const whatsappNumero = numeroParaWhatsapp(telefoneContacto);
   const inicial = donoDoAnuncio?.nome?.charAt(0).toUpperCase() || 'U';
   const localizacaoString = `${anuncio.localizacao?.cidade || 'N/A'}${anuncio.localizacao?.distrito ? `, ${anuncio.localizacao.distrito}` : ''}`;
-  const temVaranda = anuncio.equipamento?.some(e => e.toLowerCase().includes('varanda') || e.toLowerCase().includes('terraço'));
+  const extrasOpcionais = normalizarExtras(anuncio.equipamento || []);
+  const temVaranda = anuncio.imovel?.varanda || extrasOpcionais.some((extra) => {
+    const texto = extra.toLocaleLowerCase('pt-PT').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return texto.includes('varanda') || texto.includes('terraco');
+  });
 
   // Lógica do Ano/Mês combinada
   const valorAnoMes = anuncio.carro?.ano
@@ -284,18 +289,22 @@ export default function Anuncio() {
     { label: 'Tipo de imóvel', value: anuncio.imovel?.tipoImovel, icon: mdiHomeCityOutline },
     { label: 'Tipologia', value: anuncio.imovel?.tipologia, icon: mdiHomeCityOutline },
     { label: 'Área útil', value: anuncio.imovel?.area ? `${anuncio.imovel.area} m²` : null, icon: mdiRulerSquare },
+    { label: 'Area terreno/bruta', value: anuncio.imovel?.areaTerreno ? `${anuncio.imovel.areaTerreno} m2` : null, icon: mdiRulerSquare },
     { label: 'Quartos', value: anuncio.imovel?.quartos, icon: mdiBedOutline },
     { label: 'Casas de banho', value: anuncio.imovel?.casasBanho, icon: mdiShower },
+    { label: 'Ano construcao', value: anuncio.imovel?.anoConstrucao || anuncio.imovel?.ano, icon: mdiCalendarBlank },
+    { label: 'Andar', value: anuncio.imovel?.andar ?? null, icon: mdiHomeCityOutline },
     { label: 'Cert. energético', value: anuncio.imovel?.certificadoEnergetico, icon: mdiCertificateOutline },
     { label: 'Localização', value: localizacaoString, icon: mdiMapMarkerOutline },
-    { label: 'Estado', value: anuncio.estado || 'Usado', icon: mdiHammerWrench },
+    { label: 'Estado', value: anuncio.imovel?.estadoConservacao || anuncio.imovel?.estado || 'Usado', icon: mdiHammerWrench },
+    { label: 'Piscina', value: anuncio.imovel?.piscina ? 'Sim' : null, icon: mdiCheckCircleOutline },
+    { label: 'Jardim', value: anuncio.imovel?.jardim ? 'Sim' : null, icon: mdiCheckCircleOutline },
+    { label: 'Elevador', value: anuncio.imovel?.elevador ? 'Sim' : null, icon: mdiCheckCircleOutline },
     { label: 'Garagem', value: anuncio.imovel?.garagem ? 'Sim' : 'Não', icon: mdiGarageVariant },
     { label: 'Varanda/Terraço', value: temVaranda ? 'Sim' : 'Não', icon: mdiBalcony },
   ];
 
   const especificacoesVisiveis = specs.filter(s => s.value != null && s.value !== '');
-  const extrasOpcionais = anuncio.equipamento?.length > 0 ? anuncio.equipamento : [];
-
   const valorFinanciado = Math.max(0, precoValor - entrada);
   const taxaMensal = 0.079 / 12;
   const prestacaoMensal = valorFinanciado > 0

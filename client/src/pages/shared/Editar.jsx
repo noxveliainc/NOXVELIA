@@ -7,6 +7,28 @@ import { mdiAlertCircleOutline, mdiCloudUploadOutline, mdiClose } from '@mdi/js'
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes'; 
 import { isSupportedVideoUrl } from '../../utils/videoEmbed';
+import { juntarExtras, normalizarExtras } from '../../utils/extras';
+
+const TIPOS_IMOVEL = [
+  { value: 'apartamento', label: 'Apartamento' },
+  { value: 'moradia', label: 'Moradia' },
+  { value: 'terreno', label: 'Terreno' },
+  { value: 'loja', label: 'Loja / Comercio' },
+  { value: 'escritorio', label: 'Escritorio' },
+];
+const TIPOS_SEM_TIPOLOGIA = ['terreno', 'loja', 'escritorio'];
+const EXTRAS_RAPIDOS_CARRO = ['GPS', 'Camara traseira', 'Sensores estacionamento', 'Bancos aquecidos', 'Teto panoramico', 'Jantes especiais'];
+const EXTRAS_RAPIDOS_IMOVEL = ['Piscina', 'Varanda', 'Terraco', 'Ar condicionado', 'Vista mar', 'Elevador', 'Jardim', 'Arrecadacao'];
+const COMODIDADES_IMOVEL = [
+  { name: 'garagem', label: 'Garagem / estacionamento' },
+  { name: 'piscina', label: 'Piscina' },
+  { name: 'jardim', label: 'Jardim' },
+  { name: 'varanda', label: 'Varanda / terraco' },
+  { name: 'elevador', label: 'Elevador' },
+  { name: 'arrecadacao', label: 'Arrecadacao' },
+  { name: 'mobilado', label: 'Mobilado' },
+  { name: 'condominio', label: 'Condominio' },
+];
 
 export default function Editar() {
   const { id } = useParams();
@@ -31,12 +53,23 @@ export default function Editar() {
     email: '', 
     cidade: '',
     distrito: '',
+    estado: 'Usado',
     tipoImovel: 'apartamento',
     tipologia: 'T2',
     area: '',
+    areaTerreno: '',
+    anoConstrucao: '',
     quartos: '',
     casasBanho: '',
     garagem: false,
+    jardim: false,
+    piscina: false,
+    varanda: false,
+    elevador: false,
+    arrecadacao: false,
+    mobilado: false,
+    condominio: false,
+    andar: '',
     certEnergetico: 'C',
     marca: '',
     modelo: '',
@@ -68,12 +101,23 @@ export default function Editar() {
           email: data.email || '', 
           cidade: data.localizacao?.cidade || '',
           distrito: data.localizacao?.distrito || '',
+          estado: data.imovel?.estadoConservacao || data.imovel?.estado || 'Usado',
           tipoImovel: data.imovel?.tipoImovel || 'apartamento',
           tipologia: data.imovel?.tipologia || 'T2',
           area: data.imovel?.area || '',
+          areaTerreno: data.imovel?.areaTerreno || '',
+          anoConstrucao: data.imovel?.anoConstrucao || data.imovel?.ano || '',
           quartos: data.imovel?.quartos || '',
           casasBanho: data.imovel?.casasBanho || '',
           garagem: data.imovel?.garagem || false,
+          jardim: data.imovel?.jardim || false,
+          piscina: data.imovel?.piscina || false,
+          varanda: data.imovel?.varanda || false,
+          elevador: data.imovel?.elevador || false,
+          arrecadacao: data.imovel?.arrecadacao || false,
+          mobilado: data.imovel?.mobilado || false,
+          condominio: data.imovel?.condominio || false,
+          andar: data.imovel?.andar || '',
           certEnergetico: data.imovel?.certificadoEnergetico || 'C',
           marca: data.carro?.marca || '',
           modelo: data.carro?.modelo || '',
@@ -86,7 +130,7 @@ export default function Editar() {
           cor: data.carro?.cor || '',
         });
         setFotos(data.fotos || []);
-        setEquipamento(data.equipamento || []);
+        setEquipamento(normalizarExtras(data.equipamento || []));
         setFetchingData(false);
       } catch {
         setErro('Não foi possível carregar os dados do anúncio para edição.');
@@ -106,6 +150,21 @@ export default function Editar() {
       const updated = { ...f, [name]: val };
       if (name === 'marca') updated.modelo = '';
       if (name === 'distrito') updated.cidade = '';
+      if (name === 'tipoImovel') {
+        if (TIPOS_SEM_TIPOLOGIA.includes(val)) {
+          updated.tipologia = '-';
+          updated.quartos = '';
+        } else if (updated.tipologia === '-') {
+          updated.tipologia = 'T2';
+        }
+        if (val === 'terreno') {
+          updated.casasBanho = '';
+          updated.garagem = false;
+          updated.elevador = false;
+          updated.mobilado = false;
+          updated.condominio = false;
+        }
+      }
       if (name === 'combustivel' && val === 'eletrico') {
         updated.transmissao = 'automatico';
         updated.cilindrada = ''; 
@@ -137,13 +196,14 @@ export default function Editar() {
 
   const handleAddExtra = (e) => {
     if (e) e.preventDefault();
-    const valorLimpo = novoExtra.trim();
-    if (!valorLimpo) return;
-    if (equipamento.some(item => item.toLowerCase() === valorLimpo.toLowerCase())) {
-      setNovoExtra(''); return;
-    }
-    setEquipamento(prev => [...prev, valorLimpo]);
+    const novosExtras = normalizarExtras(novoExtra);
+    if (!novosExtras.length) return;
+    setEquipamento(prev => juntarExtras(prev, novosExtras));
     setNovoExtra('');
+  };
+
+  const handleAddExtraRapido = (extra) => {
+    setEquipamento(prev => juntarExtras(prev, extra));
   };
 
   const handleRemoveExtra = (indexParaRemover) => setEquipamento(prev => prev.filter((_, idx) => idx !== indexParaRemover));
@@ -169,17 +229,35 @@ export default function Editar() {
       setLoading(false); return;
     }
     try {
+      const equipamentosNormalizados = normalizarExtras(equipamento);
+      const semTipologia = TIPOS_SEM_TIPOLOGIA.includes(form.tipoImovel);
       const payload = {
         titulo: form.titulo, descricao: form.descricao, preco: Number(form.preco),
         telefone: form.telefone, email: form.email, fotos,
         videoUrl: form.videoUrl.trim(),
-        equipamento: form.tipo === 'carro' ? equipamento : [],
+        equipamento: equipamentosNormalizados,
         localizacao: { cidade: form.cidade, distrito: form.distrito },
       };
       if (form.tipo === 'imovel') {
         payload.imovel = {
-          tipoImovel: form.tipoImovel, tipologia: form.tipologia, area: Number(form.area),
-          quartos: Number(form.quartos), casasBanho: Number(form.casasBanho), garagem: form.garagem, certificadoEnergetico: form.certEnergetico,
+          tipoImovel: form.tipoImovel,
+          tipologia: semTipologia ? '-' : form.tipologia,
+          area: Number(form.area),
+          ...(form.areaTerreno ? { areaTerreno: Number(form.areaTerreno) } : {}),
+          ...(!semTipologia && form.quartos !== '' ? { quartos: Number(form.quartos) } : {}),
+          ...(form.tipoImovel !== 'terreno' && form.casasBanho !== '' ? { casasBanho: Number(form.casasBanho) } : {}),
+          ...(form.anoConstrucao ? { anoConstrucao: Number(form.anoConstrucao) } : {}),
+          ...(form.andar !== '' && form.tipoImovel !== 'terreno' ? { andar: Number(form.andar) } : {}),
+          estadoConservacao: form.estado,
+          garagem: form.garagem,
+          jardim: form.jardim,
+          piscina: form.piscina,
+          varanda: form.varanda,
+          elevador: form.elevador,
+          arrecadacao: form.arrecadacao,
+          mobilado: form.mobilado,
+          condominio: form.condominio,
+          certificadoEnergetico: form.certEnergetico,
         };
       } else {
         payload.carro = {
@@ -233,8 +311,9 @@ export default function Editar() {
         .pub-section-title { font-family: var(--nx-font-display); font-size: 16px; font-weight: 800; margin: 0; }
 
         .pub-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .pub-grid-title-price { grid-template-columns: 2fr 1fr; }
         .pub-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-        @media (max-width: 768px) { .pub-grid-2, .pub-grid-3 { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .pub-grid-2, .pub-grid-3, .pub-grid-title-price { grid-template-columns: 1fr; } }
 
         .pub-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--nx-text-sub); margin-bottom: 7px; }
 
@@ -292,10 +371,28 @@ export default function Editar() {
         .pub-extra-tag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--nx-text); }
         .pub-extra-del { width: 18px; height: 18px; border-radius: 50%; background: var(--nx-border-2); color: var(--nx-text); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
         .pub-extra-del:hover { background: var(--nx-danger); color: #fff; }
+        .pub-quick-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 14px; }
+        .pub-quick-tag { min-height: 34px; border: 1px solid rgba(${accentRgb}, 0.32); background: rgba(${accentRgb}, 0.08); color: var(--nx-text); border-radius: 999px; padding: 0 11px; font-size: 11px; font-weight: 800; cursor: pointer; }
+        .pub-feature-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+        .pub-feature-tile { position: relative; min-height: 48px; display: flex; align-items: center; gap: 10px; border: 1px solid var(--nx-border); border-radius: 12px; background: rgba(255,255,255,0.03); padding: 12px; color: var(--nx-text); font-size: 12px; font-weight: 800; cursor: pointer; box-sizing: border-box; }
+        .pub-feature-tile input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .pub-feature-box { width: 18px; height: 18px; border-radius: 6px; border: 1px solid var(--nx-border-2); background: rgba(255,255,255,0.04); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .pub-feature-box::after { content: ''; width: 8px; height: 8px; border-radius: 3px; background: transparent; }
+        .pub-feature-tile.is-active { border-color: ${accentColorVar}; background: rgba(${accentRgb}, 0.08); }
+        .pub-feature-tile.is-active .pub-feature-box::after { background: ${accentColorVar}; }
 
         .pub-submit { width: 100%; padding: 18px; background: ${accentColorVar}; color: #ffffff; border: none; border-radius: 12px; font-family: var(--nx-font-body); font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(${accentRgb}, 0.2); }
         .pub-submit:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-2px); }
         .pub-submit:disabled { background: var(--nx-border); color: var(--nx-text-sub); cursor: not-allowed; box-shadow: none; transform: none; }
+
+        @media (max-width: 640px) {
+          .pub-root { padding: 24px 12px 42px; }
+          .pub-form { padding: 22px 14px; border-radius: 18px; gap: 30px; }
+          .pub-header > div:last-child, .btn-cancel { width: 100%; }
+          .pub-extra-row { flex-direction: column; }
+          .pub-btn-add { min-height: 44px; width: 100%; }
+          .pub-feature-grid { grid-template-columns: 1fr; }
+        }
       `}</style>
 
       <div className="pub-root">
@@ -383,7 +480,7 @@ export default function Editar() {
                 <h2 className="pub-section-title">Especificações de Mercado</h2>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div className="pub-grid-2" style={{ gridTemplateColumns: '2fr 1fr' }}>
+                <div className="pub-grid-2 pub-grid-title-price">
                   <div>
                     <label className="pub-label">Título Comercial *</label>
                     <input className="pub-input" name="titulo" value={form.titulo} onChange={handle} required />
@@ -442,16 +539,36 @@ export default function Editar() {
                     <div>
                       <label className="pub-label">Tipo de Imóvel</label>
                       <select className="pub-input" name="tipoImovel" value={form.tipoImovel} onChange={handle}>
-                        <option value="apartamento">Apartamento</option>
-                        <option value="moradia">Moradia</option>
-                        <option value="terreno">Terreno</option>
+                        {TIPOS_IMOVEL.map(tipo => <option key={tipo.value} value={tipo.value}>{tipo.label}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="pub-label">Tipologia</label>
-                      <select className="pub-input" name="tipologia" value={form.tipologia} onChange={handle}>
+                      <select className="pub-input" name="tipologia" value={form.tipologia} onChange={handle} disabled={TIPOS_SEM_TIPOLOGIA.includes(form.tipoImovel)}>
+                        <option value="-">-</option>
                         {['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'].map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
+                    </div>
+                  </div>
+                  <div className="pub-grid-3">
+                    <div>
+                      <label className="pub-label">Estado</label>
+                      <select className="pub-input" name="estado" value={form.estado} onChange={handle}>
+                        <option value="Novo">Novo</option>
+                        <option value="Usado">Usado</option>
+                        <option value="Renovado">Renovado</option>
+                        <option value="Para remodelar">Para remodelar</option>
+                        <option value="Em construção">Em construcao</option>
+                        <option value="Ruína">Ruina</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="pub-label">Area terreno / bruta (m2)</label>
+                      <input className="pub-input" name="areaTerreno" type="number" min="0" value={form.areaTerreno} onChange={handle} />
+                    </div>
+                    <div>
+                      <label className="pub-label">Ano de construcao</label>
+                      <input className="pub-input" name="anoConstrucao" type="number" min="1000" max={new Date().getFullYear() + 5} value={form.anoConstrucao} onChange={handle} />
                     </div>
                   </div>
                   <div className="pub-grid-3">
@@ -461,11 +578,11 @@ export default function Editar() {
                     </div>
                     <div>
                       <label className="pub-label">Quartos</label>
-                      <input className="pub-input" name="quartos" type="number" min="0" value={form.quartos} onChange={handle} />
+                      <input className="pub-input" name="quartos" type="number" min="0" value={form.quartos} onChange={handle} disabled={TIPOS_SEM_TIPOLOGIA.includes(form.tipoImovel)} />
                     </div>
                     <div>
                       <label className="pub-label">Casas de Banho</label>
-                      <input className="pub-input" name="casasBanho" type="number" min="0" value={form.casasBanho} onChange={handle} />
+                      <input className="pub-input" name="casasBanho" type="number" min="0" value={form.casasBanho} onChange={handle} disabled={form.tipoImovel === 'terreno'} />
                     </div>
                   </div>
                   <div className="pub-grid-2">
@@ -475,12 +592,49 @@ export default function Editar() {
                         {['A+', 'A', 'B', 'B-', 'C', 'D', 'E', 'F', 'Isento'].map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', paddingTop: '24px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>
-                        <input type="checkbox" name="garagem" checked={form.garagem} onChange={handle} style={{ width: '18px', height: '18px', accentColor: accentColorVar }} />
-                        Inclui Garagem / Box Privada
-                      </label>
+                    <div>
+                      <label className="pub-label">Andar</label>
+                      <input className="pub-input" name="andar" type="number" value={form.andar} onChange={handle} disabled={form.tipoImovel === 'terreno'} />
                     </div>
+                  </div>
+                  <div>
+                    <label className="pub-label">Comodidades principais</label>
+                    <div className="pub-feature-grid">
+                      {COMODIDADES_IMOVEL.map(item => {
+                        const disabled = form.tipoImovel === 'terreno' && ['garagem', 'elevador', 'mobilado', 'condominio'].includes(item.name);
+                        return (
+                          <label key={item.name} className={`pub-feature-tile ${form[item.name] ? 'is-active' : ''}`} style={disabled ? { opacity: 0.45, pointerEvents: 'none' } : undefined}>
+                            <input type="checkbox" name={item.name} checked={!!form[item.name]} onChange={handle} disabled={disabled} />
+                            <span className="pub-feature-box" aria-hidden="true" />
+                            {item.label}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div style={{ paddingTop: '16px', borderTop: '1px solid var(--nx-border)' }}>
+                    <label className="pub-label">Caracteristicas & Extras</label>
+                    <div className="pub-extra-row">
+                      <input type="text" className="pub-input" value={novoExtra} onChange={e => setNovoExtra(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddExtra(e)} placeholder="Ex: Piscina, Ar condicionado, Vista mar" />
+                      <button type="button" onClick={handleAddExtra} className="pub-btn-add">Inserir</button>
+                    </div>
+                    <div className="pub-quick-tags" aria-label="Sugestoes rapidas de extras">
+                      {EXTRAS_RAPIDOS_IMOVEL.map(extra => (
+                        <button key={extra} type="button" className="pub-quick-tag" onClick={() => handleAddExtraRapido(extra)}>+ {extra}</button>
+                      ))}
+                    </div>
+                    {equipamento.length > 0 && (
+                      <div className="pub-extra-tags">
+                        {equipamento.map((extra, idx) => (
+                          <span key={idx} className="pub-extra-tag">
+                            {extra}
+                            <button type="button" onClick={() => handleRemoveExtra(idx)} className="pub-extra-del">
+                              <Icon path={mdiClose} size={0.6} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -557,6 +711,11 @@ export default function Editar() {
                     <div className="pub-extra-row">
                       <input type="text" className="pub-input" value={novoExtra} onChange={e => setNovoExtra(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddExtra(e)} placeholder="Ex: Teto Panorâmico" />
                       <button type="button" onClick={handleAddExtra} className="pub-btn-add">Inserir</button>
+                    </div>
+                    <div className="pub-quick-tags" aria-label="Sugestoes rapidas de extras">
+                      {EXTRAS_RAPIDOS_CARRO.map(extra => (
+                        <button key={extra} type="button" className="pub-quick-tag" onClick={() => handleAddExtraRapido(extra)}>+ {extra}</button>
+                      ))}
                     </div>
                     {equipamento.length > 0 && (
                       <div className="pub-extra-tags">

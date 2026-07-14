@@ -1,9 +1,7 @@
 {
-  "badge": "ANUNCIA GRÁTIS",
-  "tagline": "es grande gay",
-  "phrase": "es grande gay",
-  "supportingLine": "es grande gay",
+  "topPhrase": "Faz o registo e publica o teu anuncio de forma gratuita.",
+  "brandLine": "Compra e vende o teu carro ou imóvel",
   "cta": "noxvelia.com",
-  "middleImage": "assets/centro-anuncios-simples.png",
+  "contentAsset": "",
   "output": "output/noxvelia-post.png"
-} 
+}

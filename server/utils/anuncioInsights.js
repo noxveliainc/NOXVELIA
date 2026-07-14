@@ -40,10 +40,16 @@ export function calcularQualidadeAnuncio(anuncio = {}) {
           anuncio.imovel?.tipoImovel,
           anuncio.imovel?.tipologia,
           anuncio.imovel?.area,
+          anuncio.imovel?.areaTerreno,
           anuncio.imovel?.quartos,
           anuncio.imovel?.casasBanho,
           anuncio.imovel?.certificadoEnergetico,
           anuncio.imovel?.garagem,
+          anuncio.imovel?.anoConstrucao,
+          anuncio.imovel?.estadoConservacao,
+          anuncio.imovel?.piscina,
+          anuncio.imovel?.jardim,
+          anuncio.imovel?.elevador,
         ]
       : [];
 

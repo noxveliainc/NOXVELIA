@@ -241,7 +241,7 @@ export default function PoliticaPrivacidade() {
                     <td><span className="legal-cookie-badge">Funcional</span></td>
                   </tr>
                   <tr>
-                    <td><em>localStorage</em><br /><code>noxvelia_cookies_accepted</code></td>
+                    <td><em>localStorage</em> e cookie proprio<br /><code>noxvelia_cookies_accepted</code></td>
                     <td>Registar e aplicar a escolha de consentimento, incluindo versão e data de validade.</td>
                     <td>Até 6 meses, salvo retirada da escolha, alteração da política ou limpeza do navegador.</td>
                     <td><span className="legal-cookie-badge">Necessário</span></td>

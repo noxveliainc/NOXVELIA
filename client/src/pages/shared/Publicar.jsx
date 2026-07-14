@@ -12,6 +12,7 @@ import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 import { isSupportedVideoUrl } from '../../utils/videoEmbed';
 import { calcularQualidadeFormulario } from '../../utils/anuncioQuality';
+import { juntarExtras, normalizarExtras } from '../../utils/extras';
 
 const OPCOES_GARANTIA = ['6 meses', '12 meses', '18 meses', '24 meses', 'Garantia de fábrica'];
 const MESES_ANO = [
@@ -19,6 +20,27 @@ const MESES_ANO = [
   { v: 4, l: 'Abril' }, { v: 5, l: 'Maio' }, { v: 6, l: 'Junho' },
   { v: 7, l: 'Julho' }, { v: 8, l: 'Agosto' }, { v: 9, l: 'Setembro' },
   { v: 10, l: 'Outubro' }, { v: 11, l: 'Novembro' }, { v: 12, l: 'Dezembro' }
+];
+
+const TIPOS_IMOVEL = [
+  { value: 'apartamento', label: 'Apartamento' },
+  { value: 'moradia', label: 'Moradia' },
+  { value: 'terreno', label: 'Terreno' },
+  { value: 'loja', label: 'Loja / Comercio' },
+  { value: 'escritorio', label: 'Escritorio' },
+];
+const TIPOS_SEM_TIPOLOGIA = ['terreno', 'loja', 'escritorio'];
+const EXTRAS_RAPIDOS_CARRO = ['GPS', 'Camara traseira', 'Sensores estacionamento', 'Bancos aquecidos', 'Teto panoramico', 'Jantes especiais'];
+const EXTRAS_RAPIDOS_IMOVEL = ['Piscina', 'Varanda', 'Terraco', 'Ar condicionado', 'Vista mar', 'Elevador', 'Jardim', 'Arrecadacao'];
+const COMODIDADES_IMOVEL = [
+  { name: 'garagem', label: 'Garagem / estacionamento' },
+  { name: 'piscina', label: 'Piscina' },
+  { name: 'jardim', label: 'Jardim' },
+  { name: 'varanda', label: 'Varanda / terraco' },
+  { name: 'elevador', label: 'Elevador' },
+  { name: 'arrecadacao', label: 'Arrecadacao' },
+  { name: 'mobilado', label: 'Mobilado' },
+  { name: 'condominio', label: 'Condominio' },
 ];
 
 export default function Publicar() {
@@ -58,6 +80,14 @@ export default function Publicar() {
     quartos: '',
     casasBanho: '',
     garagem: false,
+    jardim: false,
+    piscina: false,
+    varanda: false,
+    elevador: false,
+    arrecadacao: false,
+    mobilado: false,
+    condominio: false,
+    andar: '',
     certEnergetico: 'C',
     marca: '',
     modelo: '',
@@ -92,6 +122,21 @@ export default function Publicar() {
       const updated = { ...f, [name]: val };
       if (name === 'marca') updated.modelo = '';
       if (name === 'distrito') updated.cidade = '';
+      if (name === 'tipoImovel') {
+        if (TIPOS_SEM_TIPOLOGIA.includes(val)) {
+          updated.tipologia = '-';
+          updated.quartos = '';
+        } else if (updated.tipologia === '-') {
+          updated.tipologia = 'T2';
+        }
+        if (val === 'terreno') {
+          updated.casasBanho = '';
+          updated.garagem = false;
+          updated.elevador = false;
+          updated.mobilado = false;
+          updated.condominio = false;
+        }
+      }
       if (name === 'combustivel' && val === 'eletrico') {
         updated.transmissao = 'automatico';
         updated.cilindrada = '';
@@ -123,13 +168,14 @@ export default function Publicar() {
 
   const handleAddExtra = (e) => {
     if (e) e.preventDefault();
-    const valorLimpo = novoExtra.trim();
-    if (!valorLimpo) return;
-    if (equipamento.some(item => item.toLowerCase() === valorLimpo.toLowerCase())) {
-      setNovoExtra(''); return;
-    }
-    setEquipamento(prev => [...prev, valorLimpo]);
+    const novosExtras = normalizarExtras(novoExtra);
+    if (!novosExtras.length) return;
+    setEquipamento(prev => juntarExtras(prev, novosExtras));
     setNovoExtra('');
+  };
+
+  const handleAddExtraRapido = (extra) => {
+    setEquipamento(prev => juntarExtras(prev, extra));
   };
 
   const handleRemoveExtra = (indexParaRemover) => {
@@ -168,6 +214,9 @@ export default function Publicar() {
     }
 
     try {
+      const equipamentosNormalizados = normalizarExtras(equipamento);
+      const semTipologia = TIPOS_SEM_TIPOLOGIA.includes(form.tipoImovel);
+
       const payload = {
         tipo: form.tipo,
         titulo: form.titulo,
@@ -176,26 +225,34 @@ export default function Publicar() {
         telefone: form.telefone,
         email: form.email,
         fotos,
-        equipamento: equipamento,
+        equipamento: equipamentosNormalizados,
         videoUrl: form.videoUrl.trim(),
         localizacao: {
           cidade: form.cidade,
           distrito: form.distrito,
         },
-        estado: form.estado,
         garantia: form.garantia || null,
         aceitaRetoma: !!form.aceitaRetoma,
         ...(form.tipo === 'imovel'
           ? {
               imovel: {
                 tipoImovel: form.tipoImovel,
-                tipologia: form.tipologia,
+                tipologia: semTipologia ? '-' : form.tipologia,
                 area: Number(form.area),
                 ...(form.areaTerreno ? { areaTerreno: Number(form.areaTerreno) } : {}),
-                quartos: Number(form.quartos),
-                casasBanho: Number(form.casasBanho),
+                ...(!semTipologia && form.quartos !== '' ? { quartos: Number(form.quartos) } : {}),
+                ...(form.tipoImovel !== 'terreno' && form.casasBanho !== '' ? { casasBanho: Number(form.casasBanho) } : {}),
                 ...(form.anoConstrucao ? { anoConstrucao: Number(form.anoConstrucao) } : {}),
+                ...(form.andar !== '' && form.tipoImovel !== 'terreno' ? { andar: Number(form.andar) } : {}),
+                estadoConservacao: form.estado,
                 garagem: form.garagem,
+                jardim: form.jardim,
+                piscina: form.piscina,
+                varanda: form.varanda,
+                elevador: form.elevador,
+                arrecadacao: form.arrecadacao,
+                mobilado: form.mobilado,
+                condominio: form.condominio,
                 certificadoEnergetico: form.certEnergetico,
               },
             }
@@ -270,9 +327,10 @@ export default function Publicar() {
         .pub-section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 800; margin: 0; color: #0f172a; }
 
         .pub-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .pub-grid-title-price { grid-template-columns: 2fr 1fr; }
         .pub-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
         .pub-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
-        @media (max-width: 768px) { .pub-grid-2, .pub-grid-3, .pub-grid-4 { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .pub-grid-2, .pub-grid-3, .pub-grid-4, .pub-grid-title-price { grid-template-columns: 1fr; } }
 
         .pub-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; margin-bottom: 7px; }
 
@@ -312,6 +370,17 @@ export default function Publicar() {
         .pub-extra-tag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: 600; color: #0f172a; }
         .pub-extra-del { width: 18px; height: 18px; border-radius: 50%; background: #e2e8f0; color: #475569; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s, color 0.2s; }
         .pub-extra-del:hover { background: #ef4444; color: #fff; }
+        .pub-quick-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 14px; }
+        .pub-quick-tag { min-height: 34px; border: 1px solid rgba(${accentRgb}, 0.24); background: rgba(${accentRgb}, 0.06); color: #0f172a; border-radius: 999px; padding: 0 11px; font-size: 11px; font-weight: 800; cursor: pointer; }
+        .pub-quick-tag:hover { border-color: ${accentColorVar}; background: rgba(${accentRgb}, 0.12); }
+        .pub-feature-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+        .pub-feature-tile { position: relative; min-height: 48px; display: flex; align-items: center; gap: 10px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; padding: 12px; color: #0f172a; font-size: 12px; font-weight: 800; cursor: pointer; box-sizing: border-box; transition: border-color .2s, background .2s, box-shadow .2s; }
+        .pub-feature-tile input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .pub-feature-box { width: 18px; height: 18px; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .pub-feature-box::after { content: ''; width: 8px; height: 8px; border-radius: 3px; background: transparent; transition: background .2s; }
+        .pub-feature-tile.is-active { border-color: ${accentColorVar}; background: rgba(${accentRgb}, 0.06); box-shadow: 0 10px 22px -20px rgba(${accentRgb}, 0.8); }
+        .pub-feature-tile.is-active .pub-feature-box { border-color: ${accentColorVar}; background: rgba(${accentRgb}, 0.12); }
+        .pub-feature-tile.is-active .pub-feature-box::after { background: ${accentColorVar}; }
 
         .pub-pro-badge { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: #fefce8; border: 1px solid #fde047; border-radius: 12px; margin-bottom: 0; box-sizing: border-box; }
         .pub-pro-badge-icon { color: #d97706; flex-shrink: 0; }
@@ -346,6 +415,20 @@ export default function Publicar() {
         .pub-submit { width: 100%; padding: 18px; background: ${accentColorVar}; color: #ffffff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(${accentRgb}, 0.2); }
         .pub-submit:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-2px); }
         .pub-submit:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        @media (max-width: 640px) {
+          .pub-root { padding: 24px 12px 42px; }
+          .pub-header { align-items: stretch; margin-bottom: 24px; }
+          .pub-header > div:last-child, .btn-cancel { width: 100%; }
+          .pub-form { padding: 22px 14px; border-radius: 18px; gap: 30px; }
+          .pub-title { font-size: 26px; }
+          .pub-section-header { align-items: flex-start; }
+          .pub-extra-row { flex-direction: column; }
+          .pub-btn-add { min-height: 44px; width: 100%; }
+          .pub-feature-grid { grid-template-columns: 1fr; }
+          .pub-quality-head { align-items: flex-start; flex-direction: column; }
+          .pub-quality-score { text-align: left; }
+        }
 
         .premium-modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 24px; animation: fadeIn 0.2s ease-out; }
         .premium-modal-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; width: 100%; max-width: 520px; padding: 48px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); position: relative; animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -483,7 +566,7 @@ export default function Publicar() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div className="pub-grid-2" style={{ gridTemplateColumns: '2fr 1fr' }}>
+                <div className="pub-grid-2 pub-grid-title-price">
                   <div>
                     <label className="pub-label">Título Comercial *</label>
                     <input className="pub-input" name="titulo" value={form.titulo} onChange={handle} required placeholder={form.tipo === 'carro' ? "Ex: Audi A3 Sportback" : "Ex: Moradia T3 no Porto"} />
@@ -591,6 +674,7 @@ export default function Publicar() {
                         <option value="Novo">Novo</option>
                         <option value="Usado">Usado</option>
                         <option value="Renovado">Renovado</option>
+                        <option value="Para remodelar">Para remodelar</option>
                         <option value="Em construção">Em construção</option>
                         <option value="Ruína">Ruína</option>
                       </select>
@@ -598,16 +682,12 @@ export default function Publicar() {
                     <div>
                       <label className="pub-label">Tipo de Imóvel</label>
                       <select className="pub-input" name="tipoImovel" value={form.tipoImovel} onChange={handle}>
-                        <option value="apartamento">Apartamento</option>
-                        <option value="moradia">Moradia</option>
-                        <option value="terreno">Terreno</option>
-                        <option value="loja">Loja / Comércio</option>
-                        <option value="escritorio">Escritório</option>
+                        {TIPOS_IMOVEL.map(tipo => <option key={tipo.value} value={tipo.value}>{tipo.label}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="pub-label">Tipologia</label>
-                      <select className="pub-input" name="tipologia" value={form.tipologia} onChange={handle} disabled={['terreno', 'loja', 'escritorio'].includes(form.tipoImovel)}>
+                      <select className="pub-input" name="tipologia" value={form.tipologia} onChange={handle} disabled={TIPOS_SEM_TIPOLOGIA.includes(form.tipoImovel)}>
                         <option value="-">-</option>
                         {['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'].map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
@@ -632,7 +712,7 @@ export default function Publicar() {
                   <div className="pub-grid-3">
                     <div>
                       <label className="pub-label">Quartos</label>
-                      <input className="pub-input" name="quartos" type="number" min="0" value={form.quartos} onChange={handle} placeholder="0" disabled={['terreno', 'loja', 'escritorio'].includes(form.tipoImovel)} />
+                      <input className="pub-input" name="quartos" type="number" min="0" value={form.quartos} onChange={handle} placeholder="0" disabled={TIPOS_SEM_TIPOLOGIA.includes(form.tipoImovel)} />
                     </div>
                     <div>
                       <label className="pub-label">Casas de Banho</label>
@@ -646,11 +726,26 @@ export default function Publicar() {
                     </div>
                   </div>
 
-                  <div style={{ paddingTop: '8px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', color: '#0f172a' }}>
-                      <input type="checkbox" name="garagem" checked={form.garagem} onChange={handle} style={{ width: '18px', height: '18px', accentColor: accentColorVar }} />
-                      Inclui Garagem / Estacionamento
-                    </label>
+                  <div className="pub-grid-3">
+                    <div>
+                      <label className="pub-label">Andar</label>
+                      <input className="pub-input" name="andar" type="number" value={form.andar} onChange={handle} placeholder="Ex: 2" disabled={form.tipoImovel === 'terreno'} />
+                    </div>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label className="pub-label">Comodidades principais</label>
+                      <div className="pub-feature-grid">
+                        {COMODIDADES_IMOVEL.map(item => {
+                          const disabled = form.tipoImovel === 'terreno' && ['garagem', 'elevador', 'mobilado', 'condominio'].includes(item.name);
+                          return (
+                            <label key={item.name} className={`pub-feature-tile ${form[item.name] ? 'is-active' : ''}`} style={disabled ? { opacity: 0.45, pointerEvents: 'none' } : undefined}>
+                              <input type="checkbox" name={item.name} checked={!!form[item.name]} onChange={handle} disabled={disabled} />
+                              <span className="pub-feature-box" aria-hidden="true" />
+                              {item.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -761,6 +856,13 @@ export default function Publicar() {
                     placeholder={form.tipo === 'carro' ? "Ex: Teto Panorâmico" : "Ex: Piscina, Ar Condicionado, Vista Mar"}
                   />
                   <button type="button" onClick={handleAddExtra} className="pub-btn-add">Inserir</button>
+                </div>
+                <div className="pub-quick-tags" aria-label="Sugestoes rapidas de extras">
+                  {(form.tipo === 'carro' ? EXTRAS_RAPIDOS_CARRO : EXTRAS_RAPIDOS_IMOVEL).map(extra => (
+                    <button key={extra} type="button" className="pub-quick-tag" onClick={() => handleAddExtraRapido(extra)}>
+                      + {extra}
+                    </button>
+                  ))}
                 </div>
                 {equipamento.length > 0 && (
                   <div className="pub-extra-tags">

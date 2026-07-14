@@ -7,6 +7,7 @@ import Notificacao from '../models/Notificacao.js';
 import { verificarToken } from '../middleware/auth.js';
 import { parsePagination } from '../utils/pagination.js';
 import { analisarPreco, calcularQualidadeAnuncio } from '../utils/anuncioInsights.js';
+import { normalizarEquipamento, normalizarImovel } from '../utils/anuncioNormalize.js';
 
 const router = express.Router();
 const visitLimiter = rateLimit({
@@ -28,6 +29,13 @@ const dividirFiltroTexto = (valor) => String(valor || '')
   .split(',')
   .map(normalizarFiltroTexto)
   .filter(Boolean);
+
+const dividirTipoImovelFiltro = (valor) => {
+  const tipos = dividirFiltroTexto(valor);
+  return [...new Set(tipos.flatMap((tipo) => (
+    tipo === 'loja' || tipo === 'comercial' ? ['loja', 'comercial'] : [tipo]
+  )))];
+};
 
 const ESTADOS_PUBLICOS = ['ativo', 'pendente'];
 const filtroPublico = () => ({ estado: { $in: ESTADOS_PUBLICOS } });
@@ -61,8 +69,9 @@ const alertaCombinaComAnuncio = (alerta, anuncio) => {
 
   if (anuncio.tipo === 'imovel') {
     const tipologias = filtros.tipologias?.length ? filtros.tipologias : [filtros.tipologia].filter(Boolean);
+    const tiposImovel = filtros.tiposImovel?.length ? filtros.tiposImovel : [filtros.tipoImovel].filter(Boolean);
     if (tipologias.length && !listaIncluiTexto(tipologias, anuncio.imovel?.tipologia)) return false;
-    if (filtros.tipoImovel && !compararTexto(filtros.tipoImovel, anuncio.imovel?.tipoImovel)) return false;
+    if (tiposImovel.length && !listaIncluiTexto(tiposImovel, anuncio.imovel?.tipoImovel)) return false;
   }
 
   return true;
@@ -131,7 +140,7 @@ router.get('/', async (req, res) => {
     const {
       sort = 'relevancia', q,
       tipo, distrito, cidade, precoMax,
-      marca, modelo, combustivel, transmissao, tipologia
+      marca, modelo, combustivel, transmissao, tipologia, tipoImovel
     } = req.query;
 
     const query = filtroPublico();
@@ -151,6 +160,7 @@ router.get('/', async (req, res) => {
 
     if (tipo === 'imovel') {
       if (tipologia) query['imovel.tipologia'] = { $in: tipologia.split(',') };
+      if (tipoImovel) query['imovel.tipoImovel'] = { $in: dividirTipoImovelFiltro(tipoImovel) };
     }
 
     let sortOption = { destacado: -1, createdAt: -1 };
@@ -161,7 +171,7 @@ router.get('/', async (req, res) => {
     const { page, limit, skip } = parsePagination(req.query);
 
     const anuncios = await Anuncio.find(query)
-      .select('_id titulo preco fotos tipo estado destacado utilizador scoreQualidade scoreDetalhes carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area localizacao.cidade localizacao.distrito createdAt')
+      .select('_id titulo preco fotos tipo estado destacado utilizador scoreQualidade scoreDetalhes carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area imovel.areaTerreno imovel.quartos imovel.casasBanho localizacao.cidade localizacao.distrito createdAt')
       .sort(sortOption)
       .skip(skip)
       .limit(limit)
@@ -276,7 +286,7 @@ router.get('/pesquisa/mapa', async (req, res) => {
   try {
     const {
       tipo, distrito, cidade, q, precoMax,
-      marca, modelo, combustivel, transmissao, tipologia
+      marca, modelo, combustivel, transmissao, tipologia, tipoImovel
     } = req.query;
     const query = filtroPublico();
     if (tipo) query.tipo = tipo;
@@ -292,6 +302,9 @@ router.get('/pesquisa/mapa', async (req, res) => {
     }
     if (tipo === 'imovel' && tipologia) {
       query['imovel.tipologia'] = { $in: tipologia.split(',') };
+    }
+    if (tipo === 'imovel' && tipoImovel) {
+      query['imovel.tipoImovel'] = { $in: dividirTipoImovelFiltro(tipoImovel) };
     }
 
     const anuncios = await Anuncio.find(query).select('_id titulo preco localizacao fotos tipo').slice('fotos', 1).lean();
@@ -422,9 +435,15 @@ router.post('/', verificarToken, async (req, res) => {
       ...bodyLimpo
     } = req.body;
 
+    const bodyNormalizado = {
+      ...bodyLimpo,
+      equipamento: normalizarEquipamento(bodyLimpo.equipamento),
+      ...(bodyLimpo.tipo === 'imovel' ? { imovel: normalizarImovel(bodyLimpo.imovel) } : {}),
+    };
+
     // ── Construir o payload final ────────────────────────────
     const dadosAnuncio = {
-      ...bodyLimpo,
+      ...bodyNormalizado,
       garantia: req.body.garantia || null,
       aceitaRetoma: !!req.body.aceitaRetoma,
       utilizador: req.user.id,
@@ -487,8 +506,17 @@ router.put('/:id', verificarToken, async (req, res) => {
     } = req.body;
 
     // Atualizar com os novos campos de confiança
+    const tipoAtual = bodyLimpo.tipo || anuncio.tipo;
+    const bodyNormalizado = { ...bodyLimpo };
+    if (Object.prototype.hasOwnProperty.call(bodyLimpo, 'equipamento')) {
+      bodyNormalizado.equipamento = normalizarEquipamento(bodyLimpo.equipamento);
+    }
+    if (tipoAtual === 'imovel' && bodyLimpo.imovel) {
+      bodyNormalizado.imovel = normalizarImovel(bodyLimpo.imovel);
+    }
+
     const camposAtualizados = {
-      ...bodyLimpo,
+      ...bodyNormalizado,
       garantia: req.body.garantia || null,
       aceitaRetoma: !!req.body.aceitaRetoma,
     };

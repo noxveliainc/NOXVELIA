@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  CONSENT_KEY,
+  COOKIE_CONSENT_CHANGED_EVENT,
   OPEN_COOKIE_SETTINGS_EVENT,
   dispatchCookieConsentChanged,
   readCookieConsent,
@@ -65,68 +67,69 @@ export default function CookieBanner() {
 
   useEffect(() => {
     const openSettings = () => setIsOpen(true);
+    const syncConsent = (event) => {
+      const record = event?.detail || readCookieConsent();
+      setConsent(record);
+      if (record) setIsOpen(false);
+    };
+    const syncStorage = (event) => {
+      if (event.key !== CONSENT_KEY) return;
+      const record = readCookieConsent();
+      setConsent(record);
+      setIsOpen(!record);
+    };
+
     window.addEventListener(OPEN_COOKIE_SETTINGS_EVENT, openSettings);
-    return () => window.removeEventListener(OPEN_COOKIE_SETTINGS_EVENT, openSettings);
+    window.addEventListener(COOKIE_CONSENT_CHANGED_EVENT, syncConsent);
+    window.addEventListener('storage', syncStorage);
+    return () => {
+      window.removeEventListener(OPEN_COOKIE_SETTINGS_EVENT, openSettings);
+      window.removeEventListener(COOKIE_CONSENT_CHANGED_EVENT, syncConsent);
+      window.removeEventListener('storage', syncStorage);
+    };
   }, []);
 
+  if (!isOpen) return null;
+
   return (
-    <>
-      {isOpen && (
-        <section
-          className="fixed bottom-4 left-4 right-4 z-[2147483000] mx-auto grid max-w-6xl gap-5 rounded-2xl border border-white/15 bg-slate-950 p-5 text-white shadow-2xl md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-6"
-          role="dialog"
-          aria-modal="false"
-          aria-labelledby="cookie-banner-title"
-          aria-describedby="cookie-banner-description"
-        >
-          <div className="flex min-w-0 items-start gap-4">
-            <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-teal-300/20 bg-teal-400/10 text-teal-300 sm:flex" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M8.5 3.5a3.5 3.5 0 0 0 4.2 4.2A3.5 3.5 0 0 0 17 12a3.5 3.5 0 0 0 3.4 4.2A9 9 0 1 1 8.5 3.5Z" />
-                <circle cx="8" cy="13" r="1" /><circle cx="12" cy="17" r="1" /><circle cx="7" cy="18" r=".8" />
-              </svg>
-            </span>
-            <div className="min-w-0">
-              <h2 id="cookie-banner-title" className="m-0 text-base font-extrabold tracking-tight sm:text-lg">A tua privacidade na NOXVELIA</h2>
-              <p id="cookie-banner-description" className="mt-2 max-w-3xl text-xs leading-6 text-slate-300 sm:text-sm">
-                Utilizamos armazenamento essencial para autenticação, segurança e preferências. Só carregamos serviços externos opcionais, incluindo apoio externo e publicidade Google, com a tua autorização. Podes rejeitá-los sem perder acesso à plataforma.
-              </p>
-              {consent && (
-                <p className="mt-2 text-xs font-semibold text-slate-400">
-                  Escolha atual: serviços externos {consent.external ? 'ativos' : 'desativados'}.
-                </p>
-              )}
-              <Link className="mt-2 inline-flex text-xs font-bold text-teal-300 underline decoration-teal-300/50 underline-offset-4 hover:text-teal-200" to="/privacidade#cookies">
-                Consultar a política de cookies
-              </Link>
-            </div>
-          </div>
-
-          <div className="grid gap-2 sm:grid-cols-2 md:min-w-[330px]">
-            <button type="button" onClick={() => saveChoice(false)} className="min-h-11 rounded-xl border border-white/20 bg-white/5 px-4 text-xs font-extrabold text-white transition hover:border-white/30 hover:bg-white/10">
-              Rejeitar opcionais
-            </button>
-            <button type="button" onClick={() => saveChoice(true)} className="min-h-11 rounded-xl border border-teal-300 bg-teal-400 px-4 text-xs font-extrabold text-slate-950 transition hover:bg-teal-300">
-              Aceitar opcionais
-            </button>
-          </div>
-        </section>
-      )}
-
-      {!isOpen && (
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 left-4 z-[2147482990] inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-700 bg-slate-950 px-4 text-xs font-extrabold text-white shadow-xl transition hover:bg-slate-900"
-          aria-label="Gerir preferências de cookies"
-        >
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <section
+      className="fixed bottom-4 left-4 right-4 z-[2147483000] mx-auto grid max-w-6xl gap-5 rounded-2xl border border-white/15 bg-slate-950 p-5 text-white shadow-2xl md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-6"
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="cookie-banner-title"
+      aria-describedby="cookie-banner-description"
+    >
+      <div className="flex min-w-0 items-start gap-4">
+        <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-teal-300/20 bg-teal-400/10 text-teal-300 sm:flex" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M8.5 3.5a3.5 3.5 0 0 0 4.2 4.2A3.5 3.5 0 0 0 17 12a3.5 3.5 0 0 0 3.4 4.2A9 9 0 1 1 8.5 3.5Z" />
-            <circle cx="8" cy="13" r="1" /><circle cx="12" cy="17" r="1" />
+            <circle cx="8" cy="13" r="1" /><circle cx="12" cy="17" r="1" /><circle cx="7" cy="18" r=".8" />
           </svg>
-          Cookies
+        </span>
+        <div className="min-w-0">
+          <h2 id="cookie-banner-title" className="m-0 text-base font-extrabold tracking-tight sm:text-lg">A tua privacidade na NOXVELIA</h2>
+          <p id="cookie-banner-description" className="mt-2 max-w-3xl text-xs leading-6 text-slate-300 sm:text-sm">
+            Utilizamos armazenamento essencial para autenticação, segurança e preferências. Só carregamos serviços externos opcionais, incluindo apoio externo e publicidade Google, com a tua autorização. Podes rejeitá-los sem perder acesso à plataforma.
+          </p>
+          {consent && (
+            <p className="mt-2 text-xs font-semibold text-slate-400">
+              Escolha atual: serviços externos {consent.external ? 'ativos' : 'desativados'}.
+            </p>
+          )}
+          <Link className="mt-2 inline-flex text-xs font-bold text-teal-300 underline decoration-teal-300/50 underline-offset-4 hover:text-teal-200" to="/privacidade#cookies">
+            Consultar a política de cookies
+          </Link>
+        </div>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-2 md:min-w-[330px]">
+        <button type="button" onClick={() => saveChoice(false)} className="min-h-11 rounded-xl border border-white/20 bg-white/5 px-4 text-xs font-extrabold text-white transition hover:border-white/30 hover:bg-white/10">
+          Rejeitar opcionais
         </button>
-      )}
-    </>
+        <button type="button" onClick={() => saveChoice(true)} className="min-h-11 rounded-xl border border-teal-300 bg-teal-400 px-4 text-xs font-extrabold text-slate-950 transition hover:bg-teal-300">
+          Aceitar opcionais
+        </button>
+      </div>
+    </section>
   );
 }

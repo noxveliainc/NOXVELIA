@@ -22,9 +22,12 @@ import alertasRoutes from './routes/alertas.js';
 import analyticsRoutes from './routes/analytics.js';
 import sponsorsRoutes from './routes/sponsors.js';
 import systemRoutes from './routes/system.js';
+import partnershipsRoutes from './routes/partnerships.js';
 import { requestMetrics } from './middleware/metrics.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { verificarJwt } from './utils/jwt.js';
+import { runMigrations } from './migrations/runMigrations.js';
+import { iniciarPartnershipWorker } from './services/partnershipWorker.js';
 
 // 🌟 IMPORTAÇÃO DO MOTOR DO TEMPO (CRON)
 import { iniciarCronJobs } from './middleware/cron.js';
@@ -89,10 +92,12 @@ app.use(requestMetrics);
 // WEBHOOK ANTES DO JSON — obrigatório para o Stripe validar a assinatura
 // ─────────────────────────────────────────────────────────────
 app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+app.use('/api/partnerships/resend/webhook', express.raw({ type: 'application/json' }));
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 app.use((req, res, next) => {
+  if (Buffer.isBuffer(req.body)) return next();
   req.body = sanitize(req.body);
   req.query = sanitize(req.query);
   req.params = sanitize(req.params);
@@ -121,6 +126,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sponsors', sponsorsRoutes);
 app.use('/api/system', systemRoutes);
+app.use('/api/partnerships', partnershipsRoutes);
 
 app.get('/', (req, res) => res.status(200).json({ status: 'OK', mensagem: 'API NOXVELIA ativa!' }));
 
@@ -163,9 +169,11 @@ const iniciarServidor = async () => {
 
     await mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 10000 });
     console.log('✅ [DATABASE] MongoDB conectado com sucesso.');
+    await runMigrations();
 
     // 🌟 LIGA O MOTOR DO TEMPO (CRON)
     iniciarCronJobs();
+    iniciarPartnershipWorker();
 
     httpServer.listen(PORT, () => {
       console.log(`🚀 [SERVER] Motor ativo na porta ${PORT}`);

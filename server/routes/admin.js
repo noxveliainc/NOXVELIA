@@ -4,11 +4,13 @@ import Anuncio from '../models/Anuncio.js';
 import Pagamento from '../models/Pagamento.js';
 import { verificarToken, verificarAdmin } from '../middleware/auth.js';
 import { criarNotificacao } from '../controllers/notificacaoController.js';
+import adminPartnershipsRoutes from './adminPartnerships.js';
 
 const router = express.Router();
 
 router.use(verificarToken);
 router.use(verificarAdmin);
+router.use('/partnerships', adminPartnershipsRoutes);
 
 // 1. MÉTRICAS GLOBAIS E RECEITA
 router.get('/dashboard/stats', async (req, res) => {

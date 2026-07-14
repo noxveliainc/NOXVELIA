@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useEffect, useCallback, useRef } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
@@ -18,6 +18,13 @@ import { publishIntentState } from '../../utils/navigationState';
 import { useAuth } from '../../context/AuthContext';
 
 const TIPOLOGIAS = ['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'];
+const TIPOS_IMOVEL = [
+  { value: 'apartamento', label: 'Apartamento' },
+  { value: 'moradia', label: 'Moradia' },
+  { value: 'terreno', label: 'Terreno' },
+  { value: 'loja', label: 'Loja' },
+  { value: 'escritorio', label: 'Escritorio' },
+];
 const COMBUSTIVEIS = ['Gasolina', 'Diesel', 'Eléctrico', 'Híbrido', 'GPL'];
 const TRANSMISSAO = ['Manual', 'Automático'];
 
@@ -34,11 +41,17 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const { signed } = useAuth();
 
   const tipoSeguro = location.pathname.includes('carro') ? 'carro' : (tipoPadrao || 'imovel');
-  const getParam = (name) => seoParams?.get(name) || searchParams.get(name) || '';
+  const searchParamsKey = searchParams.toString();
   const seoParamsKey = seoParams?.toString() || '';
+  const parametrosRota = useMemo(() => ({
+    search: new URLSearchParams(searchParamsKey),
+    seo: seoParamsKey ? new URLSearchParams(seoParamsKey) : null,
+  }), [searchParamsKey, seoParamsKey]);
+  const getParam = useCallback((name) => parametrosRota.seo?.get(name) || parametrosRota.search.get(name) || '', [parametrosRota]);
   const marcaUrl = getParam('marca');
   const marcaInicial = tipoSeguro === 'carro' && MARCAS.includes(marcaUrl) ? marcaUrl : '';
-  const obterFiltrosDaRota = () => ({
+  const queryInicial = getParam('q');
+  const obterFiltrosDaRota = useCallback(() => ({
     tipo: tipoSeguro,
     precoMin: '',
     precoMax: getParam('precoMax'),
@@ -46,11 +59,12 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     cidade: getParam('cidade'),
     marca: marcaInicial,
     modelo: getParam('modelo'),
+    tiposImovel: dividirParamLista(getParam('tipoImovel')),
     tipologias: dividirParamLista(getParam('tipologia')),
     combustiveis: dividirParamLista(getParam('combustivel')),
     transmissao: dividirParamLista(getParam('transmissao')),
-  });
-  const filtrosIniciais = obterFiltrosDaRota();
+  }), [getParam, marcaInicial, tipoSeguro]);
+  const filtrosIniciais = useMemo(() => obterFiltrosDaRota(), [obterFiltrosDaRota]);
   const publicarState = publishIntentState(location, tipoSeguro === 'carro' ? '/carros' : '/imoveis');
 
   const [resultados, setResultados] = useState([]);
@@ -60,7 +74,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [error, setError] = useState(null);
   const [totalResultados, setTotalResultados] = useState(0);
   const [sort, setSort] = useState('relevancia');
-  const [searchQuery, setSearchQuery] = useState(getParam('q'));
+  const [searchQuery, setSearchQuery] = useState(queryInicial);
   const [temMais, setTemMais] = useState(false);
 
   const [sidebarMobileAberta, setSidebarMobileAberta] = useState(false);
@@ -110,6 +124,9 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
       if (filtrosAtuais.tipologias.length) {
         params.set('tipologia', filtrosAtuais.tipologias.join(','));
       }
+      if (filtrosAtuais.tiposImovel?.length) {
+        params.set('tipoImovel', filtrosAtuais.tiposImovel.join(','));
+      }
       if (filtrosAtuais.precoMax) {
         params.set('precoMax', filtrosAtuais.precoMax);
       }
@@ -122,9 +139,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         if (filtrosAtuais.combustiveis.length) params.set('combustivel', filtrosAtuais.combustiveis.join(','));
         if (filtrosAtuais.transmissao.length) params.set('transmissao', filtrosAtuais.transmissao.join(','));
       }
-      if (tipoFinal === 'imovel' && filtrosAtuais.tipologias.length) {
-        params.set('tipologia', filtrosAtuais.tipologias.join(','));
-      }
+      if (tipoFinal === 'imovel' && filtrosAtuais.tipologias.length) params.set('tipologia', filtrosAtuais.tipologias.join(','));
+      if (tipoFinal === 'imovel' && filtrosAtuais.tiposImovel?.length) params.set('tipoImovel', filtrosAtuais.tiposImovel.join(','));
 
       const { data } = await api.get(`/anuncios/pesquisa/mapa?${params.toString()}`);
       setDadosMapa(Array.isArray(data) ? data : []);
@@ -163,6 +179,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
       }
 
       if (tipoFinal === 'imovel' && filtrosAtuais.tipologias.length) params.set('tipologia', filtrosAtuais.tipologias.join(','));
+      if (tipoFinal === 'imovel' && filtrosAtuais.tiposImovel?.length) params.set('tipoImovel', filtrosAtuais.tiposImovel.join(','));
 
       const { data } = await api.get(`/anuncios?${params.toString()}`);
       const listaAnuncios = data.anuncios || (Array.isArray(data) ? data : []);
@@ -179,15 +196,12 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   }, [tipoPadrao, location.pathname]);
 
   useEffect(() => {
-    const filtrosIniciais = obterFiltrosDaRota();
-    const queryInicial = getParam('q');
-
     filtrosRef.current = filtrosIniciais;
     setFiltros(filtrosIniciais);
     setSidebarMobileAberta(false); setTemMais(false); setResultados([]); setSearchQuery(queryInicial); buscaRef.current = queryInicial; paginaRef.current = 1;
     const timer = setTimeout(() => { puxarDadosServidor(1, false, tipoSeguro); }, 50);
     return () => clearTimeout(timer);
-  }, [tipoSeguro, marcaInicial, location.search, seoParamsKey, puxarDadosServidor]);
+  }, [tipoSeguro, filtrosIniciais, queryInicial, puxarDadosServidor]);
 
   useEffect(() => {
     if (sortAnteriorRef.current === sort) return;
@@ -238,6 +252,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     filtros.precoMax,
     filtros.marca,
     filtros.modelo,
+    filtros.tiposImovel,
     filtros.tipologias,
     filtros.combustiveis,
     filtros.transmissao,
@@ -280,6 +295,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     filtros.cidade,
     filtros.marca,
     filtros.modelo,
+    ...((filtros.tiposImovel || []).map(tipo => TIPOS_IMOVEL.find(item => item.value === tipo)?.label || tipo)),
     ...filtros.tipologias,
     ...filtros.combustiveis,
     ...filtros.transmissao,
@@ -295,6 +311,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
       cidade: '',
       marca: '',
       modelo: '',
+      tiposImovel: [],
       tipologias: [],
       combustiveis: [],
       transmissao: [],
@@ -327,6 +344,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           cidade: filtros.cidade,
           marca: filtros.marca,
           modelo: filtros.modelo,
+          tipoImovel: filtros.tiposImovel,
           tipologias: filtros.tipologias,
           combustiveis: filtros.combustiveis,
           transmissao: filtros.transmissao,
@@ -646,6 +664,21 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           .pesquisa-command-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
 
+        @media (max-width: 640px) {
+          .pesquisa-layout { padding: 18px 10px 34px; gap: 14px; }
+          .pesquisa-sidebar { width: min(92vw, 380px); padding: 20px; }
+          .pesquisa-search-row { display: grid; grid-template-columns: 1fr; padding: 8px; }
+          .pesquisa-mobile-filter-btn { min-height: 44px; justify-content: center; }
+          .pesquisa-topbar { align-items: stretch; }
+          .pesquisa-results-count { justify-content: center; width: 100%; box-sizing: border-box; }
+          .pesquisa-view-tools { width: 100%; display: grid; grid-template-columns: 1fr; }
+          .pesquisa-view-switch { width: 100%; box-sizing: border-box; }
+          .pesquisa-view-switch button { flex: 1; justify-content: center; }
+          .pesquisa-alert-btn, .pesquisa-sort { width: 100%; justify-content: center; min-height: 44px; box-sizing: border-box; }
+          .pesquisa-grid { gap: 16px; }
+          .pesquisa-map-shell { height: calc(100vh - 220px); min-height: 420px; border-radius: 14px; }
+        }
+
         .pesquisa-empty { text-align: center; padding: 100px 20px; color: var(--nx-text-sub); }
         .pesquisa-empty-action { margin-top: 18px; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border-radius: 12px; background: ${accent}; color: #020617; text-decoration: none; font-size: 13px; font-weight: 900; }
         .pesquisa-empty-action:hover { filter: brightness(0.96); }
@@ -721,6 +754,15 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                 </div>
               </>
             ) : (
+              <>
+              <div className="pesquisa-filter-group">
+                <div className="pesquisa-filter-title">Tipo de imovel</div>
+                <div className="pesquisa-tags">
+                  {TIPOS_IMOVEL.map(tipo => (
+                    <button key={tipo.value} type="button" className={`pesquisa-tag ${(filtros.tiposImovel || []).includes(tipo.value) ? 'active' : ''}`} onClick={() => toggleTag('tiposImovel', tipo.value)}>{tipo.label}</button>
+                  ))}
+                </div>
+              </div>
               <div className="pesquisa-filter-group">
                 <div className="pesquisa-filter-title">Tipologias disponíveis</div>
                 <div className="pesquisa-tags">
@@ -729,6 +771,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                   ))}
                 </div>
               </div>
+              </>
             )}
             <button type="button" className="pesquisa-apply-btn" onClick={ejecutarFiltrosManuais}>Aplicar Filtros</button>
           </aside>

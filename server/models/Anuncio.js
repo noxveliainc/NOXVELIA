@@ -52,17 +52,25 @@ const anuncioSchema = new mongoose.Schema({
   aceitaRetoma: { type: Boolean, default: false }, 
   
   imovel: {
-    tipologia: { type: String, enum: ['T0','T1','T2','T3','T4','T5+'] },
-    tipoImovel: { type: String, enum: ['apartamento','moradia','terreno','comercial','garagem'] },
+    tipologia: { type: String, enum: ['-','T0','T1','T2','T3','T4','T5+'] },
+    tipoImovel: { type: String, enum: ['apartamento','moradia','terreno','loja','escritorio','comercial','garagem'] },
     area: Number,
+    areaTerreno: Number,
     quartos: Number,
     casasBanho: Number,
     garagem: Boolean,
     jardim: Boolean,
     piscina: Boolean,
+    varanda: Boolean,
+    elevador: Boolean,
+    arrecadacao: Boolean,
+    mobilado: Boolean,
+    condominio: Boolean,
     andar: Number,
     ano: Number,
+    anoConstrucao: Number,
     estado: { type: String, enum: ['novo','usado','para_remodelar'] },
+    estadoConservacao: { type: String, enum: ['Novo','Usado','Renovado','Em construção','Ruína','Para remodelar'] },
     certificadoEnergetico: { type: String, enum: ['A+','A','B','B-','C','D','E','F', 'Isento'] }
   },
   

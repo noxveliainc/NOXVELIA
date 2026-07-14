@@ -38,11 +38,13 @@ const limparFiltros = (tipo, filtros = {}) => {
   }
 
   const tipologias = paraArrayLimpa(filtros.tipologias || filtros.tipologia);
+  const tiposImovel = paraArrayLimpa(filtros.tiposImovel || filtros.tipoImovel);
   return {
     ...base,
     tipologia: tipologias[0],
     tipologias,
-    tipoImovel: String(filtros.tipoImovel || '').trim() || undefined,
+    tipoImovel: tiposImovel[0],
+    tiposImovel,
   };
 };
 
@@ -51,6 +53,7 @@ const gerarNome = (tipo, filtros = {}) => {
     tipo === 'carro' ? 'Drive' : 'Estate',
     filtros.marca,
     filtros.modelo,
+    filtros.tiposImovel?.join(', '),
     filtros.tipologias?.join(', '),
     filtros.distrito,
     filtros.cidade,

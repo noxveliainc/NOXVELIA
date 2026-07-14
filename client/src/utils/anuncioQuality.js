@@ -18,7 +18,21 @@ export function calcularQualidadeFormulario(form = {}, fotos = [], equipamento =
 
   const camposTecnicos = isCarro
     ? [form.marca, form.modelo, form.ano, form.km, form.combustivel, form.transmissao, form.cilindrada, form.potencia, form.vin]
-    : [form.tipoImovel, form.tipologia, form.area, form.quartos, form.casasBanho, form.certEnergetico, form.garagem];
+    : [
+        form.tipoImovel,
+        form.tipologia,
+        form.area,
+        form.areaTerreno,
+        form.quartos,
+        form.casasBanho,
+        form.certEnergetico,
+        form.garagem,
+        form.anoConstrucao,
+        form.estado,
+        form.piscina,
+        form.jardim,
+        form.elevador,
+      ];
 
   const tecnicosPreenchidos = camposTecnicos.filter((valor) => valor !== undefined && valor !== null && valor !== '').length;
   const extrasScore = Math.min(2, (extras >= 5 ? 0.8 : extras >= 2 ? 0.5 : extras >= 1 ? 0.25 : 0) + Math.min(1.2, tecnicosPreenchidos * 0.18));
@@ -48,6 +62,7 @@ export function calcularQualidadeFormulario(form = {}, fotos = [], equipamento =
   if (!form.cidade || !form.distrito) sugestoes.push('Completa distrito e cidade para aparecer melhor na pesquisa.');
   if (isCarro && !form.vin) sugestoes.push('Se tiveres VIN, adiciona-o para aumentar a confianca.');
   if (!isCarro && !form.area) sugestoes.push('Indica a area para facilitar a comparacao.');
+  if (!isCarro && extras < 3) sugestoes.push('Separa extras como piscina, varanda, elevador ou jardim.');
   if (!extras) sugestoes.push(isCarro ? 'Adiciona equipamento relevante.' : 'Adiciona caracteristicas do imovel.');
 
   return {

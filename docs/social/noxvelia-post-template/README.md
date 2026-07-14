@@ -1,17 +1,19 @@
 # Template de post NOXVELIA
 
-Este template foi feito para reutilizar várias vezes: manténs a moldura, a logo e a identidade visual da NOXVELIA, e mudas só a frase ou a imagem central.
+Template reutilizavel para gerar posts quadrados da NOXVELIA com aspeto profissional.
+O centro fica livre: podes usar so texto, uma imagem, um recorte, um produto, uma frase, ou qualquer outro elemento sem ficar preso a uma moldura de foto.
 
 ## Como mudar
 
 1. Edita `post-config.json`.
-2. Para mudar a frase, altera `phrase` e, se quiseres, `supportingLine`.
-3. Para mudar a imagem do meio, coloca uma imagem nova em `assets/` e altera `middleImage`.
-4. Exporta de novo:
+2. Para mudar a frase de cima, altera `topPhrase`.
+3. Para mudar a linha por baixo da marca, altera `brandLine`.
+4. O centro fica vazio por defeito.
+5. Se quiseres colocar algo no centro pelo renderizador, mete o ficheiro em `assets/` e define `contentAsset`, por exemplo `"assets/minha-imagem.png"`.
+6. Exporta de novo:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\render-post.ps1
 ```
 
 O ficheiro pronto para publicar fica em `output/noxvelia-post.png`.
-

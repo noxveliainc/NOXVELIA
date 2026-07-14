@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import PartnershipEmails from './PartnershipEmails';
 
 import { Icon } from '@mdi/react';
 import { 
@@ -359,6 +360,7 @@ export default function AdminDashboard() {
             { id: 'visao-geral', label: 'Visão geral', icon: <Icon path={mdiViewDashboardOutline} size={0.7} /> },
             { id: 'contas', label: 'Gestão & Auditoria', icon: <Icon path={mdiAccountMultiple} size={0.7} />, count: utilizadores.length },
             { id: 'anuncios', label: 'Moderação de Anúncios', icon: <Icon path={mdiFileDocumentOutline} size={0.7} />, count: anuncios.length },
+            { id: 'parcerias', label: 'Emails de Parcerias', icon: <Icon path={mdiEmailOutline} size={0.7} /> },
           ].map(tab => {
             const isActive = activeTab === tab.id;
             return (
@@ -672,6 +674,10 @@ export default function AdminDashboard() {
                 </tbody>
               </table>
             </>
+          )}
+
+          {activeTab === 'parcerias' && (
+            <PartnershipEmails colors={COLORS} fonts={{ display: FONT_DISPLAY, body: FONT_BODY, mono: FONT_MONO }} />
           )}
         </div>
 
