@@ -245,7 +245,7 @@ h1, h2, h3, h4 {
 }
 
 .dark .ano-page {
-  background: linear-gradient(180deg, #020617 0%, #0f172a 38%, #020617 100%) !important;
+  background: #020617 !important;
   color: #f8fafc !important;
 }
 
@@ -310,10 +310,7 @@ h1, h2, h3, h4 {
 }
 
 .dark .lp-hero {
-  background:
-    radial-gradient(circle at 8% 14%, rgba(198, 168, 106, 0.14), transparent 28%),
-    radial-gradient(circle at 92% 88%, rgba(42, 193, 180, 0.16), transparent 28%),
-    linear-gradient(180deg, #0f1f24 0%, #071317 100%) !important;
+  background: #071317 !important;
 }
 
 .dark .lp-quick-section,
@@ -323,25 +320,19 @@ h1, h2, h3, h4 {
 .dark .lp-brands-section,
 .dark .lp-popular-section,
 .dark .lp-cv-section {
-  background:
-    radial-gradient(circle at 90% 12%, rgba(42, 193, 180, 0.13), transparent 26%),
-    #071317 !important;
+  background: #071317 !important;
   border-color: rgba(148, 163, 184, 0.16) !important;
 }
 
 .dark .lp-quick-section,
 .dark .lp-promo-section {
-  background:
-    radial-gradient(circle at 10% 0%, rgba(42, 193, 180, 0.11), transparent 28%),
-    #071317 !important;
+  background: #071317 !important;
 }
 
 .dark .lp-shortcuts-section,
 .dark .lp-popular-section,
 .dark .lp-guides-section {
-  background:
-    radial-gradient(circle at 92% 12%, rgba(62, 207, 142, 0.12), transparent 26%),
-    linear-gradient(180deg, #0b1b20 0%, #071317 100%) !important;
+  background: #0b1b20 !important;
 }
 
 .dark .lp-brand-card,
@@ -365,9 +356,7 @@ h1, h2, h3, h4 {
 
 .dark .lp-favorites-strip,
 .dark .lp-cv-panel {
-  background:
-    linear-gradient(135deg, rgba(42, 193, 180, 0.1), rgba(198, 168, 106, 0.07)),
-    rgba(15, 31, 36, 0.94) !important;
+  background: rgba(15, 31, 36, 0.94) !important;
 }
 
 .dark .lp-promo-overlay,

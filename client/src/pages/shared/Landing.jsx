@@ -2,21 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
 import SponsorBanner from '../../components/SponsorBanner';
-import { Icon } from '@mdi/react';
-import {
-  mdiArrowRight,
-  mdiCarSports,
-  mdiCheckCircleOutline,
-  mdiChevronLeft,
-  mdiChevronRight,
-  mdiGasStation,
-  mdiHomeCityOutline,
-  mdiMapMarkerOutline,
-  mdiOpenInNew,
-  mdiPlus,
-  mdiRulerSquare,
-  mdiShieldCheckOutline,
-} from '@mdi/js';
 import api from '../../services/api';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS } from '../../data/localizacoes';
@@ -83,6 +68,29 @@ const slugMarca = (marca) => marca
   .replace(/^-|-$/g, '');
 
 const logoMarca = (marca) => `/marcas/${slugMarca(marca)}.${marca === 'Jaecoo' ? 'svg' : 'png'}`;
+
+const ICON_PATHS = {
+  arrow: 'M5 12h14m-6-6 6 6-6 6',
+  car: 'M4 15v-3l2-5h12l2 5v3M6 15h12M7 18h.01M17 18h.01',
+  check: 'M5 12l4 4L19 6',
+  estate: 'M4 11l8-6 8 6v8H4v-8zM9 19v-5h6v5',
+  fuel: 'M7 20V5h7v15M7 9h7m3-1 2 2v7a2 2 0 0 1-2 2h-1',
+  location: 'M12 21s6-5.2 6-11a6 6 0 0 0-12 0c0 5.8 6 11 6 11zm0-8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
+  open: 'M8 8h8v8M16 8 7 17M5 5h14v14H5z',
+  plus: 'M12 5v14M5 12h14',
+  shield: 'M12 3l7 3v5c0 5-3.1 8.3-7 10-3.9-1.7-7-5-7-10V6l7-3zm-3 9 2 2 4-5',
+  area: 'M5 5h14v14H5zM9 5v14M5 9h14',
+  left: 'M15 6l-6 6 6 6',
+  right: 'M9 6l6 6-6 6',
+};
+
+function SvgIcon({ name, size = 16 }) {
+  return (
+    <svg className="lp-svg-icon" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d={ICON_PATHS[name]} />
+    </svg>
+  );
+}
 
 const iniciaisMarca = (marca) => marca
   .split(/[\s&-]+/)
@@ -237,11 +245,11 @@ export default function Landing() {
           <span className="lp-example-price">{formatarMoeda(anuncio.preco)}</span>
           <span className="lp-example-title">{anuncio.titulo}</span>
           <span className="lp-example-meta">
-            <Icon path={isCarro ? mdiGasStation : mdiRulerSquare} size={0.58} />
+            <SvgIcon name={isCarro ? 'fuel' : 'area'} size={14} />
             {detalhe || (isCarro ? 'Dados técnicos disponíveis' : 'Detalhes do imóvel')}
           </span>
           <span className="lp-example-location">
-            <Icon path={mdiMapMarkerOutline} size={0.58} />
+            <SvgIcon name="location" size={14} />
             {anuncio.localizacao?.cidade || 'Portugal'}
           </span>
         </span>
@@ -265,7 +273,7 @@ export default function Landing() {
         <strong>{erroExemplos ? 'A seleção semanal está a ser atualizada.' : `Descobre todas as oportunidades em ${tipo}.`}</strong>
         <span>{erroExemplos ? 'Entretanto, encontra todos os anúncios na pesquisa completa.' : 'Explora a pesquisa e encontra o que combina contigo.'}</span>
         <button type="button" className="lp-column-link" onClick={() => navigate(rota)}>
-          Explorar {tipo} <Icon path={mdiArrowRight} size={0.58} />
+          Explorar {tipo} <SvgIcon name="arrow" size={14} />
         </button>
       </div>
     );
@@ -273,7 +281,7 @@ export default function Landing() {
 
   return (
     <div className="lp-root">
-      <Seo title="Noxvelia — Carros e imóveis em Portugal" description="Encontra, compara e publica anúncios de carros e imóveis em Portugal na Noxvelia." path="/" jsonLd={[{ '@context': 'https://schema.org', '@type': 'Organization', name: 'Noxvelia', url: 'https://www.noxvelia.com', logo: 'https://www.noxvelia.com/logo-noxvelia.png' }, { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Noxvelia', url: 'https://www.noxvelia.com' }]} />
+      <Seo title="Noxvelia | Carros e imóveis em Portugal" description="Encontra, compara e publica anúncios de carros e imóveis em Portugal na Noxvelia." path="/" jsonLd={[{ '@context': 'https://schema.org', '@type': 'Organization', name: 'Noxvelia', url: 'https://www.noxvelia.com', logo: 'https://www.noxvelia.com/logo-noxvelia.png' }, { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Noxvelia', url: 'https://www.noxvelia.com' }]} />
       <style>{`
         .lp-root,
         .lp-root * {
@@ -314,10 +322,7 @@ export default function Landing() {
         .lp-hero {
           position: relative;
           padding: 30px 0 58px;
-          background:
-            radial-gradient(circle at 8% 14%, rgba(198, 168, 106, 0.21), transparent 28%),
-            radial-gradient(circle at 92% 88%, rgba(42, 193, 180, 0.16), transparent 28%),
-            linear-gradient(180deg, #f7f5ee 0%, #ecebe4 100%);
+          background: var(--lp-bg);
         }
 
         .lp-hero-card {
@@ -329,7 +334,6 @@ export default function Landing() {
           border-radius: 32px;
           background: var(--lp-ink);
           box-shadow: 0 36px 90px -54px rgba(8, 33, 38, 0.72);
-          animation: lp-rise 0.65s ease both;
         }
 
         .lp-hero-content {
@@ -340,9 +344,7 @@ export default function Landing() {
           justify-content: center;
           padding: clamp(38px, 4vw, 54px);
           color: #fff;
-          background:
-            radial-gradient(circle at 8% 8%, rgba(42, 193, 180, 0.18), transparent 34%),
-            var(--lp-ink);
+          background: var(--lp-ink);
         }
 
         .lp-hero-content::after {
@@ -353,7 +355,7 @@ export default function Landing() {
           bottom: 0;
           width: 112px;
           z-index: -1;
-          background: linear-gradient(90deg, var(--lp-ink), transparent);
+          background: transparent;
           pointer-events: none;
         }
 
@@ -424,7 +426,7 @@ export default function Landing() {
         }
 
         .lp-btn:hover {
-          transform: translateY(-2px);
+          border-color: rgba(255, 255, 255, 0.28);
         }
 
         .lp-btn-drive {
@@ -448,14 +450,13 @@ export default function Landing() {
           position: relative;
           min-width: 0;
           background: #b8d4cd;
-          animation: lp-fade 0.8s 0.08s ease both;
         }
 
         .lp-hero-media::after {
           content: "";
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, transparent 56%, rgba(6, 28, 32, 0.2));
+          background: transparent;
           pointer-events: none;
         }
 
@@ -533,9 +534,7 @@ export default function Landing() {
           position: relative;
           z-index: 4;
           padding: 0 0 72px;
-          background:
-            radial-gradient(circle at 8% 0%, rgba(42, 193, 180, 0.13), transparent 28%),
-            var(--lp-stone);
+          background: var(--lp-stone);
         }
 
         .lp-quick-card {
@@ -674,8 +673,7 @@ export default function Landing() {
         }
 
         .lp-promo-link:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 30px 70px -48px rgba(8, 33, 38, 0.7);
+          border-color: rgba(8, 33, 38, 0.22);
         }
 
         .lp-promo-link img {
@@ -704,9 +702,7 @@ export default function Landing() {
         }
 
         .lp-shortcuts-section {
-          background:
-            radial-gradient(circle at 92% 12%, rgba(42, 193, 180, 0.12), transparent 24%),
-            #f8f6ef;
+          background: #f8f6ef;
           border-top: 1px solid rgba(8, 33, 38, 0.08);
           border-bottom: 1px solid rgba(8, 33, 38, 0.08);
         }
@@ -758,7 +754,6 @@ export default function Landing() {
         }
 
         .lp-chip:hover {
-          transform: translateY(-2px);
           color: var(--lp-ink);
           border-color: rgba(42, 193, 180, 0.52);
         }
@@ -817,9 +812,7 @@ export default function Landing() {
           padding: 22px;
           border: 1px solid rgba(8, 33, 38, 0.1);
           border-radius: 19px;
-          background:
-            linear-gradient(115deg, rgba(42, 193, 180, 0.13), rgba(198, 168, 106, 0.12)),
-            #fff;
+          background: #fff;
         }
 
         .lp-favorites-strip h3 {
@@ -882,9 +875,7 @@ export default function Landing() {
 
         .lp-brands-section {
           overflow: hidden;
-          background:
-            linear-gradient(115deg, rgba(255, 255, 255, 0.65), transparent 54%),
-            #f3f0e6;
+          background: #f3f0e6;
         }
 
         .lp-brand-controls {
@@ -907,7 +898,6 @@ export default function Landing() {
         }
 
         .lp-round-btn:hover {
-          transform: translateY(-2px);
           background: #fff;
         }
 
@@ -949,10 +939,8 @@ export default function Landing() {
         }
 
         .lp-brand-card:hover {
-          transform: translateY(-3px);
           border-color: rgba(42, 193, 180, 0.5);
           background: #fff;
-          box-shadow: 0 18px 38px -28px rgba(8, 33, 38, 0.5);
         }
 
         .lp-brand-mark {
@@ -996,9 +984,7 @@ export default function Landing() {
         }
 
         .lp-popular-section {
-          background:
-            radial-gradient(circle at 90% 12%, rgba(62, 207, 142, 0.12), transparent 24%),
-            #e5ebe5;
+          background: #e5ebe5;
           border-top: 1px solid rgba(8, 33, 38, 0.08);
           border-bottom: 1px solid rgba(8, 33, 38, 0.08);
         }
@@ -1019,12 +1005,9 @@ export default function Landing() {
           box-shadow: 0 25px 65px -48px rgba(8, 33, 38, 0.55);
         }
 
-        .lp-example-column.drive {
-          box-shadow: inset 0 4px 0 var(--lp-drive), 0 25px 65px -48px rgba(8, 33, 38, 0.55);
-        }
-
+        .lp-example-column.drive,
         .lp-example-column.estate {
-          box-shadow: inset 0 4px 0 var(--lp-estate), 0 25px 65px -48px rgba(8, 33, 38, 0.55);
+          border-color: rgba(8, 33, 38, 0.14);
         }
 
         .lp-column-top {
@@ -1106,9 +1089,7 @@ export default function Landing() {
         }
 
         .lp-example-card:hover {
-          transform: translateY(-3px);
           border-color: rgba(8, 33, 38, 0.22);
-          box-shadow: 0 18px 38px -28px rgba(8, 33, 38, 0.6);
         }
 
         .lp-example-img {
@@ -1128,7 +1109,7 @@ export default function Landing() {
         }
 
         .lp-example-card:hover .lp-example-img img {
-          transform: scale(1.025);
+          opacity: 0.96;
         }
 
         .lp-example-no-photo {
@@ -1220,13 +1201,10 @@ export default function Landing() {
           border: 3px solid rgba(42, 193, 180, 0.2);
           border-top-color: var(--lp-drive);
           border-radius: 50%;
-          animation: lp-spin 0.8s linear infinite;
         }
 
         .lp-cv-section {
-          background:
-            radial-gradient(circle at 4% 92%, rgba(198, 168, 106, 0.18), transparent 25%),
-            #f1ede3;
+          background: #f1ede3;
         }
 
         .lp-cv-card {
@@ -1240,9 +1218,7 @@ export default function Landing() {
           color: #fff;
           border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 28px;
-          background:
-            radial-gradient(circle at 92% 10%, rgba(42, 193, 180, 0.22), transparent 31%),
-            linear-gradient(135deg, #071b20 0%, #0b3035 100%);
+          background: #071b20;
           box-shadow: 0 38px 86px -58px rgba(8, 33, 38, 0.8);
         }
 
@@ -1361,9 +1337,7 @@ export default function Landing() {
         .lp-closing-section {
           position: relative;
           padding: 76px 0;
-          background:
-            radial-gradient(circle at 12% 10%, rgba(42, 193, 180, 0.16), transparent 26%),
-            var(--lp-ink);
+          background: var(--lp-ink);
         }
 
         .lp-closing-card {
@@ -1375,9 +1349,7 @@ export default function Landing() {
           color: #fff;
           border: 1px solid rgba(255, 255, 255, 0.12);
           border-radius: 26px;
-          background:
-            linear-gradient(115deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.015)),
-            #0a282e;
+          background: #0a282e;
         }
 
         .lp-closing-card .lp-eyebrow {
@@ -1405,8 +1377,8 @@ export default function Landing() {
         }
 
         @keyframes lp-rise {
-          from { opacity: 0; transform: translateY(14px); }
-          to { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
         @keyframes lp-fade {
@@ -1652,6 +1624,233 @@ export default function Landing() {
             transition-duration: 0.01ms !important;
           }
         }
+
+        .lp-root {
+          --lp-ink: #102326;
+          --lp-ink-soft: #394f54;
+          --lp-muted: #617277;
+          --lp-border: #d6dedb;
+          --lp-border-strong: #b8c5c1;
+          --lp-surface: #ffffff;
+          --lp-surface-soft: #f4f6f2;
+          --lp-bg: #eceee8;
+          --lp-bg-alt: #f6f7f3;
+          --lp-dark: #0d2327;
+          --lp-drive: #24b8ab;
+          --lp-estate: #2f8f63;
+          --lp-gold: #9d7b3f;
+          background: var(--lp-bg) !important;
+        }
+
+        .lp-svg-icon {
+          flex: 0 0 auto;
+          display: inline-block;
+          fill: none;
+          stroke: currentColor;
+          stroke-width: 1.9;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+          vertical-align: middle;
+        }
+
+        .lp-root :where(h1, h2, h3, .lp-title, .lp-quick-title, .lp-column-title, .lp-example-price) {
+          letter-spacing: 0 !important;
+        }
+
+        .lp-root :where(.lp-hero, .lp-quick-section, .lp-promo-section, .lp-brands-section, .lp-shortcuts-section, .lp-guides-section, .lp-popular-section, .lp-cv-section, .lp-closing-section) {
+          background: var(--lp-bg) !important;
+          border: 0 !important;
+        }
+
+        .lp-root :where(.lp-brands-section, .lp-shortcuts-section, .lp-guides-section, .lp-cv-section) {
+          background: var(--lp-bg-alt) !important;
+        }
+
+        .lp-root :where(.lp-hero-card, .lp-cv-card, .lp-closing-card) {
+          border-radius: 18px !important;
+          box-shadow: none !important;
+          animation: none !important;
+        }
+
+        .lp-hero-card {
+          border: 1px solid #18373d !important;
+          background: var(--lp-dark) !important;
+        }
+
+        .lp-hero-content,
+        .lp-cv-card,
+        .lp-closing-card {
+          background: var(--lp-dark) !important;
+        }
+
+        .lp-hero-content::after,
+        .lp-hero-media::after,
+        .lp-cv-card::before {
+          display: none !important;
+        }
+
+        .lp-hero-media {
+          animation: none !important;
+          background: #d7dfdc !important;
+        }
+
+        .lp-kicker,
+        .lp-eyebrow {
+          letter-spacing: 0.08em !important;
+        }
+
+        .lp-kicker {
+          color: #dff8f5 !important;
+          border: 1px solid rgba(255, 255, 255, 0.18) !important;
+          border-radius: 8px !important;
+          background: rgba(36, 184, 171, 0.16) !important;
+        }
+
+        .lp-hero h1 span {
+          color: #7fded6 !important;
+        }
+
+        .lp-btn,
+        .lp-search-submit,
+        .lp-type-tab,
+        .lp-chip,
+        .lp-round-btn,
+        .lp-column-link {
+          transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease !important;
+        }
+
+        .lp-btn:hover,
+        .lp-promo-link:hover,
+        .lp-chip:hover,
+        .lp-brand-card:hover,
+        .lp-round-btn:hover,
+        .lp-example-card:hover {
+          transform: none !important;
+          box-shadow: none !important;
+        }
+
+        .lp-btn,
+        .lp-search-submit {
+          border-radius: 8px !important;
+          box-shadow: none !important;
+        }
+
+        .lp-btn-drive,
+        .lp-search-submit {
+          color: #062326 !important;
+          background: var(--lp-drive) !important;
+        }
+
+        .lp-btn-estate {
+          color: #ffffff !important;
+          border-color: rgba(255, 255, 255, 0.22) !important;
+          background: transparent !important;
+        }
+
+        .lp-btn-estate:hover {
+          background: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .lp-hero-photo-label,
+        .lp-promo-overlay,
+        .lp-example-weekly {
+          border-radius: 8px !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+        }
+
+        .lp-trust-item,
+        .lp-quick-card,
+        .lp-promo-link,
+        .lp-shortcut-group,
+        .lp-guide-card,
+        .lp-favorites-strip,
+        .lp-example-column,
+        .lp-example-card,
+        .lp-example-state,
+        .lp-cv-panel,
+        .lp-cv-code,
+        .lp-brand-card,
+        .lp-type-tabs {
+          border: 1px solid var(--lp-border) !important;
+          border-radius: 12px !important;
+          background: var(--lp-surface) !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+        }
+
+        .lp-trust-icon,
+        .lp-column-icon {
+          border-radius: 8px !important;
+          background: var(--lp-surface-soft) !important;
+        }
+
+        .drive .lp-column-icon,
+        .estate .lp-column-icon,
+        .lp-trust-icon {
+          color: var(--lp-drive) !important;
+        }
+
+        .lp-example-column.drive,
+        .lp-example-column.estate {
+          box-shadow: none !important;
+        }
+
+        .lp-example-img img {
+          transition: none !important;
+        }
+
+        .lp-example-card:hover .lp-example-img img {
+          transform: none !important;
+        }
+
+        .lp-state-loader {
+          animation: none !important;
+          border-color: var(--lp-border-strong) !important;
+          border-top-color: var(--lp-drive) !important;
+        }
+
+        .lp-brand-card {
+          border-radius: 10px !important;
+        }
+
+        .lp-brand-scroll {
+          scrollbar-color: var(--lp-border-strong) transparent !important;
+        }
+
+        .lp-cv-card {
+          border: 1px solid #18373d !important;
+        }
+
+        .lp-cv-panel {
+          color: var(--lp-ink) !important;
+        }
+
+        .lp-closing-card {
+          border: 1px solid #18373d !important;
+        }
+
+        @media (max-width: 700px) {
+          .lp-root :where(.lp-hero-card, .lp-cv-card, .lp-closing-card) {
+            border-radius: 14px !important;
+          }
+
+          .lp-trust-item,
+          .lp-quick-card,
+          .lp-promo-link,
+          .lp-shortcut-group,
+          .lp-guide-card,
+          .lp-favorites-strip,
+          .lp-example-column,
+          .lp-example-card,
+          .lp-example-state,
+          .lp-cv-panel,
+          .lp-cv-code,
+          .lp-brand-card,
+          .lp-type-tabs {
+            border-radius: 10px !important;
+          }
+        }
       `}</style>
 
       <NavbarLanding />
@@ -1662,7 +1861,7 @@ export default function Landing() {
             <div className="lp-hero-card">
               <div className="lp-hero-content">
                 <span className="lp-kicker">
-                  <Icon path={mdiCheckCircleOutline} size={0.63} /> O teu próximo passo começa aqui
+                  <SvgIcon name="check" size={15} /> O teu próximo passo começa aqui
                 </span>
                 <h1 id="lp-hero-title">
                   O próximo carro. <span>A próxima casa.</span> Uma escolha mais clara.
@@ -1672,10 +1871,10 @@ export default function Landing() {
                 </p>
                 <div className="lp-actions">
                   <Link className="lp-btn lp-btn-drive" to="/carros">
-                    Descobrir carros <Icon path={mdiArrowRight} size={0.76} />
+                    Descobrir carros <SvgIcon name="arrow" size={17} />
                   </Link>
                   <Link className="lp-btn lp-btn-estate" to="/imoveis">
-                    Explorar imóveis <Icon path={mdiHomeCityOutline} size={0.76} />
+                    Explorar imóveis <SvgIcon name="estate" size={17} />
                   </Link>
                 </div>
               </div>
@@ -1695,15 +1894,15 @@ export default function Landing() {
 
             <div className="lp-trust-bar" aria-label="Vantagens da Noxvelia">
               <div className="lp-trust-item">
-                <span className="lp-trust-icon"><Icon path={mdiCheckCircleOutline} size={0.72} /></span>
+                <span className="lp-trust-icon"><SvgIcon name="check" size={16} /></span>
                 Anúncios reais, organizados para decidir melhor
               </div>
               <div className="lp-trust-item">
-                <span className="lp-trust-icon"><Icon path={mdiMapMarkerOutline} size={0.72} /></span>
+                <span className="lp-trust-icon"><SvgIcon name="location" size={16} /></span>
                 Pesquisa em lista ou mapa em todo o país
               </div>
               <div className="lp-trust-item">
-                <span className="lp-trust-icon"><Icon path={mdiShieldCheckOutline} size={0.72} /></span>
+                <span className="lp-trust-icon"><SvgIcon name="shield" size={16} /></span>
                 Mais contexto antes de cada contacto
               </div>
             </div>
@@ -1724,14 +1923,14 @@ export default function Landing() {
                     className={`lp-type-tab ${pesquisaRapida.tipo === 'carro' ? 'active' : ''}`}
                     onClick={() => atualizarPesquisaRapida('tipo', 'carro')}
                   >
-                    <Icon path={mdiCarSports} size={0.62} /> Drive
+                    <SvgIcon name="car" size={15} /> Drive
                   </button>
                   <button
                     type="button"
                     className={`lp-type-tab ${pesquisaRapida.tipo === 'imovel' ? 'active' : ''}`}
                     onClick={() => atualizarPesquisaRapida('tipo', 'imovel')}
                   >
-                    <Icon path={mdiHomeCityOutline} size={0.62} /> Estate
+                    <SvgIcon name="estate" size={15} /> Estate
                   </button>
                 </div>
               </div>
@@ -1811,11 +2010,11 @@ export default function Landing() {
             <div className="lp-promo-grid">
               <Link className="lp-promo-link" to={publicarTo} state={publicarState}>
                 <img src="/social/noxvelia-drive-page-card-com.png" alt="Anunciar carro grátis na Noxvelia Drive" loading="lazy" />
-                <span className="lp-promo-overlay">Publicar carro <Icon path={mdiArrowRight} size={0.62} /></span>
+                <span className="lp-promo-overlay">Publicar carro <SvgIcon name="arrow" size={15} /></span>
               </Link>
               <Link className="lp-promo-link" to={publicarTo} state={publicarState}>
                 <img src="/social/noxvelia-estate-page-card-com.png" alt="Anunciar imóvel grátis na Noxvelia Estate" loading="lazy" />
-                <span className="lp-promo-overlay">Publicar imóvel <Icon path={mdiArrowRight} size={0.62} /></span>
+                <span className="lp-promo-overlay">Publicar imóvel <SvgIcon name="arrow" size={15} /></span>
               </Link>
             </div>
           </div>
@@ -1833,10 +2032,10 @@ export default function Landing() {
               </div>
               <div className="lp-brand-controls" aria-label="Navegar pelas marcas">
                 <button type="button" className="lp-round-btn" onClick={() => moverMarcas(-1)} aria-label="Ver marcas anteriores">
-                  <Icon path={mdiChevronLeft} size={0.82} />
+                  <SvgIcon name="left" size={18} />
                 </button>
                 <button type="button" className="lp-round-btn" onClick={() => moverMarcas(1)} aria-label="Ver marcas seguintes">
-                  <Icon path={mdiChevronRight} size={0.82} />
+                  <SvgIcon name="right" size={18} />
                 </button>
               </div>
             </div>
@@ -1950,11 +2149,11 @@ export default function Landing() {
               <div className="lp-example-column drive">
                 <div className="lp-column-top">
                   <div className="lp-column-heading">
-                    <span className="lp-column-icon"><Icon path={mdiCarSports} size={0.72} /></span>
+                    <span className="lp-column-icon"><SvgIcon name="car" size={17} /></span>
                     <h3 className="lp-column-title">NOXVELIA Drive</h3>
                   </div>
                   <button type="button" className="lp-column-link" onClick={() => navigate('/carros')}>
-                    Ver carros <Icon path={mdiArrowRight} size={0.58} />
+                    Ver carros <SvgIcon name="arrow" size={14} />
                   </button>
                 </div>
                 <div className="lp-example-list">
@@ -1967,11 +2166,11 @@ export default function Landing() {
               <div className="lp-example-column estate">
                 <div className="lp-column-top">
                   <div className="lp-column-heading">
-                    <span className="lp-column-icon"><Icon path={mdiHomeCityOutline} size={0.72} /></span>
+                    <span className="lp-column-icon"><SvgIcon name="estate" size={17} /></span>
                     <h3 className="lp-column-title">NOXVELIA Estate</h3>
                   </div>
                   <button type="button" className="lp-column-link" onClick={() => navigate('/imoveis')}>
-                    Ver imóveis <Icon path={mdiArrowRight} size={0.58} />
+                    Ver imóveis <SvgIcon name="arrow" size={14} />
                   </button>
                 </div>
                 <div className="lp-example-list">
@@ -2005,7 +2204,7 @@ export default function Landing() {
                     <p>{guia.texto}</p>
                   </div>
                   <Link className="lp-column-link" to={guia.tema === 'Guardar oportunidades' ? '/favoritos' : '/carros'}>
-                    Continuar <Icon path={mdiArrowRight} size={0.58} />
+                    Continuar <SvgIcon name="arrow" size={14} />
                   </Link>
                 </article>
               ))}
@@ -2020,7 +2219,7 @@ export default function Landing() {
               </div>
               <div className="lp-actions">
                 <Link className="lp-btn lp-btn-drive" to="/favoritos">
-                  Ver favoritos <Icon path={mdiArrowRight} size={0.7} />
+                  Ver favoritos <SvgIcon name="arrow" size={16} />
                 </Link>
                 <Link className="lp-btn lp-btn-estate" to="/registo">
                   Criar conta
@@ -2046,11 +2245,11 @@ export default function Landing() {
                   Consulta os registos disponíveis sobre quilometragem, danos, roubos e utilização anterior antes de marcares uma visita.
                 </p>
                 <ul className="lp-cv-points">
-                  <li><Icon path={mdiCheckCircleOutline} size={0.66} /> Mais contexto sobre o veículo</li>
-                  <li><Icon path={mdiCheckCircleOutline} size={0.66} /> Decisões com melhor informação</li>
+                  <li><SvgIcon name="check" size={15} /> Mais contexto sobre o veículo</li>
+                  <li><SvgIcon name="check" size={15} /> Decisões com melhor informação</li>
                 </ul>
                 <a className="lp-btn lp-btn-drive" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer">
-                  Verificar um veículo <Icon path={mdiOpenInNew} size={0.7} />
+                  Verificar um veículo <SvgIcon name="open" size={16} />
                 </a>
               </div>
 
@@ -2071,17 +2270,17 @@ export default function Landing() {
             <div className="lp-closing-card">
               <div>
                 <span className="lp-eyebrow">Comprar, vender, arrendar</span>
-                <h2 className="lp-title" id="lp-closing-title">O lugar certo para encontrar — e para ser encontrado.</h2>
+                <h2 className="lp-title" id="lp-closing-title">O lugar certo para encontrar e ser encontrado.</h2>
                 <p className="lp-copy">
                   Publica o teu carro ou imóvel e apresenta-o a quem já está à procura da próxima escolha.
                 </p>
               </div>
               <div className="lp-closing-actions">
                 <Link className="lp-btn lp-btn-drive" to={publicarTo} state={publicarState}>
-                  <Icon path={mdiPlus} size={0.74} /> Publicar anúncio
+                  <SvgIcon name="plus" size={17} /> Publicar anúncio
                 </Link>
                 <Link className="lp-btn lp-btn-estate" to="/carros">
-                  Explorar Drive <Icon path={mdiArrowRight} size={0.72} />
+                  Explorar Drive <SvgIcon name="arrow" size={16} />
                 </Link>
               </div>
             </div>

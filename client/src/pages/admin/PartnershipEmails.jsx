@@ -4,7 +4,10 @@ import {
   mdiAccountPlusOutline,
   mdiAlertOutline,
   mdiCheck,
+  mdiCheckCircleOutline,
+  mdiChevronRight,
   mdiClose,
+  mdiClipboardTextOutline,
   mdiContentSaveOutline,
   mdiDownloadOutline,
   mdiEmailFastOutline,
@@ -191,6 +194,39 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
     () => campaignDetail?.campaign || campaigns.find((item) => item._id === selectedCampaignId) || null,
     [campaignDetail, campaigns, selectedCampaignId]
   );
+  const totalContacts = Number(summary?.totalContacts || 0);
+  const totalCampaigns = Number(summary?.totalCampaigns || 0);
+  const activeCampaigns = Number(summary?.activeCampaigns || 0);
+  const selectedContactsCount = selectedContacts.length;
+  const dailyLimit = Number(settings?.limiteDiario || 40);
+  let nextAction = {
+    title: 'Testa antes de enviar',
+    text: 'Escolhe uma campanha, gera pre-visualizacao, envia um teste para ti e so depois inicia.',
+    button: 'Abrir campanhas',
+    target: 'campanhas',
+  };
+  if (totalContacts === 0) {
+    nextAction = {
+      title: 'Comeca pelos contactos',
+      text: 'Adiciona um contacto manualmente ou importa um CSV. A importacao so grava contactos; nunca envia emails.',
+      button: 'Ir para contactos',
+      target: 'contactos',
+    };
+  } else if (totalCampaigns === 0) {
+    nextAction = {
+      title: 'Cria a primeira campanha',
+      text: 'O modelo ja vem preenchido. Reve o texto, escolhe destinatarios, guarda e envia um teste.',
+      button: 'Criar campanha',
+      target: 'campanhas',
+    };
+  } else if (activeCampaigns > 0) {
+    nextAction = {
+      title: 'Acompanha os resultados',
+      text: 'Ve envios, erros, bounces, respostas e pedidos de remocao sem mexer nos emails transacionais.',
+      button: 'Ver resultados',
+      target: 'metricas',
+    };
+  }
 
   const loadCore = async () => {
     const [summaryRes, settingsRes, campaignsRes, suppressionsRes, repliesRes, auditRes] = await Promise.all([
@@ -616,7 +652,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
         <div>
           <h2 style={{ margin: 0, fontFamily: typo.display, fontSize: 24 }}>Emails de Parcerias</h2>
           <p style={{ margin: '6px 0 0', color: palette.textDim, maxWidth: 760, fontSize: 13 }}>
-            Sistema comercial separado dos emails transacionais. Todos os envios passam pelo servidor, com supressao global, confirmacao reforcada e auditoria.
+            Um fluxo simples para convidar stands e imobiliarias: contactos primeiro, campanha depois, teste antes do envio.
           </p>
         </div>
         <button type="button" onClick={refreshAll} className="nx-btn" style={buttonStyle(palette)} disabled={loading}>
@@ -652,13 +688,37 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
         <Metric colors={palette} fonts={typo} label="Envios 24h" value={summary?.recentSends} tone="blue" />
       </div>
 
+      <div style={guideGridStyle}>
+        <Panel colors={palette} title="O que fazer agora">
+          <div style={{ display: 'grid', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <span style={guideIconStyle(palette)}><Icon path={mdiCheckCircleOutline} size={0.8} /></span>
+              <div>
+                <strong style={{ color: '#fff', display: 'block', marginBottom: 4 }}>{nextAction.title}</strong>
+                <span style={{ color: palette.textDim, fontSize: 13, lineHeight: 1.55 }}>{nextAction.text}</span>
+              </div>
+            </div>
+            <button type="button" onClick={() => setSection(nextAction.target)} style={buttonStyle(palette, 'accent')}>
+              {nextAction.button} <Icon path={mdiChevronRight} size={0.6} />
+            </button>
+          </div>
+        </Panel>
+        <Panel colors={palette} title="Fluxo seguro">
+          <div style={stepGridStyle}>
+            <StepCard colors={palette} number="1" title="Contactos" text="Importa ou adiciona empresas. Nada e enviado nesta fase." done={totalContacts > 0} active={section === 'contactos'} onClick={() => setSection('contactos')} />
+            <StepCard colors={palette} number="2" title="Campanha" text="Revê texto, destinatarios e envia um teste para ti." done={totalCampaigns > 0} active={section === 'campanhas'} onClick={() => setSection('campanhas')} />
+            <StepCard colors={palette} number="3" title="Confirmar" text='So inicia quando escreveres "ENVIAR" no modal.' done={activeCampaigns > 0} active={section === 'metricas'} onClick={() => setSection('metricas')} />
+          </div>
+        </Panel>
+      </div>
+
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 16, borderBottom: `1px solid ${palette.border}` }}>
         {[
-          ['contactos', 'Contactos'],
-          ['campanhas', 'Campanhas'],
-          ['metricas', 'Metricas'],
+          ['contactos', '1. Contactos'],
+          ['campanhas', '2. Campanha'],
+          ['metricas', '3. Resultados'],
           ['respostas', 'Respostas'],
-          ['supressao', 'Supressao'],
+          ['supressao', 'Remocoes'],
           ['definicoes', 'Definicoes'],
         ].map(([id, label]) => (
           <button
@@ -677,8 +737,11 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
 
       {section === 'contactos' && (
         <div style={gridTwoColumns}>
-          <Panel colors={palette} title="Base de contactos">
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 2fr) repeat(5, minmax(120px, 1fr))', gap: 8, marginBottom: 12 }}>
+          <Panel colors={palette} title="1. Contactos que podem receber convite">
+            <HelpBox colors={palette} title="Como funciona">
+              Adiciona empresas relevantes. Podes selecionar contactos e criar uma campanha so para esses, ou usar filtros por tipo/estado. Importar contactos nunca envia emails automaticamente.
+            </HelpBox>
+            <div style={filtersGridStyle}>
               <input value={filters.q} onChange={(event) => setFilters({ ...filters, q: event.target.value })} placeholder="Email, nome ou empresa" />
               <select value={filters.tipo} onChange={(event) => setFilters({ ...filters, tipo: event.target.value })}>
                 <option value="">Tipo</option>
@@ -696,8 +759,8 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
             <div style={toolbarStyle}>
               <button type="button" onClick={() => loadContacts(1)} style={buttonStyle(palette)}><Icon path={mdiMagnify} size={0.6} /> Filtrar</button>
               <button type="button" onClick={exportContacts} style={buttonStyle(palette, 'ghost')}><Icon path={mdiDownloadOutline} size={0.6} /> Exportar CSV</button>
-              <button type="button" onClick={suppressSelected} style={buttonStyle(palette, 'danger')} disabled={!selectedContacts.length}><Icon path={mdiShieldOffOutline} size={0.6} /> Suprimir</button>
-              <button type="button" onClick={useSelectedContactsForCampaign} style={buttonStyle(palette, 'accent')} disabled={!selectedContacts.length}><Icon path={mdiEmailFastOutline} size={0.6} /> Criar campanha</button>
+              <button type="button" onClick={suppressSelected} style={buttonStyle(palette, 'danger')} disabled={!selectedContacts.length}><Icon path={mdiShieldOffOutline} size={0.6} /> Bloquear selecionados</button>
+              <button type="button" onClick={useSelectedContactsForCampaign} style={buttonStyle(palette, 'accent')} disabled={!selectedContacts.length}><Icon path={mdiEmailFastOutline} size={0.6} /> Usar selecionados numa campanha</button>
               <span style={muted(palette)}>{formatNumber(pagination.total)} resultados · {selectedContacts.length} selecionados</span>
             </div>
 
@@ -746,14 +809,14 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
           </Panel>
 
           <div style={{ display: 'grid', gap: 14 }}>
-            <Panel colors={palette} title={editingContactId ? 'Editar contacto' : 'Adicionar contacto'}>
+            <Panel colors={palette} title={editingContactId ? 'Editar contacto' : 'Adicionar contacto individual'}>
               <form onSubmit={saveContact} style={{ display: 'grid', gap: 10 }}>
                 <Field label="Email"><input required type="email" value={contactForm.email} onChange={(event) => updateContact('email', event.target.value)} /></Field>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <div style={formGridStyle}>
                   <Field label="Nome"><input value={contactForm.nomePessoa} onChange={(event) => updateContact('nomePessoa', event.target.value)} /></Field>
                   <Field label="Empresa"><input value={contactForm.nomeEmpresa} onChange={(event) => updateContact('nomeEmpresa', event.target.value)} /></Field>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <div style={formGridStyle}>
                   <Field label="Tipo">
                     <select value={contactForm.tipoEmpresa} onChange={(event) => updateContact('tipoEmpresa', event.target.value)}>
                       {COMPANY_TYPES.map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}
@@ -766,7 +829,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
                   </Field>
                 </div>
                 <Field label="Website"><input value={contactForm.website} onChange={(event) => updateContact('website', event.target.value)} placeholder="https://..." /></Field>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <div style={formGridStyle}>
                   <Field label="Telefone"><input value={contactForm.telefone} onChange={(event) => updateContact('telefone', event.target.value)} /></Field>
                   <Field label="Localidade"><input value={contactForm.localidade} onChange={(event) => updateContact('localidade', event.target.value)} /></Field>
                 </div>
@@ -780,17 +843,21 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
               </form>
             </Panel>
 
-            <Panel colors={palette} title="Importar CSV">
+            <Panel colors={palette} title="Importar lista por CSV">
               <div style={{ display: 'grid', gap: 10 }}>
+                <HelpBox colors={palette} title="Formato esperado">
+                  Usa colunas como email, nome, empresa, tipo, website, telefone e localidade. Primeiro verifica o ficheiro; so depois importas os contactos validos.
+                </HelpBox>
                 <input type="file" accept=".csv,text/csv" onChange={(event) => readCsvFile(event.target.files?.[0])} />
-                <textarea value={csvText} onChange={(event) => setCsvText(event.target.value)} placeholder="email,nome,empresa,tipo,website,telefone,localidade" />
+                <textarea value={csvText} onChange={(event) => setCsvText(event.target.value)} placeholder={'email,nome,empresa,tipo,website,telefone,localidade\ninfo@stand.pt,Ana,Stand XPTO,stand,https://stand.pt,912345678,Porto'} />
                 <div style={toolbarStyle}>
-                  <button type="button" onClick={previewCsv} style={buttonStyle(palette)} disabled={!csvText}><Icon path={mdiFileUploadOutline} size={0.6} /> Pre-visualizar</button>
-                  <button type="button" onClick={confirmCsv} style={buttonStyle(palette, 'accent')} disabled={!csvPreview?.summary?.valid}><Icon path={mdiCheck} size={0.6} /> Confirmar importacao</button>
+                  <button type="button" onClick={previewCsv} style={buttonStyle(palette)} disabled={!csvText}><Icon path={mdiFileUploadOutline} size={0.6} /> 1. Verificar CSV</button>
+                  <button type="button" onClick={confirmCsv} style={buttonStyle(palette, 'accent')} disabled={!csvPreview?.summary?.valid}><Icon path={mdiCheck} size={0.6} /> 2. Importar contactos validos</button>
                 </div>
                 {csvPreview && (
                   <div style={previewBoxStyle(palette)}>
-                    <strong>{csvPreview.summary.valid} validos</strong> · {csvPreview.summary.invalid} invalidos · {csvPreview.summary.duplicatesFile} duplicados no ficheiro · {csvPreview.summary.duplicatesDatabase} ja existentes · {csvPreview.summary.suppressed} suprimidos
+                    <strong>{csvPreview.summary.valid} prontos a importar</strong> · {csvPreview.summary.invalid} com problema · {csvPreview.summary.duplicatesFile} repetidos no ficheiro · {csvPreview.summary.duplicatesDatabase} ja existentes · {csvPreview.summary.suppressed} bloqueados
+                    <div style={{ marginTop: 6, color: palette.textFaint }}>Confirmar importacao nao envia emails. Apenas grava contactos validos.</div>
                     {csvPreview.invalidRows?.slice(0, 8).map((row) => (
                       <div key={`${row.linha}-${row.erros?.join('|')}`} style={{ marginTop: 6, color: '#fecaca' }}>Linha {row.linha}: {row.erros?.join(', ')}</div>
                     ))}
@@ -804,14 +871,17 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
 
       {section === 'campanhas' && (
         <div style={gridTwoColumns}>
-          <Panel colors={palette} title="Editor de campanha">
+          <Panel colors={palette} title="2. Criar campanha">
             <div style={{ display: 'grid', gap: 10 }}>
+              <HelpBox colors={palette} title="Regra simples">
+                Primeiro guarda o rascunho, depois pre-visualiza e envia um teste para ti. O botao de iniciar so abre uma confirmacao; nao dispara por acidente.
+              </HelpBox>
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(160px, 1fr) auto', gap: 8 }}>
                 <select value={selectedCampaignId} onChange={(event) => loadCampaign(event.target.value)}>
                   <option value="">Nova campanha</option>
                   {campaigns.map((campaign) => <option key={campaign._id} value={campaign._id}>{campaign.nomeInterno} · {campaign.estado}</option>)}
                 </select>
-                <button type="button" onClick={newCampaign} style={buttonStyle(palette, 'ghost')}>Nova</button>
+                <button type="button" onClick={newCampaign} style={buttonStyle(palette, 'ghost')}>Usar modelo</button>
               </div>
 
               <Field label="Nome interno"><input value={campaignForm.nomeInterno || ''} onChange={(event) => updateCampaign('nomeInterno', event.target.value)} /></Field>
@@ -820,17 +890,21 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
               <Field label="Conteudo principal">
                 <textarea style={{ minHeight: 280 }} value={campaignForm.conteudoPrincipal || ''} onChange={(event) => updateCampaign('conteudoPrincipal', event.target.value)} />
               </Field>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div style={previewBoxStyle(palette)}>
+                Variaveis disponiveis: <strong>{'{{nome}}'}</strong>, <strong>{'{{empresa}}'}</strong>, <strong>{'{{website}}'}</strong>, <strong>{'{{tipo}}'}</strong> e <strong>{'{{unsubscribe_url}}'}</strong>. Se nome ou empresa estiverem vazios, o sistema usa frases naturais.
+              </div>
+              <div style={formGridStyle}>
                 <Field label="Texto do botao"><input value={campaignForm.textoBotao || ''} onChange={(event) => updateCampaign('textoBotao', event.target.value)} /></Field>
                 <Field label="URL do botao"><input value={campaignForm.urlBotao || ''} onChange={(event) => updateCampaign('urlBotao', event.target.value)} /></Field>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div style={formGridStyle}>
                 <Field label="Remetente"><input value={campaignForm.remetente || ''} onChange={(event) => updateCampaign('remetente', event.target.value)} /></Field>
                 <Field label="Reply-to"><input value={campaignForm.replyTo || ''} onChange={(event) => updateCampaign('replyTo', event.target.value)} /></Field>
               </div>
 
               <div style={filterPanelStyle(palette)}>
-                <strong style={{ color: '#fff' }}>Destinatarios</strong>
+                <strong style={{ color: '#fff' }}>Quem vai receber</strong>
+                <span style={muted(palette)}>Escolhe tipos e estados. Contactos removidos, bloqueados ou na lista de supressao ficam sempre excluidos.</span>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(125px, 1fr))', gap: 8 }}>
                   {COMPANY_TYPES.map((type) => (
                     <CheckPill key={type.id} colors={palette} checked={campaignForm.filtrosDestinatarios?.tiposEmpresa?.includes(type.id)} onClick={() => toggleCampaignFilter('tiposEmpresa', type.id)} label={type.label} />
@@ -845,29 +919,36 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
                 {!!campaignForm.filtrosDestinatarios?.contactIds?.length && (
                   <div style={previewBoxStyle(palette)}>{campaignForm.filtrosDestinatarios.contactIds.length} contactos selecionados manualmente.</div>
                 )}
+                {selectedContactsCount > 0 && !campaignForm.filtrosDestinatarios?.contactIds?.length && (
+                  <button type="button" onClick={useSelectedContactsForCampaign} style={buttonStyle(palette, 'accent')}>
+                    Usar os {selectedContactsCount} contactos selecionados
+                  </button>
+                )}
               </div>
 
               <div style={toolbarStyle}>
-                <button type="button" onClick={saveCampaign} style={buttonStyle(palette, 'accent')}><Icon path={mdiContentSaveOutline} size={0.6} /> Guardar rascunho</button>
-                <button type="button" onClick={() => estimateCampaign()} style={buttonStyle(palette)}><Icon path={mdiMagnify} size={0.6} /> Contar elegiveis</button>
-                <button type="button" onClick={previewCampaign} style={buttonStyle(palette)}><Icon path={mdiEmailOpenOutline} size={0.6} /> Pre-visualizar</button>
-                <button type="button" onClick={openStartModal} style={buttonStyle(palette, 'danger')} disabled={!selectedCampaignId}><Icon path={mdiPlay} size={0.6} /> Iniciar campanha</button>
+                <button type="button" onClick={saveCampaign} style={buttonStyle(palette, 'accent')}><Icon path={mdiContentSaveOutline} size={0.6} /> 1. Guardar rascunho</button>
+                <button type="button" onClick={() => estimateCampaign()} style={buttonStyle(palette)}><Icon path={mdiMagnify} size={0.6} /> 2. Contar destinatarios</button>
+                <button type="button" onClick={previewCampaign} style={buttonStyle(palette)}><Icon path={mdiEmailOpenOutline} size={0.6} /> 3. Ver email</button>
+                <button type="button" onClick={openStartModal} style={buttonStyle(palette, 'danger')} disabled={!selectedCampaignId}><Icon path={mdiPlay} size={0.6} /> 5. Iniciar envio</button>
               </div>
 
               {estimate && (
                 <div style={previewBoxStyle(palette)}>
                   <strong>{estimate.eligible} destinatarios elegiveis</strong> em {estimate.total} contactos filtrados · {estimate.suppressed} removidos por supressao · {estimate.invalid} invalidos.
+                  <div style={{ marginTop: 6, color: palette.textFaint }}>Limite diario atual: {dailyLimit} emails. Se houver mais destinatarios, o worker continua em lotes nos dias/intervalos configurados.</div>
                 </div>
               )}
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
                 <input type="email" value={testEmail} onChange={(event) => setTestEmail(event.target.value)} placeholder="Email para teste" />
-                <button type="button" onClick={sendTest} style={buttonStyle(palette, 'ghost')} disabled={!testEmail || !selectedCampaignId}><Icon path={mdiSendOutline} size={0.6} /> Enviar teste</button>
+                <button type="button" onClick={sendTest} style={buttonStyle(palette, 'ghost')} disabled={!testEmail || !selectedCampaignId}><Icon path={mdiSendOutline} size={0.6} /> 4. Enviar teste</button>
               </div>
+              {!selectedCampaignId && <div style={previewBoxStyle(palette)}>Guarda o rascunho para poderes enviar teste ou iniciar campanha.</div>}
             </div>
           </Panel>
 
-          <Panel colors={palette} title="Pre-visualizacao">
+          <Panel colors={palette} title="Pre-visualizacao antes de enviar">
             <div style={toolbarStyle}>
               {['desktop', 'mobile', 'texto'].map((mode) => (
                 <button key={mode} type="button" onClick={() => setPreviewMode(mode)} style={miniButtonStyle(palette, previewMode === mode ? 'accent' : 'ghost')}>{mode}</button>
@@ -893,6 +974,9 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
 
       {section === 'metricas' && (
         <Panel colors={palette} title="Resultados da campanha">
+          <HelpBox colors={palette} title="Leitura rapida">
+            Aqui ves o que aconteceu depois de iniciar: enviados, entregues, abertos, cliques, falhas e pedidos de remocao. As aberturas sao sempre aproximadas.
+          </HelpBox>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: 14 }}>
             <div style={{ display: 'grid', gap: 10, alignContent: 'start' }}>
               <select value={selectedCampaignId} onChange={(event) => loadCampaign(event.target.value)}>
@@ -956,7 +1040,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
       {section === 'respostas' && (
         <Panel colors={palette} title="Respostas recebidas">
           <div style={previewBoxStyle(palette)}>
-            As respostas aparecem aqui quando a infraestrutura da Resend/domínio entregar eventos inbound/reply ao webhook configurado.
+            As respostas aparecem aqui quando a Resend/domínio entregar eventos inbound/reply ao webhook configurado. Se alguem responder diretamente para geral@noxvelia.com, tambem deves confirmar na caixa de email.
           </div>
           <div style={{ overflowX: 'auto', marginTop: 12 }}>
             <table>
@@ -979,8 +1063,8 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
       )}
 
       {section === 'supressao' && (
-        <Panel colors={palette} title="Lista de supressao global">
-          <div style={previewBoxStyle(palette)}>Qualquer email nesta lista fica impedido de receber campanhas comerciais futuras, mesmo se voltar a ser importado.</div>
+        <Panel colors={palette} title="Remocoes e bloqueios">
+          <div style={previewBoxStyle(palette)}>Qualquer email nesta lista fica impedido de receber campanhas comerciais futuras, mesmo se voltar a ser importado. Isto nao bloqueia emails transacionais importantes da conta.</div>
           <div style={{ overflowX: 'auto', marginTop: 12 }}>
             <table>
               <thead><tr><th>Email</th><th>Motivo</th><th>Origem</th><th>Criado em</th></tr></thead>
@@ -999,6 +1083,9 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
         <div style={gridTwoColumns}>
           <Panel colors={palette} title="Definicoes comerciais">
             <div style={{ display: 'grid', gap: 10 }}>
+              <HelpBox colors={palette} title="Valores recomendados">
+                Mantem limites baixos no inicio. Aumenta volume aos poucos e observa falhas, bounces e complaints para proteger a reputacao do dominio.
+              </HelpBox>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                 <Field label="Limite diario"><input type="number" value={settings.limiteDiario || 40} onChange={(event) => setSettings({ ...settings, limiteDiario: Number(event.target.value) })} /></Field>
                 <Field label="Tamanho do lote"><input type="number" value={settings.tamanhoLote || 5} onChange={(event) => setSettings({ ...settings, tamanhoLote: Number(event.target.value) })} /></Field>
@@ -1073,6 +1160,30 @@ function Panel({ colors, title, children }) {
   );
 }
 
+function HelpBox({ colors, title, children }) {
+  return (
+    <div style={helpBoxStyle(colors)}>
+      <span style={helpIconStyle(colors)}><Icon path={mdiClipboardTextOutline} size={0.68} /></span>
+      <div>
+        <strong style={{ color: '#fff', display: 'block', marginBottom: 3 }}>{title}</strong>
+        <div style={{ color: colors.textDim, fontSize: 12.5, lineHeight: 1.55 }}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function StepCard({ colors, number, title, text, done, active, onClick }) {
+  return (
+    <button type="button" onClick={onClick} style={stepCardStyle(colors, active)}>
+      <span style={stepNumberStyle(colors, done)}>{done ? <Icon path={mdiCheck} size={0.55} /> : number}</span>
+      <span style={{ display: 'grid', gap: 3, textAlign: 'left' }}>
+        <strong style={{ color: '#fff', fontSize: 13 }}>{title}</strong>
+        <span style={{ color: colors.textDim, fontSize: 11.5, lineHeight: 1.35 }}>{text}</span>
+      </span>
+    </button>
+  );
+}
+
 function Field({ label, children }) {
   return <label>{label}{children}</label>;
 }
@@ -1120,12 +1231,103 @@ const gridTwoColumns = {
   alignItems: 'start',
 };
 
+const guideGridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'minmax(min(100%, 320px), 0.85fr) minmax(min(100%, 520px), 1.4fr)',
+  gap: 14,
+  alignItems: 'stretch',
+  marginBottom: 16,
+};
+
+const filtersGridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 145px), 1fr))',
+  gap: 8,
+  marginBottom: 12,
+};
+
+const formGridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))',
+  gap: 8,
+};
+
+const stepGridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+  gap: 10,
+};
+
+const guideIconStyle = (colors) => ({
+  width: 34,
+  height: 34,
+  borderRadius: 8,
+  border: `1px solid ${colors.green}55`,
+  background: colors.greenDim,
+  color: colors.green,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+});
+
 const toolbarStyle = {
   display: 'flex',
   gap: 8,
   alignItems: 'center',
   flexWrap: 'wrap',
 };
+
+const helpBoxStyle = (colors) => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 10,
+  border: `1px solid ${colors.border}`,
+  background: 'rgba(255,255,255,0.03)',
+  borderRadius: 8,
+  padding: 11,
+});
+
+const helpIconStyle = (colors) => ({
+  width: 28,
+  height: 28,
+  borderRadius: 8,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: colors.blue,
+  background: colors.blueDim,
+  flexShrink: 0,
+});
+
+const stepCardStyle = (colors, active) => ({
+  width: '100%',
+  minHeight: 92,
+  border: `1px solid ${active ? colors.blue : colors.border}`,
+  background: active ? colors.blueDim : 'rgba(255,255,255,0.025)',
+  color: colors.text,
+  borderRadius: 8,
+  padding: 11,
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 10,
+  cursor: 'pointer',
+});
+
+const stepNumberStyle = (colors, done) => ({
+  width: 24,
+  height: 24,
+  borderRadius: 999,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  background: done ? colors.greenDim : 'rgba(255,255,255,0.05)',
+  border: `1px solid ${done ? colors.green : colors.borderStrong}`,
+  color: done ? colors.green : colors.textDim,
+  fontSize: 11,
+  fontWeight: 900,
+});
 
 const filterPanelStyle = (colors) => ({
   display: 'grid',
