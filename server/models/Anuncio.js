@@ -98,7 +98,7 @@ const anuncioSchema = new mongoose.Schema({
     coordenadas: { lat: Number, lng: Number }
   },
   
-  fotos: [String], 
+  fotos: [mongoose.Schema.Types.Mixed], 
   videoUrl: {
     type: String,
     trim: true,

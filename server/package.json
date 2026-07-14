@@ -8,13 +8,14 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "node --test tests/*.test.js",
-    "check": "node --check index.js"
+    "check": "node --check index.js",
+    "images:migrate": "node scripts/migrateCloudinaryImages.js",
+    "images:cleanup": "node scripts/cleanupImages.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.99.0",
     "@google/genai": "^2.7.0",
     "argon2": "^0.44.0",
-    "cloudinary": "^2.10.0",
     "compression": "^1.8.1",
     "cors": "^2.8.6",
     "dotenv": "^16.4.5",
@@ -27,10 +28,10 @@
     "mongoose": "^8.4.0",
     "morgan": "^1.11.0",
     "multer": "^2.2.0",
-    "multer-storage-cloudinary": "^4.0.0",
     "node-cron": "^4.5.0",
     "piscina": "^5.2.0",
     "resend": "^6.16.0",
+    "sharp": "^0.34.3",
     "socket.io": "^4.8.3",
     "stripe": "^22.2.1",
     "zod": "^4.4.3"

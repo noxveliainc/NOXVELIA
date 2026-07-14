@@ -8,7 +8,7 @@
 - Socket.IO autentica o JWT e só permite entrar na sala do próprio utilizador.
 - Limites específicos em login, registo, recuperação de password e contagem de visitas.
 - Helmet/CSP, CORS por allowlist, Permissions Policy e remoção do cabeçalho Express.
-- Upload limitado a dez imagens, 5 MB por imagem e MIME JPEG/PNG/WebP.
+- Upload limitado a dez imagens por pedido, processado no servidor com validação JPEG/PNG/WebP, conversão para WebP e storage própria.
 - Campos de métricas, destaque e estado não podem ser alterados no body de anúncios.
 - Erros internos ficam genéricos em produção e inputs MongoDB são sanitizados.
 - Campanhas patrocinadas são dados estruturados; nunca executam HTML ou scripts externos.
@@ -20,13 +20,13 @@
 - `JWT_SECRET`: segredo aleatório com pelo menos 32 caracteres (idealmente 64 bytes).
 - `CLIENT_URL=https://www.noxvelia.com`
 - `NODE_ENV=production`
-- Segredos Stripe, Cloudinary, Resend e reCAPTCHA usados pelos respetivos serviços.
+- Segredos Stripe, Resend, reCAPTCHA e credenciais privadas de storage de imagens usados pelos respetivos serviços.
 
 Nunca colocar segredos em variáveis `VITE_*`, no repositório ou no JSON de patrocinadores. Rodar os segredos imediatamente se alguma vez forem expostos.
 
 ## Rotina recomendada
 
-1. Ativar MFA em Render, MongoDB Atlas, Cloudinary, Stripe, Resend, domínio e GitHub.
+1. Ativar MFA em Render, MongoDB Atlas, storage de imagens, Stripe, Resend, domínio e GitHub.
 2. Restringir utilizadores e IPs de base de dados ao mínimo necessário; usar contas diferentes por ambiente.
 3. Ativar backups automáticos e testar uma restauração trimestralmente.
 4. Rever mensalmente `npm audit` no cliente e servidor e atualizar dependências com build/teste.

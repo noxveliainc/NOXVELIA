@@ -144,7 +144,7 @@ export default function PoliticaPrivacidade() {
             <ul>
               <li><strong>Autoridades Judiciais e Policiais:</strong> Em caso de suspeita de fraude informática, lavagem de dinheiro ou ordem judicial, a NOXVELIA cooperará integralmente, fornecendo os IPs e dados de registo às autoridades competentes (Polícia Judiciária, Ministério Público).</li>
               <li><strong>Stripe:</strong> Pagamentos, subscrições, portal de faturação e prevenção de fraude. Recebe os dados necessários para criar e reconciliar a operação.</li>
-              <li><strong>Cloudinary:</strong> Armazenamento, transformação e entrega das fotografias carregadas nos anúncios e perfis.</li>
+              <li><strong>Infraestrutura de imagens:</strong> Armazenamento, transformação e entrega das fotografias carregadas nos anúncios e perfis através da storage configurada pela NOXVELIA.</li>
               <li><strong>Resend:</strong> Envio de mensagens de verificação de e-mail e recuperação de palavra-passe, incluindo endereço do destinatário e conteúdo técnico da mensagem.</li>
               <li><strong>Formspree:</strong> Receção dos dados enviados voluntariamente através do formulário de suporte no rodapé.</li>
               <li><strong>Google Gemini:</strong> Processamento do conteúdo enviado às funcionalidades de inteligência artificial, apenas quando essas funções são utilizadas.</li>

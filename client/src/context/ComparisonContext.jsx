@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { getImageUrl } from '../utils/images';
 
 const ComparisonContext = createContext(null);
 const STORAGE_KEY = 'noxvelia_comparison';
@@ -32,7 +33,7 @@ const normalizarAnuncio = (anuncio) => {
   return {
     id,
     tipo: isCarro ? 'carro' : 'imovel',
-    imagem: anuncio?.fotos?.[0] || anuncio?.imagens?.[0] || anuncio?.imagem || '',
+    imagem: getImageUrl(anuncio?.fotos?.[0] || anuncio?.imagens?.[0] || anuncio?.imagem, 'medium'),
     titulo: String(anuncio?.titulo || 'Anúncio sem título').slice(0, 140),
     preco: Number(anuncio?.preco) || 0,
     anoArea,

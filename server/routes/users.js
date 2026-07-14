@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import Anuncio from '../models/Anuncio.js';
 import Avaliacao from '../models/Avaliacao.js';
 import { verificarToken } from '../middleware/auth.js';
+import { attachImagesToOwnerByUrls, deleteImagesByUrls } from '../services/imageService.js';
 
 const router = express.Router();
 
@@ -158,6 +159,23 @@ router.put('/me', verificarToken, async (req, res) => {
       { $set: camposParaAtualizar },
       { new: true, runValidators: true }
     ).select('+premiumAtivo +premiumExpira');
+
+    if (avatarUrl !== undefined) {
+      if (avatarUrl) {
+        await attachImagesToOwnerByUrls({ urls: [avatarUrl], ownerType: 'user', ownerId: req.user.id });
+      }
+      if (userOriginal.avatarUrl && userOriginal.avatarUrl !== avatarUrl) {
+        await deleteImagesByUrls({ urls: [userOriginal.avatarUrl], ownerType: 'user', ownerId: req.user.id });
+      }
+    }
+    if (capaUrl !== undefined) {
+      if (capaUrl) {
+        await attachImagesToOwnerByUrls({ urls: [capaUrl], ownerType: 'user', ownerId: req.user.id });
+      }
+      if (userOriginal.capaUrl && userOriginal.capaUrl !== capaUrl) {
+        await deleteImagesByUrls({ urls: [userOriginal.capaUrl], ownerType: 'user', ownerId: req.user.id });
+      }
+    }
 
     res.json(utilizadorAtualizado);
   } catch (erro) {

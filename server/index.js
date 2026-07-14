@@ -16,6 +16,7 @@ import anunciosRoutes from './routes/anuncios.js';
 import usersRoutes from './routes/users.js';
 import stripeRoutes from './routes/stripe.js';
 import uploadRoutes from './routes/upload.js';
+import mediaRoutes from './routes/media.js';
 import adminRoutes from './routes/admin.js';
 import notificacoesRoutes from './routes/notificacoes.js';
 import alertasRoutes from './routes/alertas.js';
@@ -70,7 +71,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
       fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
-      connectSrc: ["'self'", 'https://noxvelia.onrender.com', 'wss://noxvelia.onrender.com', 'https://api.cloudinary.com', 'https://api.stripe.com', 'https://www.google.com', 'https://nominatim.openstreetmap.org', 'https://*.basemaps.cartocdn.com', 'https://pagead2.googlesyndication.com', 'https://googleads.g.doubleclick.net', 'https://www.googleadservices.com', 'https://adservice.google.com', 'https://ad.doubleclick.net'],
+      connectSrc: ["'self'", 'https://noxvelia.onrender.com', 'wss://noxvelia.onrender.com', 'https://api.stripe.com', 'https://www.google.com', 'https://nominatim.openstreetmap.org', 'https://*.basemaps.cartocdn.com', 'https://pagead2.googlesyndication.com', 'https://googleads.g.doubleclick.net', 'https://www.googleadservices.com', 'https://adservice.google.com', 'https://ad.doubleclick.net'],
       frameSrc: ["'self'", 'https://js.stripe.com', 'https://www.google.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://my.matterport.com', 'https://buymeacoffee.com', 'https://googleads.g.doubleclick.net', 'https://tpc.googlesyndication.com'],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
@@ -123,6 +124,7 @@ app.use('/api/stripe', stripeRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/media', mediaRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sponsors', sponsorsRoutes);
 app.use('/api/system', systemRoutes);

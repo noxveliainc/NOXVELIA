@@ -1,28 +1,24 @@
 import multer from 'multer';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import cloudinary from '../services/cloudinary.js';
+import { ALLOWED_IMAGE_MIME_TYPES, IMAGE_UPLOAD_LIMITS, imageConfigForKind, normalizeImageKind } from '../config/imageStorage.js';
 
-// Configurar o motor de armazenamento otimizado com compressão dinâmica
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'portal_anuncios',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    // ⚡ OTIMIZAÇÃO: Transforma e comprime o peso do ficheiro na nuvem de forma nativa e paralela
-    transformation: [
-      { width: 1200, height: 900, crop: 'limit', quality: 'auto:good', fetch_format: 'auto' }
-    ]
+const storage = multer.memoryStorage();
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: imageConfigForKind('listing').maxInputBytes,
+    files: IMAGE_UPLOAD_LIMITS.maxFilesPerRequest,
+    fields: 10,
+    parts: IMAGE_UPLOAD_LIMITS.maxFilesPerRequest + 10,
   },
-});
-
-// Inicializar o Multer de forma assíncrona
-const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024, files: 10, fields: 5, parts: 15 },
   fileFilter: (req, file, callback) => {
-    const permitidos = new Set(['image/jpeg', 'image/png', 'image/webp']);
-    if (!permitidos.has(file.mimetype)) {
+    const kind = normalizeImageKind(req.body?.kind || req.query?.kind || 'listing');
+    const maxBytes = imageConfigForKind(kind).maxInputBytes;
+    if (!ALLOWED_IMAGE_MIME_TYPES.has(file.mimetype)) {
       return callback(new multer.MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname));
+    }
+    if (Number(req.headers['content-length'] || 0) > maxBytes * IMAGE_UPLOAD_LIMITS.maxFilesPerRequest) {
+      return callback(new multer.MulterError('LIMIT_FILE_SIZE', file.fieldname));
     }
     return callback(null, true);
   },

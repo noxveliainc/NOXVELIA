@@ -1,0 +1,7 @@
+node_modules/
+storage/
+server/storage/
+tmp/
+.env
+server/.env
+client/.env.local

@@ -12,6 +12,7 @@ import {
   mdiWeb, mdiInstagram, mdiFacebook, mdiLinkedin, mdiYoutube, mdiMusicNote, mdiWhatsapp,
   mdiPlus, mdiTrashCanOutline
 } from '@mdi/js';
+import { getImageUrl, normalizeUploadedImages } from '../../utils/images';
 
 const TIPOS_LINK_PERFIL = [
   { value: 'website', label: 'Website', icon: mdiWeb, placeholder: 'Ex: https://www.teusite.pt' },
@@ -142,8 +143,10 @@ export default function Perfil() {
     try {
       const formData = new FormData();
       formData.append('imagens', file);
+      formData.append('kind', 'avatar');
       const uploadRes = await api.post('/upload/imagens', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      const novaUrl = Array.isArray(uploadRes.data.urls) ? uploadRes.data.urls[0] : uploadRes.data.url;
+      const novaImagem = normalizeUploadedImages(uploadRes.data)[0];
+      const novaUrl = getImageUrl(novaImagem, 'large') || uploadRes.data.url;
       const updateRes = await api.put('/users/me', { avatarUrl: novaUrl });
       if (atualizarAvatar) atualizarAvatar(novaUrl);
       setUtilizador(updateRes.data);
@@ -162,8 +165,10 @@ export default function Perfil() {
     try {
       const formData = new FormData();
       formData.append('imagens', file);
+      formData.append('kind', 'cover');
       const uploadRes = await api.post('/upload/imagens', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      const novaUrl = Array.isArray(uploadRes.data.urls) ? uploadRes.data.urls[0] : uploadRes.data.url;
+      const novaImagem = normalizeUploadedImages(uploadRes.data)[0];
+      const novaUrl = getImageUrl(novaImagem, 'large') || uploadRes.data.url;
       const updateRes = await api.put('/users/me', { capaUrl: novaUrl });
       setUtilizador(updateRes.data);
       if (atualizarUser) atualizarUser(updateRes.data);

@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Link } from 'react-router-dom';
+import { getImageUrl } from '../../utils/images';
 
 // Componente para ajustar o zoom automaticamente aos pins
 function ChangeView({ bounds }) {
@@ -95,8 +96,8 @@ export default function MapaResultados({ imoveis, anuncios, tipo = 'imovel' }) {
               <Popup closeButton={false} className="NOXVELIA-popup">
                 <Link to={`/anuncio/${imovel._id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '200px' }}>
                   <div style={{ height: '120px', width: '100%', borderRadius: '8px', overflow: 'hidden', marginBottom: '8px' }}>
-                    {imovel.fotos?.[0] ? (
-                      <img src={imovel.fotos[0]} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    {getImageUrl(imovel.fotos?.[0], 'thumbnail') ? (
+                      <img src={getImageUrl(imovel.fotos?.[0], 'thumbnail')} width="400" height="300" alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       <div style={{ width: '100%', height: '100%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontWeight: 800 }}>{imovel.tipo === 'carro' ? 'Drive' : 'Estate'}</div>
                     )}

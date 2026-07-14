@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { BadgeCheck } from 'lucide-react';
 import { io } from 'socket.io-client'; // 🌟 Antena do WebSockets
 import { getAuthToken } from '../../utils/authSession';
+import { getImageUrl } from '../../utils/images';
 
 export default function Mensagens() {
   const { user } = useAuth();
@@ -253,8 +254,8 @@ export default function Mensagens() {
                     className={`chat-item ${isActive ? 'active' : ''}`}
                   >
                     <div className="chat-item-img">
-                      {chat.anuncio?.fotos?.[0] ? (
-                        <img src={chat.anuncio.fotos[0]} alt="" />
+                      {getImageUrl(chat.anuncio?.fotos?.[0], 'thumbnail') ? (
+                        <img src={getImageUrl(chat.anuncio?.fotos?.[0], 'thumbnail')} width="400" height="300" alt="" />
                       ) : (
                         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#eee', fontSize: '18px' }}>
                           {veioDeCarros ? '🚗' : '🏠'}

@@ -9,6 +9,7 @@ import SponsorBanner from '../../components/SponsorBanner';
 import Seo from '../../components/Seo';
 import { absoluteUrl, anuncioPath } from '../../utils/seo';
 import { normalizarExtras } from '../../utils/extras';
+import { getImageDimensions, getImageSrcSet, getImageUrl } from '../../utils/images';
 import { Icon } from '@mdi/react';
 import {
   mdiCheckDecagram, mdiShareVariantOutline, mdiHeartOutline, mdiHeart,
@@ -112,6 +113,12 @@ export default function Anuncio() {
 
   const fotosArrayRaw = anuncio?.fotos || anuncio?.imagens;
   const fotos = fotosArrayRaw?.length > 0 ? fotosArrayRaw : [null];
+  const fotoPrincipalUrl = getImageUrl(fotos[0], 'large');
+  const fotoActivaData = fotos[fotoActiva];
+  const fotoActivaLargeUrl = getImageUrl(fotoActivaData, 'large');
+  const fotoActivaOriginalUrl = getImageUrl(fotoActivaData, 'original') || fotoActivaLargeUrl;
+  const fotoActivaSrcSet = getImageSrcSet(fotoActivaData);
+  const fotoActivaDims = getImageDimensions(fotoActivaData, { width: 1280, height: 720 });
 
   const irParaFoto = useCallback((i) => {
     setFotoActiva(((i % fotos.length) + fotos.length) % fotos.length);
@@ -365,7 +372,7 @@ export default function Anuncio() {
         title={`${anuncio.titulo} | Noxvelia`}
         description={(anuncio.descricao || `${anuncio.titulo} em ${anuncio.localizacao?.cidade || 'Portugal'}`).slice(0, 160)}
         path={anuncioPath(anuncio)}
-        image={fotos[0]}
+        image={fotoPrincipalUrl}
         type="product"
         jsonLd={[jsonLd, breadcrumbLd]}
       />
@@ -623,7 +630,16 @@ export default function Anuncio() {
           </button>
           {fotos.length > 1 && <div className="lightbox-counter">{fotoActiva + 1} / {fotos.length}</div>}
           <div className="lightbox-img-wrap" onClick={(e) => e.stopPropagation()} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-            {fotos[fotoActiva] ? <img src={fotos[fotoActiva]} alt={`${anuncio.titulo} — foto ${fotoActiva + 1}`} /> : <div className="gallery-placeholder"><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={3} /></div>}
+            {fotoActivaOriginalUrl ? (
+              <img
+                src={fotoActivaOriginalUrl}
+                width={fotoActivaDims.width}
+                height={fotoActivaDims.height}
+                alt={`${anuncio.titulo} — foto ${fotoActiva + 1}`}
+              />
+            ) : (
+              <div className="gallery-placeholder"><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={3} /></div>
+            )}
           </div>
           {fotos.length > 1 && (
             <>
@@ -683,11 +699,23 @@ export default function Anuncio() {
                   aria-label="Abrir galeria em ecrã completo"
                   onKeyDown={(e) => { if (e.key === 'Enter') setLightboxAberto(true); }}
                 >
-                  {fotos[fotoActiva] ? <img src={fotos[fotoActiva]} alt={anuncio.titulo} loading="eager" /> : <div className="gallery-placeholder"><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={3} /></div>}
+                  {fotoActivaLargeUrl ? (
+                    <img
+                      src={fotoActivaLargeUrl}
+                      srcSet={fotoActivaSrcSet || undefined}
+                      sizes="(max-width: 960px) 100vw, 820px"
+                      width={fotoActivaDims.width}
+                      height={fotoActivaDims.height}
+                      alt={anuncio.titulo}
+                      loading="eager"
+                    />
+                  ) : (
+                    <div className="gallery-placeholder"><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={3} /></div>
+                  )}
                   <div className="gallery-overlay" />
                   <div className="gallery-badge"><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={0.7} />{isCarro ? 'Automóvel' : 'Imóvel'}</div>
                   {fotos.length > 1 && (<div className="gallery-counter"><Icon path={mdiCamera} size={0.65} />{fotoActiva + 1} / {fotos.length}</div>)}
-                  {fotos[fotoActiva] && <div className="gallery-zoom-hint"><Icon path={mdiMagnifyPlusOutline} size={0.65} />Ampliar</div>}
+                  {fotoActivaLargeUrl && <div className="gallery-zoom-hint"><Icon path={mdiMagnifyPlusOutline} size={0.65} />Ampliar</div>}
                   <div className="gallery-bottom">
                     <div className="gallery-title-overlay">{anuncio.titulo}</div>
                     <div className="gallery-loc"><Icon path={mdiMapMarkerOutline} size={0.65} />{localizacaoString}</div>
@@ -703,7 +731,7 @@ export default function Anuncio() {
                   <div className="thumbs-row">
                     {fotos.map((f, i) => (
                       <button type="button" key={i} className={`thumb ${fotoActiva === i ? 'active' : ''}`} onClick={() => setFotoActiva(i)} aria-label={`Ver foto ${i + 1}`}>
-                        {f ? <img src={f} alt="" loading="lazy" /> : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#cbd5e1' }}><Icon path={mdiCamera} size={1} /></div>}
+                        {getImageUrl(f, 'thumbnail') ? <img src={getImageUrl(f, 'thumbnail')} width="400" height="300" alt="" loading="lazy" /> : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#cbd5e1' }}><Icon path={mdiCamera} size={1} /></div>}
                       </button>
                     ))}
                   </div>

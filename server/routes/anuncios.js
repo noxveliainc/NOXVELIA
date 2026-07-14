@@ -8,6 +8,7 @@ import { verificarToken } from '../middleware/auth.js';
 import { parsePagination } from '../utils/pagination.js';
 import { analisarPreco, calcularQualidadeAnuncio } from '../utils/anuncioInsights.js';
 import { normalizarEquipamento, normalizarImovel } from '../utils/anuncioNormalize.js';
+import { attachImagesToOwnerByUrls, deleteImagesByOwner } from '../services/imageService.js';
 
 const router = express.Router();
 const visitLimiter = rateLimit({
@@ -464,6 +465,7 @@ router.post('/', verificarToken, async (req, res) => {
 
     const novoAnuncio = new Anuncio(dadosAnuncio);
     await novoAnuncio.save();
+    await attachImagesToOwnerByUrls({ urls: novoAnuncio.fotos || [], ownerType: 'listing', ownerId: novoAnuncio._id });
     await notificarAlertasPesquisa(novoAnuncio.toObject(), user._id);
     res.status(201).json(novoAnuncio);
 
@@ -535,6 +537,7 @@ router.put('/:id', verificarToken, async (req, res) => {
       },
       { new: true, runValidators: true }
     );
+    await attachImagesToOwnerByUrls({ urls: atualizado.fotos || [], ownerType: 'listing', ownerId: atualizado._id });
     res.json(atualizado);
   } catch (err) {
     res.status(500).json({ erro: 'Erro ao atualizar o anúncio.' });
@@ -551,6 +554,7 @@ router.delete('/:id', verificarToken, async (req, res) => {
     if (String(anuncio.utilizador) !== req.user.id && req.user.tipo !== 'admin')
       return res.status(403).json({ erro: 'Acesso negado.' });
 
+    await deleteImagesByOwner({ ownerType: 'listing', ownerId: anuncio._id });
     await Anuncio.findByIdAndDelete(req.params.id);
     res.json({ sucesso: true });
   } catch (err) {

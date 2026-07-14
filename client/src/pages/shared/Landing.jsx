@@ -23,6 +23,7 @@ import { DISTRITOS } from '../../data/localizacoes';
 import NavbarLanding from './NavbarLanding';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
+import { getImageUrl } from '../../utils/images';
 import { anuncioPath } from '../../utils/seo';
 import { useAuth } from '../../context/AuthContext';
 import { publishIntentState } from '../../utils/navigationState';
@@ -206,7 +207,7 @@ export default function Landing() {
 
   const renderExemplo = (anuncio, origem) => {
     const isCarro = anuncio.tipo === 'carro';
-    const foto = anuncio.fotos?.[0] || anuncio.imagens?.[0];
+    const foto = getImageUrl(anuncio.fotos?.[0] || anuncio.imagens?.[0], 'medium');
     const detalhe = isCarro
       ? [
           anuncio.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null,
@@ -226,7 +227,7 @@ export default function Landing() {
       >
         <span className="lp-example-img">
           {foto ? (
-            <img src={foto} alt={anuncio.titulo || (isCarro ? 'Automóvel' : 'Imóvel')} loading="lazy" />
+            <img src={foto} width="800" height="600" alt={anuncio.titulo || (isCarro ? 'Automóvel' : 'Imóvel')} loading="lazy" />
           ) : (
             <span className="lp-example-no-photo">Sem fotografia</span>
           )}

@@ -8,6 +8,7 @@ import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes'; 
 import { isSupportedVideoUrl } from '../../utils/videoEmbed';
 import { juntarExtras, normalizarExtras } from '../../utils/extras';
+import { getImageUrl, normalizeUploadedImages } from '../../utils/images';
 
 const TIPOS_IMOVEL = [
   { value: 'apartamento', label: 'Apartamento' },
@@ -184,9 +185,11 @@ export default function Editar() {
     setErro('');
     try {
       const data = new FormData();
+      data.append('kind', 'listing');
       files.forEach(file => data.append('imagens', file));
       const res = await api.post('/upload/imagens', data, { headers: { 'Content-Type': 'multipart/form-data' } });
-      if (res.data?.urls) setFotos(prev => [...prev, ...res.data.urls]);
+      const imagens = normalizeUploadedImages(res.data);
+      if (imagens.length) setFotos(prev => [...prev, ...imagens]);
     } catch (err) {
       setErro(err.response?.data?.erro || 'Erro ao carregar as imagens.');
     } finally {
@@ -445,9 +448,9 @@ export default function Editar() {
               </label>
               {fotos.length > 0 && (
                 <div className="pub-gallery">
-                  {fotos.map((url, i) => (
+                  {fotos.map((foto, i) => (
                     <div key={i} className="pub-thumb-wrap">
-                      <img src={url} alt="" />
+                      <img src={getImageUrl(foto, 'thumbnail')} width="400" height="300" alt="" />
                       <button type="button" onClick={() => removerFoto(i)} className="pub-thumb-remove"><Icon path={mdiClose} size={0.7} /></button>
                       {i === 0 && <span className="pub-thumb-badge">Capa</span>}
                     </div>

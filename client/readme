@@ -25,7 +25,7 @@ Foram desenvolvidos **3 componentes principais** reutilizáveis e de qualidade d
 
 ### 3. **Publicar.jsx** — Formulário de Criação
 - 4 passos: Categoria → Fotos → Infos → Detalhes
-- Upload multi-file com Cloudinary
+- Upload multi-file através da API backend de imagens
 - Formulários dinâmicos (imovel vs carro)
 - Validação de campos obrigatórios
 - Score IA automático após publicação
@@ -239,7 +239,6 @@ import PesquisaImovel from './pages/imoveis/PesquisaImovel';
 
 ### 4. Environment Variables (.env)
 ```
-VITE_CLOUDINARY_CLOUD=teu_cloudinary_cloud_name
 VITE_API_URL=http://localhost:3000/api
 ```
 
@@ -251,7 +250,7 @@ VITE_API_URL=http://localhost:3000/api
 - [ ] Copiar ficheiros de referência para suas pastas
 - [ ] Adicionar rotas no App.jsx
 - [ ] Testar com dados reais da API
-- [ ] Configurar Cloudinary (upload de fotos)
+- [ ] Configurar storage de imagens no backend
 - [ ] Testar login/autenticação
 - [ ] Testar filtros de pesquisa
 - [ ] Testar publicação de anúncios

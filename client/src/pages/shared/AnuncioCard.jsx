@@ -5,6 +5,7 @@ import api from '../../services/api';
 import { Icon } from '@mdi/react';
 import { mdiStarCircle, mdiCameraOutline, mdiTrashCanOutline, mdiCheckDecagram, mdiMapMarkerOutline } from '@mdi/js';
 import { anuncioPath } from '../../utils/seo';
+import { getImageDimensions, getImageSrcSet, getImageUrl } from '../../utils/images';
 
 export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioEliminado, forceSellerIdentity = false }) {
   const { user, signed } = useAuth();
@@ -35,6 +36,10 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const precoAnalise = anuncio?.precoAnalise;
   const scoreQualidade = Number(anuncio?.scoreQualidade || 0);
   const qualidadePercentagem = Math.max(0, Math.min(100, Math.round((scoreQualidade / 10) * 100)));
+  const imagemPrincipal = anuncio?.fotos?.[0] || anuncio?.imagens?.[0] || anuncio?.imagem;
+  const imagemPrincipalUrl = getImageUrl(imagemPrincipal, 'medium');
+  const imagemPrincipalSrcSet = getImageSrcSet(imagemPrincipal);
+  const imagemPrincipalDims = getImageDimensions(imagemPrincipal, { width: 800, height: 600 });
 
   // 🌟 Tratamento da Tag Ano/Mês
   const formatarCombustivel = (valor) => {
@@ -535,8 +540,8 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         {/* ── IMAGEM ── */}
         <div className="nxc-img">
-          {anuncio?.fotos?.[0]
-            ? <img src={anuncio.fotos[0]} alt={anuncio.titulo} loading="lazy" decoding="async" />
+          {imagemPrincipalUrl
+            ? <img src={imagemPrincipalUrl} srcSet={imagemPrincipalSrcSet || undefined} sizes="(max-width: 720px) 100vw, 360px" width={imagemPrincipalDims.width} height={imagemPrincipalDims.height} alt={anuncio.titulo} loading="lazy" decoding="async" />
             : <div className="nxc-placeholder">{isCarro ? '🚗' : '🏠'}</div>
           }
           <div className="nxc-img-overlay" />
