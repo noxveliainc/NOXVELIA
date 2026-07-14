@@ -4,7 +4,7 @@ const notificacaoSchema = new mongoose.Schema({
   utilizador: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   tipo: { 
   type: String, 
-  enum: ['mensagem', 'destaque_aprovado', 'destaque_rejeitado', 'anuncio_aprovado', 'sistema', 'destaque_expirado'], 
+  enum: ['mensagem', 'destaque_aprovado', 'destaque_rejeitado', 'anuncio_aprovado', 'sistema', 'destaque_expirado', 'alerta_pesquisa'], 
   required: true 
 },
   titulo: { type: String, required: true },

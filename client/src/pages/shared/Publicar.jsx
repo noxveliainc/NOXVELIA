@@ -11,6 +11,7 @@ import {
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 import { isSupportedVideoUrl } from '../../utils/videoEmbed';
+import { calcularQualidadeFormulario } from '../../utils/anuncioQuality';
 
 const OPCOES_GARANTIA = ['6 meses', '12 meses', '18 meses', '24 meses', 'Garantia de fábrica'];
 const MESES_ANO = [
@@ -245,6 +246,7 @@ export default function Publicar() {
   const accentColorVar = form.tipo === 'carro' ? '#2ac1b4' : '#3ecf8e';
   const accentRgb = form.tipo === 'carro' ? '42, 193, 180' : '62, 207, 142';
   const ehPremium = user?.premiumAtivo === true;
+  const qualidade = calcularQualidadeFormulario(form, fotos, equipamento);
 
   return (
     <>
@@ -315,6 +317,18 @@ export default function Publicar() {
         .pub-pro-badge-icon { color: #d97706; flex-shrink: 0; }
         .pub-pro-badge-text { font-size: 13px; font-weight: 600; color: #92400e; line-height: 1.4; margin: 0; }
         .pub-pro-badge-text strong { color: #d97706; }
+
+        .pub-quality-card { border: 1px solid rgba(${accentRgb}, 0.24); background: linear-gradient(135deg, rgba(${accentRgb}, 0.08), #ffffff 58%); border-radius: 16px; padding: 16px; margin-bottom: 20px; box-sizing: border-box; }
+        .pub-quality-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
+        .pub-quality-title { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+        .pub-quality-title strong { font-size: 14px; font-weight: 900; color: #0f172a; }
+        .pub-quality-title span { font-size: 12px; color: #64748b; font-weight: 600; }
+        .pub-quality-score { flex-shrink: 0; min-width: 78px; text-align: right; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 900; color: ${accentColorVar}; line-height: 1; }
+        .pub-quality-score span { font-size: 11px; color: #64748b; font-family: 'Inter', sans-serif; font-weight: 800; }
+        .pub-quality-track { height: 9px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+        .pub-quality-fill { height: 100%; width: ${qualidade.percentagem}%; background: linear-gradient(90deg, ${accentColorVar}, #0f172a); border-radius: inherit; transition: width .25s ease; }
+        .pub-quality-tips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .pub-quality-tip { border: 1px solid #e2e8f0; background: rgba(255,255,255,.84); border-radius: 999px; padding: 7px 10px; color: #475569; font-size: 11px; font-weight: 700; }
 
         .pub-trust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         @media (max-width: 768px) { .pub-trust-grid { grid-template-columns: 1fr; } }
@@ -447,6 +461,26 @@ export default function Publicar() {
                   </p>
                 </div>
               )}
+
+              <div className="pub-quality-card">
+                <div className="pub-quality-head">
+                  <div className="pub-quality-title">
+                    <strong>Qualidade do anuncio: {qualidade.nivel}</strong>
+                    <span>Melhores anuncios recebem mais cliques e contactos preparados.</span>
+                  </div>
+                  <div className="pub-quality-score">{qualidade.score}<span>/10</span></div>
+                </div>
+                <div className="pub-quality-track" aria-hidden="true">
+                  <div className="pub-quality-fill" />
+                </div>
+                {qualidade.sugestoes.length > 0 && (
+                  <div className="pub-quality-tips">
+                    {qualidade.sugestoes.map((sugestao) => (
+                      <span key={sugestao} className="pub-quality-tip">{sugestao}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="pub-grid-2" style={{ gridTemplateColumns: '2fr 1fr' }}>

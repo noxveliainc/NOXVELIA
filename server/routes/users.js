@@ -233,7 +233,7 @@ router.get('/vendedor/:id', async (req, res) => {
     ).lean();
     if (!vendedor) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
     const anuncios = await Anuncio.find({ utilizador: req.params.id, estado: { $in: ['ativo', 'pendente'] } })
-      .select('_id titulo preco fotos tipo estado destacado utilizador carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area localizacao.cidade localizacao.distrito createdAt')
+      .select('_id titulo preco fotos tipo estado destacado utilizador scoreQualidade scoreDetalhes carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area localizacao.cidade localizacao.distrito createdAt')
       .sort({ createdAt: -1 })
       .populate('utilizador', 'nome avatarUrl tipo premiumAtivo')
       .lean();

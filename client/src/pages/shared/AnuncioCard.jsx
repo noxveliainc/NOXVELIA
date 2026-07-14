@@ -32,6 +32,9 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const isPremium   = anuncio?.destacado === true;
   const isVerificado = anuncio?.utilizador?.tipo === 'admin' || anuncio?.utilizador?.premiumAtivo === true;
   const isCarro = anuncio?.tipo === 'carro';
+  const precoAnalise = anuncio?.precoAnalise;
+  const scoreQualidade = Number(anuncio?.scoreQualidade || 0);
+  const qualidadePercentagem = Math.max(0, Math.min(100, Math.round((scoreQualidade / 10) * 100)));
 
   // 🌟 Tratamento da Tag Ano/Mês
   const formatarCombustivel = (valor) => {
@@ -270,6 +273,13 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           gap: 6px;
         }
 
+        .nxc-price-row {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 10px;
+          min-width: 0;
+        }
         .nxc-price {
           font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 20px;
@@ -278,6 +288,26 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           letter-spacing: -.02em;
           line-height: 1;
         }
+        .nxc-price-signal {
+          flex-shrink: 0;
+          max-width: 122px;
+          border-radius: 999px;
+          padding: 4px 8px;
+          font-size: 9px;
+          font-weight: 900;
+          line-height: 1;
+          text-transform: uppercase;
+          letter-spacing: .06em;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          border: 1px solid #e2e8f0;
+          background: #f8fafc;
+          color: #475569;
+        }
+        .nxc-price-signal.baixo { background: #ecfdf5; border-color: #bbf7d0; color: #047857; }
+        .nxc-price-signal.justo { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+        .nxc-price-signal.alto { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
 
         .nxc-title {
           font-size: 14px;
@@ -288,6 +318,34 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           -webkit-line-clamp: 1;
           -webkit-box-orient: vertical;
           overflow: hidden;
+        }
+
+        .nxc-quality {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 2px;
+        }
+        .nxc-quality-label {
+          flex-shrink: 0;
+          font-size: 10px;
+          font-weight: 900;
+          color: #64748b;
+          white-space: nowrap;
+        }
+        .nxc-quality-track {
+          height: 5px;
+          flex: 1;
+          min-width: 44px;
+          border-radius: 999px;
+          background: #e2e8f0;
+          overflow: hidden;
+        }
+        .nxc-quality-fill {
+          height: 100%;
+          width: ${qualidadePercentagem}%;
+          border-radius: inherit;
+          background: linear-gradient(90deg, #2ac1b4, #0f172a);
         }
 
         .nxc-insights {
@@ -450,10 +508,13 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .dark .nxc-insight,
         .dark .nxc-tag,
         .dark .nxc-footer,
-        .dark .nxc-modal-box {
+        .dark .nxc-modal-box,
+        .dark .nxc-price-signal,
+        .dark .nxc-quality-track {
           background: #0f172a;
           border-color: #334155;
         }
+        .dark .nxc-quality-label { color: #94a3b8; }
         .dark .nxc-insight-label { color: #94a3b8; }
         .dark .nxc-avatar {
           background: #111c30;
@@ -509,8 +570,23 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         {/* ── BODY ── */}
         <div className="nxc-body">
-          <div className="nxc-price">{preco}</div>
+          <div className="nxc-price-row">
+            <div className="nxc-price">{preco}</div>
+            {precoAnalise && (
+              <span className={`nxc-price-signal ${precoAnalise.estado}`} title={precoAnalise.detalhe}>
+                {precoAnalise.label}
+              </span>
+            )}
+          </div>
           <div className="nxc-title">{anuncio?.titulo}</div>
+          {scoreQualidade > 0 && (
+            <div className="nxc-quality" title={`Qualidade do anuncio: ${scoreQualidade}/10`}>
+              <span className="nxc-quality-label">{scoreQualidade}/10</span>
+              <span className="nxc-quality-track">
+                <span className="nxc-quality-fill" />
+              </span>
+            </div>
+          )}
           {destaques.length > 0 && (
             <div className="nxc-insights">
               {destaques.map((item) => (

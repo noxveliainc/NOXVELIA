@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useState, useEffect, useCallback, useRef } from 'react';
-import { Link, useSearchParams, useLocation } from 'react-router-dom';
+import { Link, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
@@ -9,11 +9,13 @@ import useDebounce from '../../hooks/useDebounce';
 import { Icon } from '@mdi/react';
 import {
   mdiMap, mdiViewGrid, mdiMagnify, mdiLoading, mdiFilterVariant, mdiChevronLeft,
-  mdiChevronRight, mdiChartTimelineVariant, mdiShieldCheckOutline, mdiCloseCircleOutline
+  mdiChevronRight, mdiChartTimelineVariant, mdiShieldCheckOutline, mdiCloseCircleOutline,
+  mdiBellPlusOutline
 } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 import { publishIntentState } from '../../utils/navigationState';
+import { useAuth } from '../../context/AuthContext';
 
 const TIPOLOGIAS = ['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'];
 const COMBUSTIVEIS = ['Gasolina', 'Diesel', 'Eléctrico', 'Híbrido', 'GPL'];
@@ -28,6 +30,8 @@ const dividirParamLista = (valor) => String(valor || '')
 export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signed } = useAuth();
 
   const tipoSeguro = location.pathname.includes('carro') ? 'carro' : (tipoPadrao || 'imovel');
   const getParam = (name) => seoParams?.get(name) || searchParams.get(name) || '';
@@ -62,6 +66,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [sidebarMobileAberta, setSidebarMobileAberta] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [vistaAtiva, setVistaAtiva] = useState('grelha');
+  const [guardandoAlerta, setGuardandoAlerta] = useState(false);
+  const [feedbackAlerta, setFeedbackAlerta] = useState('');
 
   const [filtros, setFiltros] = useState(filtrosIniciais);
 
@@ -303,6 +309,37 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     setTimeout(() => { puxarDadosServidor(1, false, tipoSeguro); }, 50);
   };
 
+  const guardarAlertaPesquisa = async () => {
+    if (!signed) {
+      navigate('/login', { state: { from: `${location.pathname}${location.search}` } });
+      return;
+    }
+
+    setGuardandoAlerta(true);
+    setFeedbackAlerta('');
+    try {
+      await api.post('/alertas', {
+        tipo: tipoSeguro,
+        filtros: {
+          q: searchQuery.trim(),
+          precoMax: filtros.precoMax,
+          distrito: filtros.distrito,
+          cidade: filtros.cidade,
+          marca: filtros.marca,
+          modelo: filtros.modelo,
+          tipologias: filtros.tipologias,
+          combustiveis: filtros.combustiveis,
+          transmissao: filtros.transmissao,
+        },
+      });
+      setFeedbackAlerta('Alerta criado. Vais receber notificacoes quando surgirem anuncios compativeis.');
+    } catch (err) {
+      setFeedbackAlerta(err.response?.data?.erro || 'Nao foi possivel guardar este alerta.');
+    } finally {
+      setGuardandoAlerta(false);
+    }
+  };
+
   return (
     <>
       {!seoParams && <Seo
@@ -479,6 +516,35 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           color: #020617;
           box-shadow: 0 8px 18px -14px ${accent};
         }
+        .pesquisa-alert-btn {
+          min-height: 44px;
+          border: 1px solid rgba(42,193,180,.24);
+          border-radius: 14px;
+          padding: 0 14px;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: #ffffff;
+          color: #0f172a;
+          font-size: 12px;
+          font-weight: 900;
+          cursor: pointer;
+          box-shadow: 0 12px 24px -22px rgba(15,23,42,.5);
+          transition: transform .2s ease, border-color .2s ease, background .2s ease;
+        }
+        .pesquisa-alert-btn:hover:not(:disabled) { transform: translateY(-1px); border-color: ${accent}; background: rgba(42,193,180,.06); }
+        .pesquisa-alert-btn:disabled { opacity: .65; cursor: wait; }
+        .pesquisa-alert-feedback {
+          display: inline-flex;
+          align-items: center;
+          border: 1px solid rgba(16,185,129,.18);
+          background: rgba(16,185,129,.08);
+          color: #047857;
+          border-radius: 999px;
+          padding: 8px 11px;
+          font-size: 12px;
+          font-weight: 800;
+        }
         .pesquisa-map-shell {
           position: relative;
           height: min(720px, calc(100vh - 260px));
@@ -530,7 +596,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .dark .pesquisa-results-count,
         .dark .pesquisa-sort,
         .dark .pesquisa-clear-btn,
-        .dark .pesquisa-active-chip {
+        .dark .pesquisa-active-chip,
+        .dark .pesquisa-alert-btn {
           background: rgba(30, 41, 59, 0.92) !important;
           border-color: rgba(71, 85, 105, 0.9) !important;
           color: #e2e8f0 !important;
@@ -724,6 +791,10 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                     <Icon path={mdiMap} size={0.72} /> Mapa
                   </button>
                 </div>
+                <button type="button" className="pesquisa-alert-btn" onClick={guardarAlertaPesquisa} disabled={guardandoAlerta}>
+                  <Icon path={mdiBellPlusOutline} size={0.72} />
+                  {guardandoAlerta ? 'A guardar...' : 'Criar alerta'}
+                </button>
               <select className="pesquisa-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
                 <option value="relevancia" style={{ background: 'var(--nx-bg-2)' }}>Relevância</option>
                 <option value="preco_asc" style={{ background: 'var(--nx-bg-2)' }}>Preço: Mais Baixo</option>
@@ -731,6 +802,12 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               </select>
               </div>
             </div>
+
+            {feedbackAlerta && (
+              <div className="pesquisa-active-row" style={{ marginTop: '-12px' }}>
+                <span className="pesquisa-alert-feedback">{feedbackAlerta}</span>
+              </div>
+            )}
 
             <SponsorBanner
               placement="search_results_top"

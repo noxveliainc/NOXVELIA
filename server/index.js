@@ -18,6 +18,7 @@ import stripeRoutes from './routes/stripe.js';
 import uploadRoutes from './routes/upload.js';
 import adminRoutes from './routes/admin.js';
 import notificacoesRoutes from './routes/notificacoes.js';
+import alertasRoutes from './routes/alertas.js';
 import analyticsRoutes from './routes/analytics.js';
 import sponsorsRoutes from './routes/sponsors.js';
 import systemRoutes from './routes/system.js';
@@ -111,6 +112,7 @@ app.use('/api/', limiter);
 // ─────────────────────────────────────────────────────────────
 app.use('/api/anuncios', anunciosRoutes);
 app.use('/api/notificacoes', notificacoesRoutes);
+app.use('/api/alertas', alertasRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/stripe', stripeRoutes);       
 app.use('/api/auth', authRoutes);

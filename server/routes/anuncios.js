@@ -2,8 +2,11 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import Anuncio from '../models/Anuncio.js';
 import User from '../models/User.js';
+import Alerta from '../models/Alerta.js';
+import Notificacao from '../models/Notificacao.js';
 import { verificarToken } from '../middleware/auth.js';
 import { parsePagination } from '../utils/pagination.js';
+import { analisarPreco, calcularQualidadeAnuncio } from '../utils/anuncioInsights.js';
 
 const router = express.Router();
 const visitLimiter = rateLimit({
@@ -28,6 +31,77 @@ const dividirFiltroTexto = (valor) => String(valor || '')
 
 const ESTADOS_PUBLICOS = ['ativo', 'pendente'];
 const filtroPublico = () => ({ estado: { $in: ESTADOS_PUBLICOS } });
+
+const compararTexto = (a, b) => normalizarFiltroTexto(a) === normalizarFiltroTexto(b);
+const listaIncluiTexto = (lista, valor) => Array.isArray(lista)
+  && lista.map(normalizarFiltroTexto).includes(normalizarFiltroTexto(valor));
+
+const alertaCombinaComAnuncio = (alerta, anuncio) => {
+  const filtros = alerta.filtros || {};
+  const preco = Number(anuncio.preco || 0);
+
+  if (alerta.tipo !== anuncio.tipo) return false;
+  if (filtros.precoMin && preco < Number(filtros.precoMin)) return false;
+  if (filtros.precoMax && preco > Number(filtros.precoMax)) return false;
+  if (filtros.distrito && !compararTexto(filtros.distrito, anuncio.localizacao?.distrito)) return false;
+  if (filtros.cidade && !compararTexto(filtros.cidade, anuncio.localizacao?.cidade)) return false;
+
+  if (filtros.q) {
+    const texto = normalizarFiltroTexto(`${anuncio.titulo || ''} ${anuncio.descricao || ''}`);
+    if (!texto.includes(normalizarFiltroTexto(filtros.q))) return false;
+  }
+
+  if (anuncio.tipo === 'carro') {
+    if (filtros.marca && !compararTexto(filtros.marca, anuncio.carro?.marca)) return false;
+    if (filtros.modelo && !compararTexto(filtros.modelo, anuncio.carro?.modelo)) return false;
+    if (filtros.kmMax && Number(anuncio.carro?.km || 0) > Number(filtros.kmMax)) return false;
+    if (filtros.combustiveis?.length && !listaIncluiTexto(filtros.combustiveis, anuncio.carro?.combustivel)) return false;
+    if (filtros.transmissao?.length && !listaIncluiTexto(filtros.transmissao, anuncio.carro?.transmissao)) return false;
+  }
+
+  if (anuncio.tipo === 'imovel') {
+    const tipologias = filtros.tipologias?.length ? filtros.tipologias : [filtros.tipologia].filter(Boolean);
+    if (tipologias.length && !listaIncluiTexto(tipologias, anuncio.imovel?.tipologia)) return false;
+    if (filtros.tipoImovel && !compararTexto(filtros.tipoImovel, anuncio.imovel?.tipoImovel)) return false;
+  }
+
+  return true;
+};
+
+const notificarAlertasPesquisa = async (anuncio, ownerId) => {
+  try {
+    const alertas = await Alerta.find({
+      ativo: true,
+      tipo: anuncio.tipo,
+      utilizador: { $ne: ownerId },
+    }).lean();
+
+    const compativeis = alertas
+      .filter((alerta) => alertaCombinaComAnuncio(alerta, anuncio))
+      .slice(0, 80);
+
+    if (!compativeis.length) return;
+
+    const link = anuncio.tipo === 'carro'
+      ? `/carros?marca=${encodeURIComponent(anuncio.carro?.marca || '')}&modelo=${encodeURIComponent(anuncio.carro?.modelo || '')}`
+      : `/imoveis?tipologia=${encodeURIComponent(anuncio.imovel?.tipologia || '')}&distrito=${encodeURIComponent(anuncio.localizacao?.distrito || '')}`;
+
+    await Notificacao.insertMany(compativeis.map((alerta) => ({
+      utilizador: alerta.utilizador,
+      tipo: 'alerta_pesquisa',
+      titulo: 'Novo anuncio no teu alerta',
+      mensagem: `${anuncio.titulo || 'Novo anuncio'} corresponde ao alerta "${alerta.nome || 'Pesquisa guardada'}".`,
+      link,
+    })), { ordered: false });
+
+    await Alerta.updateMany(
+      { _id: { $in: compativeis.map((alerta) => alerta._id) } },
+      { $set: { ultimoMatchEm: new Date() }, $inc: { totalMatches: 1 } }
+    );
+  } catch (erro) {
+    console.warn('Falha ao processar alertas de pesquisa:', erro.message);
+  }
+};
 
 // ─────────────────────────────────────────────────────────────
 // HELPER: Geocoding no backend via Nominatim
@@ -87,15 +161,48 @@ router.get('/', async (req, res) => {
     const { page, limit, skip } = parsePagination(req.query);
 
     const anuncios = await Anuncio.find(query)
-      .select('_id titulo preco fotos tipo estado destacado utilizador carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area localizacao.cidade localizacao.distrito createdAt')
+      .select('_id titulo preco fotos tipo estado destacado utilizador scoreQualidade scoreDetalhes carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area localizacao.cidade localizacao.distrito createdAt')
       .sort(sortOption)
       .skip(skip)
       .limit(limit)
       .populate('utilizador', 'nome avatarUrl tipo telefone premiumAtivo')
       .lean();
 
-    const totalAnuncios = await Anuncio.countDocuments(query);
-    res.json({ anuncios, totalAnuncios, pagination: { page, limit, totalPages: Math.ceil(totalAnuncios / limit), hasNextPage: page * limit < totalAnuncios } });
+    const [totalAnuncios, resumoPrecoAgregado] = await Promise.all([
+      Anuncio.countDocuments(query),
+      Anuncio.aggregate([
+        { $match: query },
+        {
+          $group: {
+            _id: null,
+            media: { $avg: '$preco' },
+            min: { $min: '$preco' },
+            max: { $max: '$preco' },
+            amostra: { $sum: 1 },
+          }
+        }
+      ])
+    ]);
+
+    const resumoPreco = resumoPrecoAgregado?.[0] || null;
+    const anunciosComInsights = anuncios.map((anuncio) => {
+      const qualidade = anuncio.scoreQualidade > 0
+        ? {}
+        : calcularQualidadeAnuncio(anuncio);
+
+      return {
+        ...anuncio,
+        ...qualidade,
+        precoAnalise: analisarPreco(anuncio.preco, resumoPreco),
+      };
+    });
+
+    res.json({
+      anuncios: anunciosComInsights,
+      totalAnuncios,
+      resumoPreco,
+      pagination: { page, limit, totalPages: Math.ceil(totalAnuncios / limit), hasNextPage: page * limit < totalAnuncios }
+    });
 
   } catch (error) {
     res.status(500).json({ erro: 'Erro interno ao processar a pesquisa.' });
@@ -334,8 +441,11 @@ router.post('/', verificarToken, async (req, res) => {
       ),
     };
 
+    Object.assign(dadosAnuncio, calcularQualidadeAnuncio(dadosAnuncio));
+
     const novoAnuncio = new Anuncio(dadosAnuncio);
     await novoAnuncio.save();
+    await notificarAlertasPesquisa(novoAnuncio.toObject(), user._id);
     res.status(201).json(novoAnuncio);
 
   } catch (err) {
@@ -377,14 +487,23 @@ router.put('/:id', verificarToken, async (req, res) => {
     } = req.body;
 
     // Atualizar com os novos campos de confiança
+    const camposAtualizados = {
+      ...bodyLimpo,
+      garantia: req.body.garantia || null,
+      aceitaRetoma: !!req.body.aceitaRetoma,
+    };
+    const qualidadeAtualizada = calcularQualidadeAnuncio({
+      ...anuncio.toObject(),
+      ...camposAtualizados,
+    });
+
     const atualizado = await Anuncio.findByIdAndUpdate(
       req.params.id,
-      { 
-        $set: { 
-          ...bodyLimpo, 
-          garantia: req.body.garantia || null, 
-          aceitaRetoma: !!req.body.aceitaRetoma 
-        } 
+      {
+        $set: {
+          ...camposAtualizados,
+          ...qualidadeAtualizada,
+        }
       },
       { new: true, runValidators: true }
     );
