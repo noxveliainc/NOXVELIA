@@ -187,6 +187,7 @@ export const imageContentHeaders = (buffer) => ({
   'Content-Type': 'image/webp',
   'Content-Length': String(buffer.length),
   'Cache-Control': 'public, max-age=31536000, immutable',
+  'Cross-Origin-Resource-Policy': 'cross-origin',
   'X-Content-Type-Options': 'nosniff',
   ETag: `"${crypto.createHash('sha256').update(buffer).digest('hex').slice(0, 32)}"`,
 });
