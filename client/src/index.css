@@ -316,24 +316,129 @@ h1, h2, h3, h4 {
     linear-gradient(180deg, #0f1f24 0%, #071317 100%) !important;
 }
 
+.dark .lp-quick-section,
+.dark .lp-promo-section,
+.dark .lp-shortcuts-section,
+.dark .lp-guides-section,
 .dark .lp-brands-section,
-.dark .lp-popular-section {
-  background: #0b1b20 !important;
+.dark .lp-popular-section,
+.dark .lp-cv-section {
+  background:
+    radial-gradient(circle at 90% 12%, rgba(42, 193, 180, 0.13), transparent 26%),
+    #071317 !important;
   border-color: rgba(148, 163, 184, 0.16) !important;
+}
+
+.dark .lp-quick-section,
+.dark .lp-promo-section {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(42, 193, 180, 0.11), transparent 28%),
+    #071317 !important;
+}
+
+.dark .lp-shortcuts-section,
+.dark .lp-popular-section,
+.dark .lp-guides-section {
+  background:
+    radial-gradient(circle at 92% 12%, rgba(62, 207, 142, 0.12), transparent 26%),
+    linear-gradient(180deg, #0b1b20 0%, #071317 100%) !important;
 }
 
 .dark .lp-brand-card,
 .dark .lp-trust-item,
-.dark .lp-round-btn {
+.dark .lp-round-btn,
+.dark .lp-quick-card,
+.dark .lp-type-tabs,
+.dark .lp-promo-link,
+.dark .lp-shortcut-group,
+.dark .lp-guide-card,
+.dark .lp-favorites-strip,
+.dark .lp-example-column,
+.dark .lp-example-card,
+.dark .lp-example-state,
+.dark .lp-cv-panel,
+.dark .lp-cv-code {
   background: rgba(30, 41, 59, 0.78) !important;
-  border-color: #334155 !important;
+  border-color: rgba(148, 163, 184, 0.24) !important;
   color: #e2e8f0 !important;
+}
+
+.dark .lp-favorites-strip,
+.dark .lp-cv-panel {
+  background:
+    linear-gradient(135deg, rgba(42, 193, 180, 0.1), rgba(198, 168, 106, 0.07)),
+    rgba(15, 31, 36, 0.94) !important;
+}
+
+.dark .lp-promo-overlay,
+.dark .lp-hero-photo-label {
+  background: rgba(15, 31, 36, 0.88) !important;
+  border-color: rgba(226, 232, 240, 0.2) !important;
+  color: #ecfdfb !important;
 }
 
 .dark .lp-brand-name,
 .dark .lp-copy,
-.dark .lp-trust-item {
+.dark .lp-trust-item,
+.dark .lp-field label,
+.dark .lp-guide-card p,
+.dark .lp-favorites-strip p,
+.dark .lp-example-meta,
+.dark .lp-example-location,
+.dark .lp-example-state,
+.dark .lp-cv-panel > span,
+.dark .lp-cv-code small {
   color: #b7c7cb !important;
+}
+
+.dark .lp-eyebrow,
+.dark .lp-guide-card span,
+.dark .lp-column-link {
+  color: #7ee3d7 !important;
+}
+
+.dark .lp-quick-title,
+.dark .lp-shortcut-group h3,
+.dark .lp-guide-card h3,
+.dark .lp-favorites-strip h3,
+.dark .lp-column-title,
+.dark .lp-example-price,
+.dark .lp-example-title,
+.dark .lp-example-state strong,
+.dark .lp-cv-code strong {
+  color: #ecfdfb !important;
+}
+
+.dark .lp-chip,
+.dark .lp-field select,
+.dark .lp-field input,
+.dark .lp-type-tab {
+  background: rgba(2, 6, 23, 0.48) !important;
+  border-color: rgba(148, 163, 184, 0.24) !important;
+  color: #dbeafe !important;
+}
+
+.dark .lp-chip:hover,
+.dark .lp-brand-card:hover,
+.dark .lp-round-btn:hover {
+  background: rgba(15, 31, 36, 0.96) !important;
+  border-color: rgba(42, 193, 180, 0.55) !important;
+  color: #ecfdfb !important;
+}
+
+.dark .lp-type-tab.active {
+  background: rgba(42, 193, 180, 0.95) !important;
+  color: #042326 !important;
+}
+
+.dark .lp-field select:disabled {
+  background: rgba(15, 23, 42, 0.62) !important;
+  color: #64748b !important;
+}
+
+.dark .lp-brand-fallback,
+.dark .lp-example-no-photo {
+  color: #94a3b8 !important;
 }
 
 /* Dark mode: paginas antigas com CSS local hardcoded. */
