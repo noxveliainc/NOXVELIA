@@ -133,7 +133,7 @@ router.post('/criar-checkout-premium', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 // ROTA 3 — CUSTOMER PORTAL
 // ─────────────────────────────────────────────────────────────
-router.post('/portal', verificarToken, async (req, res) => {
+const abrirPortalCliente = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user?.stripeCustomerId)
@@ -149,7 +149,10 @@ router.post('/portal', verificarToken, async (req, res) => {
     console.error('❌ Erro no Customer Portal:', error);
     res.status(500).json({ erro: 'Erro ao abrir portal de faturação.' });
   }
-});
+};
+
+router.post('/portal', verificarToken, abrirPortalCliente);
+router.post('/criar-portal-cliente', verificarToken, abrirPortalCliente);
 
 // ─────────────────────────────────────────────────────────────
 // ROTA 4 — WEBHOOK UNIFICADO

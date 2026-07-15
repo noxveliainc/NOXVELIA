@@ -45,12 +45,12 @@ export const register = async (req, res) => {
 
     const userExists = await User.findOne({ email: emailLower });
     if (userExists) {
-      return res.status(409).json({ erro: 'Ja existe uma conta com estes dados.' });
+      return res.status(409).json({ erro: 'Ja existe uma conta com este email.' });
     }
 
     const telefoneExists = await User.findOne({ telefone: telefoneLimpo });
     if (telefoneExists) {
-      return res.status(409).json({ erro: 'Ja existe uma conta com estes dados.' });
+      return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telemovel.' });
     }
 
     const novoUtilizador = new User({
@@ -84,6 +84,16 @@ export const register = async (req, res) => {
     });
 
   } catch (error) {
+    if (error?.code === 11000) {
+      if (error.keyPattern?.email || error.keyValue?.email) {
+        return res.status(409).json({ erro: 'Ja existe uma conta com este email.' });
+      }
+      if (error.keyPattern?.telefone || error.keyValue?.telefone) {
+        return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telemovel.' });
+      }
+      return res.status(409).json({ erro: 'Ja existe uma conta com estes dados.' });
+    }
+
     console.error('Erro no registo:', error);
     res.status(500).json({ erro: 'Erro interno no servidor ao tentar registar.' });
   }

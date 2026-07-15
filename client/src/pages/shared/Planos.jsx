@@ -21,6 +21,8 @@ export default function Planos() {
   const { sincronizarUser, user } = useAuth();
   const [loadingStripe, setLoadingStripe] = useState(false);
   const [aSincronizar, setASincronizar] = useState(false);
+  const temSubscricaoStripe = Boolean(user?.stripeCustomerId || user?.stripeSubscriptionId);
+  const temAcessoProfissionalManual = Boolean(user?.premiumAtivo && !temSubscricaoStripe);
 
   // Quando o Stripe devolve com sucesso, sincroniza o estado premium
   useEffect(() => {
@@ -254,6 +256,7 @@ export default function Planos() {
           box-sizing: border-box;
         }
         .pl-btn:disabled { opacity: 0.7; cursor: default; }
+        .pl-btn--manual:disabled { opacity: 1; }
 
         .pl-btn--ghost {
           background: transparent;
@@ -287,6 +290,12 @@ export default function Planos() {
           text-align: center;
           font-size: 12px;
           color: #94a3b8;
+        }
+        .pl-manual-note {
+          margin: 10px 0 0;
+          color: #64748b;
+          font-size: 12px;
+          line-height: 1.45;
         }
 
         @media (max-width: 720px) {
@@ -336,7 +345,16 @@ export default function Planos() {
               ))}
             </ul>
 
-            {user?.premiumAtivo ? (
+            {temAcessoProfissionalManual ? (
+              <>
+                <button className="pl-btn pl-btn--outline-pro pl-btn--manual" disabled>
+                  Acesso Profissional Ativo
+                </button>
+                <p className="pl-manual-note">
+                  Este acesso foi atribuído pela administração e não tem portal de faturação Stripe.
+                </p>
+              </>
+            ) : user?.premiumAtivo ? (
               <button className="pl-btn pl-btn--outline-pro" onClick={abrirPortalCliente} disabled={loadingStripe}>
                 {loadingStripe ? <SpinnerIcon /> : 'Gerir a Minha Subscrição'}
               </button>
