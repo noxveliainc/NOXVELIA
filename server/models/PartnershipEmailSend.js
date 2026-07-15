@@ -15,7 +15,7 @@ const partnershipEmailSendSchema = new mongoose.Schema({
   tentativas: { type: Number, default: 0 },
   erro: { type: String, trim: true, default: '' },
   nextAttemptAt: { type: Date, index: true },
-  idempotencyKey: { type: String, trim: true, index: true },
+  idempotencyKey: { type: String, trim: true, index: true, unique: true, sparse: true },
   enviadoEm: Date,
   entregueEm: Date,
   abertoEm: Date,
@@ -25,6 +25,7 @@ const partnershipEmailSendSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 partnershipEmailSendSchema.index({ campaign: 1, contact: 1 }, { unique: true });
+partnershipEmailSendSchema.index({ campaign: 1, recipientEmail: 1 }, { unique: true });
 partnershipEmailSendSchema.index({ campaign: 1, estado: 1, nextAttemptAt: 1 });
 
 export default mongoose.model('PartnershipEmailSend', partnershipEmailSendSchema);

@@ -105,6 +105,7 @@ router.put('/me', verificarToken, async (req, res) => {
       linksPerfil,
       bio,
       localidade,
+      mostrarTelefonePublico,
       tipoConta,
       nif
     } = req.body;
@@ -122,6 +123,9 @@ router.put('/me', verificarToken, async (req, res) => {
 
     if (nome !== undefined) camposParaAtualizar.nome = String(nome).trim();
     if (telefone !== undefined) camposParaAtualizar.telefone = String(telefone).trim();
+    if (mostrarTelefonePublico !== undefined) {
+      camposParaAtualizar.mostrarTelefonePublico = mostrarTelefonePublico === true || mostrarTelefonePublico === 'true';
+    }
     if (email !== undefined) camposParaAtualizar.email = String(email).trim().toLowerCase();
     if (avatarUrl !== undefined) camposParaAtualizar.avatarUrl = avatarUrl || null;
     if (capaUrl !== undefined) camposParaAtualizar.capaUrl = capaUrl || null;
@@ -247,9 +251,12 @@ router.get('/me/guardados', verificarToken, async (req, res) => {
 router.get('/vendedor/:id', async (req, res) => {
   try {
     const vendedor = await User.findById(req.params.id).select(
-      'nome email telefone localidade avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo rating totalAvaliacoes createdAt'
+      'nome email telefone mostrarTelefonePublico localidade avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo rating totalAvaliacoes createdAt'
     ).lean();
     if (!vendedor) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
+    if (vendedor.mostrarTelefonePublico === false) {
+      delete vendedor.telefone;
+    }
     const anuncios = await Anuncio.find({ utilizador: req.params.id, estado: { $in: ['ativo', 'pendente'] } })
       .select('_id titulo preco fotos tipo estado destacado utilizador scoreQualidade scoreDetalhes carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area imovel.areaTerreno imovel.quartos imovel.casasBanho localizacao.cidade localizacao.distrito createdAt')
       .sort({ createdAt: -1 })

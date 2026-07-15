@@ -264,8 +264,12 @@ export default function Anuncio() {
     : null;
 
   const emailContacto = anuncio.email || donoDoAnuncio?.email || 'Não fornecido';
-  const telefoneContacto = anuncio.telefone || donoDoAnuncio?.telefone || 'Não fornecido';
-  const whatsappNumero = numeroParaWhatsapp(telefoneContacto);
+  const podeMostrarTelefone = donoDoAnuncio?.mostrarTelefonePublico !== false;
+  const telefoneContactoRaw = podeMostrarTelefone ? (anuncio.telefone || donoDoAnuncio?.telefone || '') : '';
+  const telefoneContacto = telefoneContactoRaw || 'Não fornecido';
+  const temTelefoneContacto = telefoneContacto !== 'Não fornecido';
+  const temEmailContacto = emailContacto !== 'Não fornecido';
+  const whatsappNumero = temTelefoneContacto ? numeroParaWhatsapp(telefoneContacto) : null;
   const inicial = donoDoAnuncio?.nome?.charAt(0).toUpperCase() || 'U';
   const localizacaoString = `${anuncio.localizacao?.cidade || 'N/A'}${anuncio.localizacao?.distrito ? `, ${anuncio.localizacao.distrito}` : ''}`;
   const extrasOpcionais = normalizarExtras(anuncio.equipamento || []);
@@ -335,7 +339,7 @@ export default function Anuncio() {
     { label: 'Localização', value: localizacaoString, icon: mdiMapMarkerOutline },
     { label: isCarro ? 'Perfil' : 'Preço / m²', value: isCarro ? (anuncio.carro?.marca || 'Viatura') : (precoPorM2 || 'Sob análise'), icon: isCarro ? mdiCar : mdiRulerSquare },
     { label: 'Vendedor', value: vendedorVerificado ? 'Verificado' : (rating > 0 ? `${rating.toFixed(1)} estrelas` : 'Novo vendedor'), icon: mdiShieldCheckOutline },
-    { label: 'Contacto', value: telefoneContacto !== 'Não fornecido' ? 'Disponível' : 'Por mensagem', icon: mdiPhone },
+    { label: 'Contacto', value: temTelefoneContacto ? 'Telefone' : (temEmailContacto ? 'Email' : 'Por mensagem'), icon: temTelefoneContacto ? mdiPhone : mdiEmailOutline },
   ];
 
   const jsonLd = {
@@ -861,9 +865,12 @@ export default function Anuncio() {
                     <>
                       {mostrarTelefone ? (
                         <>
-                          <a href={`tel:${telefoneContacto}`} className="contact-revealed">
+                          <a href={temTelefoneContacto ? `tel:${telefoneContacto}` : `mailto:${emailContacto}`} className="contact-revealed">
                             <span className="contact-label">Contactar via</span>
-                            <div className="contact-phone"><Icon path={mdiPhone} size={0.9} color={accent} />{telefoneContacto}</div>
+                            <div className="contact-phone">
+                              <Icon path={temTelefoneContacto ? mdiPhone : mdiEmailOutline} size={0.9} color={accent} />
+                              {temTelefoneContacto ? telefoneContacto : 'Email'}
+                            </div>
                             <div className="contact-email"><Icon path={mdiEmailOutline} size={0.6} />{emailContacto}</div>
                           </a>
                           {whatsappNumero && (
@@ -877,7 +884,8 @@ export default function Anuncio() {
                         </>
                       ) : (
                         <button type="button" className="btn-contact" onClick={() => setMostrarTelefone(true)}>
-                          <Icon path={mdiPhone} size={0.85} /> Revelar Contactos
+                          <Icon path={temTelefoneContacto ? mdiPhone : mdiEmailOutline} size={0.85} />
+                          {temTelefoneContacto ? 'Revelar Contactos' : 'Mostrar Email'}
                         </button>
                       )}
                       

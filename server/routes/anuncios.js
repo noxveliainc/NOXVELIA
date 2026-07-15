@@ -176,7 +176,7 @@ router.get('/', async (req, res) => {
       .sort(sortOption)
       .skip(skip)
       .limit(limit)
-      .populate('utilizador', 'nome avatarUrl tipo telefone premiumAtivo')
+      .populate('utilizador', 'nome avatarUrl tipo premiumAtivo')
       .lean();
 
     const [totalAnuncios, resumoPrecoAgregado] = await Promise.all([
@@ -265,11 +265,11 @@ router.get('/em-alta/semana', async (req, res) => {
     const [carro, imovel] = await Promise.all([
       Anuncio.populate(resultado?.carro || [], {
         path: 'utilizador',
-        select: 'nome avatarUrl tipo telefone premiumAtivo'
+        select: 'nome avatarUrl tipo premiumAtivo'
       }),
       Anuncio.populate(resultado?.imovel || [], {
         path: 'utilizador',
-        select: 'nome avatarUrl tipo telefone premiumAtivo'
+        select: 'nome avatarUrl tipo premiumAtivo'
       })
     ]);
 
@@ -342,10 +342,15 @@ router.get('/:id', async (req, res) => {
     const anuncio = await Anuncio.findOne({
       _id: req.params.id,
       estado: { $ne: 'apagado' }
-    }).populate('utilizador', 'nome email avatarUrl tipo telefone premiumAtivo').lean();
+    }).populate('utilizador', 'nome email avatarUrl tipo telefone mostrarTelefonePublico premiumAtivo').lean();
 
     if (!anuncio)
       return res.status(404).json({ erro: 'Anúncio removido.' });
+
+    if (anuncio.utilizador?.mostrarTelefonePublico === false) {
+      delete anuncio.telefone;
+      delete anuncio.utilizador.telefone;
+    }
 
     res.json(anuncio);
   } catch (err) {

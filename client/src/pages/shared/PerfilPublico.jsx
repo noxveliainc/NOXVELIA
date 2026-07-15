@@ -101,7 +101,8 @@ export default function PerfilPublico() {
     ? (vendedor.nome.toUpperCase().includes('NOXVELIA') ? vendedor.nome : `NOXVELIA ${vendedor.nome}`)
     : vendedor?.nome;
   const isProfissional = vendedor?.tipoConta === 'profissional' || isAdmin;
-  const telefoneLimpo = vendedor?.telefone?.replace(/\D/g, '');
+  const telefonePodeAparecer = vendedor?.mostrarTelefonePublico !== false;
+  const telefoneLimpo = telefonePodeAparecer ? vendedor?.telefone?.replace(/\D/g, '') : '';
   const linksPerfilVisiveis = obterLinksVisiveisPerfil(vendedor);
 
   return (

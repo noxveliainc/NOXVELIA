@@ -126,6 +126,8 @@ const toPercent = (value, base) => {
   return `${Math.round((Number(value || 0) / Number(base || 1)) * 100)}%`;
 };
 
+const SENT_STATES = new Set(['enviado', 'entregue', 'aberto', 'clicado']);
+
 const apiError = (error) => error?.response?.data?.erro || error?.message || 'Ocorreu um erro inesperado.';
 
 const buildParams = (params) => {
@@ -166,6 +168,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
   const [preview, setPreview] = useState(null);
   const [previewMode, setPreviewMode] = useState('desktop');
   const [testEmail, setTestEmail] = useState('');
+  const [testSentForCampaign, setTestSentForCampaign] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
 
@@ -199,6 +202,9 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
   const activeCampaigns = Number(summary?.activeCampaigns || 0);
   const selectedContactsCount = selectedContacts.length;
   const dailyLimit = Number(settings?.limiteDiario || 40);
+  const testSent = Boolean(selectedCampaignId && testSentForCampaign === selectedCampaignId);
+  const loadedSentSends = sends.filter((send) => SENT_STATES.has(send.estado)).length;
+  const loadedPendingSends = sends.filter((send) => send.estado === 'pendente').length;
   let nextAction = {
     title: 'Testa antes de enviar',
     text: 'Escolhe uma campanha, gera pre-visualizacao, envia um teste para ti e so depois inicia.',
@@ -459,6 +465,9 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
         },
       });
       setSends(data.sends || []);
+      setEstimate(null);
+      setPreview(null);
+      setTestSentForCampaign('');
     } catch (err) {
       setError(apiError(err));
     } finally {
@@ -471,6 +480,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
     setCampaignDetail(null);
     setPreview(null);
     setEstimate(null);
+    setTestSentForCampaign('');
     try {
       const { data } = await api.get('/admin/partnerships/campaigns/default');
       setCampaignForm({ ...emptyCampaign, ...data });
@@ -479,7 +489,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
     }
   };
 
-  const saveCampaign = async () => {
+  const saveCampaign = async ({ silent = false } = {}) => {
     setLoading(true);
     setError('');
     try {
@@ -489,21 +499,26 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
         : await api.post('/admin/partnerships/campaigns', payload);
       setSelectedCampaignId(data._id);
       setCampaignDetail((current) => ({ ...(current || {}), campaign: data }));
-      setMessage('Rascunho da campanha guardado.');
+      if (!silent) setMessage('Rascunho da campanha guardado.');
       const campaignsRes = await api.get('/admin/partnerships/campaigns');
       setCampaigns(campaignsRes.data || []);
+      return data;
     } catch (err) {
       setError(apiError(err));
+      return null;
     } finally {
       setLoading(false);
     }
   };
 
-  const estimateCampaign = async (overrideFilters = null) => {
+  const estimateCampaign = async (overrideFilters = null, campaignIdOverride = null) => {
     setLoading(true);
     try {
       const payload = overrideFilters || campaignForm.filtrosDestinatarios || {};
-      const { data } = await api.post('/admin/partnerships/campaigns/estimate', payload);
+      const { data } = await api.post('/admin/partnerships/campaigns/estimate', {
+        filtrosDestinatarios: payload,
+        campaignId: campaignIdOverride || selectedCampaignId || undefined,
+      });
       setEstimate(data);
       return data;
     } catch (err) {
@@ -514,13 +529,57 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
     }
   };
 
-  const previewCampaign = async () => {
+  const previewCampaign = async (overrideCampaign = null, { silent = false } = {}) => {
     setLoading(true);
     setError('');
     try {
-      const { data } = await api.post('/admin/partnerships/campaigns/preview', campaignForm);
+      const { data } = await api.post('/admin/partnerships/campaigns/preview', overrideCampaign || campaignForm);
       setPreview(data);
-      setMessage('Pre-visualizacao gerada com dados de exemplo.');
+      if (!silent) setMessage('Pre-visualizacao gerada com dados de exemplo.');
+      return data;
+    } catch (err) {
+      setError(apiError(err));
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const prepareSafeCampaign = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const payload = campaignForm;
+      const { data: savedCampaign } = selectedCampaignId
+        ? await api.put(`/admin/partnerships/campaigns/${selectedCampaignId}`, payload)
+        : await api.post('/admin/partnerships/campaigns', payload);
+      setSelectedCampaignId(savedCampaign._id);
+      setCampaignDetail((current) => ({ ...(current || {}), campaign: savedCampaign }));
+      setCampaignForm({
+        ...emptyCampaign,
+        ...savedCampaign,
+        filtrosDestinatarios: {
+          ...emptyCampaign.filtrosDestinatarios,
+          ...(savedCampaign.filtrosDestinatarios || {}),
+        },
+      });
+
+      const [{ data: estimateData }, { data: previewData }, campaignsRes] = await Promise.all([
+        api.post('/admin/partnerships/campaigns/estimate', {
+          filtrosDestinatarios: savedCampaign.filtrosDestinatarios || {},
+          campaignId: savedCampaign._id,
+        }),
+        api.post('/admin/partnerships/campaigns/preview', savedCampaign),
+        api.get('/admin/partnerships/campaigns'),
+      ]);
+      setEstimate(estimateData);
+      setPreview(previewData);
+      setCampaigns(campaignsRes.data || []);
+      if (!estimateData.eligible) {
+        setMessage('Campanha guardada e pre-visualizada, mas nao ha destinatarios elegiveis. Revê os filtros ou importa contactos validos.');
+      } else {
+        setMessage('Campanha preparada: rascunho guardado, destinatarios contados e pre-visualizacao gerada. Agora envia um teste e confirma.');
+      }
     } catch (err) {
       setError(apiError(err));
     } finally {
@@ -537,6 +596,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
     setError('');
     try {
       await api.post(`/admin/partnerships/campaigns/${selectedCampaignId}/test`, { email: testEmail });
+      setTestSentForCampaign(selectedCampaignId);
       setMessage(`Email de teste enviado para ${testEmail}.`);
     } catch (err) {
       setError(apiError(err));
@@ -546,10 +606,16 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
   };
 
   const openStartModal = async () => {
+    if (!selectedCampaignId) {
+      setError('Guarda a campanha antes de iniciar.');
+      return;
+    }
     const result = await estimateCampaign();
-    if (result) {
+    if (result?.eligible > 0) {
       setConfirmText('');
       setConfirmOpen(true);
+    } else if (result) {
+      setError('Nao ha destinatarios elegiveis para esta campanha.');
     }
   };
 
@@ -561,9 +627,9 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
     setLoading(true);
     setError('');
     try {
-      await api.post(`/admin/partnerships/campaigns/${selectedCampaignId}/start`, { confirmacao: confirmText });
+      const { data } = await api.post(`/admin/partnerships/campaigns/${selectedCampaignId}/start`, { confirmacao: confirmText });
       setConfirmOpen(false);
-      setMessage('Campanha iniciada. O worker processa os envios em lotes pequenos.');
+      setMessage(`Campanha iniciada. ${data.createdSends || 0} novos envios preparados; ${data.existingSends || 0} ja estavam preparados. O worker processa em lotes pequenos.`);
       await Promise.all([loadCampaign(selectedCampaignId), loadCore()]);
     } catch (err) {
       setError(apiError(err));
@@ -604,6 +670,39 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
     const query = buildParams({ ...sendFilters, campaign: selectedCampaignId });
     const { data } = await api.get(`/admin/partnerships/sends?${query}`);
     setSends(data || []);
+  };
+
+  const loadSentSends = async () => {
+    if (!selectedCampaignId) return;
+    const query = buildParams({ campaign: selectedCampaignId, sentOnly: true });
+    const { data } = await api.get(`/admin/partnerships/sends?${query}`);
+    setSendFilters({ q: '', estado: '' });
+    setSends(data || []);
+  };
+
+  const exportSends = async ({ sentOnly = false } = {}) => {
+    if (!selectedCampaignId) {
+      setError('Seleciona uma campanha antes de exportar envios.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const query = buildParams({ ...sendFilters, campaign: selectedCampaignId, sentOnly: sentOnly ? 'true' : '' });
+      const response = await api.get(`/admin/partnerships/sends/export?${query}`, { responseType: 'blob' });
+      const url = URL.createObjectURL(response.data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = sentOnly ? 'noxvelia-emails-enviados-parcerias.csv' : 'noxvelia-envios-parcerias.csv';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setMessage('Exportacao dos envios descarregada.');
+    } catch (err) {
+      setError(apiError(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const saveSettings = async () => {
@@ -874,7 +973,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
           <Panel colors={palette} title="2. Criar campanha">
             <div style={{ display: 'grid', gap: 10 }}>
               <HelpBox colors={palette} title="Regra simples">
-                Primeiro guarda o rascunho, depois pre-visualiza e envia um teste para ti. O botao de iniciar so abre uma confirmacao; nao dispara por acidente.
+                Usa "Preparar envio seguro" para guardar, contar destinatarios unicos e gerar a pre-visualizacao. Depois envia um teste e so no fim confirma com ENVIAR.
               </HelpBox>
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(160px, 1fr) auto', gap: 8 }}>
                 <select value={selectedCampaignId} onChange={(event) => loadCampaign(event.target.value)}>
@@ -927,15 +1026,18 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
               </div>
 
               <div style={toolbarStyle}>
-                <button type="button" onClick={saveCampaign} style={buttonStyle(palette, 'accent')}><Icon path={mdiContentSaveOutline} size={0.6} /> 1. Guardar rascunho</button>
-                <button type="button" onClick={() => estimateCampaign()} style={buttonStyle(palette)}><Icon path={mdiMagnify} size={0.6} /> 2. Contar destinatarios</button>
-                <button type="button" onClick={previewCampaign} style={buttonStyle(palette)}><Icon path={mdiEmailOpenOutline} size={0.6} /> 3. Ver email</button>
-                <button type="button" onClick={openStartModal} style={buttonStyle(palette, 'danger')} disabled={!selectedCampaignId}><Icon path={mdiPlay} size={0.6} /> 5. Iniciar envio</button>
+                <button type="button" onClick={prepareSafeCampaign} style={buttonStyle(palette, 'accent')}><Icon path={mdiCheckCircleOutline} size={0.6} /> Preparar envio seguro</button>
+                <button type="button" onClick={() => saveCampaign()} style={buttonStyle(palette, 'ghost')}><Icon path={mdiContentSaveOutline} size={0.6} /> Guardar</button>
+                <button type="button" onClick={() => estimateCampaign()} style={buttonStyle(palette)}><Icon path={mdiMagnify} size={0.6} /> Contar destinatarios</button>
+                <button type="button" onClick={() => previewCampaign()} style={buttonStyle(palette)}><Icon path={mdiEmailOpenOutline} size={0.6} /> Ver email</button>
+                <button type="button" onClick={openStartModal} style={buttonStyle(palette, 'danger')} disabled={!selectedCampaignId}><Icon path={mdiPlay} size={0.6} /> Iniciar envio</button>
               </div>
 
               {estimate && (
                 <div style={previewBoxStyle(palette)}>
-                  <strong>{estimate.eligible} destinatarios elegiveis</strong> em {estimate.total} contactos filtrados · {estimate.suppressed} removidos por supressao · {estimate.invalid} invalidos.
+                  <strong>{estimate.eligible} destinatarios unicos elegiveis</strong> em {estimate.total} contactos filtrados.<br />
+                  Novos envios a criar: {estimate.newRecipients ?? estimate.eligible} · Ja preparados nesta campanha: {estimate.existing || 0} · Duplicados internos ignorados: {estimate.duplicates || 0}.<br />
+                  Removidos por supressao: {estimate.suppressed || 0} · Invalidos: {estimate.invalid || 0}.
                   <div style={{ marginTop: 6, color: palette.textFaint }}>Limite diario atual: {dailyLimit} emails. Se houver mais destinatarios, o worker continua em lotes nos dias/intervalos configurados.</div>
                 </div>
               )}
@@ -944,6 +1046,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
                 <input type="email" value={testEmail} onChange={(event) => setTestEmail(event.target.value)} placeholder="Email para teste" />
                 <button type="button" onClick={sendTest} style={buttonStyle(palette, 'ghost')} disabled={!testEmail || !selectedCampaignId}><Icon path={mdiSendOutline} size={0.6} /> 4. Enviar teste</button>
               </div>
+              {testSent && <div style={previewBoxStyle(palette)}><Icon path={mdiCheckCircleOutline} size={0.65} /> Teste enviado nesta campanha. Podes iniciar quando a estimativa estiver correta.</div>}
               {!selectedCampaignId && <div style={previewBoxStyle(palette)}>Guarda o rascunho para poderes enviar teste ou iniciar campanha.</div>}
             </div>
           </Panel>
@@ -997,6 +1100,13 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
                   <div style={{ marginTop: 6, color: palette.textFaint }}>As aberturas podem ser imprecisas devido a protecoes de privacidade dos clientes de email.</div>
                 </div>
               )}
+              {selectedCampaign && (
+                <div style={previewBoxStyle(palette)}>
+                  <strong style={{ color: '#fff' }}>{selectedCampaign.totalEnviado || 0} emails enviados/preparados como enviados</strong><br />
+                  Na tabela carregada agora: {loadedSentSends} enviados · {loadedPendingSends} pendentes · {sends.length} registos visiveis.
+                  <div style={{ marginTop: 6, color: palette.textFaint }}>Usa "Ver enviados" para listar apenas quem ja recebeu ou ja entrou no estado enviado/entregue/aberto/clicado.</div>
+                </div>
+              )}
               <div style={toolbarStyle}>
                 <button type="button" onClick={pauseCampaign} style={buttonStyle(palette, 'ghost')} disabled={!selectedCampaignId || selectedCampaign?.estado !== 'em_processamento'}><Icon path={mdiPause} size={0.6} /> Pausar</button>
                 <button type="button" onClick={cancelCampaign} style={buttonStyle(palette, 'danger')} disabled={!selectedCampaignId || ['concluida', 'cancelada'].includes(selectedCampaign?.estado)}><Icon path={mdiAlertOutline} size={0.6} /> Cancelar</button>
@@ -1013,6 +1123,9 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
                   {['pendente', 'enviado', 'entregue', 'aberto', 'clicado', 'devolvido', 'reclamado', 'falhou', 'removido', 'ignorado'].map((state) => <option key={state} value={state}>{state}</option>)}
                 </select>
                 <button type="button" onClick={loadSends} style={buttonStyle(palette)}><Icon path={mdiMagnify} size={0.6} /> Filtrar envios</button>
+                <button type="button" onClick={loadSentSends} style={buttonStyle(palette, 'accent')} disabled={!selectedCampaignId}><Icon path={mdiCheckCircleOutline} size={0.6} /> Ver enviados</button>
+                <button type="button" onClick={() => exportSends()} style={buttonStyle(palette, 'ghost')} disabled={!selectedCampaignId}><Icon path={mdiDownloadOutline} size={0.6} /> Exportar tabela</button>
+                <button type="button" onClick={() => exportSends({ sentOnly: true })} style={buttonStyle(palette, 'ghost')} disabled={!selectedCampaignId}><Icon path={mdiDownloadOutline} size={0.6} /> Exportar enviados</button>
               </div>
               <div style={{ overflowX: 'auto', marginTop: 12 }}>
                 <table>
@@ -1125,18 +1238,22 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
           <div style={modalStyle(palette)}>
             <h3 style={{ margin: 0, fontFamily: typo.display }}>Confirmar envio</h3>
             <div style={previewBoxStyle(palette)}>
-              <strong>{estimate?.eligible || 0} destinatarios elegiveis</strong><br />
+              <strong>{estimate?.eligible || 0} destinatarios unicos elegiveis</strong><br />
               Assunto: {campaignForm.assunto}<br />
               Remetente: {campaignForm.remetente}<br />
               Reply-to: {campaignForm.replyTo}<br />
+              Novos envios a criar: {estimate?.newRecipients ?? estimate?.eligible ?? 0}<br />
+              Ja preparados nesta campanha: {estimate?.existing || 0}<br />
+              Duplicados internos ignorados: {estimate?.duplicates || 0}<br />
               Removidos por supressao: {estimate?.suppressed || 0}<br />
               Emails invalidos: {estimate?.invalid || 0}
             </div>
+            <p style={{ color: '#bbf7d0', fontSize: 13 }}>Garantia: o servidor cria no maximo um envio por contacto e por email dentro desta campanha. Se voltares a iniciar, os ja preparados sao ignorados.</p>
             <p style={{ color: '#fecaca', fontSize: 13 }}>Depois de iniciado, o envio ja processado nao pode ser anulado. Os envios pendentes podem ser pausados ou cancelados.</p>
             <Field label='Escreve "ENVIAR" para confirmar'><input value={confirmText} onChange={(event) => setConfirmText(event.target.value)} /></Field>
             <div style={{ ...toolbarStyle, justifyContent: 'flex-end', marginTop: 12 }}>
               <button type="button" onClick={() => setConfirmOpen(false)} style={buttonStyle(palette, 'ghost')}>Voltar</button>
-              <button type="button" onClick={startCampaign} style={buttonStyle(palette, 'danger')} disabled={confirmText !== 'ENVIAR'}><Icon path={mdiPlay} size={0.6} /> Iniciar</button>
+              <button type="button" onClick={startCampaign} style={buttonStyle(palette, 'danger')} disabled={confirmText !== 'ENVIAR' || !estimate?.eligible}><Icon path={mdiPlay} size={0.6} /> Iniciar</button>
             </div>
           </div>
         </div>

@@ -86,7 +86,8 @@ export default function ProfileView({
   const nomeExibicao = isAdmin
     ? (user?.nome?.toUpperCase().includes('NOXVELIA') ? user?.nome : `NOXVELIA ${user?.nome}`)
     : user?.nome;
-  const telefoneLimpo = user?.telefone?.replace(/\D/g, '');
+  const telefonePodeAparecer = user?.mostrarTelefonePublico !== false;
+  const telefoneLimpo = telefonePodeAparecer ? user?.telefone?.replace(/\D/g, '') : '';
 
   return (
     <>

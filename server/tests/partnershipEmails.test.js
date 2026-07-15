@@ -113,11 +113,16 @@ test('restricoes impedem envio duplicado e eventos webhook duplicados', async ()
   const sendModel = await readFile(new URL('../models/PartnershipEmailSend.js', import.meta.url), 'utf8');
   const webhookModel = await readFile(new URL('../models/PartnershipWebhookEvent.js', import.meta.url), 'utf8');
   const eventsService = await readFile(new URL('../services/partnershipEvents.js', import.meta.url), 'utf8');
+  const campaignService = await readFile(new URL('../services/partnershipCampaignService.js', import.meta.url), 'utf8');
 
   assert.match(sendModel, /index\(\{ campaign: 1, contact: 1 \}, \{ unique: true \}\)/);
+  assert.match(sendModel, /index\(\{ campaign: 1, recipientEmail: 1 \}, \{ unique: true \}\)/);
+  assert.match(sendModel, /idempotencyKey: \{ type: String, trim: true, index: true, unique: true, sparse: true \}/);
   assert.match(webhookModel, /eventId: \{ type: String, required: true, unique: true/);
   assert.match(eventsService, /PartnershipWebhookEvent\.create/);
   assert.match(eventsService, /error\?\.code === 11000\) return \{ duplicate: true \}/);
+  assert.match(campaignService, /newRecipients/);
+  assert.match(campaignService, /existingEmails/);
 });
 
 test('worker comercial implementa retry, backoff e tratamento de 429', async () => {
@@ -134,4 +139,14 @@ test('segredos da Resend nao aparecem no frontend de administracao', async () =>
 
   assert.doesNotMatch(adminUi, /RESEND_API_KEY/);
   assert.doesNotMatch(adminUi, /new Resend/);
+});
+
+test('painel permite consultar e exportar envios por destinatario', async () => {
+  const adminRoutes = await readFile(new URL('../routes/adminPartnerships.js', import.meta.url), 'utf8');
+  const adminUi = await readFile(new URL('../../client/src/pages/admin/PartnershipEmails.jsx', import.meta.url), 'utf8');
+
+  assert.match(adminRoutes, /router\.get\('\/sends\/export'/);
+  assert.match(adminRoutes, /sentOnly === 'true'/);
+  assert.match(adminUi, /Ver enviados/);
+  assert.match(adminUi, /Exportar enviados/);
 });

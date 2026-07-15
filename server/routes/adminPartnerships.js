@@ -96,7 +96,7 @@ const campaignPayload = (body = {}, settings = {}) => {
       tiposEmpresa: Array.isArray(filtros.tiposEmpresa) ? filtros.tiposEmpresa.map(normalizeContactType) : [],
       estados: Array.isArray(filtros.estados) ? filtros.estados.map(normalizeContactState) : ['novo', 'valido'],
       origem: cleanText(filtros.origem, 120),
-      contactIds: Array.isArray(filtros.contactIds) ? filtros.contactIds : [],
+      contactIds: Array.isArray(filtros.contactIds) ? [...new Set(filtros.contactIds.map(String).filter(Boolean))] : [],
     },
   };
 };
@@ -301,7 +301,7 @@ router.put('/campaigns/:id', asyncRoute(async (req, res) => {
 }));
 
 router.post('/campaigns/estimate', asyncRoute(async (req, res) => {
-  res.json(await estimateRecipients(req.body.filtrosDestinatarios || req.body || {}));
+  res.json(await estimateRecipients(req.body.filtrosDestinatarios || req.body || {}, { campaignId: req.body.campaignId }));
 }));
 
 router.post('/campaigns/preview', asyncRoute(async (req, res) => {
@@ -364,9 +364,43 @@ router.get('/sends', asyncRoute(async (req, res) => {
   const query = {};
   if (req.query.campaign) query.campaign = req.query.campaign;
   if (req.query.estado) query.estado = req.query.estado;
+  if (req.query.sentOnly === 'true') query.estado = { $in: ['enviado', 'entregue', 'aberto', 'clicado'] };
   if (req.query.q) query.recipientEmail = new RegExp(cleanText(req.query.q, 120).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
   const sends = await PartnershipEmailSend.find(query).sort({ createdAt: -1 }).limit(300).populate('campaign', 'nomeInterno').populate('contact', 'nomePessoa nomeEmpresa tipoEmpresa').lean();
   res.json(sends);
+}));
+
+router.get('/sends/export', asyncRoute(async (req, res) => {
+  const query = {};
+  if (req.query.campaign) query.campaign = req.query.campaign;
+  if (req.query.estado) query.estado = req.query.estado;
+  if (req.query.sentOnly === 'true') query.estado = { $in: ['enviado', 'entregue', 'aberto', 'clicado'] };
+  if (req.query.q) query.recipientEmail = new RegExp(cleanText(req.query.q, 120).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  const sends = await PartnershipEmailSend.find(query)
+    .sort({ createdAt: -1 })
+    .populate('campaign', 'nomeInterno')
+    .populate('contact', 'nomePessoa nomeEmpresa tipoEmpresa')
+    .lean();
+  const rows = [
+    ['campanha', 'email', 'nome', 'empresa', 'tipo', 'estado', 'tentativas', 'enviadoEm', 'entregueEm', 'abertoEm', 'clicadoEm', 'erro'],
+    ...sends.map((send) => [
+      send.campaign?.nomeInterno || '',
+      send.recipientEmail,
+      send.contact?.nomePessoa || '',
+      send.contact?.nomeEmpresa || '',
+      send.contact?.tipoEmpresa || '',
+      send.estado,
+      send.tentativas || 0,
+      send.enviadoEm?.toISOString?.() || '',
+      send.entregueEm?.toISOString?.() || '',
+      send.abertoEm?.toISOString?.() || '',
+      send.clicadoEm?.toISOString?.() || '',
+      send.erro || '',
+    ]),
+  ];
+  await auditPartnershipAction(req, 'send.export', { entity: 'send', details: { total: sends.length, campaign: req.query.campaign || 'all' } });
+  res.setHeader('Content-Disposition', 'attachment; filename="noxvelia-envios-parcerias.csv"');
+  res.type('text/csv').send(buildCsv(rows));
 }));
 
 router.get('/suppressions', asyncRoute(async (_req, res) => {

@@ -16,17 +16,37 @@ export const buildRecipientQuery = (filters = {}) => {
   return query;
 };
 
-export const estimateRecipients = async (filters = {}) => {
+export const estimateRecipients = async (filters = {}, options = {}) => {
   const contacts = await PartnershipContact.find(buildRecipientQuery(filters)).select('_id email estado').lean();
   const emails = contacts.map((contact) => normalizeEmail(contact.email)).filter(isValidEmail);
   const suppressed = await PartnershipSuppression.find({ email: { $in: emails } }).select('email').lean();
   const suppressedSet = new Set(suppressed.map((item) => item.email));
-  const eligible = contacts.filter((contact) => isValidEmail(contact.email) && !suppressedSet.has(normalizeEmail(contact.email)));
+  const invalidCount = contacts.filter((contact) => !isValidEmail(contact.email)).length;
+  const suppressedCount = contacts.filter((contact) => isValidEmail(contact.email) && suppressedSet.has(normalizeEmail(contact.email))).length;
+  const eligibleByEmail = new Map();
+  contacts.forEach((contact) => {
+    const email = normalizeEmail(contact.email);
+    if (!isValidEmail(email) || suppressedSet.has(email) || eligibleByEmail.has(email)) return;
+    eligibleByEmail.set(email, contact);
+  });
+  const eligible = [...eligibleByEmail.values()];
+  const eligibleEmails = [...eligibleByEmail.keys()];
+  let existing = 0;
+  if (options.campaignId && mongoose.Types.ObjectId.isValid(options.campaignId) && eligibleEmails.length) {
+    const existingRows = await PartnershipEmailSend.find({
+      campaign: options.campaignId,
+      recipientEmail: { $in: eligibleEmails },
+    }).select('recipientEmail').lean();
+    existing = new Set(existingRows.map((row) => normalizeEmail(row.recipientEmail))).size;
+  }
   return {
     total: contacts.length,
     eligible: eligible.length,
-    invalid: contacts.filter((contact) => !isValidEmail(contact.email)).length,
-    suppressed: contacts.length - eligible.length - contacts.filter((contact) => !isValidEmail(contact.email)).length,
+    newRecipients: Math.max(0, eligible.length - existing),
+    existing,
+    duplicates: contacts.length - invalidCount - suppressedCount - eligible.length,
+    invalid: invalidCount,
+    suppressed: suppressedCount,
     eligibleIds: eligible.map((contact) => contact._id),
   };
 };
@@ -38,9 +58,17 @@ export const prepareCampaignSends = async (campaignId, adminId) => {
     throw Object.assign(new Error('Campanha nao pode ser iniciada neste estado.'), { status: 400 });
   }
 
-  const estimate = await estimateRecipients(campaign.filtrosDestinatarios || {});
+  const estimate = await estimateRecipients(campaign.filtrosDestinatarios || {}, { campaignId: campaign._id });
+  if (!estimate.eligible && !estimate.existing) {
+    throw Object.assign(new Error('Nao existem destinatarios elegiveis para esta campanha.'), { status: 400 });
+  }
   const contacts = await PartnershipContact.find({ _id: { $in: estimate.eligibleIds } }).select('_id email').lean();
-  const docs = contacts.map((contact) => ({
+  const existingRows = await PartnershipEmailSend.find({
+    campaign: campaign._id,
+    recipientEmail: { $in: contacts.map((contact) => normalizeEmail(contact.email)).filter(isValidEmail) },
+  }).select('recipientEmail').lean();
+  const existingEmails = new Set(existingRows.map((row) => normalizeEmail(row.recipientEmail)));
+  const docs = contacts.filter((contact) => !existingEmails.has(normalizeEmail(contact.email))).map((contact) => ({
     campaign: campaign._id,
     contact: contact._id,
     recipientEmail: normalizeEmail(contact.email),
@@ -49,15 +77,21 @@ export const prepareCampaignSends = async (campaignId, adminId) => {
     idempotencyKey: `partnership:${campaign._id}:${contact._id}`,
   }));
 
+  let createdSends = 0;
   if (docs.length) {
     try {
-      await PartnershipEmailSend.insertMany(docs, { ordered: false });
+      const insertedDocs = await PartnershipEmailSend.insertMany(docs, { ordered: false });
+      createdSends = insertedDocs.length;
     } catch (error) {
       if (error?.code !== 11000 && error?.writeErrors?.some((item) => item.code !== 11000)) throw error;
+      createdSends = error.insertedDocs?.length || Math.max(0, docs.length - (error.writeErrors?.length || 0));
     }
   }
 
   const totalDestinatarios = await PartnershipEmailSend.countDocuments({ campaign: campaign._id });
+  if (!totalDestinatarios) {
+    throw Object.assign(new Error('Nao foi possivel preparar destinatarios para esta campanha.'), { status: 400 });
+  }
   const now = new Date();
   campaign.estado = 'em_processamento';
   campaign.iniciadoPor = adminId;
@@ -66,7 +100,7 @@ export const prepareCampaignSends = async (campaignId, adminId) => {
   campaign.totalRemovido = estimate.suppressed;
   campaign.totalIgnorado = estimate.invalid;
   await campaign.save();
-  return { campaign, estimate, totalDestinatarios };
+  return { campaign, estimate, totalDestinatarios, createdSends, existingSends: existingEmails.size };
 };
 
 export const refreshCampaignCounters = async (campaignId) => {

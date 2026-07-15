@@ -2,10 +2,32 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { Icon } from '@mdi/react';
-import { mdiStarCircle, mdiCameraOutline, mdiTrashCanOutline, mdiCheckDecagram, mdiMapMarkerOutline } from '@mdi/js';
 import { anuncioPath } from '../../utils/seo';
 import { getImageDimensions, getImageSrcSet, getImageUrl } from '../../utils/images';
+
+const CARD_ICON_PATHS = {
+  camera: 'M4 8h3l1.5-2h7L17 8h3v10H4V8zm8 8a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
+  check: 'M12 3l7 3v5c0 5-3.1 8.3-7 10-3.9-1.7-7-5-7-10V6l7-3zm-3 9 2 2 4-5',
+  location: 'M12 21s6-5.2 6-11a6 6 0 0 0-12 0c0 5.8 6 11 6 11zm0-8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
+  star: 'M12 4l2.3 4.7 5.2.8-3.8 3.7.9 5.2-4.6-2.4-4.6 2.4.9-5.2-3.8-3.7 5.2-.8L12 4z',
+  trash: 'M6 7h12M9 7V5h6v2m-7 3 .6 9h6.8l.6-9',
+};
+
+function CardIcon({ name, size = 14, color }) {
+  return (
+    <svg
+      className="nxc-icon"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+      style={color ? { color } : undefined}
+    >
+      <path d={CARD_ICON_PATHS[name]} />
+    </svg>
+  );
+}
 
 export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioEliminado, forceSellerIdentity = false }) {
   const { user, signed } = useAuth();
@@ -95,33 +117,27 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           text-decoration: none;
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 18px;
+          border-radius: 10px;
           overflow: hidden;
-          transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease, border-color .3s ease;
+          transition: border-color .16s ease, background-color .16s ease;
           color: #0f172a;
           position: relative;
-          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+          box-shadow: none;
         }
         .nxc-wrap::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          pointer-events: none;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+          display: none;
         }
         .nxc-wrap:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 24px 38px -18px rgba(15,23,42,0.28);
-          border-color: #cbd5e1;
+          background: #fbfcfb;
+          border-color: #b8c5c1;
         }
         .nxc-wrap.premium {
-          border-color: rgba(234, 179, 8, 0.4);
-          box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.15) inset, 0 4px 20px rgba(234, 179, 8, 0.1);
+          border-color: #c6a86a;
+          box-shadow: none;
         }
         .nxc-wrap.premium:hover {
-          border-color: rgba(234, 179, 8, 0.6);
-          box-shadow: 0 20px 40px rgba(234, 179, 8, 0.15);
+          border-color: #9d7b3f;
+          box-shadow: none;
         }
 
         /* ── IMAGEM ── */
@@ -132,37 +148,18 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           background: #f8fafc;
         }
         .nxc-img::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(135deg, rgba(255,255,255,0.16), transparent 36%);
-          opacity: 0;
-          transition: opacity .3s;
-          z-index: 2;
-          pointer-events: none;
+          display: none;
         }
-        .nxc-wrap:hover .nxc-img::after { opacity: 1; }
         .nxc-img img {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transition: transform .5s cubic-bezier(.16,1,.3,1);
           display: block;
         }
-        .nxc-wrap:hover .nxc-img img { transform: scale(1.05); }
 
         /* Overlay para legibilidade das tags */
         .nxc-img-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            to top,
-            rgba(15, 23, 42, 0.6) 0%,
-            rgba(15, 23, 42, 0.1) 40%,
-            transparent 70%
-          );
-          pointer-events: none;
-          z-index: 1;
+          display: none;
         }
 
         .nxc-placeholder {
@@ -180,7 +177,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           position: absolute;
           top: 12px;
           left: 12px;
-          background: linear-gradient(135deg, #eab308 0%, #f59e0b 100%);
+          background: #9d7b3f;
           color: #fff;
           font-size: 9px;
           font-weight: 900;
@@ -192,7 +189,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           align-items: center;
           gap: 4px;
           z-index: 5;
-          box-shadow: 0 3px 10px rgba(234,179,8,0.35);
+          box-shadow: none;
         }
         
         .nxc-badge-status {
@@ -213,7 +210,6 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           bottom: 10px;
           left: 10px;
           background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(8px);
           border: 1px solid rgba(0, 0, 0, 0.05);
           color: #0f172a;
           font-size: 9px;
@@ -230,7 +226,6 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           top: 12px;
           right: 12px;
           background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(8px);
           border: 1px solid rgba(239, 68, 68, 0.3);
           color: #ef4444;
           font-size: 9px;
@@ -241,7 +236,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           z-index: 10;
           text-transform: uppercase;
           letter-spacing: .05em;
-          transition: all .2s;
+          transition: background-color .16s ease, color .16s ease, border-color .16s ease;
           display: flex;
           align-items: center;
           gap: 4px;
@@ -257,7 +252,6 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           bottom: 10px;
           right: 10px;
           background: rgba(15, 23, 42, 0.65);
-          backdrop-filter: blur(8px);
           border: 1px solid rgba(255, 255, 255, 0.1);
           color: #fff;
           font-size: 10px;
@@ -351,7 +345,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           height: 100%;
           width: ${qualidadePercentagem}%;
           border-radius: inherit;
-          background: linear-gradient(90deg, #2ac1b4, #0f172a);
+          background: #24b8ab;
         }
 
         .nxc-insights {
@@ -467,32 +461,33 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         /* ── MODAL ── */
         .nxc-modal-overlay {
-          position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px);
+          position: fixed; inset: 0; background: rgba(15, 23, 42, 0.72);
           z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 20px;
         }
         .nxc-modal-box {
-          background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 32px;
-          max-width: 400px; width: 100%; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
+          background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 32px;
+          max-width: 400px; width: 100%; text-align: center; box-shadow: none;
         }
         .nxc-modal-icon { margin: 0 auto 20px; display: flex; justify-content: center; }
         .nxc-modal-title { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 10px; }
         .nxc-modal-text { font-size: 14px; color: #64748b; margin: 0 0 24px; line-height: 1.6; }
         .nxc-modal-actions { display: flex; gap: 10px; }
-        .nxc-modal-cancel { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .nxc-modal-cancel { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 700; cursor: pointer; transition: background-color .16s ease, color .16s ease, border-color .16s ease; }
         .nxc-modal-cancel:hover { background: #f8fafc; color: #0f172a; border-color: #94a3b8; }
-        .nxc-modal-delete { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #ef4444; color: #fff; font-weight: 800; cursor: pointer; transition: all .2s; }
+        .nxc-modal-delete { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #ef4444; color: #fff; font-weight: 800; cursor: pointer; transition: background-color .16s ease; }
         .nxc-modal-delete:hover { background: #dc2626; }
 
         .dark .nxc-wrap {
           background: #111c30;
           border-color: #334155;
           color: #f8fafc;
-          box-shadow: 0 18px 42px -30px rgba(0,0,0,0.95);
+          box-shadow: none;
         }
-        .dark .nxc-wrap::after { box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); }
+        .dark .nxc-wrap::after { display: none; }
         .dark .nxc-wrap:hover {
           border-color: #475569;
-          box-shadow: 0 26px 54px -30px rgba(0,0,0,0.95);
+          background: #142037;
+          box-shadow: none;
         }
         .dark .nxc-img,
         .dark .nxc-placeholder {
@@ -534,6 +529,17 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           border-color: rgba(148, 163, 184, 0.24);
           color: #f8fafc;
         }
+
+        .nxc-icon {
+          flex: 0 0 auto;
+          display: inline-block;
+          fill: none;
+          stroke: currentColor;
+          stroke-width: 1.9;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+          vertical-align: middle;
+        }
       `}</style>
 
       <Link to={anuncioPath(anuncio)} className={`nxc-wrap${isPremium ? ' premium' : ''}`}>
@@ -551,7 +557,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
           {isPremium && (
             <span className="nxc-badge-premium">
-              <Icon path={mdiStarCircle} size={0.45} /> Destaque
+              <CardIcon name="star" size={12} /> Destaque
             </span>
           )}
 
@@ -563,13 +569,13 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
           {eMeuAnuncio && (
             <button type="button" className="nxc-delete-btn" onClick={handleAbrirModal}>
-              <Icon path={mdiTrashCanOutline} size={0.45} /> Apagar
+              <CardIcon name="trash" size={12} /> Apagar
             </button>
           )}
 
           {anuncio?.fotos?.length > 1 && (
             <div className="nxc-photo-count">
-              <Icon path={mdiCameraOutline} size={0.45} /> {anuncio.fotos.length}
+              <CardIcon name="camera" size={12} /> {anuncio.fotos.length}
             </div>
           )}
         </div>
@@ -621,14 +627,14 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
             <span className={`nxc-username${eMeuAnuncio ? ' mine' : ''}`}>
               {eMeuAnuncio ? 'O teu anúncio' : (anuncio?.utilizador?.nome || 'Anunciante')}
               {isVerificado && (
-                <Icon path={mdiCheckDecagram} size={0.45} color="#3b82f6" title="Vendedor Verificado" style={{ flexShrink: 0 }} />
+                <CardIcon name="check" size={13} color="#2563eb" />
               )}
             </span>
           </div>
 
           {anuncio?.localizacao?.cidade && (
             <div className="nxc-loc">
-              <Icon path={mdiMapMarkerOutline} size={0.5} />
+              <CardIcon name="location" size={13} />
               {anuncio.localizacao.cidade}
             </div>
           )}
@@ -641,7 +647,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         <div className="nxc-modal-overlay" onClick={handleFecharModal}>
           <div className="nxc-modal-box" onClick={e => e.stopPropagation()}>
             <div className="nxc-modal-icon">
-              <Icon path={mdiTrashCanOutline} size={1.8} color="#ef4444" />
+              <CardIcon name="trash" size={42} color="#ef4444" />
             </div>
             <h3 className="nxc-modal-title">Eliminar anúncio?</h3>
             <p className="nxc-modal-text">

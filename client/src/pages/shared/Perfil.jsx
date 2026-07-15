@@ -99,7 +99,13 @@ export default function Perfil() {
   const [dadosEvolucao, setDadosEvolucao] = useState({ nomeEmpresa: '', nif: '', website: '' });
 
   const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
-  const [dadosEditar, setDadosEditar] = useState({ bio: '', website: '', localidade: '', linksPerfil: [criarLinkPerfilVazio()] });
+  const [dadosEditar, setDadosEditar] = useState({
+    bio: '',
+    website: '',
+    localidade: '',
+    mostrarTelefonePublico: true,
+    linksPerfil: [criarLinkPerfilVazio()]
+  });
 
   const rotaVoltar = abaActiva === 'carro' ? '/carros' : '/imoveis';
   const labelVoltar = abaActiva === 'carro' ? 'Automóveis' : 'Imóveis';
@@ -208,6 +214,7 @@ export default function Perfil() {
       bio: utilizador?.bio || '',
       website: utilizador?.website || '',
       localidade: utilizador?.localidade || '',
+      mostrarTelefonePublico: utilizador?.mostrarTelefonePublico !== false,
       linksPerfil: prepararLinksParaEdicao(utilizador?.linksPerfil, utilizador?.website)
     });
     setMostrarModalEditar(true);
@@ -250,6 +257,7 @@ export default function Perfil() {
       const res = await api.put('/users/me', {
         bio: dadosEditar.bio,
         localidade: dadosEditar.localidade,
+        mostrarTelefonePublico: dadosEditar.mostrarTelefonePublico,
         website: websitePrincipal,
         linksPerfil
       });
@@ -438,6 +446,10 @@ export default function Perfil() {
         .link-add-btn { margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; background: #f8fafc; color: #2563eb; border: 1px dashed #93c5fd; border-radius: 8px; padding: 10px 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
         .link-add-btn:hover { background: #eff6ff; }
         .link-add-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .privacy-toggle { display: flex; align-items: flex-start; gap: 12px; padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
+        .privacy-toggle input { width: 18px; height: 18px; margin-top: 2px; accent-color: #2ac1b4; flex: 0 0 auto; }
+        .privacy-toggle-title { display: block; font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+        .privacy-toggle-text { display: block; font-size: 12px; line-height: 1.45; color: #64748b; text-transform: none; letter-spacing: 0; font-weight: 600; }
 
         @media (max-width: 560px) {
           .link-editor-row { grid-template-columns: 1fr 40px; }
@@ -578,6 +590,22 @@ export default function Perfil() {
                 >
                   <Icon path={mdiPlus} size={0.65} /> Adicionar Link
                 </button>
+              </div>
+
+              <div className="modal-form-group">
+                <label className="privacy-toggle">
+                  <input
+                    type="checkbox"
+                    checked={dadosEditar.mostrarTelefonePublico}
+                    onChange={e => setDadosEditar({ ...dadosEditar, mostrarTelefonePublico: e.target.checked })}
+                  />
+                  <span>
+                    <span className="privacy-toggle-title">Mostrar telemóvel publicamente</span>
+                    <span className="privacy-toggle-text">
+                      Se desligares esta opção, o perfil público e os anúncios mostram apenas o email.
+                    </span>
+                  </span>
+                </label>
               </div>
 
               <button className="modal-btn-submit" type="submit">Guardar Alterações</button>
