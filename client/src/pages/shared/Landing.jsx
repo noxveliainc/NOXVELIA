@@ -1925,6 +1925,169 @@ export default function Landing() {
           font-size: 11px !important;
         }
 
+        .lp-hero {
+          padding: 42px 0 22px !important;
+          background: var(--lp-bg) !important;
+        }
+
+        .lp-hero-card {
+          min-height: 0 !important;
+          display: grid !important;
+          grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr) !important;
+          position: relative !important;
+          overflow: hidden !important;
+          background: #ffffff !important;
+          border: 1px solid var(--lp-border) !important;
+          border-radius: 8px !important;
+          box-shadow: 0 18px 44px rgba(7, 27, 34, 0.08) !important;
+        }
+
+        .lp-hero-media {
+          position: relative !important;
+          inset: auto !important;
+          min-height: 440px !important;
+          background: #eef3ef !important;
+          border-left: 1px solid var(--lp-border) !important;
+        }
+
+        .lp-hero-media img {
+          width: 100% !important;
+          height: 100% !important;
+          min-height: 440px !important;
+          object-fit: cover !important;
+          object-position: center !important;
+          opacity: 1 !important;
+          filter: none !important;
+        }
+
+        .lp-hero-content {
+          position: relative !important;
+          z-index: 2 !important;
+          width: auto !important;
+          min-height: 440px !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: center !important;
+          padding: clamp(32px, 5vw, 64px) !important;
+          background: #ffffff !important;
+        }
+
+        .lp-hero h1 {
+          max-width: 560px !important;
+          font-size: clamp(42px, 5.6vw, 70px) !important;
+          line-height: 0.98 !important;
+          color: var(--lp-ink) !important;
+        }
+
+        .lp-hero h1 span {
+          display: block !important;
+          color: var(--lp-teal-dark) !important;
+        }
+
+        .lp-hero-copy {
+          max-width: 470px !important;
+          font-size: 16px !important;
+          color: var(--lp-ink-soft) !important;
+        }
+
+        .lp-actions {
+          margin-top: 28px !important;
+        }
+
+        .lp-btn {
+          border-radius: 8px !important;
+          box-shadow: none !important;
+        }
+
+        .lp-hero-photo-label {
+          display: none !important;
+        }
+
+        .lp-trust-bar {
+          display: none !important;
+        }
+
+        .lp-quick-section {
+          padding: 0 0 48px !important;
+        }
+
+        .lp-quick-card {
+          margin-top: 10px !important;
+          border-radius: 8px !important;
+          padding: 18px !important;
+          box-shadow: none !important;
+          border: 1px solid var(--lp-border) !important;
+        }
+
+        .lp-quick-top {
+          margin-bottom: 13px !important;
+        }
+
+        .lp-quick-title {
+          font-size: 17px !important;
+        }
+
+        .lp-promo-section,
+        .lp-section,
+        .lp-closing-section {
+          padding-top: 50px !important;
+          padding-bottom: 50px !important;
+        }
+
+        .lp-promo-grid {
+          gap: 18px !important;
+        }
+
+        .lp-promo-link {
+          display: grid !important;
+          grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr) !important;
+          min-height: 300px !important;
+          background: #ffffff !important;
+          border: 1px solid var(--lp-border) !important;
+          box-shadow: none !important;
+          overflow: hidden !important;
+        }
+
+        .lp-promo-copy {
+          min-height: 300px !important;
+          padding: 32px !important;
+          justify-content: center !important;
+          background: #ffffff !important;
+        }
+
+        .lp-promo-title {
+          max-width: 360px !important;
+          font-size: clamp(24px, 2.4vw, 34px) !important;
+          line-height: 1.05 !important;
+        }
+
+        .lp-promo-text {
+          max-width: 300px !important;
+        }
+
+        .lp-promo-media {
+          min-height: 300px !important;
+          border-left: 1px solid var(--lp-border) !important;
+          background: #eef3ef !important;
+        }
+
+        .lp-promo-media img {
+          height: 100% !important;
+          opacity: 1 !important;
+          filter: none !important;
+          transform: none !important;
+        }
+
+        .lp-promo-link,
+        .lp-shortcut-group,
+        .lp-guide-card,
+        .lp-favorites-strip,
+        .lp-example-column,
+        .lp-cv-card,
+        .lp-closing-card {
+          border-radius: 8px !important;
+        }
+
         @media (max-width: 700px) {
           .lp-root :where(.lp-hero-card, .lp-cv-card, .lp-closing-card) {
             border-radius: var(--lp-radius) !important;
@@ -1961,6 +2124,53 @@ export default function Landing() {
           .lp-trust-bar {
             grid-template-columns: 1fr !important;
           }
+
+          .lp-hero {
+            padding-top: 18px !important;
+          }
+
+          .lp-hero-card {
+            grid-template-columns: 1fr !important;
+          }
+
+          .lp-hero-content {
+            min-height: auto !important;
+            padding: 28px 22px 24px !important;
+          }
+
+          .lp-hero-media {
+            min-height: 260px !important;
+            border-left: 0 !important;
+            border-top: 1px solid var(--lp-border) !important;
+          }
+
+          .lp-hero-media img {
+            min-height: 260px !important;
+          }
+
+          .lp-hero h1 {
+            font-size: clamp(36px, 12vw, 50px) !important;
+          }
+
+          .lp-hero-copy {
+            max-width: 330px !important;
+          }
+
+          .lp-promo-link {
+            grid-template-columns: 1fr !important;
+            min-height: 0 !important;
+          }
+
+          .lp-promo-copy {
+            min-height: auto !important;
+            padding: 24px !important;
+          }
+
+          .lp-promo-media {
+            min-height: 220px !important;
+            border-left: 0 !important;
+            border-top: 1px solid var(--lp-border) !important;
+          }
         }
       `}</style>
 
@@ -1975,17 +2185,17 @@ export default function Landing() {
                   NOXVELIA
                 </span>
                 <h1 id="lp-hero-title">
-                  Carros e imóveis, <span>sem ruído.</span>
+                  Carros e imóveis em Portugal. <span>Mais simples.</span>
                 </h1>
                 <p className="lp-hero-copy">
-                  Pesquisa, publica e contacta com mais clareza.
+                  Pesquisa por localização, preço e detalhes claros. Publicar também é grátis.
                 </p>
                 <div className="lp-actions">
                   <Link className="lp-btn lp-btn-drive" to="/carros">
-                    Descobrir carros
+                    Ver carros
                   </Link>
                   <Link className="lp-btn lp-btn-estate" to="/imoveis">
-                    Explorar imóveis
+                    Ver imóveis
                   </Link>
                 </div>
               </div>
@@ -2023,7 +2233,7 @@ export default function Landing() {
               <div className="lp-quick-top">
                 <div>
                   <span className="lp-eyebrow">Pesquisa rápida</span>
-                  <h2 className="lp-quick-title" id="lp-quick-title">Pesquisa rápida, sem voltas.</h2>
+                  <h2 className="lp-quick-title" id="lp-quick-title">Pesquisa rápida.</h2>
                 </div>
                 <div className="lp-type-tabs" role="tablist" aria-label="Tipo de pesquisa">
                   <button
@@ -2119,8 +2329,8 @@ export default function Landing() {
               <Link className="lp-promo-link drive" to={publicarTo} state={publicarState}>
                 <span className="lp-promo-copy">
                   <span className="lp-promo-label">NOXVELIA Drive</span>
-                  <strong className="lp-promo-title">Carros bem apresentados. <span>Contactos certos.</span></strong>
-                  <span className="lp-promo-text">Fotos, preço e detalhes no essencial.</span>
+                  <strong className="lp-promo-title">Vende o teu carro com uma apresentação clara.</strong>
+                  <span className="lp-promo-text">Fotos, preço e dados importantes num anúncio direto.</span>
                   <span className="lp-promo-overlay">Publicar carro</span>
                 </span>
                 <span className="lp-promo-media">
@@ -2130,8 +2340,8 @@ export default function Landing() {
               <Link className="lp-promo-link estate" to={publicarTo} state={publicarState}>
                 <span className="lp-promo-copy">
                   <span className="lp-promo-label">NOXVELIA Estate</span>
-                  <strong className="lp-promo-title">Imóveis com melhor presença. <span>Menos ruído.</span></strong>
-                  <span className="lp-promo-text">Localização, fotos e informação clara.</span>
+                  <strong className="lp-promo-title">Mostra o teu imóvel com o essencial bem organizado.</strong>
+                  <span className="lp-promo-text">Localização, fotografias e características fáceis de consultar.</span>
                   <span className="lp-promo-overlay">Publicar imóvel</span>
                 </span>
                 <span className="lp-promo-media">
