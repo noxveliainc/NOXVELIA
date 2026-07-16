@@ -106,6 +106,23 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     return () => window.removeEventListener('toggle-filtros', toggleSidebar);
   }, []);
 
+  useEffect(() => {
+    if (!sidebarMobileAberta) return undefined;
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setSidebarMobileAberta(false);
+    };
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [sidebarMobileAberta]);
+
   const carregarDadosMapa = useCallback(async () => {
     try {
       const filtrosAtuais = filtrosRef.current;
@@ -380,7 +397,9 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .pesquisa-sidebar-toggle { flex-shrink: 0; width: 28px; height: 48px; border-radius: 8px; border: 1px solid var(--nx-border); background: var(--nx-bg-2); color: var(--nx-text-sub); cursor: pointer; display: flex; align-items: center; justify-content: center; position: sticky; top: 96px; transition: all 0.2s ease; }
         .pesquisa-sidebar-toggle:hover { background: var(--nx-border); color: var(--nx-text); }
 
-        .pesquisa-sidebar-header { display: flex; align-items: center; gap: 8px; font-family: var(--nx-font-display); font-size: 18px; font-weight: 800; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--nx-border); }
+        .pesquisa-sidebar-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-family: var(--nx-font-display); font-size: 18px; font-weight: 800; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--nx-border); }
+        .pesquisa-sidebar-title { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+        .pesquisa-sidebar-close { display: none; align-items: center; justify-content: center; gap: 6px; min-height: 38px; padding: 0 11px; border: 1px solid var(--nx-border); border-radius: 9px; background: #ffffff; color: #334155; font-size: 12px; font-weight: 850; cursor: pointer; }
         .pesquisa-filter-status { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: -8px 0 20px; }
         .pesquisa-filter-stat { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; }
         .pesquisa-filter-stat strong { display: block; font-size: 17px; color: #0f172a; font-family: var(--nx-font-display); line-height: 1; }
@@ -650,12 +669,15 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           box-shadow: 0 28px 70px -48px rgba(0,0,0,0.95);
         }
 
-        .sidebar-mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9998; backdrop-filter: blur(4px); }
+        .sidebar-mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.48); z-index: 9998; backdrop-filter: none; }
 
         @media (max-width: 1024px) {
           .pesquisa-layout { padding: 24px 16px; flex-direction: column; }
-          .pesquisa-sidebar { position: fixed; top: 0; left: ${sidebarMobileAberta ? '0' : '-100%'}; height: 100vh; max-height: 100vh; border-radius: 0; z-index: 9999; transition: left 0.3s ease; width: 85%; max-width: 360px; opacity: 1; }
-          .pesquisa-sidebar.collapsed { width: 85%; max-width: 360px; padding: 24px; border: 1px solid var(--nx-border); opacity: 1; pointer-events: auto; }
+          .pesquisa-sidebar { position: fixed; top: 0; left: ${sidebarMobileAberta ? '0' : '-100%'}; height: 100dvh; max-height: 100dvh; overflow-y: auto; overscroll-behavior: contain; border-radius: 0 14px 14px 0; z-index: 9999; transition: left 0.24s ease; width: min(88vw, 380px); max-width: 380px; opacity: 1; box-sizing: border-box; }
+          .pesquisa-sidebar.collapsed { width: min(88vw, 380px); max-width: 380px; padding: 24px; border: 1px solid var(--nx-border); opacity: 1; pointer-events: auto; }
+          .pesquisa-sidebar-header { position: sticky; top: -24px; z-index: 2; margin: -24px -24px 20px; padding: 16px 18px; background: #ffffff; }
+          .pesquisa-sidebar-close { display: inline-flex; }
+          .pesquisa-apply-btn { position: sticky; bottom: -24px; z-index: 2; margin: 18px -24px -24px; width: calc(100% + 48px); border-radius: 0; min-height: 54px; }
           .sidebar-mobile-overlay { display: ${sidebarMobileAberta ? 'block' : 'none'}; }
           .pesquisa-sidebar-toggle { display: none; }
           .pesquisa-mobile-filter-btn { display: inline-flex; }
@@ -666,7 +688,10 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
         @media (max-width: 640px) {
           .pesquisa-layout { padding: 18px 10px 34px; gap: 14px; }
-          .pesquisa-sidebar { width: min(92vw, 380px); padding: 20px; }
+          .pesquisa-sidebar { width: min(88vw, 360px); padding: 20px; }
+          .pesquisa-sidebar.collapsed { width: min(88vw, 360px); padding: 20px; }
+          .pesquisa-sidebar-header { top: -20px; margin: -20px -20px 18px; padding: 15px 16px; }
+          .pesquisa-apply-btn { bottom: -20px; margin: 18px -20px -20px; width: calc(100% + 40px); }
           .pesquisa-search-row { display: grid; grid-template-columns: 1fr; padding: 8px; }
           .pesquisa-mobile-filter-btn { min-height: 44px; justify-content: center; }
           .pesquisa-topbar { align-items: stretch; }
@@ -690,12 +715,19 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
       `}</style>
 
       <div className="pesquisa-root">
-        <div className="sidebar-mobile-overlay" onClick={() => setSidebarMobileAberta(false)}></div>
+        <div className="sidebar-mobile-overlay" onClick={() => setSidebarMobileAberta(false)} aria-hidden="true"></div>
 
         <div className={`pesquisa-layout vista-${vistaAtiva}`}>
 
-          <aside className={`pesquisa-sidebar${isSidebarOpen ? '' : ' collapsed'}`}>
-            <div className="pesquisa-sidebar-header"><Icon path={mdiFilterVariant} size={1} /> Filtros Avançados</div>
+          <aside className={`pesquisa-sidebar${isSidebarOpen ? '' : ' collapsed'}`} role={sidebarMobileAberta ? 'dialog' : undefined} aria-label="Filtros de pesquisa" aria-modal={sidebarMobileAberta ? 'true' : undefined}>
+            <div className="pesquisa-sidebar-header">
+              <span className="pesquisa-sidebar-title">
+                <Icon path={mdiFilterVariant} size={1} /> Filtros
+              </span>
+              <button type="button" className="pesquisa-sidebar-close" onClick={() => setSidebarMobileAberta(false)} aria-label="Fechar filtros">
+                <Icon path={mdiCloseCircleOutline} size={0.85} /> Fechar
+              </button>
+            </div>
             <div className="pesquisa-filter-group">
               <div className="pesquisa-filter-title">Orçamento Máximo (€)</div>
               <input type="number" min="0" className="pesquisa-filter-input" placeholder="Ex: 120000" value={filtros.precoMax} onChange={(e) => setFiltros(f => ({ ...f, precoMax: e.target.value }))} />

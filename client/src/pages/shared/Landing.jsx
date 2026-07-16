@@ -38,17 +38,17 @@ const GUIAS_NOXVELIA = [
   {
     tema: 'Comprar melhor',
     titulo: 'Antes de contactar, confirma o essencial.',
-    texto: 'Preço, localização, fotografias, histórico e detalhes técnicos ajudam a evitar visitas perdidas.',
+    texto: 'Preço, localização, fotografias e detalhes antes do contacto.',
   },
   {
     tema: 'Vender mais rápido',
-    titulo: 'Um bom anúncio começa em imagens claras.',
-    texto: 'Mostra exterior, interior, pontos fortes e informação concreta para receber contactos mais preparados.',
+    titulo: 'Mostra melhor.',
+    texto: 'Boas imagens e informação concreta geram contactos melhores.',
   },
   {
     tema: 'Guardar oportunidades',
-    titulo: 'Favoritos tornam a pesquisa menos confusa.',
-    texto: 'Guarda anúncios interessantes e compara depois com calma quando estiveres com sessão iniciada.',
+    titulo: 'Guarda para comparar.',
+    texto: 'Mantém boas oportunidades à mão e decide com calma.',
   },
 ];
 
@@ -1853,6 +1853,47 @@ export default function Landing() {
           border: 1px solid #18373d !important;
         }
 
+        .lp-root :where(
+          .lp-hero,
+          .lp-hero-card,
+          .lp-hero-content,
+          .lp-hero-media,
+          .lp-quick-section,
+          .lp-promo-section,
+          .lp-promo-link,
+          .lp-promo-copy,
+          .lp-brands-section,
+          .lp-shortcuts-section,
+          .lp-popular-section,
+          .lp-guides-section,
+          .lp-cv-section,
+          .lp-cv-card,
+          .lp-cv-panel,
+          .lp-closing-section,
+          .lp-closing-card,
+          .lp-btn,
+          .lp-search-submit,
+          .lp-type-tab.active
+        ) {
+          background-image: none !important;
+        }
+
+        .lp-copy,
+        .lp-promo-text,
+        .lp-guide-card p,
+        .lp-favorites-strip p,
+        .lp-cv-points {
+          max-width: 560px !important;
+        }
+
+        .lp-section-head {
+          margin-bottom: 18px !important;
+        }
+
+        .lp-title {
+          max-width: 720px !important;
+        }
+
         .lp-root :where(.lp-hero-content, .lp-hero-media, .lp-cv-card, .lp-promo-link)::before,
         .lp-root :where(.lp-hero-content, .lp-hero-media, .lp-cv-card, .lp-promo-link)::after {
           content: none !important;
@@ -1909,6 +1950,17 @@ export default function Landing() {
             border-left: 0 !important;
             border-bottom: 1px solid var(--lp-border) !important;
           }
+
+          .lp-section-head .lp-copy,
+          .lp-guide-card p,
+          .lp-favorites-strip p,
+          .lp-cv-points {
+            display: none !important;
+          }
+
+          .lp-trust-bar {
+            grid-template-columns: 1fr !important;
+          }
         }
       `}</style>
 
@@ -1920,13 +1972,13 @@ export default function Landing() {
             <div className="lp-hero-card">
               <div className="lp-hero-content">
                 <span className="lp-kicker">
-                  O teu próximo passo começa aqui
+                  NOXVELIA
                 </span>
                 <h1 id="lp-hero-title">
-                  O próximo carro. <span>A próxima casa.</span> Uma escolha mais clara.
+                  Carros e imóveis, <span>sem ruído.</span>
                 </h1>
                 <p className="lp-hero-copy">
-                  Carros e imóveis reunidos numa experiência simples, cuidada e feita para encontrares o que procuras com confiança.
+                  Pesquisa, publica e contacta com mais clareza.
                 </p>
                 <div className="lp-actions">
                   <Link className="lp-btn lp-btn-drive" to="/carros">
@@ -1953,13 +2005,13 @@ export default function Landing() {
 
             <div className="lp-trust-bar" aria-label="Vantagens da Noxvelia">
               <div className="lp-trust-item">
-                Anúncios reais, organizados para decidir melhor
+                Anúncios organizados
               </div>
               <div className="lp-trust-item">
-                Pesquisa em lista ou mapa em todo o país
+                Lista e mapa
               </div>
               <div className="lp-trust-item">
-                Mais contexto antes de cada contacto
+                Contactos com contexto
               </div>
             </div>
           </div>
@@ -1971,7 +2023,7 @@ export default function Landing() {
               <div className="lp-quick-top">
                 <div>
                   <span className="lp-eyebrow">Pesquisa rápida</span>
-                  <h2 className="lp-quick-title" id="lp-quick-title">Entra logo nos anúncios certos.</h2>
+                  <h2 className="lp-quick-title" id="lp-quick-title">Pesquisa rápida, sem voltas.</h2>
                 </div>
                 <div className="lp-type-tabs" role="tablist" aria-label="Tipo de pesquisa">
                   <button
@@ -2067,8 +2119,8 @@ export default function Landing() {
               <Link className="lp-promo-link drive" to={publicarTo} state={publicarState}>
                 <span className="lp-promo-copy">
                   <span className="lp-promo-label">NOXVELIA Drive</span>
-                  <strong className="lp-promo-title">Carros bem apresentados. <span>Contactos mais certos.</span></strong>
-                  <span className="lp-promo-text">Publica grátis, organiza os detalhes e mostra o essencial a quem já procura.</span>
+                  <strong className="lp-promo-title">Carros bem apresentados. <span>Contactos certos.</span></strong>
+                  <span className="lp-promo-text">Fotos, preço e detalhes no essencial.</span>
                   <span className="lp-promo-overlay">Publicar carro</span>
                 </span>
                 <span className="lp-promo-media">
@@ -2078,8 +2130,8 @@ export default function Landing() {
               <Link className="lp-promo-link estate" to={publicarTo} state={publicarState}>
                 <span className="lp-promo-copy">
                   <span className="lp-promo-label">NOXVELIA Estate</span>
-                  <strong className="lp-promo-title">Imóveis com melhor presença. <span>Menos ruído, mais contactos.</span></strong>
-                  <span className="lp-promo-text">Apresenta fotografias, localização e informação clara para interessados reais.</span>
+                  <strong className="lp-promo-title">Imóveis com melhor presença. <span>Menos ruído.</span></strong>
+                  <span className="lp-promo-text">Localização, fotos e informação clara.</span>
                   <span className="lp-promo-overlay">Publicar imóvel</span>
                 </span>
                 <span className="lp-promo-media">
@@ -2095,9 +2147,9 @@ export default function Landing() {
             <div className="lp-section-head">
               <div>
                 <span className="lp-eyebrow">As nossas marcas</span>
-                <h2 className="lp-title" id="lp-brands-title">{MARCAS.length} marcas. Uma pesquisa para encontrares a tua.</h2>
+                <h2 className="lp-title" id="lp-brands-title">{MARCAS.length} marcas auto.</h2>
                 <p className="lp-copy">
-                  Dos clássicos de sempre às novas referências elétricas, escolhe uma marca e entra diretamente nos anúncios disponíveis.
+                  Escolhe a marca e entra nos anúncios disponíveis.
                 </p>
               </div>
               <div className="lp-brand-controls" aria-label="Navegar pelas marcas">
@@ -2142,9 +2194,9 @@ export default function Landing() {
             <div className="lp-section-head">
               <div>
                 <span className="lp-eyebrow">Atalhos populares</span>
-                <h2 className="lp-title" id="lp-shortcuts-title">Chega mais depressa ao que muita gente procura.</h2>
+                <h2 className="lp-title" id="lp-shortcuts-title">Atalhos úteis.</h2>
                 <p className="lp-copy">
-                  Marcas, modelos, combustíveis, distritos e tipologias reunidos para reduzir passos entre a intenção e o anúncio certo.
+                  Caminhos rápidos para carros e imóveis.
                 </p>
               </div>
             </div>
@@ -2208,9 +2260,9 @@ export default function Landing() {
             <div className="lp-section-head">
               <div>
                 <span className="lp-eyebrow">Mais vistos esta semana</span>
-                <h2 className="lp-title" id="lp-popular-title">O que está a captar mais atenção agora.</h2>
+                <h2 className="lp-title" id="lp-popular-title">Mais vistos esta semana.</h2>
                 <p className="lp-copy">
-                  Os anúncios com mais visitas nos últimos sete dias, com um máximo de dois destaques por área.
+                  Destaques atuais em Drive e Estate.
                 </p>
               </div>
             </div>
@@ -2256,9 +2308,9 @@ export default function Landing() {
             <div className="lp-section-head">
               <div>
                 <span className="lp-eyebrow">Guias rápidos</span>
-                <h2 className="lp-title" id="lp-guides-title">Conteúdo útil antes do contacto.</h2>
+                <h2 className="lp-title" id="lp-guides-title">Decidir com mais clareza.</h2>
                 <p className="lp-copy">
-                  A página ganha uma área editorial leve para apoiar quem compra, vende ou guarda anúncios para decidir depois.
+                  Três notas rápidas antes do contacto.
                 </p>
               </div>
             </div>
@@ -2280,9 +2332,9 @@ export default function Landing() {
 
             <div className="lp-favorites-strip">
               <div>
-                <h3>Guarda favoritos e volta quando quiseres.</h3>
+                <h3>Favoritos sempre à mão.</h3>
                 <p>
-                  Com sessão iniciada podes guardar anúncios, comparar opções e continuar a pesquisa mais tarde sem perder oportunidades.
+                  Guarda anúncios e volta quando quiseres.
                 </p>
               </div>
               <div className="lp-actions">
@@ -2308,9 +2360,9 @@ export default function Landing() {
             <div className="lp-cv-card">
               <div className="lp-cv-copy">
                 <span className="lp-eyebrow">Parceiro de histórico automóvel</span>
-                <h2 className="lp-title" id="lp-cv-title">Conhece o carro para lá das fotografias.</h2>
+                <h2 className="lp-title" id="lp-cv-title">Conhece o carro antes da visita.</h2>
                 <p className="lp-copy">
-                  Consulta os registos disponíveis sobre quilometragem, danos, roubos e utilização anterior antes de marcares uma visita.
+                  Consulta histórico, quilometragem e registos disponíveis.
                 </p>
                 <ul className="lp-cv-points">
                   <li>Mais contexto sobre o veículo</li>
@@ -2338,9 +2390,9 @@ export default function Landing() {
             <div className="lp-closing-card">
               <div>
                 <span className="lp-eyebrow">Comprar, vender, arrendar</span>
-                <h2 className="lp-title" id="lp-closing-title">O lugar certo para encontrar e ser encontrado.</h2>
+                <h2 className="lp-title" id="lp-closing-title">Publica com melhor presença.</h2>
                 <p className="lp-copy">
-                  Publica o teu carro ou imóvel e apresenta-o a quem já está à procura da próxima escolha.
+                  Drive e Estate num só lugar.
                 </p>
               </div>
               <div className="lp-closing-actions">
