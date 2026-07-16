@@ -1974,9 +1974,15 @@ export default function Landing() {
 
         .lp-hero h1 {
           max-width: 560px !important;
-          font-size: clamp(42px, 5.6vw, 70px) !important;
-          line-height: 0.98 !important;
+          font-size: clamp(38px, 5vw, 62px) !important;
+          line-height: 1.02 !important;
           color: var(--lp-ink) !important;
+        }
+
+        .lp-kicker {
+          color: #06373b !important;
+          border-color: rgba(36, 184, 171, 0.34) !important;
+          background: rgba(36, 184, 171, 0.16) !important;
         }
 
         .lp-hero h1 span {
@@ -1992,11 +1998,26 @@ export default function Landing() {
 
         .lp-actions {
           margin-top: 28px !important;
+          align-items: center !important;
+          gap: 12px !important;
         }
 
         .lp-btn {
           border-radius: 8px !important;
           box-shadow: none !important;
+          min-width: 112px !important;
+        }
+
+        .lp-btn-estate {
+          color: var(--lp-ink) !important;
+          border-color: var(--lp-border-strong) !important;
+          background: #ffffff !important;
+        }
+
+        .lp-btn-estate:hover {
+          color: var(--lp-ink) !important;
+          background: #f7faf8 !important;
+          border-color: var(--lp-teal-dark) !important;
         }
 
         .lp-hero-photo-label {
