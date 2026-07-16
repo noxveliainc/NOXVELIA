@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
 import SponsorBanner from '../../components/SponsorBanner';
+import SponsorOpportunity from '../../components/SponsorOpportunity';
 import api from '../../services/api';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS } from '../../data/localizacoes';
@@ -2344,6 +2345,19 @@ export default function Landing() {
           </div>
         </section>
 
+        <SponsorBanner
+          placement="landing_top"
+          vertical="all"
+          fallback={(
+            <SponsorOpportunity
+              placement="landing_top"
+              zoneName="Topo da landing"
+              title="A tua marca pode aparecer no primeiro olhar."
+              description="Uma zona premium para marcas que querem chegar a quem procura carros e imóveis em Portugal."
+            />
+          )}
+        />
+
         <section className="lp-promo-section" id="anunciar" aria-label="Anunciar grátis na Noxvelia">
           <div className="lp-shell">
             <div className="lp-promo-grid">
@@ -2372,6 +2386,13 @@ export default function Landing() {
             </div>
           </div>
         </section>
+
+        <SponsorBanner
+          placement="landing_drive_estate"
+          vertical="all"
+          fallback={null}
+          className="lp-sponsor-active-only"
+        />
 
         <section className="lp-section lp-brands-section" id="marcas" aria-labelledby="lp-brands-title">
           <div className="lp-shell">

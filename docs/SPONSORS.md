@@ -4,6 +4,8 @@ O sistema publica apenas campanhas reais configuradas no backend. Sem configura�
 
 ## Onde aparecem
 
+- `landing_top`: zona premium depois da pesquisa rápida, no início da landing.
+- `landing_drive_estate`: entre os blocos Drive/Estate e a área de marcas.
 - `landing_between_highlights`: entre os anúncios em alta e a área carVertical.
 - `search_results_top`: no topo dos resultados Drive/Estate, depois dos controlos de pesquisa.
 - `listing_before_suggestions`: no detalhe, antes dos anúncios sugeridos.
@@ -44,5 +46,7 @@ Depois de guardar a variável, fazer deploy/restart do backend. O frontend receb
 Os links recebem automaticamente `utm_source=noxvelia`, `utm_medium=sponsor_banner`, `utm_campaign` e `utm_content`. Assim, o anunciante mede os cliques na sua própria ferramenta sem cookies adicionais nem escritas na base de dados da NOXVELIA.
 
 Começar com preço fixo mensal por posição e vertical. Landing deve ser a posição premium de notoriedade; pesquisa e detalhe devem valer mais quando a campanha corresponde à intenção Drive/Estate. Só introduzir cobrança por clique quando existir medição própria auditável e proteção antifraude.
+
+Quando não existe uma campanha ativa em `landing_top`, a landing apresenta uma chamada de contacto para vender a zona. O contacto é feito para `geral@noxvelia.com` e inclui automaticamente o nome da zona no assunto. As outras zonas ficam discretas até existir uma campanha ativa.
 
 Recomendação visual: WebP/JPEG 1600x900, até 350 KB, sem texto minúsculo incorporado na imagem. Toda a campanha deve ser identificada como patrocinada e aprovada antes da publicação.

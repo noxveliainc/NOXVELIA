@@ -2,6 +2,8 @@ import express from 'express';
 
 const router = express.Router();
 const PLACEMENTS = new Set([
+  'landing_top',
+  'landing_drive_estate',
   'landing_between_highlights',
   'search_results_top',
   'listing_before_suggestions',
