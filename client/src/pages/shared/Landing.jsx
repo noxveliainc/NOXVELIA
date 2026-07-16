@@ -69,29 +69,6 @@ const slugMarca = (marca) => marca
 
 const logoMarca = (marca) => `/marcas/${slugMarca(marca)}.${marca === 'Jaecoo' ? 'svg' : 'png'}`;
 
-const ICON_PATHS = {
-  arrow: 'M5 12h14m-6-6 6 6-6 6',
-  car: 'M4 15v-3l2-5h12l2 5v3M6 15h12M7 18h.01M17 18h.01',
-  check: 'M5 12l4 4L19 6',
-  estate: 'M4 11l8-6 8 6v8H4v-8zM9 19v-5h6v5',
-  fuel: 'M7 20V5h7v15M7 9h7m3-1 2 2v7a2 2 0 0 1-2 2h-1',
-  location: 'M12 21s6-5.2 6-11a6 6 0 0 0-12 0c0 5.8 6 11 6 11zm0-8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
-  open: 'M8 8h8v8M16 8 7 17M5 5h14v14H5z',
-  plus: 'M12 5v14M5 12h14',
-  shield: 'M12 3l7 3v5c0 5-3.1 8.3-7 10-3.9-1.7-7-5-7-10V6l7-3zm-3 9 2 2 4-5',
-  area: 'M5 5h14v14H5zM9 5v14M5 9h14',
-  left: 'M15 6l-6 6 6 6',
-  right: 'M9 6l6 6-6 6',
-};
-
-function SvgIcon({ name, size = 16 }) {
-  return (
-    <svg className="lp-svg-icon" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d={ICON_PATHS[name]} />
-    </svg>
-  );
-}
-
 const iniciaisMarca = (marca) => marca
   .split(/[\s&-]+/)
   .filter(Boolean)
@@ -245,11 +222,9 @@ export default function Landing() {
           <span className="lp-example-price">{formatarMoeda(anuncio.preco)}</span>
           <span className="lp-example-title">{anuncio.titulo}</span>
           <span className="lp-example-meta">
-            <SvgIcon name={isCarro ? 'fuel' : 'area'} size={14} />
             {detalhe || (isCarro ? 'Dados técnicos disponíveis' : 'Detalhes do imóvel')}
           </span>
           <span className="lp-example-location">
-            <SvgIcon name="location" size={14} />
             {anuncio.localizacao?.cidade || 'Portugal'}
           </span>
         </span>
@@ -273,7 +248,7 @@ export default function Landing() {
         <strong>{erroExemplos ? 'A seleção semanal está a ser atualizada.' : `Descobre todas as oportunidades em ${tipo}.`}</strong>
         <span>{erroExemplos ? 'Entretanto, encontra todos os anúncios na pesquisa completa.' : 'Explora a pesquisa e encontra o que combina contigo.'}</span>
         <button type="button" className="lp-column-link" onClick={() => navigate(rota)}>
-          Explorar {tipo} <SvgIcon name="arrow" size={14} />
+          Explorar {tipo}
         </button>
       </div>
     );
@@ -490,13 +465,6 @@ export default function Landing() {
           text-transform: uppercase;
         }
 
-        .lp-hero-photo-label i {
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: var(--lp-gold);
-        }
-
         .lp-trust-bar {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -517,17 +485,6 @@ export default function Landing() {
           font-size: 12.5px;
           font-weight: 750;
           backdrop-filter: none;
-        }
-
-        .lp-trust-icon {
-          width: 34px;
-          height: 34px;
-          flex: 0 0 auto;
-          display: grid;
-          place-items: center;
-          color: #0d766e;
-          border-radius: 10px;
-          background: rgba(42, 193, 180, 0.14);
         }
 
         .lp-quick-section {
@@ -1081,25 +1038,6 @@ export default function Landing() {
           gap: 10px;
         }
 
-        .lp-column-icon {
-          width: 36px;
-          height: 36px;
-          flex: 0 0 auto;
-          display: grid;
-          place-items: center;
-          border-radius: 11px;
-        }
-
-        .drive .lp-column-icon {
-          color: #08665f;
-          background: rgba(42, 193, 180, 0.16);
-        }
-
-        .estate .lp-column-icon {
-          color: #08784b;
-          background: rgba(62, 207, 142, 0.16);
-        }
-
         .lp-column-title {
           margin: 0;
           font-size: 16px;
@@ -1321,11 +1259,6 @@ export default function Landing() {
           color: #d3dfe1;
           font-size: 12px;
           font-weight: 700;
-        }
-
-        .lp-cv-points svg {
-          flex: 0 0 auto;
-          color: var(--lp-drive);
         }
 
         .lp-cv-copy .lp-btn {
@@ -1710,17 +1643,6 @@ export default function Landing() {
           background: var(--lp-bg) !important;
         }
 
-        .lp-svg-icon {
-          flex: 0 0 auto;
-          display: inline-block;
-          fill: none;
-          stroke: currentColor;
-          stroke-width: 1.9;
-          stroke-linecap: round;
-          stroke-linejoin: round;
-          vertical-align: middle;
-        }
-
         .lp-root :where(h1, h2, h3, .lp-title, .lp-quick-title, .lp-column-title, .lp-example-price) {
           letter-spacing: 0 !important;
         }
@@ -1847,18 +1769,6 @@ export default function Landing() {
           backdrop-filter: none !important;
         }
 
-        .lp-trust-icon,
-        .lp-column-icon {
-          border-radius: var(--lp-radius-soft) !important;
-          background: var(--lp-surface-soft) !important;
-        }
-
-        .drive .lp-column-icon,
-        .estate .lp-column-icon,
-        .lp-trust-icon {
-          color: var(--lp-drive) !important;
-        }
-
         .lp-example-column.drive,
         .lp-example-column.estate {
           box-shadow: none !important;
@@ -1943,6 +1853,37 @@ export default function Landing() {
           border: 1px solid #18373d !important;
         }
 
+        .lp-root :where(.lp-hero-content, .lp-hero-media, .lp-cv-card, .lp-promo-link)::before,
+        .lp-root :where(.lp-hero-content, .lp-hero-media, .lp-cv-card, .lp-promo-link)::after {
+          content: none !important;
+          display: none !important;
+        }
+
+        .lp-trust-item {
+          align-items: flex-start !important;
+          justify-content: center !important;
+          gap: 0 !important;
+          padding: 16px 17px !important;
+          color: var(--lp-ink-soft) !important;
+          line-height: 1.45 !important;
+        }
+
+        .lp-type-tab,
+        .lp-column-heading,
+        .lp-cv-points li,
+        .lp-example-meta,
+        .lp-example-location {
+          gap: 0 !important;
+        }
+
+        .lp-round-btn {
+          width: auto !important;
+          min-width: 82px !important;
+          padding: 0 12px !important;
+          border-radius: var(--lp-radius-soft) !important;
+          font-size: 11px !important;
+        }
+
         @media (max-width: 700px) {
           .lp-root :where(.lp-hero-card, .lp-cv-card, .lp-closing-card) {
             border-radius: var(--lp-radius) !important;
@@ -1979,7 +1920,7 @@ export default function Landing() {
             <div className="lp-hero-card">
               <div className="lp-hero-content">
                 <span className="lp-kicker">
-                  <SvgIcon name="check" size={15} /> O teu próximo passo começa aqui
+                  O teu próximo passo começa aqui
                 </span>
                 <h1 id="lp-hero-title">
                   O próximo carro. <span>A próxima casa.</span> Uma escolha mais clara.
@@ -1989,10 +1930,10 @@ export default function Landing() {
                 </p>
                 <div className="lp-actions">
                   <Link className="lp-btn lp-btn-drive" to="/carros">
-                    Descobrir carros <SvgIcon name="arrow" size={17} />
+                    Descobrir carros
                   </Link>
                   <Link className="lp-btn lp-btn-estate" to="/imoveis">
-                    Explorar imóveis <SvgIcon name="estate" size={17} />
+                    Explorar imóveis
                   </Link>
                 </div>
               </div>
@@ -2005,22 +1946,19 @@ export default function Landing() {
                   decoding="async"
                 />
                 <div className="lp-hero-photo-label" aria-hidden="true">
-                  Drive <i /> Estate
+                  Drive / Estate
                 </div>
               </div>
             </div>
 
             <div className="lp-trust-bar" aria-label="Vantagens da Noxvelia">
               <div className="lp-trust-item">
-                <span className="lp-trust-icon"><SvgIcon name="check" size={16} /></span>
                 Anúncios reais, organizados para decidir melhor
               </div>
               <div className="lp-trust-item">
-                <span className="lp-trust-icon"><SvgIcon name="location" size={16} /></span>
                 Pesquisa em lista ou mapa em todo o país
               </div>
               <div className="lp-trust-item">
-                <span className="lp-trust-icon"><SvgIcon name="shield" size={16} /></span>
                 Mais contexto antes de cada contacto
               </div>
             </div>
@@ -2041,14 +1979,14 @@ export default function Landing() {
                     className={`lp-type-tab ${pesquisaRapida.tipo === 'carro' ? 'active' : ''}`}
                     onClick={() => atualizarPesquisaRapida('tipo', 'carro')}
                   >
-                    <SvgIcon name="car" size={15} /> Drive
+                    Drive
                   </button>
                   <button
                     type="button"
                     className={`lp-type-tab ${pesquisaRapida.tipo === 'imovel' ? 'active' : ''}`}
                     onClick={() => atualizarPesquisaRapida('tipo', 'imovel')}
                   >
-                    <SvgIcon name="estate" size={15} /> Estate
+                    Estate
                   </button>
                 </div>
               </div>
@@ -2131,7 +2069,7 @@ export default function Landing() {
                   <span className="lp-promo-label">NOXVELIA Drive</span>
                   <strong className="lp-promo-title">Carros bem apresentados. <span>Contactos mais certos.</span></strong>
                   <span className="lp-promo-text">Publica grátis, organiza os detalhes e mostra o essencial a quem já procura.</span>
-                  <span className="lp-promo-overlay">Publicar carro <SvgIcon name="arrow" size={15} /></span>
+                  <span className="lp-promo-overlay">Publicar carro</span>
                 </span>
                 <span className="lp-promo-media">
                   <img src="/social/noxvelia-drive-photo.webp" alt="Automóvel anunciado na Noxvelia Drive" loading="lazy" />
@@ -2142,7 +2080,7 @@ export default function Landing() {
                   <span className="lp-promo-label">NOXVELIA Estate</span>
                   <strong className="lp-promo-title">Imóveis com melhor presença. <span>Menos ruído, mais contactos.</span></strong>
                   <span className="lp-promo-text">Apresenta fotografias, localização e informação clara para interessados reais.</span>
-                  <span className="lp-promo-overlay">Publicar imóvel <SvgIcon name="arrow" size={15} /></span>
+                  <span className="lp-promo-overlay">Publicar imóvel</span>
                 </span>
                 <span className="lp-promo-media">
                   <img src="/social/noxvelia-estate-photo.webp" alt="Imóvel anunciado na Noxvelia Estate" loading="lazy" />
@@ -2164,10 +2102,10 @@ export default function Landing() {
               </div>
               <div className="lp-brand-controls" aria-label="Navegar pelas marcas">
                 <button type="button" className="lp-round-btn" onClick={() => moverMarcas(-1)} aria-label="Ver marcas anteriores">
-                  <SvgIcon name="left" size={18} />
+                  Anterior
                 </button>
                 <button type="button" className="lp-round-btn" onClick={() => moverMarcas(1)} aria-label="Ver marcas seguintes">
-                  <SvgIcon name="right" size={18} />
+                  Seguinte
                 </button>
               </div>
             </div>
@@ -2281,11 +2219,10 @@ export default function Landing() {
               <div className="lp-example-column drive">
                 <div className="lp-column-top">
                   <div className="lp-column-heading">
-                    <span className="lp-column-icon"><SvgIcon name="car" size={17} /></span>
                     <h3 className="lp-column-title">NOXVELIA Drive</h3>
                   </div>
                   <button type="button" className="lp-column-link" onClick={() => navigate('/carros')}>
-                    Ver carros <SvgIcon name="arrow" size={14} />
+                    Ver carros
                   </button>
                 </div>
                 <div className="lp-example-list">
@@ -2298,11 +2235,10 @@ export default function Landing() {
               <div className="lp-example-column estate">
                 <div className="lp-column-top">
                   <div className="lp-column-heading">
-                    <span className="lp-column-icon"><SvgIcon name="estate" size={17} /></span>
                     <h3 className="lp-column-title">NOXVELIA Estate</h3>
                   </div>
                   <button type="button" className="lp-column-link" onClick={() => navigate('/imoveis')}>
-                    Ver imóveis <SvgIcon name="arrow" size={14} />
+                    Ver imóveis
                   </button>
                 </div>
                 <div className="lp-example-list">
@@ -2336,7 +2272,7 @@ export default function Landing() {
                     <p>{guia.texto}</p>
                   </div>
                   <Link className="lp-column-link" to={guia.tema === 'Guardar oportunidades' ? '/favoritos' : '/carros'}>
-                    Continuar <SvgIcon name="arrow" size={14} />
+                    Continuar
                   </Link>
                 </article>
               ))}
@@ -2351,7 +2287,7 @@ export default function Landing() {
               </div>
               <div className="lp-actions">
                 <Link className="lp-btn lp-btn-drive" to="/favoritos">
-                  Ver favoritos <SvgIcon name="arrow" size={16} />
+                  Ver favoritos
                 </Link>
                 <Link className="lp-btn lp-btn-estate" to="/registo">
                   Criar conta
@@ -2377,11 +2313,11 @@ export default function Landing() {
                   Consulta os registos disponíveis sobre quilometragem, danos, roubos e utilização anterior antes de marcares uma visita.
                 </p>
                 <ul className="lp-cv-points">
-                  <li><SvgIcon name="check" size={15} /> Mais contexto sobre o veículo</li>
-                  <li><SvgIcon name="check" size={15} /> Decisões com melhor informação</li>
+                  <li>Mais contexto sobre o veículo</li>
+                  <li>Decisões com melhor informação</li>
                 </ul>
                 <a className="lp-btn lp-btn-drive" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer">
-                  Verificar um veículo <SvgIcon name="open" size={16} />
+                  Verificar um veículo
                 </a>
               </div>
 
@@ -2409,10 +2345,10 @@ export default function Landing() {
               </div>
               <div className="lp-closing-actions">
                 <Link className="lp-btn lp-btn-drive" to={publicarTo} state={publicarState}>
-                  <SvgIcon name="plus" size={17} /> Publicar anúncio
+                  Publicar anúncio
                 </Link>
                 <Link className="lp-btn lp-btn-estate" to="/carros">
-                  Explorar Drive <SvgIcon name="arrow" size={16} />
+                  Explorar Drive
                 </Link>
               </div>
             </div>

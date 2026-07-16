@@ -29,16 +29,16 @@ export default function SponsorBanner({ placement, vertical = 'all', className =
         href={withUtm(campaign.targetUrl, campaign.id, placement)}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        className="group grid min-h-[150px] overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_18px_55px_rgba(15,23,42,0.10)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_70px_rgba(15,23,42,0.16)] dark:border-white/10 dark:bg-slate-900 md:grid-cols-[minmax(250px,38%)_1fr]"
+        className="group grid min-h-[150px] overflow-hidden rounded-xl border border-slate-200/80 bg-white transition-colors hover:border-slate-300 dark:border-white/10 dark:bg-slate-900 dark:hover:border-slate-600 md:grid-cols-[minmax(250px,38%)_1fr]"
       >
         <div className="relative min-h-[180px] overflow-hidden md:min-h-full">
-          <img src={campaign.imageUrl} alt="" loading="lazy" referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
-          <span className="absolute left-4 top-4 rounded-full border border-white/30 bg-black/55 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur">
+          <img src={campaign.imageUrl} alt="" loading="lazy" referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full object-cover" />
+          <span className="absolute left-4 top-4 rounded-md border border-white/30 bg-black/55 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white">
             {campaign.label}
           </span>
         </div>
         <div className="flex flex-col justify-center gap-3 p-6 sm:p-8">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-600 dark:text-teal-300">Parceiro NOXVELIA</p>
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-teal-600 dark:text-teal-300">Parceiro NOXVELIA</p>
           <h2 className="text-xl font-black tracking-tight text-slate-950 dark:text-white sm:text-2xl">{campaign.title}</h2>
           {campaign.description && <p className="max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">{campaign.description}</p>}
           <span className="mt-1 inline-flex items-center gap-2 text-sm font-extrabold text-slate-950 dark:text-white">

@@ -20,13 +20,13 @@ export default function Footer() {
         .nx-footer-copy { color: #64748b; font-size: 13px; }
         
         .nx-social-links { display: flex; gap: 16px; }
-        .nx-social-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: center; color: #94a3b8; transition: all 0.2s; text-decoration: none; }
-        .nx-social-btn:hover { background: rgba(42, 193, 180, 0.1); border-color: rgba(42, 193, 180, 0.3); color: #2ac1b4; transform: translateY(-2px); }
+        .nx-social-btn { width: 40px; height: 40px; border-radius: 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: center; color: #94a3b8; transition: background-color 0.16s, border-color 0.16s, color 0.16s; text-decoration: none; }
+        .nx-social-btn:hover { background: rgba(42, 193, 180, 0.1); border-color: rgba(42, 193, 180, 0.3); color: #2ac1b4; }
         .nx-social-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
         /* 🌟 CSS DO MODAL DE SUPORTE */
-        .suporte-modal-overlay { position: fixed; inset: 0; background: rgba(4, 7, 17, 0.85); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 10000; animation: fadeIn 0.2s ease-out; padding: 20px; }
-        .suporte-modal-card { background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; width: 100%; max-width: 460px; padding: 36px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); box-sizing: border-box; animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1); color: #f8fafc; }
+        .suporte-modal-overlay { position: fixed; inset: 0; background: rgba(4, 7, 17, 0.78); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px; }
+        .suporte-modal-card { background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; width: 100%; max-width: 460px; padding: 32px; box-sizing: border-box; color: #f8fafc; }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -39,11 +39,11 @@ export default function Footer() {
         <div className="suporte-modal-overlay" onClick={() => setModalSuporteAberto(false)}>
           <div className="suporte-modal-card" onClick={e => e.stopPropagation()}>
             <h2 style={{ fontFamily: 'var(--nx-font-display, sans-serif)', fontSize: '24px', fontWeight: 800, margin: '0 0 8px 0' }}>Central de Ajuda</h2>
-            <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0 0 28px 0', lineHeight: 1.5 }}>Submete as tuas questões técnicas.</p>
+            <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0 0 28px 0', lineHeight: 1.5 }}>Envia a tua questão técnica. Respondemos assim que possível.</p>
 
             {suporteSucesso ? (
               <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '16px', borderRadius: '8px', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>
-                ✓ Ticket enviado com sucesso para a fila!
+                Pedido enviado com sucesso.
               </div>
             ) : (
               <form 
@@ -52,7 +52,7 @@ export default function Footer() {
                 style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
               >
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '8px' }}>O Teu Email</label>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '8px' }}>Email</label>
                   <input
                     type="email"
                     name="email"
@@ -63,12 +63,12 @@ export default function Footer() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '8px' }}>Descrição do Problema</label>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '8px' }}>Descrição do problema</label>
                   <textarea
                     name="message"
                     required
                     rows={4}
-                    placeholder="Descreve detalhadamente o erro ou dúvida..."
+                    placeholder="Descreve o erro ou dúvida..."
                     style={{ width: '100%', padding: '14px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '14px', outline: 'none', resize: 'none', boxSizing: 'border-box', background: 'rgba(0,0,0,0.2)', color: '#fff', lineHeight: 1.5 }}
                   />
                 </div>
@@ -85,7 +85,7 @@ export default function Footer() {
                     type="submit"
                     style={{ padding: '12px 24px', background: '#f8fafc', color: '#0f172a', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
                   >
-                    Enviar Ticket
+                    Enviar pedido
                   </button>
                 </div>
               </form>
@@ -100,7 +100,7 @@ export default function Footer() {
             
             <div className="nx-footer-brand">
               <img src="/logo-noxvelia.png" alt="NOXVELIA" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
-              <p>A plataforma premium que liga vendedores de excelência aos melhores compradores de automóveis e imóveis em Portugal.</p>
+              <p>A plataforma que liga vendedores qualificados a compradores de automóveis e imóveis em Portugal.</p>
             </div>
 
             <div className="nx-footer-links">

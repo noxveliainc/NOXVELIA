@@ -54,8 +54,8 @@ export default function GoogleAdSlot({
 
   return (
     <aside className={`mx-auto my-8 w-full max-w-7xl px-4 sm:px-6 ${className}`} aria-label="Publicidade">
-      <div className="overflow-hidden rounded-[18px] border border-slate-200/80 bg-white/90 p-3 shadow-[0_16px_42px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-slate-900/80">
-        <div className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Publicidade</div>
+      <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
+        <div className="mb-2 text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">Publicidade</div>
         <ins
           ref={adRef}
           className="adsbygoogle"

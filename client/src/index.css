@@ -564,3 +564,301 @@ h1, h2, h3, h4 {
   border-color: rgba(248, 113, 113, 0.3) !important;
   color: #fca5a5 !important;
 }
+
+/* ==========================================================================
+   NOXVELIA · VISUAL DISCIPLINE PASS
+   Mantem a interface mais madura: menos "template AI", mais produto real.
+   ========================================================================== */
+
+:root {
+  --nx-radius-lg: 14px;
+  --nx-shadow-card: none;
+  --nx-shadow-btn: none;
+  --nx-surface-line: #d8e0dd;
+  --nx-surface-muted: #f4f6f2;
+  --nx-brand-drive: #24b8ab;
+  --nx-brand-estate: #2f8f63;
+  --nx-brand-ink: #102326;
+}
+
+:where(
+  .ncr-root,
+  .nim-root,
+  .nl-root,
+  .mobile-cta-bar
+) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+:where(
+  .ncr-root,
+  .nim-root,
+  .nl-root
+) {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border-bottom: 1px solid var(--nx-surface-line) !important;
+  transition: background-color .16s ease, border-color .16s ease !important;
+}
+
+:where(
+  .ncr-switcher-dropdown,
+  .nim-switcher-dropdown,
+  .ncr-user-dropdown,
+  .nim-user-dropdown,
+  .nl-user-dropdown,
+  .ncr-sino-dropdown,
+  .nim-sino-dropdown,
+  .nl-mobile-menu,
+  .suporte-modal-card,
+  .premium-modal-card,
+  .modal-card,
+  .nx-modal-box,
+  .auth-card,
+  .modal-box,
+  .pub-form,
+  .pl-card,
+  .legal-container,
+  .perfil-moldura,
+  .perfil-header,
+  .pp-user-section,
+  .title-block,
+  .gallery-wrap,
+  .decision-item,
+  .tabs-wrap,
+  .spec-card,
+  .extra-item,
+  .desc-box,
+  .tour-card,
+  .price-panel,
+  .finance-box,
+  .seller-panel,
+  .cv-banner,
+  .owner-box,
+  .pub-quality-card,
+  .pub-trust-card,
+  .pub-pro-badge,
+  .pub-feature-tile,
+  .perfil-card,
+  .legal-info-box
+) {
+  border-color: var(--nx-surface-line) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+:where(
+  .ano-page,
+  .pub-root,
+  .pl-root,
+  .legal-root,
+  .perfil-outer,
+  .pp-root,
+  .auth-root
+) {
+  background-color: var(--nx-surface-muted) !important;
+  background-image: none !important;
+}
+
+:where(
+  .auth-root,
+  .perfil-capa,
+  .ano-page,
+  .pub-quality-card,
+  .upsell-card.premium,
+  .favoritos-empty
+) {
+  background-image: none !important;
+}
+
+:where(
+  .gallery-overlay,
+  .lp-hero-media::after,
+  .pp-cover::after
+) {
+  background: rgba(15, 23, 42, 0.32) !important;
+}
+
+:where(
+  .gallery-badge,
+  .gallery-counter,
+  .gallery-zoom-hint,
+  .nxc-badge-tipo,
+  .nxc-photo-count,
+  .perfil-capa-overlay,
+  .perfil-loading-overlay,
+  .premium-modal-overlay,
+  .modal-overlay,
+  .nx-modal-overlay,
+  .suporte-modal-overlay
+) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+:where(
+  .ncr-pro-badge,
+  .nim-pro-badge,
+  .ncr-ud-pro,
+  .nim-ud-pro,
+  .ncr-ud-admin-badge,
+  .nim-ud-admin-badge,
+  .pp-count,
+  .cv-discount,
+  .estado-badge,
+  .tour-provider,
+  .pub-thumb-badge
+) {
+  border-radius: 7px !important;
+  box-shadow: none !important;
+  letter-spacing: .06em !important;
+}
+
+:where(
+  .ncr-pro-badge,
+  .ncr-ud-pro,
+  .nim-pro-badge,
+  .nim-ud-pro
+) {
+  background: var(--nx-brand-drive) !important;
+  color: #062326 !important;
+}
+
+:where(
+  .ncr-ud-admin-badge,
+  .nim-ud-admin-badge
+) {
+  background: var(--nx-brand-ink) !important;
+  color: #ffffff !important;
+}
+
+:where(
+  .btn-cancel,
+  .btn-icon,
+  .btn-contact,
+  .btn-whatsapp,
+  .pub-submit,
+  .pub-btn-add,
+  .premium-btn,
+  .pl-btn,
+  .lp-btn,
+  .lp-search-submit,
+  .comparison-btn,
+  .comparison-link,
+  .btn-owner-edit,
+  .btn-owner-sold,
+  .cv-btn,
+  .auth-btn,
+  .modal-btn-submit,
+  .nx-btn-cancel,
+  .nx-btn-danger
+) {
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease, opacity .16s ease, filter .16s ease !important;
+}
+
+:where(
+  .btn-cancel,
+  .btn-icon,
+  .btn-contact,
+  .btn-whatsapp,
+  .pub-submit,
+  .pub-btn-add,
+  .premium-btn,
+  .pl-btn,
+  .lp-btn,
+  .lp-search-submit,
+  .comparison-btn,
+  .comparison-link,
+  .seller-panel,
+  .cv-banner,
+  .spec-card,
+  .extra-item,
+  .nxc-wrap,
+  .ncr-btn-menu,
+  .nim-btn-menu,
+  .nx-card,
+  .btn-social,
+  .legal-cookie-action,
+  .upsell-card,
+  .pub-feature-tile
+):hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+:where(
+  .gallery-main img,
+  .nxc-img img,
+  .lp-example-img img
+) {
+  transition: opacity .16s ease !important;
+}
+
+:where(
+  .gallery-main:hover img,
+  .nxc-wrap:hover .nxc-img img,
+  .lp-example-card:hover .lp-example-img img
+) {
+  transform: none !important;
+}
+
+:where(
+  .spec-card,
+  .extra-item,
+  .tab-panel,
+  .upsell-header,
+  .upsell-grid,
+  .premium-modal-card,
+  .suporte-modal-card,
+  .nx-row,
+  .lp-root *,
+  .lp-root *::before,
+  .lp-root *::after
+) {
+  animation: none !important;
+}
+
+:where(
+  .ano-page,
+  .pub-root,
+  .lp-root,
+  .perfil-outer,
+  .pp-root,
+  .pl-root,
+  .auth-root,
+  .legal-root
+) :where(
+  h1,
+  h2,
+  h3,
+  .listing-price,
+  .panel-price,
+  .pub-title,
+  .pp-name,
+  .perfil-name,
+  .pl-header h1,
+  .lp-title,
+  .lp-hero h1,
+  .nxc-price
+) {
+  letter-spacing: 0 !important;
+}
+
+@media (max-width: 700px) {
+  :where(
+    .auth-card,
+    .pub-form,
+    .pl-card,
+    .legal-container,
+    .perfil-moldura,
+    .pp-user-section,
+    .title-block,
+    .gallery-wrap,
+    .price-panel
+  ) {
+    border-radius: 10px !important;
+  }
+}

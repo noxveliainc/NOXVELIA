@@ -28,7 +28,7 @@ export default function SearchBar({ onSearch, loading }) {
         className="text-[11px] font-bold mb-3 tracking-widest uppercase"
         style={{ fontFamily: 'Syne, sans-serif', color: 'rgba(255,255,255,.5)' }}
       >
-        Pesquisa inteligente com IA
+        Pesquisa por intenção
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -49,7 +49,7 @@ export default function SearchBar({ onSearch, loading }) {
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Ex: T3 no Porto até 200 mil com garagem…"
+            placeholder="Ex: T3 no Porto até 200 mil com garagem"
             className="flex-1 py-[18px] text-base outline-none bg-transparent"
             style={{ fontFamily: 'DM Sans, sans-serif', color: 'var(--ink)' }}
           />
@@ -61,7 +61,7 @@ export default function SearchBar({ onSearch, loading }) {
               onClick={() => setQuery('')}
               className="px-3 text-gray-400 hover:text-white"
             >
-              ✕
+              ×
             </button>
           )}
 
@@ -69,7 +69,7 @@ export default function SearchBar({ onSearch, loading }) {
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="m-2 px-5 py-3 text-[13px] font-bold text-white rounded-[var(--radius)] transition-all flex items-center gap-2 flex-shrink-0"
+            className="m-2 px-5 py-3 text-[13px] font-bold text-white rounded-lg transition-colors flex items-center gap-2 flex-shrink-0"
             style={{ fontFamily: 'Syne, sans-serif', background: loading ? '#6b7280' : 'var(--accent)' }}
           >
             {loading ? (
@@ -81,7 +81,7 @@ export default function SearchBar({ onSearch, loading }) {
                 A pesquisar…
               </>
             ) : (
-              <>Pesquisar ✦</>
+              <>Pesquisar</>
             )}
           </button>
         </div>
@@ -94,7 +94,7 @@ export default function SearchBar({ onSearch, loading }) {
             key={hint}
             type="button" // IMPORTANTE: Adiciona type="button" para evitar submissão do formulário
             onClick={() => handleHint(hint)}
-            className="text-xs px-3 py-1.5 rounded-full transition-all border border-[rgba(255,255,255,0.1)]"
+            className="text-xs px-3 py-1.5 rounded-md transition-colors border border-[rgba(255,255,255,0.1)]"
             style={{
               background: 'rgba(255,255,255,.1)',
               color: 'rgba(255,255,255,.7)',
