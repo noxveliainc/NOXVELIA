@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -50,6 +50,8 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   const [stats, setStats] = useState(null);
+  const [funnel, setFunnel] = useState(null);
+  const [funnelDays, setFunnelDays] = useState(30);
   const [utilizadores, setUtilizadores] = useState([]);
   const [anuncios, setAnuncios] = useState([]);
 
@@ -69,19 +71,21 @@ export default function AdminDashboard() {
   const [searchAnuncios, setSearchAnuncios] = useState('');
   const [filterTipo, setFilterTipo] = useState('todos');
 
-  const carregarQuartelGeneral = async (atualizacaoManual = false) => {
+  const carregarQuartelGeneral = useCallback(async (atualizacaoManual = false) => {
     if (atualizacaoManual) setReloading(true);
     setErro('');
 
     try {
-      const [resStats, resUsers, resAnuncios] = await Promise.all([
+      const [resStats, resUsers, resAnuncios, resFunnel] = await Promise.all([
         api.get('/admin/dashboard/stats'),
         api.get('/admin/utilizadores'),
-        api.get('/admin/anuncios')
+        api.get('/admin/anuncios'),
+        api.get(`/admin/dashboard/funnel?days=${funnelDays}`)
       ]);
       setStats(resStats.data);
       setUtilizadores(resUsers.data);
       setAnuncios(resAnuncios.data);
+      setFunnel(resFunnel.data);
       setUltimaAtualizacao(new Date());
     } catch {
       setErro('Não foi possível atualizar os dados operacionais. Tenta novamente.');
@@ -89,7 +93,7 @@ export default function AdminDashboard() {
       setLoading(false);
       setReloading(false);
     }
-  };
+  }, [funnelDays]);
 
   useEffect(() => {
     if (!signed || user?.tipo !== 'admin') {
@@ -98,7 +102,11 @@ export default function AdminDashboard() {
     }
 
     carregarQuartelGeneral();
-  }, [signed, user, navigate]);
+  }, [signed, user, navigate, carregarQuartelGeneral]);
+
+  const alterarPeriodoFunil = (event) => {
+    setFunnelDays(Number(event.target.value));
+  };
 
   const copiarParaClipboard = (texto, idTracker) => {
     navigator.clipboard.writeText(texto);
@@ -171,6 +179,18 @@ export default function AdminDashboard() {
   const totalPremium = stats?.premiumAtivos ?? utilizadores.filter(u => u.tipo !== 'admin' && u.premiumAtivo).length;
   const conversao = stats?.totalUsers ? ((totalPremium / stats.totalUsers) * 100).toFixed(1) : '0.0';
   const topAnuncios = stats?.topAnuncios || [];
+  const funnelMetric = (key) => funnel?.metricas?.[key] || { total: 0, sessoes: 0 };
+  const funnelCards = [
+    { key: 'entradas', label: 'Entradas', detail: 'sessões na página', color: COLORS.blue },
+    { key: 'pesquisas', label: 'Pesquisas', detail: 'sessões que pesquisaram', color: COLORS.green },
+    { key: 'anunciosAbertos', label: 'Anúncios abertos', detail: 'sessões com detalhe', color: COLORS.purple },
+    { key: 'cliquesWhatsapp', label: 'Cliques WhatsApp', detail: 'ações de contacto', color: COLORS.gold },
+    { key: 'publicacoesIniciadas', label: 'Publicações iniciadas', detail: 'sessões no formulário', color: '#38bdf8' },
+    { key: 'publicacoesConcluidas', label: 'Publicações concluídas', detail: 'anúncios criados', color: COLORS.green },
+    { key: 'respostasProfissionais', label: 'Respostas profissionais', detail: 'respostas às parcerias', color: '#fb7185' },
+    { key: 'contactosPatrocinio', label: 'Interesse em patrocínio', detail: 'cliques no contacto', color: '#f97316' },
+  ];
+  const formatMetric = (value) => new Intl.NumberFormat('pt-PT').format(value || 0);
 
   // ---- Loading state ---------------------------------------------------
 
@@ -361,6 +381,7 @@ export default function AdminDashboard() {
             { id: 'contas', label: 'Gestão & Auditoria', icon: <Icon path={mdiAccountMultiple} size={0.7} />, count: utilizadores.length },
             { id: 'anuncios', label: 'Moderação de Anúncios', icon: <Icon path={mdiFileDocumentOutline} size={0.7} />, count: anuncios.length },
             { id: 'parcerias', label: 'Emails de Parcerias', icon: <Icon path={mdiEmailOutline} size={0.7} /> },
+            { id: 'funil', label: 'Funil', icon: <Icon path={mdiChartTimelineVariant} size={0.7} /> },
           ].map(tab => {
             const isActive = activeTab === tab.id;
             return (
@@ -465,6 +486,97 @@ export default function AdminDashboard() {
                 ) : (
                   <div style={{ color: COLORS.textDim, fontSize: 13, padding: '28px 0' }}>Ainda não existem anúncios ativos com dados de alcance.</div>
                 )}
+              </section>
+            </div>
+          )}
+
+          {activeTab === 'funil' && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap', marginBottom: '22px' }}>
+                <div>
+                  <h2 className="nx-overview-title" style={{ marginBottom: '6px' }}>Funil de crescimento</h2>
+                  <p style={{ margin: 0, color: COLORS.textDim, fontSize: '13px', lineHeight: 1.5, maxWidth: '720px' }}>
+                    Últimos {funnel?.periodo?.dias || 30} dias. As entradas e etapas mostram sessões anónimas únicas; as ações mostram o total registado.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <select value={funnelDays} onChange={alterarPeriodoFunil} style={{ minHeight: '34px', padding: '0 10px', color: COLORS.text, background: COLORS.panelAlt, border: `1px solid ${COLORS.borderStrong}`, borderRadius: '8px', fontSize: '12px' }} aria-label="Período do funil">
+                    <option value="7">Últimos 7 dias</option>
+                    <option value="30">Últimos 30 dias</option>
+                    <option value="90">Últimos 90 dias</option>
+                  </select>
+                  <span className="nx-status-chip ativo">Medição ativa</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '22px' }}>
+                {funnelCards.map((card) => {
+                  const value = funnelMetric(card.key);
+                  return (
+                    <div key={card.key} className="nx-card" style={{ background: COLORS.panelAlt, border: `1px solid ${COLORS.border}`, borderRadius: '12px', padding: '15px', borderTop: `2px solid ${card.color}` }}>
+                      <div style={{ color: COLORS.textDim, fontSize: '10px', fontFamily: FONT_MONO, textTransform: 'uppercase', letterSpacing: '.08em' }}>{card.label}</div>
+                      <div style={{ color: '#fff', fontSize: '25px', fontFamily: FONT_DISPLAY, fontWeight: 800, marginTop: '10px' }}>{formatMetric(value.sessoes)}</div>
+                      <div style={{ color: COLORS.textDim, fontSize: '11px', marginTop: '3px' }}>{card.detail} · {formatMetric(value.total)} ações</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="nx-overview-grid">
+                <section className="nx-overview-card">
+                  <h3 className="nx-overview-title">Conversões entre etapas</h3>
+                  <div className="nx-signal-list">
+                    {[
+                      ['Entrada → pesquisa', funnel?.conversoes?.entradaParaPesquisa],
+                      ['Pesquisa → anúncio', funnel?.conversoes?.pesquisaParaAnuncio],
+                      ['Anúncio → WhatsApp', funnel?.conversoes?.anuncioParaWhatsapp],
+                      ['Publicação iniciada → concluída', funnel?.conversoes?.inicioParaConclusao],
+                    ].map(([label, value]) => (
+                      <div className="nx-signal" key={label}>
+                        <span>{label}</span>
+                        <strong style={{ color: COLORS.green }}>{Number(value || 0).toFixed(1)}%</strong>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="nx-overview-card">
+                  <h3 className="nx-overview-title">Leitura comercial</h3>
+                  <div className="nx-signal-list">
+                    <div className="nx-signal"><span>Profissionais contactados</span><strong>{formatMetric(funnelMetric('profissionaisContactados').total)}</strong></div>
+                    <div className="nx-signal"><span>Respostas recebidas</span><strong>{formatMetric(funnelMetric('respostasProfissionais').total)}</strong></div>
+                    <div className="nx-signal"><span>Interesse em patrocínio</span><strong>{formatMetric(funnelMetric('contactosPatrocinio').total)}</strong></div>
+                    <p style={{ margin: '4px 0 0', color: COLORS.textDim, fontSize: '12px', lineHeight: 1.5 }}>
+                      As respostas de profissionais vêm da caixa de parcerias já integrada. O clique de patrocínio abre o email do visitante para a equipa.
+                    </p>
+                  </div>
+                </section>
+              </div>
+
+              <section className="nx-overview-card" style={{ marginTop: '18px' }}>
+                <h3 className="nx-overview-title">Evolução diária</h3>
+                <div className="nx-scroll" style={{ overflowX: 'auto' }}>
+                  <table className="nx-admin-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '760px', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ color: COLORS.textFaint, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '.08em', fontFamily: FONT_MONO }}>
+                        {['Dia', 'Entradas', 'Pesquisas', 'Anúncios', 'WhatsApp', 'Publicações', 'Concluídas'].map((label) => <th key={label} style={{ padding: '10px 8px', borderBottom: `1px solid ${COLORS.border}` }}>{label}</th>)}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(funnel?.diario || []).slice(-14).reverse().map((day) => (
+                        <tr key={day.data} style={{ borderBottom: `1px solid ${COLORS.border}`, color: COLORS.textDim, fontSize: '12px' }}>
+                          <td style={{ padding: '10px 8px', color: '#fff', fontFamily: FONT_MONO }}>{day.data}</td>
+                          <td style={{ padding: '10px 8px' }}>{formatMetric(day.landing_view?.sessoes)}</td>
+                          <td style={{ padding: '10px 8px' }}>{formatMetric(day.search_start?.sessoes)}</td>
+                          <td style={{ padding: '10px 8px' }}>{formatMetric(day.listing_view?.sessoes)}</td>
+                          <td style={{ padding: '10px 8px' }}>{formatMetric(day.whatsapp_click?.total)}</td>
+                          <td style={{ padding: '10px 8px' }}>{formatMetric(day.publish_start?.sessoes)}</td>
+                          <td style={{ padding: '10px 8px' }}>{formatMetric(day.publish_complete?.total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </section>
             </div>
           )}

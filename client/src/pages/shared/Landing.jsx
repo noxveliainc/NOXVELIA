@@ -13,6 +13,8 @@ import { getImageUrl } from '../../utils/images';
 import { anuncioPath } from '../../utils/seo';
 import { useAuth } from '../../context/AuthContext';
 import { publishIntentState } from '../../utils/navigationState';
+import { trackFunnelEvent } from '../../utils/funnelAnalytics';
+import { COOKIE_CONSENT_CHANGED_EVENT, readCookieConsent } from '../../utils/cookieConsent';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 
@@ -83,6 +85,7 @@ export default function Landing() {
   const location = useLocation();
   const { signed } = useAuth();
   const marcasRef = useRef(null);
+  const landingViewTrackedRef = useRef(false);
   const publicarTo = signed ? '/publicar' : '/login';
   const publicarState = signed ? undefined : publishIntentState(location, '/');
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
@@ -97,6 +100,24 @@ export default function Landing() {
     distrito: '',
     precoMax: '',
   });
+
+  useEffect(() => {
+    const trackLandingViewOnce = () => {
+      if (landingViewTrackedRef.current) return;
+      if (readCookieConsent()?.external !== true) return;
+      landingViewTrackedRef.current = true;
+      trackFunnelEvent('landing_view');
+    };
+
+    trackLandingViewOnce();
+    const onConsentChanged = (event) => {
+      if (event?.detail?.external === true || readCookieConsent()?.external === true) {
+        trackLandingViewOnce();
+      }
+    };
+    window.addEventListener(COOKIE_CONSENT_CHANGED_EVENT, onConsentChanged);
+    return () => window.removeEventListener(COOKIE_CONSENT_CHANGED_EVENT, onConsentChanged);
+  }, []);
 
   const modelosPesquisa = pesquisaRapida.tipo === 'carro' && pesquisaRapida.marca
     ? getModelosPorMarca(pesquisaRapida.marca).map((modelo) => (typeof modelo === 'object' ? modelo.modelo || modelo.nome : modelo)).filter(Boolean)
@@ -145,6 +166,7 @@ export default function Landing() {
       ...(tipo === 'carro' ? { marca, modelo, combustivel } : { tipologia }),
     };
 
+    trackFunnelEvent('search_start', { vertical: tipo });
     navigate(criarLinkPesquisa(tipo, filtros));
   };
 
@@ -2351,7 +2373,7 @@ export default function Landing() {
           fallback={(
             <SponsorOpportunity
               placement="landing_top"
-              zoneName="Topo da landing"
+              zoneName="Topo da página"
               title="A tua marca pode aparecer no primeiro olhar."
               description="Uma zona premium para marcas que querem chegar a quem procura carros e imóveis em Portugal."
             />

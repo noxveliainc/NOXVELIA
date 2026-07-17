@@ -16,6 +16,7 @@ import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 import { publishIntentState } from '../../utils/navigationState';
 import { useAuth } from '../../context/AuthContext';
+import { trackFunnelEvent } from '../../utils/funnelAnalytics';
 
 const TIPOLOGIAS = ['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'];
 const TIPOS_IMOVEL = [
@@ -297,6 +298,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   };
 
   const ejecutarFiltrosManuais = () => {
+    trackFunnelEvent('search_start', { vertical: tipoSeguro });
     setTemMais(false); setResultados([]); paginaRef.current = 1;
     setTimeout(() => { puxarDadosServidor(1, false, filtrosRef.current.tipo); }, 50);
     setSidebarMobileAberta(false);

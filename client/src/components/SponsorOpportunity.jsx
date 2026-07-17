@@ -1,3 +1,5 @@
+import { trackFunnelEvent } from '../utils/funnelAnalytics';
+
 const CONTACT_EMAIL = 'geral@noxvelia.com';
 
 const createContactUrl = (zoneName) => {
@@ -95,7 +97,11 @@ export default function SponsorOpportunity({
         <h2 className="nx-sponsor-opportunity-title">{title}</h2>
         <p className="nx-sponsor-opportunity-description">{description}</p>
       </div>
-      <a className="nx-sponsor-opportunity-link" href={createContactUrl(zoneName)}>
+      <a
+        className="nx-sponsor-opportunity-link"
+        href={createContactUrl(zoneName)}
+        onClick={() => trackFunnelEvent('sponsor_contact_click')}
+      >
         Falar sobre patrocínio <span aria-hidden="true">&rarr;</span>
       </a>
     </aside>

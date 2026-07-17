@@ -1,6 +1,9 @@
 import express from 'express';
 import User from '../models/User.js';
 import Anuncio from '../models/Anuncio.js';
+import FunnelEvent from '../models/FunnelEvent.js';
+import PartnershipReply from '../models/PartnershipReply.js';
+import PartnershipContact from '../models/PartnershipContact.js';
 import Pagamento from '../models/Pagamento.js';
 import { verificarToken, verificarAdmin } from '../middleware/auth.js';
 import { criarNotificacao } from '../controllers/notificacaoController.js';
@@ -133,6 +136,82 @@ router.delete('/anuncios/:id', async (req, res) => {
     await Anuncio.findByIdAndDelete(req.params.id);
     res.json({ sucesso: true, mensagem: 'Anúncio eliminado.' });
   } catch (err) { res.status(500).json({ erro: 'Erro ao eliminar anúncio.' }); }
+});
+
+router.get('/dashboard/funnel', async (req, res) => {
+  try {
+    const requestedDays = Number.parseInt(req.query.days, 10);
+    const days = [7, 30, 90].includes(requestedDays) ? requestedDays : 30;
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const [eventRows, dailyRows, professionalReplyCount, professionalReplyPeopleRows, professionalContacts] = await Promise.all([
+      FunnelEvent.aggregate([
+        { $match: { occurredAt: { $gte: since } } },
+        { $group: { _id: '$event', total: { $sum: 1 }, sessions: { $addToSet: '$sessionId' } } },
+        { $project: { _id: 1, total: 1, sessoes: { $size: '$sessions' } } },
+      ]),
+      FunnelEvent.aggregate([
+        { $match: { occurredAt: { $gte: since } } },
+        { $group: { _id: { day: '$dayKey', event: '$event' }, total: { $sum: 1 }, sessions: { $addToSet: '$sessionId' } } },
+        { $project: { _id: 0, day: '$_id.day', event: '$_id.event', total: 1, sessoes: { $size: '$sessions' } } },
+        { $sort: { day: 1 } },
+      ]),
+      PartnershipReply.countDocuments({ receivedAt: { $gte: since } }),
+      PartnershipReply.aggregate([
+        { $match: { receivedAt: { $gte: since }, fromEmail: { $nin: ['', null] } } },
+        { $group: { _id: '$fromEmail' } },
+        { $count: 'total' },
+      ]),
+      PartnershipContact.countDocuments({
+        estado: { $in: ['contactado', 'respondeu', 'interessado', 'convertido'] },
+        ultimoContactoEm: { $gte: since },
+      }),
+    ]);
+
+    const byEvent = Object.fromEntries(eventRows.map((row) => [row._id, {
+      total: row.total || 0,
+      sessoes: row.sessoes || 0,
+    }]));
+    const metric = (event) => byEvent[event] || { total: 0, sessoes: 0 };
+
+    const daily = Object.values(dailyRows.reduce((acc, row) => {
+      if (!acc[row.day]) acc[row.day] = { data: row.day };
+      acc[row.day][row.event] = { total: row.total || 0, sessoes: row.sessoes || 0 };
+      return acc;
+    }, {}));
+
+    const entradas = metric('landing_view').sessoes;
+    const pesquisas = metric('search_start').sessoes;
+    const anunciosAbertos = metric('listing_view').sessoes;
+    const publicacoesIniciadas = metric('publish_start').sessoes;
+    const publicacoesConcluidas = metric('publish_complete').sessoes;
+    const percentagem = (value, base) => base > 0 ? Number(((value / base) * 100).toFixed(1)) : 0;
+
+    res.json({
+      periodo: { dias: days, desde: since.toISOString() },
+      metricas: {
+        entradas: metric('landing_view'),
+        pesquisas: metric('search_start'),
+        anunciosAbertos: metric('listing_view'),
+        cliquesWhatsapp: metric('whatsapp_click'),
+        publicacoesIniciadas: metric('publish_start'),
+        publicacoesConcluidas: metric('publish_complete'),
+        contactosPatrocinio: metric('sponsor_contact_click'),
+        respostasProfissionais: { total: professionalReplyCount, sessoes: professionalReplyPeopleRows[0]?.total || 0 },
+        profissionaisContactados: { total: professionalContacts, sessoes: professionalContacts },
+      },
+      conversoes: {
+        entradaParaPesquisa: percentagem(pesquisas, entradas),
+        pesquisaParaAnuncio: percentagem(anunciosAbertos, pesquisas),
+        anuncioParaWhatsapp: percentagem(metric('whatsapp_click').sessoes, anunciosAbertos),
+        inicioParaConclusao: percentagem(publicacoesConcluidas, publicacoesIniciadas),
+      },
+      diario: daily,
+    });
+  } catch (erro) {
+    console.error('[ADMIN FUNNEL] Erro ao compilar funil:', erro);
+    res.status(500).json({ erro: 'Erro ao compilar o funil.' });
+  }
 });
 
 router.put('/anuncios/:id/estado', async (req, res) => {

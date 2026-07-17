@@ -14,6 +14,7 @@ import { isSupportedVideoUrl } from '../../utils/videoEmbed';
 import { calcularQualidadeFormulario } from '../../utils/anuncioQuality';
 import { juntarExtras, normalizarExtras } from '../../utils/extras';
 import { getImageUrl, normalizeUploadedImages } from '../../utils/images';
+import { trackFunnelEvent } from '../../utils/funnelAnalytics';
 
 const OPCOES_GARANTIA = ['6 meses', '12 meses', '18 meses', '24 meses', 'Garantia de fábrica'];
 const MESES_ANO = [
@@ -112,6 +113,10 @@ export default function Publicar() {
       setForm(f => ({ ...f, telefone: user.telefone || '', email: user.email || '' }));
     }
   }, [signed, authLoading, navigate, user]);
+
+  useEffect(() => {
+    if (signed) trackFunnelEvent('publish_start', { vertical: contextoFocado });
+  }, [signed, contextoFocado]);
 
   const handle = e => {
     const { name, value, type, checked } = e.target;
@@ -278,6 +283,7 @@ export default function Publicar() {
       };
 
       const res = await api.post('/anuncios', payload);
+      trackFunnelEvent('publish_complete', { listingId: res.data?._id, vertical: form.tipo });
       if (user?.premiumAtivo === true || user?.tipo === 'admin') {
         navigate('/anuncio/' + res.data._id, { replace: true });
       } else {

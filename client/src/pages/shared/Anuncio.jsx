@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { trackFunnelEvent } from '../../utils/funnelAnalytics';
 import { useAuth } from '../../context/AuthContext';
 import { useComparison } from '../../context/ComparisonContext';
 import { getVideoEmbedData } from '../../utils/videoEmbed';
@@ -73,6 +74,7 @@ export default function Anuncio() {
       try {
         const { data } = await api.get(`/anuncios/${id}`);
         setAnuncio(data);
+        trackFunnelEvent('listing_view', { listingId: data?._id || id, vertical: data?.tipo });
         if (data?.preco) setEntrada(0);
 
         const visitKey = '@Noxvelia:visit:' + id;
@@ -876,6 +878,7 @@ export default function Anuncio() {
                           {whatsappNumero && (
                             <a
                               href={`https://wa.me/${whatsappNumero}?text=${encodeURIComponent(`Olá, estou interessado/a no anúncio "${anuncio.titulo}" na Noxvelia.`)}`}
+                              onClick={() => trackFunnelEvent('whatsapp_click', { listingId: anuncio._id, vertical: anuncio.tipo })}
                               target="_blank" rel="noopener noreferrer" className="btn-whatsapp"
                             >
                               <Icon path={mdiWhatsapp} size={0.85} /> Enviar mensagem
