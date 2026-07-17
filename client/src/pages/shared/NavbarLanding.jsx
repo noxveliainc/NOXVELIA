@@ -100,8 +100,8 @@ export default function NavbarLanding() {
         }
 
         .nl-brand img {
-          width: 40px;
-          height: 40px;
+          width: 44px;
+          height: 44px;
           display: block;
           object-fit: contain;
         }
@@ -187,12 +187,55 @@ export default function NavbarLanding() {
           right: 16px;
           display: none;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 6px;
-          padding: 10px;
+          gap: 8px;
+          padding: 12px;
           border: 1px solid rgba(8, 33, 38, 0.12);
           border-radius: 14px;
           background: rgba(255, 255, 255, 0.98);
           box-shadow: 0 22px 54px -30px rgba(8, 33, 38, 0.5);
+        }
+
+        .nl-mobile-menu-head {
+          grid-column: 1 / -1;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          min-height: 52px;
+          padding: 6px 6px 12px;
+          border-bottom: 1px solid #e3ebe8;
+          color: #082126;
+        }
+
+        .nl-mobile-menu-head img {
+          width: 38px;
+          height: 38px;
+          display: block;
+          object-fit: contain;
+        }
+
+        .nl-mobile-menu-head strong {
+          display: block;
+          font-size: 13px;
+          font-weight: 900;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+        }
+
+        .nl-mobile-menu-head span {
+          display: block;
+          margin-top: 2px;
+          color: #60767c;
+          font-size: 11px;
+          font-weight: 720;
+        }
+
+        .dark .nl-mobile-menu-head {
+          color: #ecfdfb !important;
+          border-bottom-color: #334155 !important;
+        }
+
+        .dark .nl-mobile-menu-head span {
+          color: #b7c7cb !important;
         }
 
         .nl-mobile-menu a,
@@ -212,10 +255,28 @@ export default function NavbarLanding() {
           cursor: pointer;
         }
 
+        .nl-mobile-menu a.nl-mobile-primary {
+          grid-column: 1 / -1;
+          justify-content: center;
+          min-height: 46px;
+          color: #ffffff;
+          background: #082126;
+        }
+
         .nl-mobile-menu a:hover,
         .nl-mobile-menu button:hover {
           color: #082126;
           background: #edf6f3;
+        }
+
+        .nl-mobile-menu a.nl-mobile-primary:hover {
+          color: #ffffff;
+          background: #0d3036;
+        }
+
+        .dark .nl-mobile-menu a.nl-mobile-primary {
+          color: #062326 !important;
+          background: #2ac1b4 !important;
         }
 
         .nl-btn-ghost,
@@ -407,12 +468,14 @@ export default function NavbarLanding() {
           }
 
           .nl-brand img {
-            width: 34px;
-            height: 34px;
+            width: 38px;
+            height: 38px;
           }
 
           .nl-wordmark {
-            display: none;
+            display: inline;
+            font-size: 12px;
+            letter-spacing: 0.1em;
           }
 
           .nl-actions {
@@ -433,6 +496,12 @@ export default function NavbarLanding() {
             width: 36px;
             height: 36px;
           }
+
+          .nl-mobile-menu {
+            left: 10px;
+            right: 10px;
+            grid-template-columns: 1fr;
+          }
         }
       `}</style>
 
@@ -446,9 +515,8 @@ export default function NavbarLanding() {
           <div className="nl-links">
             <a href="#pesquisa">Pesquisar</a>
             <a href="#anunciar">Anunciar grátis</a>
+            <a href="#marcas">Marcas</a>
             <a href="#atalhos">Atalhos</a>
-            <a href="#destaques">Em destaque</a>
-            <a href="#guias">Guias</a>
           </div>
 
           <div className="nl-actions">
@@ -523,14 +591,20 @@ export default function NavbarLanding() {
 
         {menuMobileAberto && (
           <div className="nl-mobile-menu" id="nl-mobile-menu">
+            <div className="nl-mobile-menu-head" aria-hidden="true">
+              <img src="/logo-noxvelia.png" alt="" />
+              <div>
+                <strong>Noxvelia</strong>
+                <span>Drive e Estate em Portugal</span>
+              </div>
+            </div>
             <a href="#pesquisa" onClick={() => setMenuMobileAberto(false)}>Pesquisar</a>
             <a href="#anunciar" onClick={() => setMenuMobileAberto(false)}>Anunciar grátis</a>
+            <a href="#marcas" onClick={() => setMenuMobileAberto(false)}>Marcas</a>
             <a href="#atalhos" onClick={() => setMenuMobileAberto(false)}>Atalhos</a>
-            <a href="#destaques" onClick={() => setMenuMobileAberto(false)}>Em destaque</a>
-            <a href="#guias" onClick={() => setMenuMobileAberto(false)}>Guias</a>
             <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Drive</Link>
             <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Estate</Link>
-            <Link to={publicarTo} state={publicarState} onClick={() => setMenuMobileAberto(false)}>Publicar anúncio</Link>
+            <Link className="nl-mobile-primary" to={publicarTo} state={publicarState} onClick={() => setMenuMobileAberto(false)}>Publicar anúncio</Link>
             {signed ? (
               <>
                 <Link to="/perfil" onClick={() => setMenuMobileAberto(false)}>O meu perfil</Link>

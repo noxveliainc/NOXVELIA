@@ -9,6 +9,7 @@ import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 import { isSupportedVideoUrl } from '../../utils/videoEmbed';
 import { juntarExtras, normalizarExtras } from '../../utils/extras';
 import { getImageUrl, normalizeUploadedImages } from '../../utils/images';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const TIPOS_IMOVEL = [
   { value: 'apartamento', label: 'Apartamento' },
@@ -286,9 +287,7 @@ export default function Editar() {
 
   if (fetchingData) {
     return (
-      <div style={{ minHeight: 'calc(100vh - 72px)', background: 'var(--nx-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="nx-spinner"></div>
-      </div>
+      <LoadingScreen label="A carregar anúncio" detail="Estamos a preparar a edição." minHeight="calc(100vh - 72px)" tone="light" />
     );
   }
 

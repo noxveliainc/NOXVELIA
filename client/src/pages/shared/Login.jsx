@@ -59,7 +59,9 @@ export default function Login() {
     <>
       <style>{`
         .auth-root {
-          background-color: #f8fafc;
+          position: relative;
+          overflow: hidden;
+          background-color: #082126;
           min-height: 100vh;
           display: flex;
           align-items: center;
@@ -70,14 +72,34 @@ export default function Login() {
           box-sizing: border-box;
         }
 
+        .auth-root::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image: url('/noxvelia-hero-coast.webp');
+          background-size: cover;
+          background-position: center;
+          opacity: 0.24;
+          filter: saturate(0.95) contrast(1.08);
+        }
+
+        .auth-root::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: rgba(8, 33, 38, 0.76);
+        }
+
         .auth-card {
+          position: relative;
+          z-index: 1;
           background: #ffffff;
           border: 1px solid #e2e8f0;
           border-radius: 24px;
           padding: 48px;
           width: 100%;
           max-width: 460px;
-          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
           max-height: 90vh;
           overflow-y: auto;
         }

@@ -5,6 +5,7 @@ import { absoluteUrl } from '../../utils/seo';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
 import ProfileView, { obterLinksVisiveisPerfil } from './ProfileView';
+import LoadingScreen from '../../components/LoadingScreen';
 import { Icon } from '@mdi/react';
 import {
   mdiCheckDecagram, mdiWhatsapp, mdiPhone, mdiMapMarker, mdiEmailOutline,
@@ -79,9 +80,7 @@ export default function PerfilPublico() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: 'calc(100vh - 80px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
-        <div className="nx-spinner" style={{ borderColor: '#e2e8f0', borderTopColor: '#0f172a' }} />
-      </div>
+      <LoadingScreen label="A carregar vendedor" detail="Estamos a preparar a montra pública." minHeight="calc(100vh - 80px)" tone="light" />
     );
   }
 

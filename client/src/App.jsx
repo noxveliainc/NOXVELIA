@@ -11,6 +11,7 @@ import PageTransition from './components/PageTransition';
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
 import { ComparisonProvider } from './context/ComparisonContext';
+import LoadingScreen from './components/LoadingScreen';
 
 // --- PÁGINAS (lazy) ---
 const Landing        = lazy(() => import('./pages/shared/Landing'));
@@ -40,10 +41,7 @@ const PoliticaPrivacidade = lazy(() => import('./pages/shared/PoliticaPrivacidad
 
 function LoadingFallback() {
   return (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#040711', minHeight: '60vh' }}>
-      <div style={{ width: '28px', height: '28px', border: '2px solid rgba(255,255,255,0.08)', borderTopColor: '#2ac1b4', borderRadius: '50%', animation: 'nx-spin 0.7s linear infinite' }} />
-      <style>{`@keyframes nx-spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
+    <LoadingScreen label="A preparar a NOXVELIA" detail="A carregar a experiência." minHeight="60vh" />
   );
 }
 

@@ -24,23 +24,23 @@ import {
 import api from '../../services/api';
 
 const DEFAULT_COLORS = {
-  panel: '#0a0f1e',
-  panelAlt: '#0d1426',
-  border: 'rgba(255,255,255,0.08)',
-  borderStrong: 'rgba(255,255,255,0.14)',
-  text: '#e7ecf7',
-  textDim: '#7c8aa8',
-  textFaint: '#4b5772',
-  gold: '#f0b429',
-  goldDim: 'rgba(240,180,41,0.12)',
+  panel: '#ffffff',
+  panelAlt: '#f8faf7',
+  border: '#dfe8e4',
+  borderStrong: '#b9cac4',
+  text: '#102326',
+  textDim: '#4f646a',
+  textFaint: '#7b8b90',
+  gold: '#9d7b3f',
+  goldDim: 'rgba(157,123,63,0.12)',
   red: '#ef4444',
   redDim: 'rgba(239,68,68,0.1)',
-  green: '#22d3a5',
-  greenDim: 'rgba(34,211,165,0.1)',
-  blue: '#5b9dff',
-  blueDim: 'rgba(91,157,255,0.1)',
-  purple: '#a78bfa',
-  purpleDim: 'rgba(167,139,250,0.1)',
+  green: '#168b82',
+  greenDim: 'rgba(36,184,171,0.12)',
+  blue: '#2563eb',
+  blueDim: 'rgba(37,99,235,0.1)',
+  purple: '#64748b',
+  purpleDim: 'rgba(100,116,139,0.12)',
 };
 
 const DEFAULT_FONTS = {
@@ -726,7 +726,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
         .nx-partnerships select,
         .nx-partnerships textarea {
           width: 100%;
-          background: rgba(255,255,255,0.04);
+          background: ${palette.panelAlt};
           border: 1px solid ${palette.borderStrong};
           border-radius: 8px;
           color: ${palette.text};
@@ -742,9 +742,35 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
         .nx-partnerships label { display: grid; gap: 6px; color: ${palette.textDim}; font-size: 12px; font-weight: 700; }
         .nx-partnerships table { width: 100%; border-collapse: collapse; min-width: 880px; }
         .nx-partnerships th { color: ${palette.textFaint}; font: 700 11px ${typo.mono}; text-transform: uppercase; letter-spacing: .08em; text-align: left; padding: 10px; border-bottom: 1px solid ${palette.border}; }
-        .nx-partnerships td { padding: 12px 10px; border-bottom: 1px solid ${palette.border}; color: #cbd5e1; font-size: 13px; vertical-align: top; }
+        .nx-partnerships td { padding: 12px 10px; border-bottom: 1px solid ${palette.border}; color: ${palette.textDim}; font-size: 13px; vertical-align: top; }
         .nx-partnerships button:disabled { opacity: .5; cursor: not-allowed; }
         .nx-partnerships iframe { border: 0; background: #f4f6f8; }
+        @media (max-width: 760px) {
+          .nx-partnerships table {
+            display: block;
+            min-width: 0;
+          }
+          .nx-partnerships thead {
+            display: none;
+          }
+          .nx-partnerships tbody {
+            display: grid;
+            gap: 10px;
+          }
+          .nx-partnerships tr {
+            display: grid;
+            gap: 9px;
+            padding: 12px;
+            border: 1px solid ${palette.border};
+            border-radius: 10px;
+            background: ${palette.panel};
+          }
+          .nx-partnerships td {
+            padding: 0;
+            border: 0;
+            overflow-wrap: anywhere;
+          }
+        }
       `}</style>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 18 }}>
@@ -766,7 +792,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
           borderRadius: 8,
           border: `1px solid ${error ? 'rgba(239,68,68,.35)' : 'rgba(34,211,165,.28)'}`,
           background: error ? palette.redDim : palette.greenDim,
-          color: error ? '#fecaca' : '#bbf7d0',
+          color: error ? palette.red : palette.green,
           display: 'flex',
           justifyContent: 'space-between',
           gap: 12,
@@ -793,7 +819,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
               <span style={guideIconStyle(palette)}><Icon path={mdiCheckCircleOutline} size={0.8} /></span>
               <div>
-                <strong style={{ color: '#fff', display: 'block', marginBottom: 4 }}>{nextAction.title}</strong>
+                <strong style={{ color: palette.text, display: 'block', marginBottom: 4 }}>{nextAction.title}</strong>
                 <span style={{ color: palette.textDim, fontSize: 13, lineHeight: 1.55 }}>{nextAction.text}</span>
               </div>
             </div>
@@ -881,7 +907,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
                   {contacts.map((contact) => (
                     <tr key={contact._id}>
                       <td><input type="checkbox" checked={selectedContacts.includes(contact._id)} onChange={() => toggleSelected(contact._id)} /></td>
-                      <td><strong style={{ color: '#fff' }}>{contact.email}</strong><br /><span style={muted(palette)}>{contact.website || '-'}</span></td>
+                      <td><strong style={{ color: palette.text }}>{contact.email}</strong><br /><span style={muted(palette)}>{contact.website || '-'}</span></td>
                       <td>{contact.nomePessoa || '-'}<br /><span style={muted(palette)}>{contact.nomeEmpresa || '-'}</span></td>
                       <td><Badge colors={palette} value={contact.tipoEmpresa} /></td>
                       <td><Badge colors={palette} value={contact.estado} tone={contact.estado === 'removido' || contact.estado === 'bloqueado' ? 'red' : 'green'} /></td>
@@ -958,7 +984,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
                     <strong>{csvPreview.summary.valid} prontos a importar</strong> · {csvPreview.summary.invalid} com problema · {csvPreview.summary.duplicatesFile} repetidos no ficheiro · {csvPreview.summary.duplicatesDatabase} ja existentes · {csvPreview.summary.suppressed} bloqueados
                     <div style={{ marginTop: 6, color: palette.textFaint }}>Confirmar importacao nao envia emails. Apenas grava contactos validos.</div>
                     {csvPreview.invalidRows?.slice(0, 8).map((row) => (
-                      <div key={`${row.linha}-${row.erros?.join('|')}`} style={{ marginTop: 6, color: '#fecaca' }}>Linha {row.linha}: {row.erros?.join(', ')}</div>
+                      <div key={`${row.linha}-${row.erros?.join('|')}`} style={{ marginTop: 6, color: palette.red }}>Linha {row.linha}: {row.erros?.join(', ')}</div>
                     ))}
                   </div>
                 )}
@@ -1002,7 +1028,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
               </div>
 
               <div style={filterPanelStyle(palette)}>
-                <strong style={{ color: '#fff' }}>Quem vai receber</strong>
+                <strong style={{ color: palette.text }}>Quem vai receber</strong>
                 <span style={muted(palette)}>Escolhe tipos e estados. Contactos removidos, bloqueados ou na lista de supressao ficam sempre excluidos.</span>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(125px, 1fr))', gap: 8 }}>
                   {COMPANY_TYPES.map((type) => (
@@ -1059,7 +1085,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
             </div>
             {!preview && <div style={previewBoxStyle(palette)}>Gera uma pre-visualizacao para validar HTML, mobile e texto simples antes de enviar.</div>}
             {preview && previewMode !== 'texto' && (
-              <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center', background: 'rgba(255,255,255,.04)', padding: 12, borderRadius: 8 }}>
+              <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center', background: palette.panelAlt, padding: 12, borderRadius: 8 }}>
                 <iframe
                   title="Pre-visualizacao do email"
                   sandbox=""
@@ -1088,7 +1114,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
               </select>
               {selectedCampaign && (
                 <div style={previewBoxStyle(palette)}>
-                  <strong style={{ color: '#fff' }}>{selectedCampaign.nomeInterno}</strong><br />
+                  <strong style={{ color: palette.text }}>{selectedCampaign.nomeInterno}</strong><br />
                   Estado: {selectedCampaign.estado}<br />
                   Inicio: {formatDate(selectedCampaign.iniciadoEm)}<br />
                   Duracao: {durationLabel(selectedCampaign.iniciadoEm, selectedCampaign.concluidoEm || selectedCampaign.canceladoEm)}
@@ -1102,7 +1128,7 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
               )}
               {selectedCampaign && (
                 <div style={previewBoxStyle(palette)}>
-                  <strong style={{ color: '#fff' }}>{selectedCampaign.totalEnviado || 0} emails enviados/preparados como enviados</strong><br />
+                  <strong style={{ color: palette.text }}>{selectedCampaign.totalEnviado || 0} emails enviados/preparados como enviados</strong><br />
                   Na tabela carregada agora: {loadedSentSends} enviados · {loadedPendingSends} pendentes · {sends.length} registos visiveis.
                   <div style={{ marginTop: 6, color: palette.textFaint }}>Usa "Ver enviados" para listar apenas quem ja recebeu ou ja entrou no estado enviado/entregue/aberto/clicado.</div>
                 </div>
@@ -1248,8 +1274,8 @@ export default function PartnershipEmails({ colors = DEFAULT_COLORS, fonts = DEF
               Removidos por supressao: {estimate?.suppressed || 0}<br />
               Emails invalidos: {estimate?.invalid || 0}
             </div>
-            <p style={{ color: '#bbf7d0', fontSize: 13 }}>Garantia: o servidor cria no maximo um envio por contacto e por email dentro desta campanha. Se voltares a iniciar, os ja preparados sao ignorados.</p>
-            <p style={{ color: '#fecaca', fontSize: 13 }}>Depois de iniciado, o envio ja processado nao pode ser anulado. Os envios pendentes podem ser pausados ou cancelados.</p>
+            <p style={{ color: palette.green, fontSize: 13 }}>Garantia: o servidor cria no maximo um envio por contacto e por email dentro desta campanha. Se voltares a iniciar, os ja preparados sao ignorados.</p>
+            <p style={{ color: palette.red, fontSize: 13 }}>Depois de iniciado, o envio ja processado nao pode ser anulado. Os envios pendentes podem ser pausados ou cancelados.</p>
             <Field label='Escreve "ENVIAR" para confirmar'><input value={confirmText} onChange={(event) => setConfirmText(event.target.value)} /></Field>
             <div style={{ ...toolbarStyle, justifyContent: 'flex-end', marginTop: 12 }}>
               <button type="button" onClick={() => setConfirmOpen(false)} style={buttonStyle(palette, 'ghost')}>Voltar</button>
@@ -1266,12 +1292,12 @@ function Panel({ colors, title, children }) {
   return (
     <section style={{
       border: `1px solid ${colors.border}`,
-      background: 'rgba(255,255,255,0.025)',
+      background: colors.panel,
       borderRadius: 8,
       padding: 14,
       minWidth: 0,
     }}>
-      <h3 style={{ margin: '0 0 12px', color: '#fff', fontSize: 15 }}>{title}</h3>
+      <h3 style={{ margin: '0 0 12px', color: colors.text, fontSize: 15 }}>{title}</h3>
       {children}
     </section>
   );
@@ -1282,7 +1308,7 @@ function HelpBox({ colors, title, children }) {
     <div style={helpBoxStyle(colors)}>
       <span style={helpIconStyle(colors)}><Icon path={mdiClipboardTextOutline} size={0.68} /></span>
       <div>
-        <strong style={{ color: '#fff', display: 'block', marginBottom: 3 }}>{title}</strong>
+        <strong style={{ color: colors.text, display: 'block', marginBottom: 3 }}>{title}</strong>
         <div style={{ color: colors.textDim, fontSize: 12.5, lineHeight: 1.55 }}>{children}</div>
       </div>
     </div>
@@ -1294,7 +1320,7 @@ function StepCard({ colors, number, title, text, done, active, onClick }) {
     <button type="button" onClick={onClick} style={stepCardStyle(colors, active)}>
       <span style={stepNumberStyle(colors, done)}>{done ? <Icon path={mdiCheck} size={0.55} /> : number}</span>
       <span style={{ display: 'grid', gap: 3, textAlign: 'left' }}>
-        <strong style={{ color: '#fff', fontSize: 13 }}>{title}</strong>
+        <strong style={{ color: colors.text, fontSize: 13 }}>{title}</strong>
         <span style={{ color: colors.textDim, fontSize: 11.5, lineHeight: 1.35 }}>{text}</span>
       </span>
     </button>
@@ -1326,8 +1352,8 @@ function CheckPill({ colors, checked, label, onClick, small = false }) {
   return (
     <button type="button" onClick={onClick} style={{
       border: `1px solid ${checked ? colors.blue : colors.borderStrong}`,
-      background: checked ? colors.blueDim : 'rgba(255,255,255,0.03)',
-      color: checked ? '#fff' : colors.textDim,
+      background: checked ? colors.blueDim : colors.panelAlt,
+      color: checked ? colors.blue : colors.textDim,
       borderRadius: 8,
       padding: small ? '7px 9px' : '10px 11px',
       fontWeight: 800,
@@ -1338,7 +1364,7 @@ function CheckPill({ colors, checked, label, onClick, small = false }) {
 }
 
 function EmptyRow({ colSpan, text }) {
-  return <tr><td colSpan={colSpan} style={{ textAlign: 'center', padding: 26, color: '#7c8aa8' }}>{text}</td></tr>;
+  return <tr><td colSpan={colSpan} style={{ textAlign: 'center', padding: 26, color: DEFAULT_COLORS.textDim }}>{text}</td></tr>;
 }
 
 const gridTwoColumns = {
@@ -1400,7 +1426,7 @@ const helpBoxStyle = (colors) => ({
   alignItems: 'flex-start',
   gap: 10,
   border: `1px solid ${colors.border}`,
-  background: 'rgba(255,255,255,0.03)',
+  background: colors.panelAlt,
   borderRadius: 8,
   padding: 11,
 });
@@ -1421,7 +1447,7 @@ const stepCardStyle = (colors, active) => ({
   width: '100%',
   minHeight: 92,
   border: `1px solid ${active ? colors.blue : colors.border}`,
-  background: active ? colors.blueDim : 'rgba(255,255,255,0.025)',
+  background: active ? colors.blueDim : colors.panelAlt,
   color: colors.text,
   borderRadius: 8,
   padding: 11,
@@ -1439,7 +1465,7 @@ const stepNumberStyle = (colors, done) => ({
   alignItems: 'center',
   justifyContent: 'center',
   flexShrink: 0,
-  background: done ? colors.greenDim : 'rgba(255,255,255,0.05)',
+  background: done ? colors.greenDim : colors.panel,
   border: `1px solid ${done ? colors.green : colors.borderStrong}`,
   color: done ? colors.green : colors.textDim,
   fontSize: 11,
@@ -1450,7 +1476,7 @@ const filterPanelStyle = (colors) => ({
   display: 'grid',
   gap: 10,
   border: `1px solid ${colors.border}`,
-  background: 'rgba(255,255,255,0.025)',
+  background: colors.panelAlt,
   borderRadius: 8,
   padding: 12,
 });
@@ -1462,7 +1488,7 @@ const muted = (colors) => ({
 
 const previewBoxStyle = (colors) => ({
   border: `1px solid ${colors.border}`,
-  background: 'rgba(255,255,255,0.035)',
+  background: colors.panelAlt,
   color: colors.textDim,
   borderRadius: 8,
   padding: 12,
@@ -1473,7 +1499,7 @@ const tabStyle = (colors, active) => ({
   border: 0,
   borderBottom: `2px solid ${active ? colors.blue : 'transparent'}`,
   background: active ? colors.panelAlt : 'transparent',
-  color: active ? '#fff' : colors.textDim,
+  color: active ? colors.text : colors.textDim,
   padding: '11px 14px',
   cursor: 'pointer',
   borderRadius: '8px 8px 0 0',
@@ -1483,10 +1509,10 @@ const tabStyle = (colors, active) => ({
 
 const buttonStyle = (colors, variant = 'default') => {
   const map = {
-    default: { bg: colors.blueDim, border: colors.blue, color: '#dbeafe' },
-    ghost: { bg: 'rgba(255,255,255,0.035)', border: colors.borderStrong, color: colors.text },
-    accent: { bg: colors.greenDim, border: colors.green, color: '#bbf7d0' },
-    danger: { bg: colors.redDim, border: colors.red, color: '#fecaca' },
+    default: { bg: colors.blueDim, border: colors.blue, color: colors.blue },
+    ghost: { bg: colors.panelAlt, border: colors.borderStrong, color: colors.text },
+    accent: { bg: colors.greenDim, border: colors.green, color: colors.green },
+    danger: { bg: colors.redDim, border: colors.red, color: colors.red },
   };
   const item = map[variant] || map.default;
   return {

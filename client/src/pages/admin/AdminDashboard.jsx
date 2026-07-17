@@ -3,11 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import PartnershipEmails from './PartnershipEmails';
+import LoadingScreen from '../../components/LoadingScreen';
 
 import { Icon } from '@mdi/react';
 import { 
   mdiAccountMultiple, mdiFileDocumentOutline, mdiCar, mdiHomeOutline, 
-  mdiTrashCanOutline, mdiShieldOutline, mdiLoading, mdiCheck,
+  mdiTrashCanOutline, mdiLoading, mdiCheck,
   mdiOpenInNew, mdiCurrencyEur, mdiMagnify, mdiStar,
   mdiAlertOutline, mdiCrown, mdiChartTimelineVariant,
   mdiFilterVariant, mdiPhoneOutline, mdiEmailOutline, mdiRefresh,
@@ -21,24 +22,24 @@ import {
 /* ------------------------------------------------------------------ */
 
 const COLORS = {
-  bg: '#03060f',
-  panel: '#0a0f1e',
-  panelAlt: '#0d1426',
-  border: 'rgba(255,255,255,0.06)',
-  borderStrong: 'rgba(255,255,255,0.12)',
-  text: '#e7ecf7',
-  textDim: '#7c8aa8',
-  textFaint: '#4b5772',
-  gold: '#f0b429',
-  goldDim: 'rgba(240,180,41,0.12)',
+  bg: '#f4f7f3',
+  panel: '#ffffff',
+  panelAlt: '#f8faf7',
+  border: '#dfe8e4',
+  borderStrong: '#b9cac4',
+  text: '#102326',
+  textDim: '#4f646a',
+  textFaint: '#7b8b90',
+  gold: '#9d7b3f',
+  goldDim: 'rgba(157,123,63,0.12)',
   red: '#ef4444',
   redDim: 'rgba(239,68,68,0.1)',
-  green: '#22d3a5',
-  greenDim: 'rgba(34,211,165,0.1)',
-  blue: '#5b9dff',
-  blueDim: 'rgba(91,157,255,0.1)',
-  purple: '#a78bfa',
-  purpleDim: 'rgba(167,139,250,0.1)',
+  green: '#168b82',
+  greenDim: 'rgba(36,184,171,0.12)',
+  blue: '#2563eb',
+  blueDim: 'rgba(37,99,235,0.1)',
+  purple: '#64748b',
+  purpleDim: 'rgba(100,116,139,0.12)',
 };
 
 const FONT_DISPLAY = "'Space Grotesk', 'Plus Jakarta Sans', sans-serif";
@@ -194,26 +195,12 @@ export default function AdminDashboard() {
   // ---- Loading state ---------------------------------------------------
 
   if (loading) return (
-    <div style={{
-      background: COLORS.bg, minHeight: '100vh', display: 'flex',
-      flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px',
-      fontFamily: FONT_BODY, color: COLORS.textDim
-    }}>
-      <div style={{ position: 'relative', width: '56px', height: '56px' }}>
-        <div style={{
-          position: 'absolute', inset: 0, border: `2px solid ${COLORS.border}`,
-          borderTopColor: COLORS.gold, borderRadius: '50%',
-          animation: 'spin 0.9s linear infinite'
-        }} />
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', color: COLORS.gold }}>
-          <Icon path={mdiShieldOutline} size={1} />
-        </div>
-      </div>
-      <div style={{ fontFamily: FONT_MONO, fontSize: '12px', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-        A iniciar centro de comando
-      </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
+    <LoadingScreen
+      label="A iniciar administração"
+      detail="A carregar dados operacionais da NOXVELIA."
+      minHeight="100vh"
+      tone="light"
+    />
   );
 
   // ---- Render ------------------------------------------------------------
@@ -221,7 +208,7 @@ export default function AdminDashboard() {
   return (
     <div className="nx-admin-root" style={{
       background: COLORS.bg,
-      backgroundImage: `radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,180,41,0.06), transparent)`,
+      backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,0.72), rgba(244,247,243,0))',
       minHeight: '100vh', color: COLORS.text, fontFamily: FONT_BODY, padding: '32px 24px 80px'
     }}>
       <style>{`
@@ -229,9 +216,9 @@ export default function AdminDashboard() {
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .nx-row { animation: fadeUp 0.25s ease both; }
-        .nx-row:hover { background: rgba(255,255,255,0.02); }
+        .nx-row:hover { background: rgba(8,33,38,0.025); }
         .nx-btn { transition: all 0.15s ease; text-decoration: none; }
-        .nx-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.15); }
+        .nx-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(0.98); }
         .nx-btn:active:not(:disabled) { transform: translateY(0); }
         .nx-tab { transition: all 0.15s ease; }
         .nx-card { transition: border-color 0.15s ease, transform 0.15s ease; }
@@ -241,26 +228,26 @@ export default function AdminDashboard() {
         .nx-scroll::-webkit-scrollbar-thumb { background: ${COLORS.borderStrong}; border-radius: 3px; }
         .nx-live { animation: pulse 2s ease-in-out infinite; }
         
-        .contact-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; font-family: ${FONT_MONO}; font-size: 11px; color: ${COLORS.textDim}; cursor: pointer; transition: all 0.2s; }
-        .contact-badge:hover { background: rgba(255,255,255,0.08); color: #fff; border-color: rgba(255,255,255,0.2); }
+        .contact-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; background: #ffffff; border: 1px solid ${COLORS.border}; border-radius: 6px; font-family: ${FONT_MONO}; font-size: 11px; color: ${COLORS.textDim}; cursor: pointer; transition: all 0.2s; }
+        .contact-badge:hover { background: ${COLORS.panelAlt}; color: ${COLORS.text}; border-color: ${COLORS.borderStrong}; }
         .contact-badge.copied { background: ${COLORS.greenDim}; color: ${COLORS.green}; border-color: rgba(34,211,165,0.3); }
         .nx-status-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 999px; font-family: ${FONT_MONO}; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
         .nx-status-chip.ativo { color: ${COLORS.green}; background: ${COLORS.greenDim}; border: 1px solid rgba(34,211,165,.22); }
         .nx-status-chip.pendente { color: ${COLORS.gold}; background: ${COLORS.goldDim}; border: 1px solid rgba(240,180,41,.22); }
-        .nx-status-chip.pausado, .nx-status-chip.expirado { color: ${COLORS.textDim}; background: rgba(255,255,255,.04); border: 1px solid ${COLORS.borderStrong}; }
+        .nx-status-chip.pausado, .nx-status-chip.expirado { color: ${COLORS.textDim}; background: #f2f5f3; border: 1px solid ${COLORS.borderStrong}; }
         .nx-overview-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr); gap: 18px; }
         .nx-overview-card { border: 1px solid ${COLORS.border}; border-radius: 12px; background: ${COLORS.panelAlt}; padding: 18px; min-width: 0; }
-        .nx-overview-title { margin: 0 0 15px; color: #fff; font-family: ${FONT_DISPLAY}; font-size: 16px; }
+        .nx-overview-title { margin: 0 0 15px; color: ${COLORS.text}; font-family: ${FONT_DISPLAY}; font-size: 16px; }
         .nx-signal-list { display: grid; gap: 10px; }
-        .nx-signal { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px; border: 1px solid ${COLORS.border}; border-radius: 10px; background: rgba(255,255,255,.018); }
-        .nx-signal strong { color: #fff; font-size: 13px; }
+        .nx-signal { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px; border: 1px solid ${COLORS.border}; border-radius: 10px; background: #ffffff; }
+        .nx-signal strong { color: ${COLORS.text}; font-size: 13px; }
         .nx-signal span { color: ${COLORS.textDim}; font-size: 12px; }
         .nx-top-list { display: grid; gap: 8px; }
         .nx-top-item { display: grid; grid-template-columns: 34px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 10px; border-radius: 9px; color: inherit; text-decoration: none; }
-        .nx-top-item:hover { background: rgba(255,255,255,.035); }
+        .nx-top-item:hover { background: rgba(8,33,38,.035); }
         .nx-top-rank { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: ${COLORS.gold}; background: ${COLORS.goldDim}; font-family: ${FONT_MONO}; font-weight: 900; }
         .nx-top-copy { min-width: 0; }
-        .nx-top-copy strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; font-size: 13px; }
+        .nx-top-copy strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${COLORS.text}; font-size: 13px; }
         .nx-top-copy span, .nx-top-metrics { color: ${COLORS.textDim}; font-size: 11px; }
         @media (max-width: 860px) {
           .nx-overview-grid { grid-template-columns: 1fr; }
@@ -270,11 +257,93 @@ export default function AdminDashboard() {
           .nx-admin-header { align-items: flex-start !important; }
           .nx-admin-title { font-size: 27px !important; }
           .nx-admin-panel { padding: 14px !important; }
-          .nx-admin-table { min-width: 680px !important; }
           .nx-admin-refresh { width: 100%; justify-content: center; }
           .nx-signal { align-items: flex-start; flex-direction: column; }
           .nx-top-item { grid-template-columns: 34px minmax(0,1fr); }
           .nx-top-metrics { grid-column: 2; }
+        }
+        @media (max-width: 760px) {
+          .nx-admin-panel { overflow-x: visible !important; }
+          .nx-admin-table {
+            display: block !important;
+            width: 100% !important;
+            min-width: 0 !important;
+          }
+          .nx-admin-table thead {
+            display: none !important;
+          }
+          .nx-admin-table tbody {
+            display: grid !important;
+            gap: 12px !important;
+          }
+          .nx-admin-table tr {
+            display: grid !important;
+            gap: 11px !important;
+            padding: 14px !important;
+            border: 1px solid ${COLORS.border} !important;
+            border-radius: 12px !important;
+            background: #ffffff !important;
+          }
+          .nx-admin-table td {
+            display: grid !important;
+            grid-template-columns: minmax(92px, 0.36fr) minmax(0, 1fr) !important;
+            gap: 10px !important;
+            align-items: start !important;
+            width: 100% !important;
+            padding: 0 !important;
+            border: 0 !important;
+            text-align: left !important;
+            white-space: normal !important;
+            min-width: 0 !important;
+          }
+          .nx-admin-table td::before {
+            content: attr(data-label);
+            color: ${COLORS.textFaint};
+            font-family: ${FONT_MONO};
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+          }
+          .nx-admin-table td[colspan] {
+            display: block !important;
+            text-align: center !important;
+            padding: 28px 12px !important;
+          }
+          .nx-admin-table td[colspan]::before {
+            content: none !important;
+          }
+          .nx-admin-table td > *,
+          .nx-admin-table td a,
+          .nx-admin-table td button {
+            max-width: 100%;
+            min-width: 0;
+          }
+          .nx-admin-table td[data-label="Ações"] > div {
+            justify-content: flex-start !important;
+          }
+          .contact-badge {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .nx-panel-toolbar {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            align-items: stretch !important;
+          }
+          .nx-panel-search {
+            max-width: none !important;
+          }
+          .nx-filter-row {
+            overflow-x: auto;
+            flex-wrap: nowrap !important;
+            padding-bottom: 4px;
+          }
+          .nx-filter-row .nx-tab {
+            flex: 0 0 auto;
+          }
         }
       `}</style>
 
@@ -300,7 +369,7 @@ export default function AdminDashboard() {
             </div>
             <h1 className="nx-admin-title" style={{
               margin: 0, fontSize: '34px', fontFamily: FONT_DISPLAY, fontWeight: 700,
-              color: '#fff', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '12px'
+              color: COLORS.text, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '12px'
             }}>
               Soberania NOXVELIA
               <Icon path={mdiCrown} size={1.2} color={COLORS.gold} />
@@ -362,7 +431,7 @@ export default function AdminDashboard() {
                 }}>{m.label}</div>
                 <div style={{ color: m.color, opacity: 0.7 }}>{m.icon}</div>
               </div>
-              <div style={{ fontSize: '26px', fontWeight: 800, color: '#fff', fontFamily: FONT_DISPLAY, marginBottom: '4px' }}>
+              <div style={{ fontSize: '26px', fontWeight: 800, color: COLORS.text, fontFamily: FONT_DISPLAY, marginBottom: '4px' }}>
                 {m.value}
               </div>
               <div style={{ fontSize: '12px', color: COLORS.textDim }}>{m.sub}</div>
@@ -392,7 +461,7 @@ export default function AdminDashboard() {
                   padding: '12px 18px', borderRadius: '10px 10px 0 0', cursor: 'pointer',
                   fontWeight: 600, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px',
                   background: isActive ? COLORS.panel : 'transparent',
-                  color: isActive ? (tab.premium ? COLORS.gold : '#fff') : COLORS.textFaint,
+                  color: isActive ? (tab.premium ? COLORS.gold : COLORS.text) : COLORS.textFaint,
                   border: 'none',
                   borderBottom: isActive ? `2px solid ${tab.premium ? COLORS.gold : COLORS.blue}` : '2px solid transparent',
                   position: 'relative', top: '1px', whiteSpace: 'nowrap'
@@ -403,7 +472,7 @@ export default function AdminDashboard() {
                 {tab.count > 0 && (
                   <span style={{
                     fontFamily: FONT_MONO, fontSize: '11px', padding: '2px 7px', borderRadius: '999px',
-                    background: isActive ? (tab.premium ? COLORS.goldDim : COLORS.blueDim) : 'rgba(255,255,255,0.05)',
+                    background: isActive ? (tab.premium ? COLORS.goldDim : COLORS.blueDim) : 'rgba(8,33,38,0.05)',
                     color: isActive ? (tab.premium ? COLORS.gold : COLORS.blue) : COLORS.textFaint,
                     fontWeight: 700
                   }}>{tab.count}</span>
@@ -514,7 +583,7 @@ export default function AdminDashboard() {
                   return (
                     <div key={card.key} className="nx-card" style={{ background: COLORS.panelAlt, border: `1px solid ${COLORS.border}`, borderRadius: '12px', padding: '15px', borderTop: `2px solid ${card.color}` }}>
                       <div style={{ color: COLORS.textDim, fontSize: '10px', fontFamily: FONT_MONO, textTransform: 'uppercase', letterSpacing: '.08em' }}>{card.label}</div>
-                      <div style={{ color: '#fff', fontSize: '25px', fontFamily: FONT_DISPLAY, fontWeight: 800, marginTop: '10px' }}>{formatMetric(value.sessoes)}</div>
+                      <div style={{ color: COLORS.text, fontSize: '25px', fontFamily: FONT_DISPLAY, fontWeight: 800, marginTop: '10px' }}>{formatMetric(value.sessoes)}</div>
                       <div style={{ color: COLORS.textDim, fontSize: '11px', marginTop: '3px' }}>{card.detail} · {formatMetric(value.total)} ações</div>
                     </div>
                   );
@@ -563,13 +632,13 @@ export default function AdminDashboard() {
                     <tbody>
                       {(funnel?.diario || []).slice(-14).reverse().map((day) => (
                         <tr key={day.data} style={{ borderBottom: `1px solid ${COLORS.border}`, color: COLORS.textDim, fontSize: '12px' }}>
-                          <td style={{ padding: '10px 8px', color: '#fff', fontFamily: FONT_MONO }}>{day.data}</td>
-                          <td style={{ padding: '10px 8px' }}>{formatMetric(day.landing_view?.sessoes)}</td>
-                          <td style={{ padding: '10px 8px' }}>{formatMetric(day.search_start?.sessoes)}</td>
-                          <td style={{ padding: '10px 8px' }}>{formatMetric(day.listing_view?.sessoes)}</td>
-                          <td style={{ padding: '10px 8px' }}>{formatMetric(day.whatsapp_click?.total)}</td>
-                          <td style={{ padding: '10px 8px' }}>{formatMetric(day.publish_start?.sessoes)}</td>
-                          <td style={{ padding: '10px 8px' }}>{formatMetric(day.publish_complete?.total)}</td>
+                          <td data-label="Dia" style={{ padding: '10px 8px', color: COLORS.text, fontFamily: FONT_MONO }}>{day.data}</td>
+                          <td data-label="Entradas" style={{ padding: '10px 8px' }}>{formatMetric(day.landing_view?.sessoes)}</td>
+                          <td data-label="Pesquisas" style={{ padding: '10px 8px' }}>{formatMetric(day.search_start?.sessoes)}</td>
+                          <td data-label="Anúncios" style={{ padding: '10px 8px' }}>{formatMetric(day.listing_view?.sessoes)}</td>
+                          <td data-label="WhatsApp" style={{ padding: '10px 8px' }}>{formatMetric(day.whatsapp_click?.total)}</td>
+                          <td data-label="Publicações" style={{ padding: '10px 8px' }}>{formatMetric(day.publish_start?.sessoes)}</td>
+                          <td data-label="Concluídas" style={{ padding: '10px 8px' }}>{formatMetric(day.publish_complete?.total)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -613,14 +682,14 @@ export default function AdminDashboard() {
                   ) : (
                     utilizadoresFiltrados.map((u, idx) => {
                       return (
-                        <tr key={u._id} className="nx-row" style={{ borderBottom: `1px solid ${COLORS.border}`, color: '#cbd5e1', animationDelay: `${idx * 0.02}s` }}>
+                        <tr key={u._id} className="nx-row" style={{ borderBottom: `1px solid ${COLORS.border}`, color: COLORS.textDim, animationDelay: `${idx * 0.02}s` }}>
                           
                           {/* Coluna 1: Avatar, Nome e Contactos Copiáveis */}
-                          <td style={{ padding: '16px 12px' }}>
+                          <td data-label="Utilizador" style={{ padding: '16px 12px' }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
                               <Avatar nome={u.nome} isSoberano={u.tipo === 'admin'} premium={u.premiumAtivo} />
                               <div>
-                                <div style={{ fontWeight: 600, color: '#fff', fontSize: '14px', marginBottom: '6px' }}>{u.nome}</div>
+                                <div style={{ fontWeight: 700, color: COLORS.text, fontSize: '14px', marginBottom: '6px' }}>{u.nome}</div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                                   
                                   {/* Botão de Email */}
@@ -648,15 +717,15 @@ export default function AdminDashboard() {
                             </div>
                           </td>
 
-                          <td style={{ padding: '16px 12px' }}>
+                          <td data-label="Plano" style={{ padding: '16px 12px' }}>
                             <PlanoBadge tipo={u.tipo} premium={u.premiumAtivo} tipoConta={u.tipoConta} />
                           </td>
 
-                          <td style={{ padding: '16px 12px', color: COLORS.textDim, fontSize: '13px', fontFamily: FONT_MONO }}>
+                          <td data-label="Registo" style={{ padding: '16px 12px', color: COLORS.textDim, fontSize: '13px', fontFamily: FONT_MONO }}>
                             {u.createdAt ? formatarData(u.createdAt) : '—'}
                           </td>
 
-                          <td style={{ padding: '16px 12px', textAlign: 'right' }}>
+                          <td data-label="Ações" style={{ padding: '16px 12px', textAlign: 'right' }}>
                             <Link 
                               to={`/vendedor/${u._id}`} 
                               target="_blank"
@@ -716,9 +785,9 @@ export default function AdminDashboard() {
                     <EmptyRow colSpan={6} text="Nenhum anúncio corresponde aos filtros aplicados." />
                   ) : (
                     anunciosFiltrados.map((a, idx) => (
-                      <tr key={a._id} className="nx-row" style={{ borderBottom: `1px solid ${COLORS.border}`, color: '#cbd5e1', animationDelay: `${idx * 0.02}s` }}>
-                        <td style={{ padding: '14px 12px', fontWeight: 500, color: '#fff', fontSize: '14px' }}>
-                          <Link to={`/anuncio/${a._id}`} target="_blank" rel="noreferrer" style={{ color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <tr key={a._id} className="nx-row" style={{ borderBottom: `1px solid ${COLORS.border}`, color: COLORS.textDim, animationDelay: `${idx * 0.02}s` }}>
+                        <td data-label="Anúncio" style={{ padding: '14px 12px', fontWeight: 500, color: COLORS.text, fontSize: '14px' }}>
+                          <Link to={`/anuncio/${a._id}`} target="_blank" rel="noreferrer" style={{ color: COLORS.text, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <span style={{ textDecoration: 'underline', textUnderlineOffset: '4px' }}>{a.titulo || 'Anúncio Sem Título'}</span>
                             <Icon path={mdiOpenInNew} size={0.5} color={COLORS.textDim} />
                             {a.destacado && (
@@ -732,7 +801,7 @@ export default function AdminDashboard() {
                             )}
                           </Link>
                         </td>
-                        <td style={{ padding: '14px 12px' }}>
+                        <td data-label="Estado" style={{ padding: '14px 12px' }}>
                           <div style={{ display: 'grid', gap: 7 }}>
                             {a.tipo === 'carro'
                               ? <TipoTag color="#2ac1b4" icon={<Icon path={mdiCar} size={0.6} />} label="Drive" />
@@ -740,16 +809,16 @@ export default function AdminDashboard() {
                             <span className={`nx-status-chip ${a.estado || 'pendente'}`}>{a.estado || 'pendente'}</span>
                           </div>
                         </td>
-                        <td style={{ padding: '14px 12px', color: COLORS.textDim, fontSize: '13px' }}>
+                        <td data-label="Proprietário" style={{ padding: '14px 12px', color: COLORS.textDim, fontSize: '13px' }}>
                           {a.utilizador?.nome || 'Utilizador Removido'}
                         </td>
-                        <td style={{ padding: '14px 12px', color: COLORS.textDim, fontSize: '12px', fontFamily: FONT_MONO, whiteSpace: 'nowrap' }}>
+                        <td data-label="Interação" style={{ padding: '14px 12px', color: COLORS.textDim, fontSize: '12px', fontFamily: FONT_MONO, whiteSpace: 'nowrap' }}>
                           {a.visitas || 0} visitas<br />{a.guardados || 0} favoritos · {a.contactos || 0} contactos
                         </td>
-                        <td style={{ padding: '14px 12px', color: COLORS.textDim, fontSize: '12px', fontFamily: FONT_MONO, whiteSpace: 'nowrap' }}>
+                        <td data-label="Publicado" style={{ padding: '14px 12px', color: COLORS.textDim, fontSize: '12px', fontFamily: FONT_MONO, whiteSpace: 'nowrap' }}>
                           {a.createdAt ? formatarData(a.createdAt) : '—'}
                         </td>
-                        <td style={{ padding: '14px 12px', textAlign: 'right' }}>
+                        <td data-label="Ações" style={{ padding: '14px 12px', textAlign: 'right' }}>
                           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
                             {a.estado !== 'ativo' ? (
                               <ActionButton
@@ -815,12 +884,12 @@ export default function AdminDashboard() {
 
 function Avatar({ nome, isSoberano, premium }) {
   const inicial = nome ? nome.charAt(0).toUpperCase() : '?';
-  let bg = '#1e293b', border = 'transparent';
+  let bg = '#e8f0ed', border = COLORS.border, color = COLORS.text;
   if (isSoberano) { bg = 'rgba(239,68,68,0.15)'; border = 'rgba(239,68,68,0.3)'; }
-  else if (premium) { bg = 'rgba(167,139,250,0.15)'; border = 'rgba(167,139,250,0.3)'; }
+  else if (premium) { bg = COLORS.purpleDim; border = 'rgba(100,116,139,0.28)'; color = COLORS.purple; }
   return (
     <div style={{
-      width: '42px', height: '42px', borderRadius: '50%', background: bg, color: '#fff',
+      width: '42px', height: '42px', borderRadius: '50%', background: bg, color,
       display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
       fontFamily: FONT_DISPLAY, fontSize: '15px', border: `1px solid ${border}`, flexShrink: 0
     }}>
@@ -853,8 +922,8 @@ function PlanoBadge({ tipo, premium, tipoConta }) {
         </span>
       ) : (
         <span style={{
-          background: 'rgba(255,255,255,0.04)', color: COLORS.textDim, padding: '4px 9px', borderRadius: '5px',
-          fontSize: '11px', fontWeight: 700, fontFamily: FONT_MONO, letterSpacing: '0.05em', border: '1px solid rgba(255,255,255,0.1)'
+          background: '#f5f7f6', color: COLORS.textDim, padding: '4px 9px', borderRadius: '5px',
+          fontSize: '11px', fontWeight: 700, fontFamily: FONT_MONO, letterSpacing: '0.05em', border: `1px solid ${COLORS.border}`
         }}>
           PARTICULAR
         </span>
@@ -889,7 +958,7 @@ function ActionButton({ onClick, loading, color, icon, label, solid = false }) {
       style={{
         background: solid ? color : 'transparent',
         border: `1px solid ${color}`,
-        color: solid ? '#04140f' : color,
+        color: solid ? '#ffffff' : color,
         padding: '7px 13px', borderRadius: '7px',
         cursor: loading ? 'not-allowed' : 'pointer',
         display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -919,11 +988,11 @@ function EmptyRow({ colSpan, text }) {
 
 function PanelToolbar({ searchValue, onSearch, placeholder, filters, activeFilter, onFilter, resultCount, totalCount }) {
   return (
-    <div style={{
+    <div className="nx-panel-toolbar" style={{
       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       marginBottom: '18px', gap: '14px', flexWrap: 'wrap'
     }}>
-      <div style={{ position: 'relative', flex: '1 1 260px', maxWidth: '360px' }}>
+      <div className="nx-panel-search" style={{ position: 'relative', flex: '1 1 260px', maxWidth: '360px' }}>
         <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: COLORS.textFaint, display: 'flex', alignItems: 'center' }}>
           <Icon path={mdiMagnify} size={0.7} />
         </div>
@@ -940,7 +1009,7 @@ function PanelToolbar({ searchValue, onSearch, placeholder, filters, activeFilte
           }}
         />
       </div>
-      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="nx-filter-row" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
         <Icon path={mdiFilterVariant} size={0.6} color={COLORS.textFaint} style={{ marginRight: '2px' }} />
         {filters.map(f => (
           <button
@@ -950,8 +1019,8 @@ function PanelToolbar({ searchValue, onSearch, placeholder, filters, activeFilte
             style={{
               padding: '6px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 600,
               cursor: 'pointer', border: `1px solid ${activeFilter === f.id ? COLORS.borderStrong : COLORS.border}`,
-              background: activeFilter === f.id ? 'rgba(255,255,255,0.06)' : 'transparent',
-              color: activeFilter === f.id ? '#fff' : COLORS.textDim
+              background: activeFilter === f.id ? COLORS.panelAlt : 'transparent',
+              color: activeFilter === f.id ? COLORS.text : COLORS.textDim
             }}
           >
             {f.label}

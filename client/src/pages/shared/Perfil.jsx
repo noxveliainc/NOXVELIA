@@ -5,6 +5,7 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import AnuncioCard from '../../pages/shared/AnuncioCard';
 import ProfileView, { obterLinksVisiveisPerfil } from './ProfileView';
+import LoadingScreen from '../../components/LoadingScreen';
 import { Icon } from '@mdi/react';
 import { 
   mdiCheckDecagram, mdiChartBar, mdiShareVariantOutline, mdiDomain, 
@@ -300,7 +301,7 @@ export default function Perfil() {
   const totalCarros = anuncios.filter(a => a.tipo === 'carro').length;
   const linksPerfilVisiveis = obterLinksVisiveisPerfil(utilizador);
 
-  if (loading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}><div className="nx-spinner" style={{ borderColor: 'rgba(42, 193, 180, 0.2)', borderTopColor: '#2ac1b4' }} /></div>;
+  if (loading) return <LoadingScreen label="A carregar perfil" detail="Estamos a preparar a tua área NOXVELIA." minHeight="100vh" tone="light" />;
 
   return (
     <>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import LoadingScreen from './LoadingScreen';
 
 /**
  * PremiumRoute — Wrapper para proteger páginas exclusivas de utilizadores Premium.
@@ -19,17 +20,7 @@ export default function PremiumRoute({ children }) {
 
   // Enquanto o AuthContext ainda está a carregar, não fazer nada
   if (loading) {
-    return (
-      <div style={{
-        minHeight: 'calc(100vh - 72px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'var(--nx-bg)',
-      }}>
-        <div className="nx-spinner" />
-      </div>
-    );
+    return <LoadingScreen label="A confirmar plano" detail="Estamos a validar o teu acesso." minHeight="calc(100vh - 72px)" tone="light" />;
   }
 
   // Não autenticado → vai para login, guarda o destino original

@@ -6,6 +6,7 @@ import { BadgeCheck } from 'lucide-react';
 import { io } from 'socket.io-client'; // 🌟 Antena do WebSockets
 import { getAuthToken } from '../../utils/authSession';
 import { getImageUrl } from '../../utils/images';
+import LoadingScreen from '../../components/LoadingScreen';
 
 export default function Mensagens() {
   const { user } = useAuth();
@@ -146,14 +147,12 @@ export default function Mensagens() {
 
   if (loading) {
     return (
-      <div className="chat-loader flex items-center justify-center bg-white" style={{ minHeight: 'calc(100vh - 80px)' }}>
-        <div className="text-center">
-          <div className="w-12 h-12 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
-          <p style={{ fontFamily: 'IBM Plex Mono', fontSize: '11px', color: '#666', letterSpacing: '0.1em' }}>
-            A abrir a tua inbox de {veioDeCarros ? 'Carros 🚗' : 'Imóveis 🏠'}…
-          </p>
-        </div>
-      </div>
+      <LoadingScreen
+        label="A abrir mensagens"
+        detail={`A carregar a tua inbox de ${veioDeCarros ? 'Drive' : 'Estate'}.`}
+        minHeight="calc(100vh - 80px)"
+        tone="light"
+      />
     );
   }
 

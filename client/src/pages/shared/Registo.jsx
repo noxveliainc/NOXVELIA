@@ -117,7 +117,9 @@ export default function Registo() {
     <>
       <style>{`
         .auth-root { 
-          background-color: #f8fafc; 
+          position: relative;
+          overflow: hidden;
+          background-color: #082126;
           min-height: 100vh; 
           display: flex; 
           align-items: center; 
@@ -128,14 +130,34 @@ export default function Registo() {
           box-sizing: border-box;
         }
 
+        .auth-root::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image: url('/social/noxvelia-estate-photo-premium.webp');
+          background-size: cover;
+          background-position: center;
+          opacity: 0.2;
+          filter: saturate(0.95) contrast(1.08);
+        }
+
+        .auth-root::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: rgba(8, 33, 38, 0.78);
+        }
+
         .auth-card { 
+          position: relative;
+          z-index: 1;
           background: #ffffff; 
           border: 1px solid #e2e8f0; 
           border-radius: 24px;
           padding: 42px 48px; 
           width: 100%; 
           max-width: 480px;
-          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
           max-height: 94vh;
           overflow-y: auto;
         }

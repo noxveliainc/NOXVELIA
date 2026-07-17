@@ -2,15 +2,14 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { pathWithSearch, publicReturnPath } from '../utils/navigationState';
+import LoadingScreen from './LoadingScreen';
 
 export default function ProtectedRoute({ children }) {
   const { signed, loading } = useAuth();
   const location = useLocation();
 
-  // 1. Enquanto verifica a sessão: devolvemos 'null' em vez de um ecrã preto.
-  // Isto evita que o componente <PageTransition /> fique encravado a esconder a página!
   if (loading) {
-    return null; 
+    return <LoadingScreen label="A confirmar sessão" detail="Estamos a preparar o teu acesso." minHeight="calc(100vh - 72px)" tone="light" />;
   }
 
   // 2. Se o utilizador não estiver autenticado, recambiá-lo para o Login
