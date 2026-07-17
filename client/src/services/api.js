@@ -3,7 +3,7 @@ import { clearAuth, getAuthToken } from '../utils/authSession';
 
 const api = axios.create({
   // Voltámos a colocar o /api no fim, para casar com o novo server.js!
-  baseURL: import.meta.env.VITE_API_URL || 'https://noxvelia.onrender.com/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
 });
 
 api.interceptors.request.use((config) => {

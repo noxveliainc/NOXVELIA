@@ -601,9 +601,9 @@ export default function Perfil() {
                     onChange={e => setDadosEditar({ ...dadosEditar, mostrarTelefonePublico: e.target.checked })}
                   />
                   <span>
-                    <span className="privacy-toggle-title">Mostrar telemóvel publicamente</span>
+                    <span className="privacy-toggle-title">Mostrar o meu telemóvel nos anúncios e no perfil</span>
                     <span className="privacy-toggle-text">
-                      Se desligares esta opção, o perfil público e os anúncios mostram apenas o email.
+                      Se desligares esta opção, o perfil público e os anúncios apresentam apenas o email.
                     </span>
                   </span>
                 </label>

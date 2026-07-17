@@ -12,7 +12,14 @@ const DISTRITOS_PT = [
 
 export default function Registo() {
   const [formData, setFormData] = useState({ 
-    nome: '', email: '', password: '', confirmarPassword: '', telefone: '', localidade: '', tipoConta: 'particular' 
+    nome: '',
+    email: '',
+    password: '',
+    confirmarPassword: '',
+    telefone: '',
+    mostrarTelefonePublico: true,
+    localidade: '',
+    tipoConta: 'particular'
   });
   const [mostrarPassword, setMostrarPassword] = useState(false); 
   const [mostrarConfirmarPassword, setMostrarConfirmarPassword] = useState(false); 
@@ -82,6 +89,7 @@ export default function Registo() {
         email: formData.email,
         password: formData.password,
         telefone: formData.telefone,
+        mostrarTelefonePublico: formData.mostrarTelefonePublico,
         localidade: formData.localidade,
         tipo: 'cliente',
         tipoConta: 'particular'
@@ -259,6 +267,40 @@ export default function Registo() {
         .password-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         @media (max-width: 500px) { .password-grid { grid-template-columns: 1fr; gap: 0; } }
 
+        .auth-phone-visibility {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 14px;
+          border: 1px solid #dbe5e2;
+          border-radius: 12px;
+          background: #f8fafc;
+          margin: -4px 0 20px;
+          cursor: pointer;
+        }
+        .auth-phone-visibility input {
+          width: 18px;
+          height: 18px;
+          margin-top: 3px;
+          accent-color: #2ac1b4;
+          cursor: pointer;
+          flex: 0 0 auto;
+        }
+        .auth-phone-visibility strong {
+          display: block;
+          font-size: 13px;
+          line-height: 1.35;
+          color: #0f172a;
+          margin-bottom: 4px;
+        }
+        .auth-phone-visibility small {
+          display: block;
+          font-size: 12px;
+          line-height: 1.45;
+          color: #64748b;
+          font-weight: 600;
+        }
+
         /* Modal Styles */
         .modal-overlay {
           position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); 
@@ -302,7 +344,10 @@ export default function Registo() {
             
             <div className="modal-data-box">
               <div style={{ marginBottom: '8px', color: '#0f172a', fontSize: '15px' }}><strong style={{color: '#64748b', fontWeight: 600}}>Email:</strong> {formData.email}</div>
-              <div style={{ color: '#0f172a', fontSize: '15px' }}><strong style={{color: '#64748b', fontWeight: 600}}>Telemóvel:</strong> {formData.telefone}</div>
+              <div style={{ marginBottom: '8px', color: '#0f172a', fontSize: '15px' }}><strong style={{color: '#64748b', fontWeight: 600}}>Telemóvel:</strong> {formData.telefone}</div>
+              <div style={{ color: '#0f172a', fontSize: '15px' }}>
+                <strong style={{color: '#64748b', fontWeight: 600}}>Telemóvel público:</strong> {formData.mostrarTelefonePublico ? 'Sim, mostrar nos anúncios e no perfil' : 'Não, mostrar apenas email'}
+              </div>
             </div>
 
             <label className="auth-confirm-check">
@@ -398,6 +443,18 @@ export default function Registo() {
               <label>Telemóvel</label>
               <input className="auth-input" type="tel" placeholder="Ex: 912345678" value={formData.telefone} onChange={handleTelefoneChange} required />
             </div>
+
+            <label className="auth-phone-visibility">
+              <input
+                type="checkbox"
+                checked={formData.mostrarTelefonePublico}
+                onChange={e => setFormData({ ...formData, mostrarTelefonePublico: e.target.checked })}
+              />
+              <span>
+                <strong>Pretendes mostrar este número de telemóvel nos teus anúncios e no teu perfil?</strong>
+                <small>Se disseres que não, apresentamos apenas o email como contacto público.</small>
+              </span>
+            </label>
             
             <div className="auth-form-group">
               <label>Distrito</label>

@@ -21,11 +21,12 @@ const normalizarWebsite = (valor) => {
 // ─────────────────────────────────────────────────────────────
 export const register = async (req, res) => {
   try {
-    const { nome, email, password, telefone, localidade, tipoConta, nif, website } = req.body;
+    const { nome, email, password, telefone, mostrarTelefonePublico, localidade, tipoConta, nif, website } = req.body;
     const nomeLimpo = typeof nome === 'string' ? nome.trim() : '';
     const emailLower = typeof email === 'string' ? email.toLowerCase().trim() : '';
     const telefoneLimpo = typeof telefone === 'string' ? telefone.replace(/\s/g, '').trim() : '';
     const conta = tipoConta === 'profissional' ? 'profissional' : 'particular';
+    const telefonePublico = mostrarTelefonePublico === false || mostrarTelefonePublico === 'false' ? false : true;
 
     if (nomeLimpo.length < 2 || nomeLimpo.length > 100 || !EMAIL_PATTERN.test(emailLower)) {
       return res.status(400).json({ erro: 'Nome ou email inválido.' });
@@ -58,6 +59,7 @@ export const register = async (req, res) => {
       email: emailLower,
       password,
       telefone: telefoneLimpo,
+      mostrarTelefonePublico: telefonePublico,
       localidade: typeof localidade === 'string' ? localidade.trim().slice(0, 120) : undefined,
       tipo: 'cliente',
       tipoConta: conta,
@@ -137,6 +139,7 @@ export const login = async (req, res) => {
         email: utilizador.email,
         tipo: utilizador.tipo,
         tipoConta: utilizador.tipoConta,
+        mostrarTelefonePublico: utilizador.mostrarTelefonePublico,
         website: utilizador.website,
         rating: utilizador.rating, // Passa as estrelas para o front no login
       }

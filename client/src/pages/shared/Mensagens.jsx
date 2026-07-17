@@ -56,7 +56,7 @@ export default function Mensagens() {
     if (!user) return;
 
     // Conecta ao Backend
-    const socketURL = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace('/api', '');
+    const socketURL = (import.meta.env.VITE_API_URL || window.location.origin).replace('/api', '');
     const novoSocket = io(socketURL, { auth: { token: getAuthToken() }, transports: ['websocket', 'polling'] });
     setSocket(novoSocket);
 
