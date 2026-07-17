@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useComparison } from '../../context/ComparisonContext';
-import SponsorBanner from '../../components/SponsorBanner';
 
 const formatPrice = (value) => new Intl.NumberFormat('pt-PT', {
   style: 'currency',
@@ -100,7 +99,6 @@ export default function Comparador() {
             </tbody>
           </table>
         </div>
-        <SponsorBanner placement="comparator_footer" vertical={items.every((item) => item.tipo === items[0]?.tipo) ? items[0]?.tipo : 'all'} className="!px-0" />
       </div>
     </main>
   );

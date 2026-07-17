@@ -9,8 +9,7 @@ O funil é recolhido no frontend e persistido no MongoDB através de `POST /api/
 - `listing_view`: abertura de um anúncio;
 - `whatsapp_click`: clique para iniciar contacto pelo WhatsApp;
 - `publish_start`: entrada autenticada no formulário de publicação;
-- `publish_complete`: anúncio criado com sucesso;
-- `sponsor_contact_click`: clique no contacto da zona de patrocínio.
+- `publish_complete`: anúncio criado com sucesso.
 
 ## Como contar
 
@@ -27,6 +26,6 @@ Não é necessário um cron para somar os dados. A recolha acontece no momento d
 
 As respostas são contabilizadas a partir de `PartnershipReply`, alimentado pelo webhook da Resend. O cartão principal mostra remetentes únicos; o texto secundário mostra o número total de respostas recebidas no período.
 
-## Patrocínio
+## Publicidade
 
-Sem campanha ativa em `landing_top`, a página mostra “Topo da página”. Ao clicar em “Falar sobre patrocínio”, o visitante abre o seu cliente de email com destinatário `geral@noxvelia.com` e assunto pré-preenchido. O clique fica no funil; a mensagem efetiva chega à caixa de email da equipa. O sistema não inventa uma resposta nem publica a campanha automaticamente.
+A publicidade integrada, quando configurada, é servida através do Google AdSense e não entra no funil comercial da plataforma.

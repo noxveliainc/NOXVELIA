@@ -1,6 +1,6 @@
 # Google AdSense
 
-O AdSense é opcional e funciona como fallback dos placements de sponsors diretos. Se existir campanha em `/api/sponsors`, a campanha direta aparece primeiro; se não existir, o slot Google pode preencher o espaço.
+O AdSense é a forma de publicidade integrada na plataforma. Os slots aparecem apenas em páginas públicas e só são carregados depois do consentimento para serviços externos. Não existe uma camada de sponsors diretos nem chamadas para campanhas comerciais próprias.
 
 ## Regras de experiência
 

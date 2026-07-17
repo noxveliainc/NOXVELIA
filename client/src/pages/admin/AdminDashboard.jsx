@@ -188,7 +188,6 @@ export default function AdminDashboard() {
     { key: 'publicacoesIniciadas', label: 'Publicações iniciadas', detail: 'sessões no formulário', color: '#38bdf8' },
     { key: 'publicacoesConcluidas', label: 'Publicações concluídas', detail: 'anúncios criados', color: COLORS.green },
     { key: 'respostasProfissionais', label: 'Respostas profissionais', detail: 'respostas às parcerias', color: '#fb7185' },
-    { key: 'contactosPatrocinio', label: 'Interesse em patrocínio', detail: 'cliques no contacto', color: '#f97316' },
   ];
   const formatMetric = (value) => new Intl.NumberFormat('pt-PT').format(value || 0);
 
@@ -545,9 +544,8 @@ export default function AdminDashboard() {
                   <div className="nx-signal-list">
                     <div className="nx-signal"><span>Profissionais contactados</span><strong>{formatMetric(funnelMetric('profissionaisContactados').total)}</strong></div>
                     <div className="nx-signal"><span>Respostas recebidas</span><strong>{formatMetric(funnelMetric('respostasProfissionais').total)}</strong></div>
-                    <div className="nx-signal"><span>Interesse em patrocínio</span><strong>{formatMetric(funnelMetric('contactosPatrocinio').total)}</strong></div>
                     <p style={{ margin: '4px 0 0', color: COLORS.textDim, fontSize: '12px', lineHeight: 1.5 }}>
-                      As respostas de profissionais vêm da caixa de parcerias já integrada. O clique de patrocínio abre o email do visitante para a equipa.
+                      As respostas de profissionais vêm da caixa de parcerias já integrada.
                     </p>
                   </div>
                 </section>

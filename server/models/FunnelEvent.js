@@ -7,7 +7,6 @@ export const FUNNEL_EVENTS = [
   'whatsapp_click',
   'publish_start',
   'publish_complete',
-  'sponsor_contact_click',
 ];
 
 const funnelEventSchema = new mongoose.Schema({

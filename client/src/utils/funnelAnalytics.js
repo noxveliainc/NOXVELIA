@@ -9,7 +9,6 @@ const EVENTS = new Set([
   'whatsapp_click',
   'publish_start',
   'publish_complete',
-  'sponsor_contact_click',
 ]);
 
 const getSessionId = () => {

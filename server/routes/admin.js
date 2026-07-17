@@ -196,7 +196,6 @@ router.get('/dashboard/funnel', async (req, res) => {
         cliquesWhatsapp: metric('whatsapp_click'),
         publicacoesIniciadas: metric('publish_start'),
         publicacoesConcluidas: metric('publish_complete'),
-        contactosPatrocinio: metric('sponsor_contact_click'),
         respostasProfissionais: { total: professionalReplyCount, sessoes: professionalReplyPeopleRows[0]?.total || 0 },
         profissionaisContactados: { total: professionalContacts, sessoes: professionalContacts },
       },

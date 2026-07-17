@@ -11,8 +11,7 @@
 - Upload limitado a dez imagens por pedido, processado no servidor com validação JPEG/PNG/WebP, conversão para WebP e storage própria.
 - Campos de métricas, destaque e estado não podem ser alterados no body de anúncios.
 - Erros internos ficam genéricos em produção e inputs MongoDB são sanitizados.
-- Campanhas patrocinadas são dados estruturados; nunca executam HTML ou scripts externos.
-- Google AdSense é carregado apenas pelo componente controlado do frontend, depois de consentimento para serviços externos, e não por JSON de patrocinadores.
+- Google AdSense é carregado apenas pelo componente controlado do frontend, depois de consentimento para serviços externos.
 
 ## Variáveis obrigatórias
 
@@ -22,7 +21,7 @@
 - `NODE_ENV=production`
 - Segredos Stripe, Resend, reCAPTCHA e credenciais privadas de storage de imagens usados pelos respetivos serviços.
 
-Nunca colocar segredos em variáveis `VITE_*`, no repositório ou no JSON de patrocinadores. Rodar os segredos imediatamente se alguma vez forem expostos.
+Nunca colocar segredos em variáveis `VITE_*` ou no repositório. Rodar os segredos imediatamente se alguma vez forem expostos.
 
 ## Rotina recomendada
 

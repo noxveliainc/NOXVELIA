@@ -21,7 +21,6 @@ import adminRoutes from './routes/admin.js';
 import notificacoesRoutes from './routes/notificacoes.js';
 import alertasRoutes from './routes/alertas.js';
 import analyticsRoutes from './routes/analytics.js';
-import sponsorsRoutes from './routes/sponsors.js';
 import systemRoutes from './routes/system.js';
 import partnershipsRoutes from './routes/partnerships.js';
 import { requestMetrics } from './middleware/metrics.js';
@@ -126,7 +125,6 @@ app.use('/api/users', usersRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/sponsors', sponsorsRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/partnerships', partnershipsRoutes);
 

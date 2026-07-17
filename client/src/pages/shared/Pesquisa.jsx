@@ -4,7 +4,6 @@ import Seo from '../../components/Seo';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
-import SponsorBanner from '../../components/SponsorBanner';
 import useDebounce from '../../hooks/useDebounce';
 import { Icon } from '@mdi/react';
 import {
@@ -886,12 +885,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               </div>
             )}
 
-            <SponsorBanner
-              placement="search_results_top"
-              vertical={tipoSeguro}
-              className="!my-6 !px-0"
-              fallback={<GoogleAdSlot placement="search_results_top" className="!my-6 !px-0" minHeight={96} />}
-            />
+            <GoogleAdSlot placement="search_results_top" className="!my-6 !px-0" minHeight={96} />
 
             {vistaAtiva === 'mapa' ? (
               <div className="pesquisa-map-shell">
