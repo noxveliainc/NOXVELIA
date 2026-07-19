@@ -21,10 +21,12 @@ router.get('/dashboard/stats', async (req, res) => {
     const agora = new Date();
     const haSeteDias = new Date(agora.getTime() - 7 * 24 * 60 * 60 * 1000);
     const haTrintaDias = new Date(agora.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const filtroUtilizadoresReais = { tipo: { $ne: 'admin' } };
 
     const [
       totalUsers,
       novosUsers7d,
+      contasAdmin,
       premiumAtivos,
       profissionais,
       totalAnuncios,
@@ -40,8 +42,9 @@ router.get('/dashboard/stats', async (req, res) => {
       pagamentosPendentes,
       topAnuncios
     ] = await Promise.all([
-      User.countDocuments(),
-      User.countDocuments({ createdAt: { $gte: haSeteDias } }),
+      User.countDocuments(filtroUtilizadoresReais),
+      User.countDocuments({ ...filtroUtilizadoresReais, createdAt: { $gte: haSeteDias } }),
+      User.countDocuments({ tipo: 'admin' }),
       User.countDocuments({ premiumAtivo: true, tipo: { $ne: 'admin' } }),
       User.countDocuments({ tipoConta: 'profissional', tipo: { $ne: 'admin' } }),
       Anuncio.countDocuments({ estado: { $ne: 'apagado' } }),
@@ -82,6 +85,7 @@ router.get('/dashboard/stats', async (req, res) => {
     res.json({
       totalUsers,
       novosUsers7d,
+      contasAdmin,
       premiumAtivos,
       profissionais,
       totalAnuncios,

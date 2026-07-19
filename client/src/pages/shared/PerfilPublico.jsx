@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import { absoluteUrl } from '../../utils/seo';
 import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import AnuncioCard from './AnuncioCard';
 import ProfileView, { obterLinksVisiveisPerfil } from './ProfileView';
 import LoadingScreen from '../../components/LoadingScreen';
 import { Icon } from '@mdi/react';
 import {
   mdiCheckDecagram, mdiWhatsapp, mdiPhone, mdiMapMarker, mdiEmailOutline,
-  mdiWeb, mdiInstagram, mdiFacebook, mdiLinkedin, mdiYoutube, mdiMusicNote, mdiEarth
+  mdiWeb, mdiInstagram, mdiFacebook, mdiLinkedin, mdiYoutube, mdiMusicNote, mdiEarth,
+  mdiArrowLeft, mdiViewDashboardOutline
 } from '@mdi/js';
 
 const TIPOS_LINK_PERFIL = [
@@ -44,6 +46,17 @@ const normalizarHrefLinkPerfil = (link) => {
 export default function PerfilPublico() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user: utilizadorAtual } = useAuth();
+  const adminAVerPerfil = utilizadorAtual?.tipo === 'admin' && new URLSearchParams(location.search).get('from') === 'admin';
+
+  const voltarDaMontra = () => {
+    if (adminAVerPerfil) {
+      navigate('/admin');
+      return;
+    }
+    navigate(-1);
+  };
 
   const [vendedor, setVendedor] = useState(null);
   const [anuncios, setAnuncios] = useState([]);
@@ -88,7 +101,7 @@ export default function PerfilPublico() {
     return (
       <div style={{ minHeight: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', color: '#0f172a' }}>
         <p style={{ color: '#64748b', marginBottom: '24px', fontSize: '15px' }}>{erro}</p>
-        <button onClick={() => navigate(-1)} style={{ padding: '12px 24px', background: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}>Voltar a pesquisa</button>
+        <button onClick={voltarDaMontra} style={{ padding: '12px 24px', background: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}>{adminAVerPerfil ? 'Voltar ao painel admin' : 'Voltar a pesquisa'}</button>
       </div>
     );
   }
@@ -123,6 +136,9 @@ export default function PerfilPublico() {
         .pp-hero-content { max-width: 1200px; margin: 0 auto; position: relative; z-index: 2; }
         .pp-back { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; text-decoration: none; cursor: pointer; background: none; border: none; padding: 0; margin-bottom: 24px; transition: color 0.2s; }
         .pp-back:hover { color: #0f172a; }
+        .pp-admin-back { min-height: 40px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; margin-bottom: 18px; border-radius: 10px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a; font-size: 12px; font-weight: 800; font-family: 'Inter', sans-serif; cursor: pointer; box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06); transition: all 0.2s; }
+        .pp-admin-back:hover { border-color: #94a3b8; transform: translateY(-1px); }
+        .pp-admin-note { display: inline-flex; align-items: center; gap: 8px; margin-left: 10px; color: #475569; font-size: 12px; font-weight: 700; }
         .pp-user-section { display: flex; align-items: flex-start; gap: 40px; background: #ffffff; border: 1px solid #e2e8f0; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); margin-top: 86px; }
         .pp-avatar { width: 140px; height: 140px; border-radius: 24px; background: #f1f5f9; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 48px; font-weight: 800; color: #0f172a; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); flex-shrink: 0; }
         .pp-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -163,7 +179,11 @@ export default function PerfilPublico() {
           </div>
 
           <div className="pp-hero-content">
-            <button onClick={() => navigate(-1)} className="pp-back">Voltar atras</button>
+            <button onClick={voltarDaMontra} className={adminAVerPerfil ? 'pp-admin-back' : 'pp-back'}>
+              <Icon path={adminAVerPerfil ? mdiViewDashboardOutline : mdiArrowLeft} size={0.65} />
+              {adminAVerPerfil ? 'Voltar ao painel admin' : 'Voltar atras'}
+            </button>
+            {adminAVerPerfil && <span className="pp-admin-note">Vista pública aberta pelo painel</span>}
 
             <ProfileView
               user={vendedor}

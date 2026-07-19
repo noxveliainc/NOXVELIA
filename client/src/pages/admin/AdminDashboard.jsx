@@ -13,7 +13,7 @@ import {
   mdiOpenInNew, mdiCurrencyEur, mdiMagnify, mdiStar,
   mdiAlertOutline, mdiCrown, mdiChartTimelineVariant,
   mdiFilterVariant, mdiPhoneOutline, mdiEmailOutline, mdiRefresh,
-  mdiEyeOutline, mdiViewDashboardOutline, mdiImageMultipleOutline
+  mdiEyeOutline, mdiEyeOffOutline, mdiViewDashboardOutline, mdiImageMultipleOutline
 } from '@mdi/js';
 
 /* ------------------------------------------------------------------ */
@@ -70,8 +70,17 @@ export default function AdminDashboard() {
 
   const [searchUsers, setSearchUsers] = useState('');
   const [filterPlano, setFilterPlano] = useState('todos');
+  const [contasInternasOcultas, setContasInternasOcultas] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('@Noxvelia:admin_contas_ocultas') || '[]'); }
+    catch { return []; }
+  });
+  const [mostrarContasInternas, setMostrarContasInternas] = useState(false);
   const [searchAnuncios, setSearchAnuncios] = useState('');
   const [filterTipo, setFilterTipo] = useState('todos');
+
+  useEffect(() => {
+    localStorage.setItem('@Noxvelia:admin_contas_ocultas', JSON.stringify(contasInternasOcultas));
+  }, [contasInternasOcultas]);
 
   const carregarQuartelGeneral = useCallback(async (atualizacaoManual = false) => {
     if (atualizacaoManual) setReloading(true);
@@ -145,10 +154,40 @@ export default function AdminDashboard() {
 
   const formatarData = (dataString) => new Date(dataString).toLocaleDateString('pt-PT');
 
+  const alternarContaInterna = (id) => {
+    setContasInternasOcultas((idsAtuais) => (
+      idsAtuais.includes(id) ? idsAtuais.filter((item) => item !== id) : [...idsAtuais, id]
+    ));
+  };
+
+  const alternarMostrarContasInternas = () => {
+    setMostrarContasInternas((valorAtual) => !valorAtual);
+  };
+
   // ---- Derived data --------------------------------------------------
 
+  const idsContasInternas = useMemo(() => new Set(contasInternasOcultas), [contasInternasOcultas]);
+  const contasInternas = useMemo(
+    () => utilizadores.filter(u => u.tipo === 'admin' || idsContasInternas.has(u._id)),
+    [utilizadores, idsContasInternas]
+  );
+  const utilizadoresReais = useMemo(
+    () => utilizadores.filter(u => u.tipo !== 'admin' && !idsContasInternas.has(u._id)),
+    [utilizadores, idsContasInternas]
+  );
+  const utilizadoresVisiveis = mostrarContasInternas ? utilizadores : utilizadoresReais;
+  const totalContasInternas = utilizadores.length ? contasInternas.length : stats?.contasAdmin ?? 0;
+  const totalUtilizadoresReais = utilizadores.length ? utilizadoresReais.length : stats?.totalUsers ?? 0;
+  const totalUtilizadoresTabela = utilizadoresVisiveis.length;
+  const contasInternasTexto = totalContasInternas === 1 ? '1 conta interna fora da contagem' : `${totalContasInternas} contas internas fora da contagem`;
+  const novosUtilizadoresReais7d = useMemo(() => {
+    if (!utilizadores.length || !ultimaAtualizacao) return stats?.novosUsers7d ?? 0;
+    const limite = ultimaAtualizacao.getTime() - 7 * 24 * 60 * 60 * 1000;
+    return utilizadoresReais.filter((u) => u.createdAt && new Date(u.createdAt).getTime() >= limite).length;
+  }, [utilizadores.length, utilizadoresReais, stats?.novosUsers7d, ultimaAtualizacao]);
+
   const utilizadoresFiltrados = useMemo(() => {
-    return utilizadores.filter(u => {
+    return utilizadoresVisiveis.filter(u => {
       const matchSearch = !searchUsers ||
         (u.nome?.toLowerCase().includes(searchUsers.toLowerCase()) ||
          u.email?.toLowerCase().includes(searchUsers.toLowerCase()) ||
@@ -163,7 +202,7 @@ export default function AdminDashboard() {
         
       return matchSearch && matchPlano;
     });
-  }, [utilizadores, searchUsers, filterPlano]);
+  }, [utilizadoresVisiveis, searchUsers, filterPlano]);
 
   const anunciosFiltrados = useMemo(() => {
     return anuncios.filter(a => {
@@ -178,8 +217,8 @@ export default function AdminDashboard() {
     });
   }, [anuncios, searchAnuncios, filterTipo]);
 
-  const totalPremium = stats?.premiumAtivos ?? utilizadores.filter(u => u.tipo !== 'admin' && u.premiumAtivo).length;
-  const conversao = stats?.totalUsers ? ((totalPremium / stats.totalUsers) * 100).toFixed(1) : '0.0';
+  const totalPremium = utilizadores.length ? utilizadoresReais.filter(u => u.premiumAtivo).length : stats?.premiumAtivos ?? 0;
+  const conversao = totalUtilizadoresReais ? ((totalPremium / totalUtilizadoresReais) * 100).toFixed(1) : '0.0';
   const topAnuncios = stats?.topAnuncios || [];
   const funnelMetric = (key) => funnel?.metricas?.[key] || { total: 0, sessoes: 0 };
   const funnelCards = [
@@ -410,7 +449,7 @@ export default function AdminDashboard() {
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '28px'
         }}>
           {[
-            { label: 'Utilizadores', value: stats?.totalUsers ?? 0, sub: `+${stats?.novosUsers7d ?? 0} nos últimos 7 dias`, color: COLORS.blue, icon: <Icon path={mdiAccountMultiple} size={0.8} /> },
+            { label: 'Utilizadores reais', value: totalUtilizadoresReais, sub: `+${novosUtilizadoresReais7d} nos últimos 7 dias · ${contasInternasTexto}`, color: COLORS.blue, icon: <Icon path={mdiAccountMultiple} size={0.8} /> },
             { label: 'Anúncios ativos', value: stats?.anunciosAtivos ?? 0, sub: `${stats?.anunciosPendentes ?? 0} pendentes`, color: COLORS.purple, icon: <Icon path={mdiFileDocumentOutline} size={0.8} /> },
             { label: 'Visualizações', value: new Intl.NumberFormat('pt-PT').format(stats?.totalVisitas ?? 0), sub: 'interesse acumulado', color: COLORS.blue, icon: <Icon path={mdiEyeOutline} size={0.8} /> },
             { label: 'Drive', value: stats?.carrosAtivos ?? 0, sub: 'carros ativos', color: '#2ac1b4', icon: <Icon path={mdiCar} size={0.8} /> },
@@ -447,7 +486,7 @@ export default function AdminDashboard() {
         }}>
           {[
             { id: 'visao-geral', label: 'Visão geral', icon: <Icon path={mdiViewDashboardOutline} size={0.7} /> },
-            { id: 'contas', label: 'Gestão & Auditoria', icon: <Icon path={mdiAccountMultiple} size={0.7} />, count: utilizadores.length },
+            { id: 'contas', label: 'Gestão & Auditoria', icon: <Icon path={mdiAccountMultiple} size={0.7} />, count: totalUtilizadoresTabela },
             { id: 'anuncios', label: 'Moderação de Anúncios', icon: <Icon path={mdiFileDocumentOutline} size={0.7} />, count: anuncios.length },
             { id: 'criativos', label: 'Criativos', icon: <Icon path={mdiImageMultipleOutline} size={0.7} /> },
             { id: 'parcerias', label: 'Emails de Parcerias', icon: <Icon path={mdiEmailOutline} size={0.7} /> },
@@ -653,6 +692,35 @@ export default function AdminDashboard() {
           {/* ---------- CONTAS / AUDITORIA ---------- */}
           {activeTab === 'contas' && (
             <>
+              <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px',
+                padding: '12px 14px', marginBottom: '14px', border: `1px solid ${COLORS.border}`,
+                borderRadius: '12px', background: COLORS.panelAlt, flexWrap: 'wrap'
+              }}>
+                <div style={{ display: 'grid', gap: '3px' }}>
+                  <strong style={{ color: COLORS.text, fontSize: '13px' }}>Contagem real {mostrarContasInternas ? 'em auditoria' : 'ativa'}</strong>
+                  <span style={{ color: COLORS.textDim, fontSize: '12px' }}>
+                    {mostrarContasInternas
+                      ? 'Estás a ver também contas internas. A contagem real continua a excluí-las.'
+                      : `${totalContasInternas} contas internas escondidas da tabela e da contagem visível.`}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="nx-btn"
+                  onClick={alternarMostrarContasInternas}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '8px', minHeight: '38px',
+                    padding: '0 13px', borderRadius: '9px', border: `1px solid ${COLORS.borderStrong}`,
+                    background: '#ffffff', color: COLORS.text, cursor: 'pointer', fontWeight: 800,
+                    fontSize: '12px', fontFamily: FONT_MONO, letterSpacing: '0.03em'
+                  }}
+                >
+                  <Icon path={mostrarContasInternas ? mdiEyeOffOutline : mdiEyeOutline} size={0.6} />
+                  {mostrarContasInternas ? 'Esconder internas' : 'Mostrar internas'}
+                </button>
+              </div>
+
               <PanelToolbar
                 searchValue={searchUsers}
                 onSearch={setSearchUsers}
@@ -667,7 +735,7 @@ export default function AdminDashboard() {
                 activeFilter={filterPlano}
                 onFilter={setFilterPlano}
                 resultCount={utilizadoresFiltrados.length}
-                totalCount={utilizadores.length}
+                totalCount={totalUtilizadoresTabela}
               />
               <table className="nx-admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
                 <thead>
@@ -683,16 +751,18 @@ export default function AdminDashboard() {
                     <EmptyRow colSpan={4} text="Nenhum utilizador corresponde aos filtros aplicados." />
                   ) : (
                     utilizadoresFiltrados.map((u, idx) => {
-                      const contactoAdminOculto = u.tipo === 'admin';
+                      const contaAdmin = u.tipo === 'admin';
+                      const contaInternaManual = idsContasInternas.has(u._id);
+                      const contactoAdminOculto = contaAdmin;
                       return (
                         <tr key={u._id} className="nx-row" style={{ borderBottom: `1px solid ${COLORS.border}`, color: COLORS.textDim, animationDelay: `${idx * 0.02}s` }}>
                           
                           {/* Coluna 1: Avatar, Nome e Contactos Copiáveis */}
                           <td data-label="Utilizador" style={{ padding: '16px 12px' }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                              <Avatar nome={u.nome} isSoberano={u.tipo === 'admin'} premium={u.premiumAtivo} />
+                              <Avatar nome={u.nome} isSoberano={contaAdmin} premium={u.premiumAtivo} />
                               <div>
-                                <div style={{ fontWeight: 700, color: COLORS.text, fontSize: '14px', marginBottom: '6px' }}>{u.nome}</div>
+                                <div style={{ fontWeight: 700, color: COLORS.text, fontSize: '14px', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap' }}>{u.nome}{(contaAdmin || contaInternaManual) && <span style={{ fontSize: '9px', letterSpacing: '0.08em', fontFamily: FONT_MONO, color: COLORS.gold, background: COLORS.goldDim, border: '1px solid rgba(157,123,63,0.2)', borderRadius: '5px', padding: '2px 6px' }}>INTERNA</span>}</div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                                   
                                   {contactoAdminOculto ? (
@@ -738,9 +808,25 @@ export default function AdminDashboard() {
                           </td>
 
                           <td data-label="Ações" style={{ padding: '16px 12px', textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+                              {!contaAdmin && (
+                                <button
+                                  type="button"
+                                  className="nx-btn"
+                                  onClick={() => alternarContaInterna(u._id)}
+                                  style={{
+                                    background: contaInternaManual ? COLORS.goldDim : 'transparent', border: `1px solid ${contaInternaManual ? 'rgba(157,123,63,0.28)' : COLORS.borderStrong}`,
+                                    color: contaInternaManual ? COLORS.gold : COLORS.textDim, padding: '7px 11px', borderRadius: '7px',
+                                    display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer',
+                                    fontWeight: 700, fontSize: '11px', fontFamily: FONT_MONO, letterSpacing: '0.03em'
+                                  }}
+                                >
+                                  <Icon path={contaInternaManual ? mdiEyeOutline : mdiEyeOffOutline} size={0.55} />
+                                  {contaInternaManual ? 'CONTAR' : 'OCULTAR'}
+                                </button>
+                              )}
                             <Link 
-                              to={`/vendedor/${u._id}`} 
-                              target="_blank"
+                              to={`/vendedor/${u._id}?from=admin`} 
                               className="nx-btn"
                               style={{
                                 background: 'transparent', border: `1px solid ${COLORS.blue}`,
@@ -751,6 +837,7 @@ export default function AdminDashboard() {
                             >
                               <Icon path={mdiOpenInNew} size={0.6} /> VER PERFIL
                             </Link>
+                            </div>
                           </td>
                         </tr>
                       );
