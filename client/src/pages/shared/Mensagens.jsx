@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../services/api';
+import api, { getSocketBaseURL } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { BadgeCheck } from 'lucide-react';
 import { io } from 'socket.io-client'; // 🌟 Antena do WebSockets
@@ -56,7 +56,7 @@ export default function Mensagens() {
     if (!user) return;
 
     // Conecta ao Backend
-    const socketURL = (import.meta.env.VITE_API_URL || window.location.origin).replace('/api', '');
+    const socketURL = getSocketBaseURL();
     const novoSocket = io(socketURL, { auth: { token: getAuthToken() }, transports: ['websocket', 'polling'] });
     setSocket(novoSocket);
 
