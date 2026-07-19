@@ -60,6 +60,8 @@ const iniciaisMarca = (marca) => marca
   .join('')
   .toUpperCase();
 
+const LOGOS_COM_TEXTO_EMBUTIDO = new Set(['aiways', 'aston-martin', 'bentley']);
+
 export default function Landing() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -937,6 +939,7 @@ export default function Landing() {
         }
 
         .lp-brand-card {
+          --lp-brand-card-bg: rgba(255, 255, 255, 0.7);
           scroll-snap-align: start;
           min-width: 0;
           display: grid;
@@ -948,7 +951,7 @@ export default function Landing() {
           color: #284248;
           border: 1px solid rgba(8, 33, 38, 0.1);
           border-radius: 15px;
-          background: rgba(255, 255, 255, 0.7);
+          background: var(--lp-brand-card-bg);
           text-decoration: none;
           box-shadow: none;
           transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
@@ -965,6 +968,7 @@ export default function Landing() {
           height: 42px;
           display: grid;
           place-items: center;
+          overflow: hidden;
         }
 
         .lp-brand-mark img {
@@ -979,12 +983,28 @@ export default function Landing() {
         .lp-brand-fallback {
           position: absolute;
           inset: 0;
-          display: grid;
+          display: none;
           place-items: center;
           color: #567077;
           font-size: 16px;
           font-weight: 850;
           letter-spacing: 0.08em;
+        }
+
+        .lp-brand-mark.logo-error .lp-brand-fallback {
+          display: grid;
+        }
+
+        .lp-brand-mark-clean::after {
+          content: "";
+          position: absolute;
+          z-index: 2;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          height: 15px;
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0), var(--lp-brand-card-bg) 48%);
+          pointer-events: none;
         }
 
         .lp-brand-name {
@@ -2787,6 +2807,10 @@ export default function Landing() {
           color: #edf7f6 !important;
         }
 
+        .dark .lp-brand-card {
+          --lp-brand-card-bg: #0d2327;
+        }
+
         .dark .lp-trust-item {
           border-right-color: rgba(148, 163, 184, 0.22) !important;
           color: #cfe0e2 !important;
@@ -3086,26 +3110,32 @@ export default function Landing() {
 
             <div className="lp-brand-scroll" ref={marcasRef} aria-label="Lista de marcas automóveis">
               <div className="lp-brand-grid">
-                {MARCAS.map((marca) => (
-                  <Link
-                    className="lp-brand-card"
-                    to={`/carros?marca=${encodeURIComponent(marca)}`}
-                    key={marca}
-                    aria-label={`Ver anúncios ${marca}`}
-                  >
-                    <span className="lp-brand-mark">
-                      <span className="lp-brand-fallback" aria-hidden="true">{iniciaisMarca(marca)}</span>
-                      <img
-                        src={logoMarca(marca)}
-                        alt=""
-                        loading="lazy"
-                        draggable="false"
-                        onError={(evento) => { evento.currentTarget.style.display = 'none'; }}
-                      />
-                    </span>
-                    <span className="lp-brand-name">{marca}</span>
-                  </Link>
-                ))}
+                {MARCAS.map((marca) => {
+                  const marcaSlug = slugMarca(marca);
+                  return (
+                    <Link
+                      className="lp-brand-card"
+                      to={`/carros?marca=${encodeURIComponent(marca)}`}
+                      key={marca}
+                      aria-label={`Ver anúncios ${marca}`}
+                    >
+                      <span className={`lp-brand-mark lp-brand-mark-${marcaSlug} ${LOGOS_COM_TEXTO_EMBUTIDO.has(marcaSlug) ? 'lp-brand-mark-clean' : ''}`}>
+                        <span className="lp-brand-fallback" aria-hidden="true">{iniciaisMarca(marca)}</span>
+                        <img
+                          src={logoMarca(marca)}
+                          alt=""
+                          loading="lazy"
+                          draggable="false"
+                          onError={(evento) => {
+                            evento.currentTarget.style.display = 'none';
+                            evento.currentTarget.parentElement?.classList.add('logo-error');
+                          }}
+                        />
+                      </span>
+                      <span className="lp-brand-name">{marca}</span>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>
