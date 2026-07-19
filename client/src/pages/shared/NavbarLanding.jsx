@@ -70,7 +70,9 @@ export default function NavbarLanding() {
         .nl-root {
           position: sticky;
           top: 0;
-          z-index: 1000;
+          z-index: 9990;
+          width: 100%;
+          isolation: isolate;
           height: 74px;
           display: flex;
           align-items: center;

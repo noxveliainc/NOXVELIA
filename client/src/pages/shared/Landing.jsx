@@ -2246,6 +2246,7 @@ export default function Landing() {
           background: var(--lp-dark) !important;
           border-color: rgba(8, 33, 38, 0.22) !important;
           box-shadow: none !important;
+          transform: translateY(8px) !important;
         }
 
         .lp-hero-content {
@@ -2361,6 +2362,41 @@ export default function Landing() {
           padding: clamp(18px, 2.4vw, 28px) !important;
           border-color: rgba(8, 33, 38, 0.18) !important;
           background: rgba(255, 255, 255, 0.98) !important;
+        }
+
+        .lp-type-tabs {
+          gap: 4px !important;
+          padding: 4px !important;
+          border-color: rgba(8, 33, 38, 0.18) !important;
+          background: #eef5f3 !important;
+        }
+
+        .lp-type-tab {
+          position: relative !important;
+          min-width: 82px !important;
+          gap: 6px !important;
+          border: 1px solid transparent !important;
+          color: #38555b !important;
+          background: transparent !important;
+          font-weight: 880 !important;
+        }
+
+        .lp-type-tab.active {
+          color: #ffffff !important;
+          border-color: #082126 !important;
+          background: #082126 !important;
+          box-shadow: 0 10px 20px -16px rgba(8, 33, 38, 0.8) !important;
+        }
+
+        .lp-type-tab.active::before {
+          content: "";
+          width: 7px;
+          height: 7px;
+          display: inline-block;
+          flex: 0 0 auto;
+          border-radius: 999px;
+          background: #7ee3d7;
+          box-shadow: 0 0 0 3px rgba(126, 227, 215, 0.18);
         }
 
         .lp-quick-top {
@@ -2513,6 +2549,7 @@ export default function Landing() {
 
           .lp-hero-card {
             height: auto !important;
+            transform: none !important;
           }
 
           .lp-hero-content {
@@ -2873,8 +2910,15 @@ export default function Landing() {
         }
 
         .dark .lp-type-tab.active {
+          border-color: #7ee3d7 !important;
           background: #7ee3d7 !important;
           color: #062326 !important;
+          box-shadow: 0 10px 20px -16px rgba(126, 227, 215, 0.62) !important;
+        }
+
+        .dark .lp-type-tab.active::before {
+          background: #062326;
+          box-shadow: 0 0 0 3px rgba(6, 35, 38, 0.14);
         }
 
         .dark .lp-brand-card:hover,
@@ -2982,6 +3026,8 @@ export default function Landing() {
                 <div className="lp-type-tabs" role="tablist" aria-label="Tipo de pesquisa">
                   <button
                     type="button"
+                    role="tab"
+                    aria-selected={pesquisaRapida.tipo === 'carro'}
                     className={`lp-type-tab ${pesquisaRapida.tipo === 'carro' ? 'active' : ''}`}
                     onClick={() => atualizarPesquisaRapida('tipo', 'carro')}
                   >
@@ -2989,6 +3035,8 @@ export default function Landing() {
                   </button>
                   <button
                     type="button"
+                    role="tab"
+                    aria-selected={pesquisaRapida.tipo === 'imovel'}
                     className={`lp-type-tab ${pesquisaRapida.tipo === 'imovel' ? 'active' : ''}`}
                     onClick={() => atualizarPesquisaRapida('tipo', 'imovel')}
                   >
