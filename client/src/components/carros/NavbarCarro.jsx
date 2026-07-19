@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import ThemeToggle from '../ThemeToggle';
 import ComparisonNavButton from '../ComparisonNavButton';
+import { Car, House } from 'lucide-react';
 
 export default function NavbarCarro() {
   const { user, signed, logout } = useAuth();
@@ -156,6 +157,12 @@ export default function NavbarCarro() {
         .ncr-switcher-item.current { background: rgba(42, 193, 180, 0.08); color: #2ac1b4; pointer-events: none; }
         
         .ncr-actions { display: flex; align-items: center; gap: 8px; }
+        .ncr-section-links { display: flex; align-items: center; gap: 6px; padding: 4px; border: 1px solid #e2e8f0; border-radius: 999px; background: #ffffff; box-shadow: 0 10px 24px -22px rgba(15, 23, 42, 0.55); }
+        .ncr-section-link { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 999px; color: #64748b; text-decoration: none; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; }
+        .ncr-section-link:hover { background: #f8fafc; color: #0f172a; transform: translateY(-1px); }
+        .ncr-section-link.active.carros { background: rgba(42, 193, 180, 0.14); color: #0f9d92; }
+        .ncr-section-link.active.imoveis { background: rgba(62, 207, 142, 0.14); color: #059669; }
+        .ncr-section-link svg { width: 20px; height: 20px; stroke-width: 2.2; }
         .ncr-btn-menu { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; background: #ffffff; color: #0f172a; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; }
         .ncr-btn-menu:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
         .ncr-btn-menu svg { width: 17px; height: 17px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
@@ -227,9 +234,17 @@ export default function NavbarCarro() {
         .ncr-drawer-link.logout-btn { color: #ef4444; margin-top: auto; border-top: 1px solid #f1f5f9; padding-top: 16px; border-radius: 0; }
 
         @media (max-width: 820px) {
-          .ncr-root { padding: 0 20px; height: 64px; }
+          .ncr-root { padding: 0 14px; height: 64px; gap: 10px; }
+          .ncr-logo-brand-text { font-size: 15px; }
+          .ncr-logo-brand-text span { display: none; }
+          .ncr-section-links { gap: 4px; padding: 3px; }
+          .ncr-section-link { width: 34px; height: 34px; }
           .ncr-actions { display: none; }
           .ncr-burger-btn { display: inline-flex; }
+        }
+
+        @media (max-width: 380px) {
+          .ncr-logo-brand-text { display: none; }
         }
 
         /* 🔐 MODAL ALTERAR PALAVRA-PASSE */
@@ -263,6 +278,15 @@ export default function NavbarCarro() {
               <Link to="/imoveis" className="ncr-switcher-item" onClick={() => setDropdownAberto(false)}>NOXVELIA Estate</Link>
             </div>
           )}
+        </div>
+
+        <div className="ncr-section-links" aria-label="Pesquisar por categoria">
+          <Link to="/carros" className="ncr-section-link active carros" aria-label="Pesquisar carros" title="Pesquisar carros" onClick={() => setMenuMobileAberto(false)}>
+            <Car aria-hidden="true" />
+          </Link>
+          <Link to="/imoveis" className="ncr-section-link imoveis" aria-label="Pesquisar imoveis" title="Pesquisar imoveis" onClick={() => setMenuMobileAberto(false)}>
+            <House aria-hidden="true" />
+          </Link>
         </div>
 
         {/* 🌟 DESKTOP ACTIONS */}

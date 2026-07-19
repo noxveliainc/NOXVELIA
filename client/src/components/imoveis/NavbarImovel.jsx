@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import ThemeToggle from '../ThemeToggle';
 import ComparisonNavButton from '../ComparisonNavButton';
+import { Car, House } from 'lucide-react';
 
 export default function NavbarImovel() {
   const { user, signed, logout } = useAuth();
@@ -156,6 +157,12 @@ export default function NavbarImovel() {
         .nim-switcher-item.current { background: rgba(62, 207, 142, 0.08); color: #3ecf8e; pointer-events: none; }
 
         .nim-actions { display: flex; align-items: center; gap: 8px; }
+        .nim-section-links { display: flex; align-items: center; gap: 6px; padding: 4px; border: 1px solid #e2e8f0; border-radius: 999px; background: #ffffff; box-shadow: 0 10px 24px -22px rgba(15, 23, 42, 0.55); }
+        .nim-section-link { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 999px; color: #64748b; text-decoration: none; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; }
+        .nim-section-link:hover { background: #f8fafc; color: #0f172a; transform: translateY(-1px); }
+        .nim-section-link.active.carros { background: rgba(42, 193, 180, 0.14); color: #0f9d92; }
+        .nim-section-link.active.imoveis { background: rgba(62, 207, 142, 0.14); color: #059669; }
+        .nim-section-link svg { width: 20px; height: 20px; stroke-width: 2.2; }
         .nim-btn-menu { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; background: #ffffff; color: #0f172a; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; }
         .nim-btn-menu:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
         .nim-btn-menu svg { width: 17px; height: 17px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
@@ -226,9 +233,17 @@ export default function NavbarImovel() {
         .nim-drawer-link.logout-btn { color: #ef4444; margin-top: auto; border-top: 1px solid #f1f5f9; padding-top: 16px; border-radius: 0; }
 
         @media (max-width: 820px) {
-          .nim-root { padding: 0 20px; height: 64px; }
+          .nim-root { padding: 0 14px; height: 64px; gap: 10px; }
+          .nim-logo-brand-text { font-size: 15px; }
+          .nim-logo-brand-text span { display: none; }
+          .nim-section-links { gap: 4px; padding: 3px; }
+          .nim-section-link { width: 34px; height: 34px; }
           .nim-actions { display: none; }
           .nim-burger-btn { display: inline-flex; }
+        }
+
+        @media (max-width: 380px) {
+          .nim-logo-brand-text { display: none; }
         }
 
         /* 🔐 MODAL ALTERAR PALAVRA-PASSE */
@@ -262,6 +277,15 @@ export default function NavbarImovel() {
               <Link to="/carros" className="nim-switcher-item" onClick={() => setDropdownAberto(false)}>NOXVELIA Drive</Link>
             </div>
           )}
+        </div>
+
+        <div className="nim-section-links" aria-label="Pesquisar por categoria">
+          <Link to="/carros" className="nim-section-link carros" aria-label="Pesquisar carros" title="Pesquisar carros" onClick={() => setMenuMobileAberto(false)}>
+            <Car aria-hidden="true" />
+          </Link>
+          <Link to="/imoveis" className="nim-section-link active imoveis" aria-label="Pesquisar imoveis" title="Pesquisar imoveis" onClick={() => setMenuMobileAberto(false)}>
+            <House aria-hidden="true" />
+          </Link>
         </div>
 
         {/* 🌟 DESKTOP ACTIONS */}
