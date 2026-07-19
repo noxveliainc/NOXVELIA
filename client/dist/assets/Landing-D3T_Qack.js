@@ -1,4 +1,4 @@
-import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import{E as a,S as o,T as s,d as c,f as l,g as u,l as d,u as f,v as p,w as m}from"./index-nqL2ofrF.js";import{r as h}from"./seo-BmrZTbI5.js";import{t as g}from"./Seo-xSw1X1su.js";import{t as _}from"./GoogleAdSlot-DJ5fGthS.js";import{i as v,r as y,t as b}from"./localizacoes-CvOZjRrK.js";import{t as x}from"./funnelAnalytics-BL9ocqV4.js";var S=i(e(),1),C=n();function w(){let{user:e,signed:n,logout:r}=m(),i=t(),[s,c]=(0,S.useState)(!1),[u,d]=(0,S.useState)(!1),f=(0,S.useRef)(null),h=(0,S.useRef)(null);(0,S.useEffect)(()=>{let e=e=>{f.current&&!f.current.contains(e.target)&&c(!1),h.current&&!h.current.contains(e.target)&&d(!1)},t=e=>{e.key===`Escape`&&(c(!1),d(!1))};return window.addEventListener(`click`,e),window.addEventListener(`keydown`,t),()=>{window.removeEventListener(`click`,e),window.removeEventListener(`keydown`,t)}},[]),(0,S.useEffect)(()=>{c(!1),d(!1)},[i.pathname]);let g=e||(()=>{try{let e=sessionStorage.getItem(`@App:user`);return e?JSON.parse(e):null}catch{return null}})(),_=g?.avatarUrl||g?.avatar,v=g?.nome?.charAt(0).toUpperCase()||`U`,y=g?.nome?.split(` `)[0]||``,b=n?`/publicar`:`/login`,x=n?void 0:o(i,`/`);return(0,C.jsxs)(C.Fragment,{children:[(0,C.jsx)(`style`,{children:`
+import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import{E as a,S as o,T as s,d as c,f as l,g as u,l as d,u as f,v as p,w as m}from"./index-BTGT3MlW.js";import{r as h}from"./seo-BmrZTbI5.js";import{t as g}from"./Seo-DGbAa3P3.js";import{t as _}from"./GoogleAdSlot-DOk6_FuL.js";import{i as v,r as y,t as b}from"./localizacoes-CvOZjRrK.js";import{t as x}from"./funnelAnalytics-ycsduVCo.js";var S=i(e(),1),C=n();function w(){let{user:e,signed:n,logout:r}=m(),i=t(),[s,c]=(0,S.useState)(!1),[u,d]=(0,S.useState)(!1),f=(0,S.useRef)(null),h=(0,S.useRef)(null);(0,S.useEffect)(()=>{let e=e=>{f.current&&!f.current.contains(e.target)&&c(!1),h.current&&!h.current.contains(e.target)&&d(!1)},t=e=>{e.key===`Escape`&&(c(!1),d(!1))};return window.addEventListener(`click`,e),window.addEventListener(`keydown`,t),()=>{window.removeEventListener(`click`,e),window.removeEventListener(`keydown`,t)}},[]),(0,S.useEffect)(()=>{c(!1),d(!1)},[i.pathname]);let g=e||(()=>{try{let e=sessionStorage.getItem(`@App:user`);return e?JSON.parse(e):null}catch{return null}})(),_=g?.avatarUrl||g?.avatar,v=g?.nome?.charAt(0).toUpperCase()||`U`,y=g?.nome?.split(` `)[0]||``,b=n?`/publicar`:`/login`,x=n?void 0:o(i,`/`);return(0,C.jsxs)(C.Fragment,{children:[(0,C.jsx)(`style`,{children:`
         .nl-root,
         .nl-root * {
           box-sizing: border-box;
@@ -2408,19 +2408,26 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
         }
 
         .lp-hero {
-          padding: 30px 0 0 !important;
+          padding: 22px 0 0 !important;
+        }
+
+        .lp-hero .lp-shell {
+          width: min(980px, calc(100% - 48px)) !important;
         }
 
         .lp-hero-card {
-          grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr) !important;
+          height: 520px !important;
+          min-height: 0 !important;
+          grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr) !important;
           background: var(--lp-dark) !important;
           border-color: rgba(8, 33, 38, 0.22) !important;
           box-shadow: none !important;
         }
 
         .lp-hero-content {
-          min-height: 500px !important;
-          padding: clamp(34px, 5vw, 68px) !important;
+          height: 100% !important;
+          min-height: 0 !important;
+          padding: 38px 42px !important;
           color: #ffffff !important;
           background: var(--lp-dark) !important;
         }
@@ -2428,24 +2435,25 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
         .lp-hero-brand {
           display: inline-flex;
           align-items: center;
-          gap: 13px;
-          margin-bottom: 18px;
+          gap: 11px;
+          margin-bottom: 12px;
           color: #ffffff;
-          font-size: 15px;
+          font-size: 13px;
           font-weight: 900;
           letter-spacing: 0.14em;
           text-transform: uppercase;
         }
 
         .lp-hero-brand img {
-          width: 58px;
-          height: 58px;
+          width: 44px;
+          height: 44px;
           display: block;
           object-fit: contain;
         }
 
         .lp-hero .lp-kicker {
-          margin-bottom: 18px !important;
+          margin-bottom: 14px !important;
+          padding: 7px 10px !important;
           color: #dff8f5 !important;
           border-color: rgba(126, 227, 215, 0.28) !important;
           background: rgba(36, 184, 171, 0.14) !important;
@@ -2453,8 +2461,8 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
 
         .lp-hero h1 {
           color: #ffffff !important;
-          font-size: clamp(42px, 5.8vw, 72px) !important;
-          line-height: 0.98 !important;
+          font-size: clamp(32px, 3vw, 46px) !important;
+          line-height: 1.02 !important;
         }
 
         .lp-hero h1 span {
@@ -2462,10 +2470,10 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
         }
 
         .lp-hero-copy {
-          max-width: 540px !important;
+          max-width: 420px !important;
           color: #c5d8d8 !important;
-          font-size: 17px !important;
-          line-height: 1.62 !important;
+          font-size: 14.5px !important;
+          line-height: 1.55 !important;
         }
 
         .lp-text-link {
@@ -2486,7 +2494,8 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
 
         .lp-hero-media,
         .lp-hero-media img {
-          min-height: 500px !important;
+          height: 100% !important;
+          min-height: 0 !important;
         }
 
         .lp-hero-media {
@@ -2678,8 +2687,18 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
             grid-template-columns: 1fr !important;
           }
 
+          .lp-hero-card {
+            height: auto !important;
+          }
+
+          .lp-hero-content {
+            height: auto !important;
+            min-height: auto !important;
+          }
+
           .lp-hero-media,
           .lp-hero-media img {
+            height: auto !important;
             min-height: 330px !important;
           }
 

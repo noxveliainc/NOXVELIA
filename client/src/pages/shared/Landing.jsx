@@ -2232,19 +2232,26 @@ export default function Landing() {
         }
 
         .lp-hero {
-          padding: 30px 0 0 !important;
+          padding: 22px 0 0 !important;
+        }
+
+        .lp-hero .lp-shell {
+          width: min(980px, calc(100% - 48px)) !important;
         }
 
         .lp-hero-card {
-          grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr) !important;
+          height: 520px !important;
+          min-height: 0 !important;
+          grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr) !important;
           background: var(--lp-dark) !important;
           border-color: rgba(8, 33, 38, 0.22) !important;
           box-shadow: none !important;
         }
 
         .lp-hero-content {
-          min-height: 500px !important;
-          padding: clamp(34px, 5vw, 68px) !important;
+          height: 100% !important;
+          min-height: 0 !important;
+          padding: 38px 42px !important;
           color: #ffffff !important;
           background: var(--lp-dark) !important;
         }
@@ -2252,24 +2259,25 @@ export default function Landing() {
         .lp-hero-brand {
           display: inline-flex;
           align-items: center;
-          gap: 13px;
-          margin-bottom: 18px;
+          gap: 11px;
+          margin-bottom: 12px;
           color: #ffffff;
-          font-size: 15px;
+          font-size: 13px;
           font-weight: 900;
           letter-spacing: 0.14em;
           text-transform: uppercase;
         }
 
         .lp-hero-brand img {
-          width: 58px;
-          height: 58px;
+          width: 44px;
+          height: 44px;
           display: block;
           object-fit: contain;
         }
 
         .lp-hero .lp-kicker {
-          margin-bottom: 18px !important;
+          margin-bottom: 14px !important;
+          padding: 7px 10px !important;
           color: #dff8f5 !important;
           border-color: rgba(126, 227, 215, 0.28) !important;
           background: rgba(36, 184, 171, 0.14) !important;
@@ -2277,8 +2285,8 @@ export default function Landing() {
 
         .lp-hero h1 {
           color: #ffffff !important;
-          font-size: clamp(42px, 5.8vw, 72px) !important;
-          line-height: 0.98 !important;
+          font-size: clamp(32px, 3vw, 46px) !important;
+          line-height: 1.02 !important;
         }
 
         .lp-hero h1 span {
@@ -2286,10 +2294,10 @@ export default function Landing() {
         }
 
         .lp-hero-copy {
-          max-width: 540px !important;
+          max-width: 420px !important;
           color: #c5d8d8 !important;
-          font-size: 17px !important;
-          line-height: 1.62 !important;
+          font-size: 14.5px !important;
+          line-height: 1.55 !important;
         }
 
         .lp-text-link {
@@ -2310,7 +2318,8 @@ export default function Landing() {
 
         .lp-hero-media,
         .lp-hero-media img {
-          min-height: 500px !important;
+          height: 100% !important;
+          min-height: 0 !important;
         }
 
         .lp-hero-media {
@@ -2502,8 +2511,18 @@ export default function Landing() {
             grid-template-columns: 1fr !important;
           }
 
+          .lp-hero-card {
+            height: auto !important;
+          }
+
+          .lp-hero-content {
+            height: auto !important;
+            min-height: auto !important;
+          }
+
           .lp-hero-media,
           .lp-hero-media img {
+            height: auto !important;
             min-height: 330px !important;
           }
 
