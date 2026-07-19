@@ -1,0 +1,17 @@
+{
+  "name": "noxvelia-post-images",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Scripts para gerar imagens personalizadas de posts da NOXVELIA.",
+  "scripts": {
+    "car": "node scripts/create-car-post.mjs",
+    "property": "node scripts/create-property-post.mjs",
+    "brand": "node scripts/create-brand-post.mjs",
+    "batch": "node scripts/create-batch.mjs",
+    "examples": "node scripts/create-car-post.mjs --output=output/example-car.png && node scripts/create-property-post.mjs --output=output/example-property.png && node scripts/create-brand-post.mjs --output=output/example-brand.png"
+  },
+  "dependencies": {
+    "sharp": "^0.34.3"
+  }
+}
