@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '@mdi/react';
 import {
   mdiAutoFix,
@@ -18,8 +18,16 @@ const SIZES = {
   landscape: { label: 'Link horizontal', width: 1200, height: 628 },
 };
 
+const DESIGN_STYLES = {
+  premium: { label: 'Premium' },
+  cover: { label: 'Capa' },
+  split: { label: 'Split' },
+  clean: { label: 'Clean' },
+};
+
 const TEMPLATE_DEFAULTS = {
   car: {
+    style: 'premium',
     title: 'Carro em destaque',
     price: 'Sob consulta',
     location: 'Portugal',
@@ -30,6 +38,7 @@ const TEMPLATE_DEFAULTS = {
     cta: 'Ver carro em noxvelia.com',
   },
   property: {
+    style: 'premium',
     title: 'Imovel em destaque',
     price: 'Sob consulta',
     location: 'Portugal',
@@ -40,6 +49,7 @@ const TEMPLATE_DEFAULTS = {
     cta: 'Ver imovel em noxvelia.com',
   },
   brand: {
+    style: 'premium',
     title: 'Carros e imoveis no mesmo sitio',
     subtitle: 'Pesquisa simples, contacto direto e anuncios bem apresentados.',
     badge: 'NOXVELIA',
@@ -107,6 +117,13 @@ const listingLocation = (anuncio) => {
 
 const firstImage = (anuncio) => getImageUrl(anuncio?.fotos?.[0] || anuncio?.imagens?.[0] || anuncio?.imagem, 'large');
 
+const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = () => reject(new Error('Nao foi possivel converter a imagem.'));
+  reader.readAsDataURL(blob);
+});
+
 const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
   const reader = new FileReader();
   reader.onload = () => resolve(reader.result);
@@ -118,21 +135,18 @@ async function imageUrlToDataUrl(url) {
   const response = await fetch(url, { mode: 'cors', credentials: 'include' });
   if (!response.ok) throw new Error('A imagem do anuncio nao ficou acessivel.');
   const blob = await response.blob();
-  return await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('Nao foi possivel converter a imagem.'));
-    reader.readAsDataURL(blob);
-  });
+  return blobToDataUrl(blob);
 }
 
-function brandMark({ x, y, accent, label }) {
+function brandMark({ x, y, accent, label, logoDataUrl }) {
+  const mark = logoDataUrl
+    ? `<image href="${logoDataUrl}" x="${x}" y="${y - 14}" width="58" height="50" preserveAspectRatio="xMidYMid meet"/>`
+    : `<circle cx="${x + 25}" cy="${y + 12}" r="20" fill="${accent}" opacity="0.22"/><text x="${x + 25}" y="${y + 21}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="900" fill="${accent}">N</text>`;
   return `
     <g>
-      <circle cx="${x + 22}" cy="${y + 14}" r="18" fill="none" stroke="${accent}" stroke-width="4" opacity="0.65"/>
-      <path d="M${x + 8} ${y + 20} C ${x + 16} ${y - 2}, ${x + 35} ${y - 2}, ${x + 43} ${y + 18}" fill="none" stroke="#d9c28b" stroke-width="4" stroke-linecap="round"/>
-      <text x="${x + 58}" y="${y + 24}" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="900" fill="#ffffff" letter-spacing="0">NOXVELIA</text>
-      <text x="${x + 238}" y="${y + 24}" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="900" fill="${accent}" letter-spacing="2">${label}</text>
+      ${mark}
+      <text x="${x + 70}" y="${y + 21}" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="900" fill="#ffffff" letter-spacing="0">NOXVELIA</text>
+      <text x="${x + 250}" y="${y + 21}" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="900" fill="${accent}" letter-spacing="2">${label}</text>
     </g>`;
 }
 
@@ -177,8 +191,121 @@ function chips(items, { x, y }) {
   }).join('');
 }
 
-function buildListingSvg({ form, imageDataUrl }) {
+const listingMeta = (form) => {
   const size = SIZES[form.size] || SIZES.square;
+  const accent = form.template === 'property' ? '#3ecf8e' : '#2ac1b4';
+  const label = form.template === 'property' ? 'ESTATE' : 'DRIVE';
+  const titleLines = wrapText(form.title, size.width > 1100 ? 32 : 26, size.height > size.width ? 3 : 2);
+  return { size, accent, label, titleLines };
+};
+
+const photoImage = ({ imageDataUrl, x, y, width, height, rx = 34, opacity = 1, clipId = 'photoClip' }) => imageDataUrl
+  ? `<clipPath id="${clipId}"><rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${rx}"/></clipPath>
+     <image href="${imageDataUrl}" x="${x}" y="${y}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})" opacity="${opacity}"/>`
+  : '';
+
+function buildListingCoverSvg({ form, imageDataUrl, logoDataUrl }) {
+  const { size, accent, label, titleLines } = listingMeta(form);
+  const compact = size.height < 800;
+  const image = photoImage({ imageDataUrl, x: 0, y: 0, width: size.width, height: size.height, rx: 0, clipId: 'coverPhoto' });
+  const fallback = imageDataUrl ? '' : placeholderIcon({ x: 70, y: 168, width: size.width - 140, height: Math.round(size.height * 0.46), accent, template: form.template });
+  const titleY = Math.round(size.height * (compact ? 0.42 : 0.55));
+  const titleFont = compact ? 52 : 62;
+  const titleGap = compact ? 58 : 68;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
+    ${baseBackground({ width: size.width, height: size.height, accent })}
+    ${image}
+    ${fallback}
+    <rect width="${size.width}" height="${size.height}" fill="rgba(2,6,23,0.46)"/>
+    <defs>
+      <linearGradient id="coverShade" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#020617" stop-opacity="0.35"/>
+        <stop offset="0.55" stop-color="#020617" stop-opacity="0.18"/>
+        <stop offset="1" stop-color="#020617" stop-opacity="0.82"/>
+      </linearGradient>
+    </defs>
+    <rect width="${size.width}" height="${size.height}" fill="url(#coverShade)"/>
+    ${brandMark({ x: 64, y: 64, accent, label, logoDataUrl })}
+    <rect x="64" y="${titleY - 86}" width="122" height="12" rx="6" fill="${accent}"/>
+    ${titleLines.map((line, index) => `<text x="64" y="${titleY + index * titleGap}" font-family="Inter, Arial, sans-serif" font-size="${titleFont}" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
+    <g transform="translate(64 ${size.height - (compact ? 158 : 246)})">
+      <rect x="0" y="0" width="${Math.min(600, size.width - 128)}" height="90" rx="45" fill="rgba(255,255,255,0.92)"/>
+      <text x="34" y="57" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="950" fill="#071116">${escapeXml(form.price)}</text>
+    </g>
+    ${compact ? '' : chips([form.location, form.detail1, form.detail2, form.detail3], { x: 64, y: size.height - 128 })}
+  </svg>`;
+}
+
+function buildListingSplitSvg({ form, imageDataUrl, logoDataUrl }) {
+  const { size, accent, label, titleLines } = listingMeta(form);
+  const compact = size.height < 800;
+  const photoX = Math.round(size.width * 0.49);
+  const photoY = compact ? 96 : 126;
+  const photoW = size.width - photoX - 64;
+  const photoH = size.height - (compact ? 192 : 252);
+  const titleY = compact ? 214 : 280;
+  const titleFont = compact ? 42 : 54;
+  const titleGap = compact ? 48 : 62;
+  const priceY = titleY + titleLines.length * titleGap + (compact ? 30 : 30);
+  const locationY = priceY + (compact ? 38 : 46);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
+    ${baseBackground({ width: size.width, height: size.height, accent })}
+    <rect x="44" y="44" width="${size.width - 88}" height="${size.height - 88}" rx="34" fill="rgba(255,255,255,0.055)" stroke="rgba(255,255,255,0.13)" stroke-width="2"/>
+    ${brandMark({ x: 78, y: 82, accent, label, logoDataUrl })}
+    ${imageDataUrl
+      ? `${photoImage({ imageDataUrl, x: photoX, y: photoY, width: photoW, height: photoH, rx: 34, clipId: 'splitPhoto' })}
+         <rect x="${photoX}" y="${photoY}" width="${photoW}" height="${photoH}" rx="34" fill="rgba(3,7,18,0.18)"/>
+         <rect x="${photoX}" y="${photoY}" width="${photoW}" height="${photoH}" rx="34" fill="none" stroke="rgba(255,255,255,0.17)" stroke-width="2"/>`
+      : placeholderIcon({ x: photoX, y: photoY, width: photoW, height: photoH, accent, template: form.template })}
+    <text x="78" y="${titleY - 64}" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
+    ${titleLines.map((line, index) => `<text x="78" y="${titleY + index * titleGap}" font-family="Inter, Arial, sans-serif" font-size="${titleFont}" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
+    <text x="78" y="${priceY}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 34 : 40}" font-weight="950" fill="${accent}">${escapeXml(form.price)}</text>
+    <text x="80" y="${locationY}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 22 : 26}" font-weight="800" fill="#dbeafe">${escapeXml(form.location)}</text>
+    ${compact ? '' : chips([form.detail1, form.detail2, form.detail3], { x: 78, y: size.height - 172 })}
+    <text x="78" y="${size.height - (compact ? 54 : 82)}" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="900" fill="#ffffff">${escapeXml(form.cta)}</text>
+  </svg>`;
+}
+
+function buildListingCleanSvg({ form, imageDataUrl, logoDataUrl }) {
+  const { size, accent, label, titleLines } = listingMeta(form);
+  const photoX = 64;
+  const photoY = 128;
+  const photoW = size.width - 128;
+  const photoH = Math.round(size.height * 0.48);
+  const titleY = photoY + photoH + 112;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
+    <rect width="${size.width}" height="${size.height}" fill="#f7faf9"/>
+    <rect x="0" y="0" width="${size.width}" height="18" fill="${accent}"/>
+    <circle cx="${size.width - 96}" cy="118" r="210" fill="${accent}" opacity="0.08"/>
+    ${brandMark({ x: 64, y: 72, accent, label, logoDataUrl }).replaceAll('fill="#ffffff"', 'fill="#071116"')}
+    ${imageDataUrl
+      ? `${photoImage({ imageDataUrl, x: photoX, y: photoY, width: photoW, height: photoH, rx: 32, clipId: 'cleanPhoto' })}
+         <rect x="${photoX}" y="${photoY}" width="${photoW}" height="${photoH}" rx="32" fill="none" stroke="#d6e2df" stroke-width="2"/>`
+      : placeholderIcon({ x: photoX, y: photoY, width: photoW, height: photoH, accent, template: form.template })}
+    <text x="64" y="${titleY - 50}" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
+    ${titleLines.map((line, index) => `<text x="64" y="${titleY + index * 58}" font-family="Inter, Arial, sans-serif" font-size="50" font-weight="950" fill="#071116" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
+    <text x="64" y="${titleY + titleLines.length * 60 + 36}" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="950" fill="#071116">${escapeXml(form.price)}</text>
+    <text x="66" y="${titleY + titleLines.length * 60 + 78}" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="800" fill="#53646b">${escapeXml(form.location)}</text>
+    <g transform="translate(64 ${size.height - 116})">
+      <rect x="0" y="0" width="${size.width - 128}" height="58" rx="29" fill="#071116"/>
+      <text x="28" y="37" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff">${escapeXml(form.cta)}</text>
+      <text x="${size.width - 156}" y="37" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="900" fill="${accent}">NOXVELIA</text>
+    </g>
+  </svg>`;
+}
+
+function buildListingSvg({ form, imageDataUrl, logoDataUrl }) {
+  const selectedSize = SIZES[form.size] || SIZES.square;
+  if (selectedSize.height < 800 && (!form.style || form.style === 'premium' || form.style === 'clean')) {
+    return buildListingSplitSvg({ form, imageDataUrl, logoDataUrl });
+  }
+  if (form.style === 'cover') return buildListingCoverSvg({ form, imageDataUrl, logoDataUrl });
+  if (form.style === 'split') return buildListingSplitSvg({ form, imageDataUrl, logoDataUrl });
+  if (form.style === 'clean') return buildListingCleanSvg({ form, imageDataUrl, logoDataUrl });
+  const size = selectedSize;
   const accent = form.template === 'property' ? '#3ecf8e' : '#2ac1b4';
   const label = form.template === 'property' ? 'ESTATE' : 'DRIVE';
   const photoX = 64;
@@ -199,7 +326,7 @@ function buildListingSvg({ form, imageDataUrl }) {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
     ${baseBackground({ width: size.width, height: size.height, accent })}
-    ${brandMark({ x: 64, y: 58, accent, label })}
+    ${brandMark({ x: 64, y: 58, accent, label, logoDataUrl })}
     ${photo}
     <text x="88" y="${photoY + photoH - 82}" font-family="Inter, Arial, sans-serif" font-size="68" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(form.price)}</text>
     <text x="90" y="${photoY + photoH - 38}" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800" fill="#dbeafe">${escapeXml(form.location)}</text>
@@ -214,15 +341,93 @@ function buildListingSvg({ form, imageDataUrl }) {
   </svg>`;
 }
 
-function buildBrandSvg({ form }) {
+function buildBrandCoverSvg({ form, logoDataUrl }) {
   const size = SIZES[form.size] || SIZES.square;
+  const accent = '#2ac1b4';
+  const startY = Math.round(size.height * 0.34);
+  const headlineLines = wrapText(form.title, size.width > 1100 ? 30 : 24, 4);
+  const subtitleLines = wrapText(form.subtitle, size.width > 1100 ? 50 : 40, 3);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
+    ${baseBackground({ width: size.width, height: size.height, accent })}
+    <rect x="${size.width - 290}" y="-80" width="190" height="${size.height + 160}" rx="95" fill="#3ecf8e" opacity="0.14" transform="rotate(18 ${size.width - 195} ${size.height / 2})"/>
+    <rect x="${size.width - 190}" y="-100" width="88" height="${size.height + 200}" rx="44" fill="${accent}" opacity="0.2" transform="rotate(18 ${size.width - 146} ${size.height / 2})"/>
+    ${brandMark({ x: 64, y: 64, accent, label: 'PORTUGAL', logoDataUrl })}
+    <text x="64" y="${startY - 54}" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
+    ${headlineLines.map((line, index) => `<text x="64" y="${startY + index * 70}" font-family="Inter, Arial, sans-serif" font-size="62" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
+    ${subtitleLines.map((line, index) => `<text x="68" y="${startY + headlineLines.length * 76 + 36 + index * 38}" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="650" fill="#b8c7d9">${escapeXml(line)}</text>`).join('')}
+    <g transform="translate(64 ${size.height - 178})">
+      <rect x="0" y="0" width="${Math.min(560, size.width - 128)}" height="74" rx="37" fill="${accent}"/>
+      <text x="38" y="47" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="950" fill="#041014">${escapeXml(form.cta)}</text>
+    </g>
+  </svg>`;
+}
+
+function buildBrandSplitSvg({ form, logoDataUrl }) {
+  const size = SIZES[form.size] || SIZES.square;
+  const accent = '#2ac1b4';
+  const compact = size.height < 800;
+  const headlineLines = wrapText(form.title, size.width > 1100 ? 24 : 20, 4);
+  const subtitleLines = wrapText(form.subtitle, size.width > 1100 ? 42 : 34, 4);
+  const leftW = Math.round(size.width * 0.5);
+  const headlineY = Math.round(size.height * (compact ? 0.35 : 0.32));
+  const subtitleY = Math.round(size.height * (compact ? 0.31 : 0.32));
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
+    <rect width="${size.width}" height="${size.height}" fill="#071116"/>
+    <rect x="${leftW}" y="0" width="${size.width - leftW}" height="${size.height}" fill="#f7faf9"/>
+    <rect x="${leftW}" y="0" width="12" height="${size.height}" fill="${accent}"/>
+    ${brandMark({ x: 64, y: 68, accent, label: 'PORTUGAL', logoDataUrl })}
+    ${headlineLines.map((line, index) => `<text x="64" y="${headlineY + index * (compact ? 50 : 68)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 44 : 60}" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
+    ${subtitleLines.map((line, index) => `<text x="${leftW + 74}" y="${subtitleY + index * (compact ? 34 : 42)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 25 : 32}" font-weight="750" fill="#071116">${escapeXml(line)}</text>`).join('')}
+    <g transform="translate(${leftW + 74} ${Math.round(size.height * (compact ? 0.58 : 0.56))})">
+      <rect x="0" y="0" width="${size.width - leftW - 148}" height="86" rx="18" fill="#071116"/>
+      <text x="30" y="54" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="950" fill="${accent}">DRIVE</text>
+      <text x="168" y="54" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="950" fill="#3ecf8e">ESTATE</text>
+    </g>
+    <text x="${leftW + 76}" y="${size.height - 110}" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="950" fill="#071116">${escapeXml(form.cta)}</text>
+  </svg>`;
+}
+
+function buildBrandCleanSvg({ form, logoDataUrl }) {
+  const size = SIZES[form.size] || SIZES.square;
+  const accent = '#2ac1b4';
+  const headlineLines = wrapText(form.title, size.width > 1100 ? 30 : 24, 4);
+  const subtitleLines = wrapText(form.subtitle, size.width > 1100 ? 52 : 42, 3);
+  const startY = Math.round(size.height * 0.31);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
+    <rect width="${size.width}" height="${size.height}" fill="#f7faf9"/>
+    <rect x="0" y="0" width="${size.width}" height="20" fill="${accent}"/>
+    <circle cx="${size.width - 170}" cy="190" r="260" fill="#0f2b42" opacity="0.08"/>
+    <circle cx="${size.width - 110}" cy="${size.height - 130}" r="190" fill="${accent}" opacity="0.12"/>
+    ${brandMark({ x: 64, y: 72, accent, label: 'PORTUGAL', logoDataUrl }).replaceAll('fill="#ffffff"', 'fill="#071116"')}
+    <text x="64" y="${startY - 50}" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
+    ${headlineLines.map((line, index) => `<text x="64" y="${startY + index * 72}" font-family="Inter, Arial, sans-serif" font-size="64" font-weight="950" fill="#071116" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
+    ${subtitleLines.map((line, index) => `<text x="68" y="${startY + headlineLines.length * 78 + 32 + index * 38}" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700" fill="#53646b">${escapeXml(line)}</text>`).join('')}
+    <g transform="translate(64 ${size.height - 170})">
+      <rect x="0" y="0" width="${Math.min(560, size.width - 128)}" height="74" rx="37" fill="#071116"/>
+      <text x="38" y="47" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="950" fill="#ffffff">${escapeXml(form.cta)}</text>
+    </g>
+  </svg>`;
+}
+
+function buildBrandSvg({ form, logoDataUrl }) {
+  const selectedSize = SIZES[form.size] || SIZES.square;
+  if (selectedSize.height < 800 && (!form.style || form.style === 'premium' || form.style === 'clean')) {
+    return buildBrandSplitSvg({ form, logoDataUrl });
+  }
+  if (form.style === 'cover') return buildBrandCoverSvg({ form, logoDataUrl });
+  if (form.style === 'split') return buildBrandSplitSvg({ form, logoDataUrl });
+  if (form.style === 'clean') return buildBrandCleanSvg({ form, logoDataUrl });
+  const size = selectedSize;
   const accent = '#2ac1b4';
   const startY = Math.round(size.height * 0.32);
   const headlineLines = wrapText(form.title, size.width > 1100 ? 30 : 24, 4);
   const subtitleLines = wrapText(form.subtitle, size.width > 1100 ? 52 : 42, 3);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
     ${baseBackground({ width: size.width, height: size.height, accent })}
-    ${brandMark({ x: 64, y: 64, accent, label: 'PORTUGAL' })}
+    ${brandMark({ x: 64, y: 64, accent, label: 'PORTUGAL', logoDataUrl })}
     <g transform="translate(${size.width - 360} 70)" opacity="0.92">
       <rect x="0" y="0" width="280" height="72" rx="36" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.16)"/>
       <text x="40" y="46" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="900" fill="${accent}">DRIVE</text>
@@ -250,16 +455,36 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
   const typo = fonts || {};
   const fileRef = useRef(null);
   const [form, setForm] = useState({ template: 'car', size: 'square', ...TEMPLATE_DEFAULTS.car });
+  const [logoDataUrl, setLogoDataUrl] = useState('');
   const [imageDataUrl, setImageDataUrl] = useState('');
   const [imageName, setImageName] = useState('');
   const [selectedAdId, setSelectedAdId] = useState('');
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState('');
 
+  useEffect(() => {
+    let mounted = true;
+    fetch('/logo-noxvelia.png')
+      .then((response) => {
+        if (!response.ok) throw new Error('Logo indisponivel.');
+        return response.blob();
+      })
+      .then(blobToDataUrl)
+      .then((dataUrl) => {
+        if (mounted) setLogoDataUrl(dataUrl);
+      })
+      .catch(() => {
+        if (mounted) setLogoDataUrl('');
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
 
   const switchTemplate = (template) => {
-    setForm((current) => ({ template, size: current.size, ...TEMPLATE_DEFAULTS[template] }));
+    setForm((current) => ({ ...TEMPLATE_DEFAULTS[template], template, size: current.size, style: current.style || 'premium' }));
     setSelectedAdId('');
     setFeedback('');
     if (template === 'brand') {
@@ -270,12 +495,12 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
 
   const svg = useMemo(() => (
     form.template === 'brand'
-      ? buildBrandSvg({ form })
-      : buildListingSvg({ form, imageDataUrl })
-  ), [form, imageDataUrl]);
+      ? buildBrandSvg({ form, logoDataUrl })
+      : buildListingSvg({ form, imageDataUrl, logoDataUrl })
+  ), [form, imageDataUrl, logoDataUrl]);
   const previewUrl = useMemo(() => svgToDataUrl(svg), [svg]);
   const currentSize = SIZES[form.size] || SIZES.square;
-  const outputName = `${slugify(form.title || form.badge)}-${form.size}`;
+  const outputName = `${slugify(form.title || form.badge)}-${form.style || 'premium'}-${form.size}`;
 
   const handleFile = async (event) => {
     const file = event.target.files?.[0];
@@ -300,6 +525,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
       ...current,
       template,
       ...TEMPLATE_DEFAULTS[template],
+      style: current.style || 'premium',
       title: anuncio.titulo || TEMPLATE_DEFAULTS[template].title,
       price: formatPrice(anuncio.preco),
       location: listingLocation(anuncio),
@@ -453,6 +679,13 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
               <label style={labelStyle} htmlFor="postgen-size">Formato</label>
               <select id="postgen-size" value={form.size} onChange={(e) => update('size', e.target.value)} style={inputStyle}>
                 {Object.entries(SIZES).map(([id, size]) => <option key={id} value={id}>{size.label}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label style={labelStyle} htmlFor="postgen-style">Arte</label>
+              <select id="postgen-style" value={form.style || 'premium'} onChange={(e) => update('style', e.target.value)} style={inputStyle}>
+                {Object.entries(DESIGN_STYLES).map(([id, style]) => <option key={id} value={id}>{style.label}</option>)}
               </select>
             </div>
 
