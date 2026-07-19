@@ -2240,7 +2240,7 @@ export default function Landing() {
         }
 
         .lp-hero-card {
-          height: 520px !important;
+          height: 480px !important;
           min-height: 0 !important;
           grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr) !important;
           background: var(--lp-dark) !important;
@@ -2357,7 +2357,7 @@ export default function Landing() {
         }
 
         .lp-quick-card {
-          margin-top: -20px !important;
+          margin-top: 12px !important;
           padding: clamp(18px, 2.4vw, 28px) !important;
           border-color: rgba(8, 33, 38, 0.18) !important;
           background: rgba(255, 255, 255, 0.98) !important;
