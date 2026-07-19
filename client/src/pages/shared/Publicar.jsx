@@ -5,7 +5,7 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { Icon } from '@mdi/react';
 import { 
-  mdiAlertCircleOutline, mdiCloudUploadOutline, mdiClose, mdiCrown, 
+  mdiAlertCircleOutline, mdiCloudUploadOutline, mdiClose, mdiCrown, mdiStar, 
   mdiShieldCheckOutline, mdiSwapHorizontal 
 } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
@@ -104,15 +104,25 @@ export default function Publicar() {
     cor: '',
     garantia: '',
     aceitaRetoma: false,
+    destacado: false,
   });
+
+
+  const ehAdmin = user?.tipo === 'admin';
 
   useEffect(() => {
     if (!authLoading && !signed) {
       navigate('/login');
-    } else if (user) {
+    } else if (user && !ehAdmin) {
       setForm(f => ({ ...f, telefone: user.telefone || '', email: user.email || '' }));
+    } else if (user && ehAdmin) {
+      setForm(f => ({
+        ...f,
+        telefone: f.telefone === user.telefone ? '' : f.telefone,
+        email: f.email === user.email ? '' : f.email,
+      }));
     }
-  }, [signed, authLoading, navigate, user]);
+  }, [signed, authLoading, navigate, user, ehAdmin]);
 
   useEffect(() => {
     if (signed) trackFunnelEvent('publish_start', { vertical: contextoFocado });
@@ -241,6 +251,7 @@ export default function Publicar() {
         },
         garantia: form.garantia || null,
         aceitaRetoma: !!form.aceitaRetoma,
+        ...(ehAdmin ? { destacado: !!form.destacado } : {}),
         ...(form.tipo === 'imovel'
           ? {
               imovel: {
@@ -395,6 +406,9 @@ export default function Publicar() {
         .pub-pro-badge-icon { color: #d97706; flex-shrink: 0; }
         .pub-pro-badge-text { font-size: 13px; font-weight: 600; color: #92400e; line-height: 1.4; margin: 0; }
         .pub-pro-badge-text strong { color: #d97706; }
+        .pub-admin-contact-note { display: flex; align-items: flex-start; gap: 10px; padding: 13px 14px; border: 1px solid rgba(${accentRgb}, 0.3); border-radius: 12px; background: rgba(${accentRgb}, 0.08); color: #0f172a; font-size: 12.5px; font-weight: 650; line-height: 1.45; }
+        .pub-admin-contact-note svg { flex: 0 0 auto; margin-top: 1px; color: ${accentColorVar}; }
+        .pub-admin-contact-note strong { color: ${accentColorVar}; }
 
         .pub-quality-card { border: 1px solid rgba(${accentRgb}, 0.24); background: linear-gradient(135deg, rgba(${accentRgb}, 0.08), #ffffff 58%); border-radius: 16px; padding: 16px; margin-bottom: 20px; box-sizing: border-box; }
         .pub-quality-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
@@ -544,7 +558,7 @@ export default function Publicar() {
                 <h2 className="pub-section-title">Dados principais</h2>
               </div>
 
-              {ehPremium && (
+              {ehPremium && !ehAdmin && (
                 <div className="pub-pro-badge" style={{ marginBottom: '20px' }}>
                   <Icon path={mdiShieldCheckOutline} size={1.1} className="pub-pro-badge-icon" />
                   <p className="pub-pro-badge-text">
@@ -553,6 +567,31 @@ export default function Publicar() {
                   </p>
                 </div>
               )}
+
+              {ehAdmin && (
+                <div className={`pub-trust-card ${form.destacado ? 'is-active' : ''}`} style={{ marginBottom: '20px' }}>
+                  <div className="pub-trust-card-head">
+                    <Icon path={mdiStar} size={0.9} color={accentColorVar} />
+                    <span className="pub-trust-card-title">Destacar este anúncio</span>
+                  </div>
+                  <p className="pub-trust-card-desc">
+                    Como admin podes publicar sem limite. Liga isto apenas quando quiseres dar destaque a este anúncio.
+                  </p>
+                  <label className="pub-switch-row">
+                    <span className={`pub-switch ${form.destacado ? 'checked' : ''}`}>
+                      <input
+                        type="checkbox"
+                        name="destacado"
+                        checked={form.destacado}
+                        onChange={handle}
+                        style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', margin: 0, cursor: 'pointer' }}
+                      />
+                    </span>
+                    {form.destacado ? 'Sim, destacar' : 'Não destacar'}
+                  </label>
+                </div>
+              )}
+
 
               <div className="pub-quality-card">
                 <div className="pub-quality-head">
@@ -586,14 +625,23 @@ export default function Publicar() {
                   </div>
                 </div>
 
+                {ehAdmin && (
+                  <div className="pub-admin-contact-note">
+                    <Icon path={mdiShieldCheckOutline} size={0.82} />
+                    <span>
+                      <strong>Publicação em nome de terceiros:</strong> o teu email e telemóvel não são preenchidos aqui. Escreve apenas os contactos autorizados da pessoa dona do anúncio.
+                    </span>
+                  </div>
+                )}
+
                 <div className="pub-grid-2">
                   <div>
-                    <label className="pub-label" style={{ color: accentColorVar }}>Telemóvel de Contacto *</label>
-                    <input className="pub-input" name="telefone" type="tel" value={form.telefone} onChange={handle} required placeholder="9XX XXX XXX" style={{ borderColor: `rgba(${accentRgb}, 0.4)` }} />
+                    <label className="pub-label" style={{ color: accentColorVar }}>{ehAdmin ? 'Telemóvel da pessoa *' : 'Telemóvel de Contacto *'}</label>
+                    <input className="pub-input" name="telefone" type="tel" value={form.telefone} onChange={handle} required placeholder={ehAdmin ? 'Contacto autorizado' : '9XX XXX XXX'} autoComplete="off" style={{ borderColor: `rgba(${accentRgb}, 0.4)` }} />
                   </div>
                   <div>
-                    <label className="pub-label">Email de Contacto *</label>
-                    <input className="pub-input" name="email" type="email" value={form.email} onChange={handle} required placeholder="exemplo@email.com" />
+                    <label className="pub-label">{ehAdmin ? 'Email da pessoa *' : 'Email de Contacto *'}</label>
+                    <input className="pub-input" name="email" type="email" value={form.email} onChange={handle} required placeholder={ehAdmin ? 'email autorizado' : 'exemplo@email.com'} autoComplete="off" />
                   </div>
                 </div>
 

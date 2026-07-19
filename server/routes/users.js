@@ -254,7 +254,10 @@ router.get('/vendedor/:id', async (req, res) => {
       'nome email telefone mostrarTelefonePublico localidade avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo rating totalAvaliacoes createdAt'
     ).lean();
     if (!vendedor) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
-    if (vendedor.mostrarTelefonePublico === false) {
+    if (vendedor.tipo === 'admin') {
+      delete vendedor.email;
+      delete vendedor.telefone;
+    } else if (vendedor.mostrarTelefonePublico === false) {
       delete vendedor.telefone;
     }
     const anuncios = await Anuncio.find({ utilizador: req.params.id, estado: { $in: ['ativo', 'pendente'] } })

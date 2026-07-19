@@ -35,7 +35,7 @@ const COMODIDADES_IMOVEL = [
 export default function Editar() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { signed, loading: authLoading } = useAuth();
+  const { user, signed, loading: authLoading } = useAuth();
 
   const [fetchingData, setFetchingData] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -93,14 +93,18 @@ export default function Editar() {
     const carregarAnuncio = async () => {
       try {
         const { data } = await api.get(`/anuncios/${id}`);
+        const contactoAdmin = user?.tipo === 'admin';
+        const telefoneOriginal = data.telefone || '';
+        const emailOriginal = data.email || '';
+
         setForm({
           tipo: data.tipo,
           titulo: data.titulo || '',
           descricao: data.descricao || '',
           videoUrl: data.videoUrl || '',
           preco: data.preco || '',
-          telefone: data.telefone || '',
-          email: data.email || '', 
+          telefone: contactoAdmin && telefoneOriginal === user.telefone ? '' : telefoneOriginal,
+          email: contactoAdmin && emailOriginal === user.email ? '' : emailOriginal,
           cidade: data.localizacao?.cidade || '',
           distrito: data.localizacao?.distrito || '',
           estado: data.imovel?.estadoConservacao || data.imovel?.estado || 'Usado',
@@ -140,7 +144,7 @@ export default function Editar() {
       }
     };
     if (signed) carregarAnuncio();
-  }, [id, signed, authLoading, navigate]);
+  }, [id, signed, authLoading, navigate, user]);
 
   const handle = e => {
     const { name, value, type, checked } = e.target;

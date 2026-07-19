@@ -4,7 +4,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import ThemeToggle from '../ThemeToggle';
-import ComparisonNavButton from '../ComparisonNavButton';
 import { Car, House } from 'lucide-react';
 
 export default function NavbarImovel() {
@@ -291,7 +290,6 @@ export default function NavbarImovel() {
 
         {/* 🌟 DESKTOP ACTIONS */}
         <div className="nim-actions">
-          <ComparisonNavButton />
           <ThemeToggle />
           <button type="button" onClick={handleIrParaHome} className="nim-btn-menu" aria-label="Voltar ao menu principal">
             <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /><path d="M9 12h12" /><path d="M3 5v14" /></svg>
@@ -392,7 +390,7 @@ export default function NavbarImovel() {
             <div className="nim-drawer-menu">
               <div className="mb-2 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
                 <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">Aspeto da plataforma</span>
-                <div className="flex items-center gap-2"><ComparisonNavButton /><ThemeToggle /></div>
+                <div className="flex items-center gap-2"><ThemeToggle /></div>
               </div>
               <button type="button" className="nim-drawer-link" onClick={handleIrParaHome}>
                 <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /><path d="M9 12h12" /><path d="M3 5v14" /></svg>

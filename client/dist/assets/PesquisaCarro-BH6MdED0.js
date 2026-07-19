@@ -1,0 +1,1 @@
+import{O as e,y as t}from"./index-C4H3Y4wR.js";import{t as n}from"./Pesquisa-DBC4cul-.js";e();var r=t();function i(){return(0,r.jsx)(n,{tipoPadrao:`carro`})}export{i as default};

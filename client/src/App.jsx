@@ -10,7 +10,6 @@ import NavbarImovel from './components/imoveis/NavbarImovel';
 import PageTransition from './components/PageTransition'; 
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
-import { ComparisonProvider } from './context/ComparisonContext';
 import LoadingScreen from './components/LoadingScreen';
 
 // --- PÁGINAS (lazy) ---
@@ -33,7 +32,6 @@ const PerfilPublico  = lazy(() => import('./pages/shared/PerfilPublico'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const SucessoUpsell  = lazy(() => import('./pages/shared/SucessoUpsell'));
 const Planos         = lazy(() => import('./pages/shared/Planos'));
-const Comparador     = lazy(() => import('./pages/shared/Comparador'));
 const SeoPesquisa    = lazy(() => import('./pages/shared/SeoPesquisa'));
 
 // 🌟 NOVA PÁGINA IMPORTADA
@@ -94,7 +92,6 @@ function AppShell() {
             
             {/* 🌟 ROTA DA POLÍTICA E TERMOS */}
             <Route path="/privacidade" element={<PoliticaPrivacidade />} />
-            <Route path="/comparador" element={<Comparador />} />
             
             {/* Protegidas por Login (Auth) */}
             <Route path="/publicar" element={<ProtectedRoute><Publicar /></ProtectedRoute>} />
@@ -120,9 +117,7 @@ export default function App() {
     <HelmetProvider>
       <AuthProvider>
         <Router>
-          <ComparisonProvider>
-            <AppShell />
-          </ComparisonProvider>
+          <AppShell />
         </Router>
       </AuthProvider>
     </HelmetProvider>

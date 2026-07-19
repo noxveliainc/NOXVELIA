@@ -229,12 +229,6 @@ export default function PoliticaPrivacidade() {
                     <td><span className="legal-cookie-badge">Funcional</span></td>
                   </tr>
                   <tr>
-                    <td><em>localStorage</em><br /><code>noxvelia_comparison</code></td>
-                    <td>Guardar neste navegador até três anúncios escolhidos para comparação, sem criar registos adicionais na base de dados.</td>
-                    <td>Até o Utilizador limpar o comparador ou eliminar os dados do navegador.</td>
-                    <td><span className="legal-cookie-badge">Funcional</span></td>
-                  </tr>
-                  <tr>
                     <td><em>sessionStorage</em><br /><code>@Noxvelia:visit:&lt;id&gt;</code></td>
                     <td>Evitar que sucessivos carregamentos do mesmo anúncio no mesmo separador sejam contabilizados repetidamente.</td>
                     <td>Até o separador ou a sessão do navegador ser encerrada.</td>

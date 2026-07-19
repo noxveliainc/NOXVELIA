@@ -683,6 +683,7 @@ export default function AdminDashboard() {
                     <EmptyRow colSpan={4} text="Nenhum utilizador corresponde aos filtros aplicados." />
                   ) : (
                     utilizadoresFiltrados.map((u, idx) => {
+                      const contactoAdminOculto = u.tipo === 'admin';
                       return (
                         <tr key={u._id} className="nx-row" style={{ borderBottom: `1px solid ${COLORS.border}`, color: COLORS.textDim, animationDelay: `${idx * 0.02}s` }}>
                           
@@ -694,25 +695,34 @@ export default function AdminDashboard() {
                                 <div style={{ fontWeight: 700, color: COLORS.text, fontSize: '14px', marginBottom: '6px' }}>{u.nome}</div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                                   
-                                  {/* Botão de Email */}
-                                  <button 
-                                    className={`contact-badge ${copiadoFeedback === `email-${u._id}` ? 'copied' : ''}`}
-                                    onClick={() => copiarParaClipboard(u.email, `email-${u._id}`)}
-                                    title="Clique para copiar o email"
-                                  >
-                                    <Icon path={copiadoFeedback === `email-${u._id}` ? mdiCheck : mdiEmailOutline} size={0.5} />
-                                    {u.email}
-                                  </button>
+                                  {contactoAdminOculto ? (
+                                    <span className="contact-badge" title="Contacto de conta admin oculto">
+                                      <Icon path={mdiAlertOutline} size={0.5} />
+                                      Contacto admin oculto
+                                    </span>
+                                  ) : (
+                                    <>
+                                      {/* Botão de Email */}
+                                      <button 
+                                        className={`contact-badge ${copiadoFeedback === `email-${u._id}` ? 'copied' : ''}`}
+                                        onClick={() => copiarParaClipboard(u.email, `email-${u._id}`)}
+                                        title="Clique para copiar o email"
+                                      >
+                                        <Icon path={copiadoFeedback === `email-${u._id}` ? mdiCheck : mdiEmailOutline} size={0.5} />
+                                        {u.email}
+                                      </button>
 
-                                  {/* Botão de Telefone */}
-                                  <button 
-                                    className={`contact-badge ${copiadoFeedback === `tel-${u._id}` ? 'copied' : ''}`}
-                                    onClick={() => copiarParaClipboard(u.telefone, `tel-${u._id}`)}
-                                    title="Clique para copiar o telemóvel"
-                                  >
-                                    <Icon path={copiadoFeedback === `tel-${u._id}` ? mdiCheck : mdiPhoneOutline} size={0.5} />
-                                    {u.telefone || 'Sem número'}
-                                  </button>
+                                      {/* Botão de Telefone */}
+                                      <button 
+                                        className={`contact-badge ${copiadoFeedback === `tel-${u._id}` ? 'copied' : ''}`}
+                                        onClick={() => copiarParaClipboard(u.telefone, `tel-${u._id}`)}
+                                        title="Clique para copiar o telemóvel"
+                                      >
+                                        <Icon path={copiadoFeedback === `tel-${u._id}` ? mdiCheck : mdiPhoneOutline} size={0.5} />
+                                        {u.telefone || 'Sem número'}
+                                      </button>
+                                    </>
+                                  )}
                                   
                                 </div>
                               </div>

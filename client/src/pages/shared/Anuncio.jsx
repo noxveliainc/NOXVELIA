@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { trackFunnelEvent } from '../../utils/funnelAnalytics';
 import { useAuth } from '../../context/AuthContext';
-import { useComparison } from '../../context/ComparisonContext';
 import { getVideoEmbedData } from '../../utils/videoEmbed';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
 import Seo from '../../components/Seo';
@@ -39,7 +38,6 @@ export default function Anuncio() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, signed } = useAuth();
-  const { items: comparisonItems, adicionar, remover, isCompared } = useComparison();
 
   const [anuncio, setAnuncio] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,7 +49,6 @@ export default function Anuncio() {
   const [guardado, setGuardado] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [refCopiado, setRefCopiado] = useState(false);
-  const [comparisonFeedback, setComparisonFeedback] = useState('');
   const [lightboxAberto, setLightboxAberto] = useState(false);
 
   const [mostrarModalVendido, setMostrarModalVendido] = useState(false);
@@ -177,20 +174,6 @@ export default function Anuncio() {
     } catch {}
   };
 
-  const handleComparar = () => {
-    if (!anuncio?._id) return;
-    if (isCompared(anuncio._id)) {
-      remover(anuncio._id);
-      setComparisonFeedback('Anúncio removido da comparação.');
-    } else {
-      const result = adicionar(anuncio);
-      if (result.code === 'limit') setComparisonFeedback('O comparador já tem o máximo de 3 anúncios.');
-      else if (result.code === 'duplicate') setComparisonFeedback('Este anúncio já está na comparação.');
-      else if (result.ok) setComparisonFeedback('Anúncio adicionado à comparação.');
-      else setComparisonFeedback('Não foi possível adicionar este anúncio.');
-    }
-    window.setTimeout(() => setComparisonFeedback(''), 2600);
-  };
 
   const handleConfirmarVendido = async () => {
     setEliminandoVendido(true);
@@ -255,7 +238,6 @@ export default function Anuncio() {
   const donoDoAnuncio = anuncio.utilizador || anuncio.user;
   const isDono = signed && (user?.id === donoDoAnuncio?._id || user?._id === donoDoAnuncio?._id);
   const isCarro = anuncio.tipo === 'carro';
-  const comparado = isCompared(anuncio._id);
   const videoEmbed = getVideoEmbedData(anuncio.videoUrl || anuncio.visitaVirtualUrl);
 
   const precoValor = anuncio.preco || 0;
@@ -264,9 +246,11 @@ export default function Anuncio() {
     ? `${formatarMoeda(Math.round(precoValor / anuncio.imovel.area))}/m²`
     : null;
 
-  const emailContacto = anuncio.email || donoDoAnuncio?.email || 'Não fornecido';
-  const podeMostrarTelefone = donoDoAnuncio?.mostrarTelefonePublico !== false;
-  const telefoneContactoRaw = podeMostrarTelefone ? (anuncio.telefone || donoDoAnuncio?.telefone || '') : '';
+  const vendedorAdmin = donoDoAnuncio?.tipo === 'admin';
+  const emailContacto = anuncio.email || (vendedorAdmin ? '' : donoDoAnuncio?.email) || 'Não fornecido';
+  const telefoneDoAnuncio = anuncio.telefone || '';
+  const podeMostrarTelefoneConta = !vendedorAdmin && donoDoAnuncio?.mostrarTelefonePublico !== false;
+  const telefoneContactoRaw = telefoneDoAnuncio || (podeMostrarTelefoneConta ? (donoDoAnuncio?.telefone || '') : '');
   const telefoneContacto = telefoneContactoRaw || 'Não fornecido';
   const temTelefoneContacto = telefoneContacto !== 'Não fornecido';
   const temEmailContacto = emailContacto !== 'Não fornecido';
@@ -428,14 +412,6 @@ export default function Anuncio() {
         .meta-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; }
         .meta-ref { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
         .meta-ref:hover { color: #0f172a; }
-        .comparison-row { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 18px; padding-top: 16px; border-top: 1px solid #e2e8f0; }
-        .comparison-btn, .comparison-link { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 12px; font-weight: 850; cursor: pointer; text-decoration: none; transition: all .2s; }
-        .comparison-btn { color: #0f172a; background: #f8fafc; border: 1px solid #cbd5e1; }
-        .comparison-btn:hover { background: #f1f5f9; border-color: \${accent}; }
-        .comparison-btn.active { color: #062d2a; background: \${accent}; border-color: \${accent}; }
-        .comparison-link { color: #475569; background: #fff; border: 1px solid #e2e8f0; }
-        .comparison-link:hover { color: #0f172a; border-color: #cbd5e1; }
-        .comparison-feedback { flex-basis: 100%; color: #64748b; font-size: 11px; font-weight: 700; }
         .estado-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
         .estado-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
         .meta-dot { color: #cbd5e1; font-size: 10px; }
@@ -754,16 +730,6 @@ export default function Anuncio() {
                   <button type="button" className="meta-ref" onClick={copiarReferencia} title="Copiar referência">
                     <Icon path={refCopiado ? mdiCheck : mdiContentCopy} size={0.6} /> Ref: #{referencia}
                   </button>
-                </div>
-                <div className="comparison-row">
-                  <button type="button" className={'comparison-btn ' + (comparado ? 'active' : '')} onClick={handleComparar} aria-pressed={comparado}>
-                    <Icon path={mdiSwapHorizontal} size={0.72} />
-                    {comparado ? 'Remover da comparação' : 'Adicionar à comparação'}
-                  </button>
-                  {comparisonItems.length > 0 && (
-                    <Link to="/comparador" className="comparison-link">Ver comparador ({comparisonItems.length}/3)</Link>
-                  )}
-                  {comparisonFeedback && <span className="comparison-feedback" role="status">{comparisonFeedback}</span>}
                 </div>
               </div>
 

@@ -105,8 +105,15 @@ router.get('/dashboard/stats', async (req, res) => {
 // 2. LISTAR UTILIZADORES
 router.get('/utilizadores', async (req, res) => {
   try {
-    const users = await User.find().select('-password').sort({ createdAt: -1 });
-    res.json(users);
+    const users = await User.find().select('-password').sort({ createdAt: -1 }).lean();
+    res.json(users.map((user) => {
+      if (user.tipo !== 'admin') return user;
+      return {
+        ...user,
+        email: '',
+        telefone: '',
+      };
+    }));
   } catch (erro) {
     res.status(500).json({ erro: 'Erro ao buscar utilizadores.' });
   }

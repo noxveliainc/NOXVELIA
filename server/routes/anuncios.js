@@ -347,8 +347,10 @@ router.get('/:id', async (req, res) => {
     if (!anuncio)
       return res.status(404).json({ erro: 'Anúncio removido.' });
 
-    if (anuncio.utilizador?.mostrarTelefonePublico === false) {
-      delete anuncio.telefone;
+    if (anuncio.utilizador?.tipo === 'admin') {
+      delete anuncio.utilizador.email;
+      delete anuncio.utilizador.telefone;
+    } else if (anuncio.utilizador?.mostrarTelefonePublico === false) {
       delete anuncio.utilizador.telefone;
     }
 
@@ -375,10 +377,10 @@ router.get('/:id/check-guardado', verificarToken, async (req, res) => {
 //    Regras:
 //    - Utilizador FREE  → máx 10 anúncios ativos
 //    - Utilizador PREMIUM → ilimitado + destacado: true automático
-//    - Admin → ilimitado + destacado: true automático
+//    - Admin → ilimitado + destaque opcional pelo painel
 //
 //    Segurança:
-//    - O campo `destacado` enviado pelo body é SEMPRE ignorado.
+//    - O campo `destacado` enviado pelo body só é aceite para admin.
 //      O servidor decide o valor com base no papel real do utilizador.
 //    - Geocoding é resolvido aqui no backend; o frontend envia apenas
 //      `cidade` e `distrito` (sem coordenadas).
@@ -419,10 +421,7 @@ router.post('/', verificarToken, async (req, res) => {
 
     // ── Sanitização do body ──────────────────────────────────
     // Remover campos que só o servidor deve definir para
-    // prevenir manipulação via body (ex: {destacado: true}).
- // Dentro do router.post('/')
-// ...
-// ── Sanitização do body ──────────────────────────────────
+    // prevenir manipulação direta via API.
     const {
       destacado: _ignorado,
       dataExpiracaoDestaque: _ignore2,
@@ -459,8 +458,8 @@ router.post('/', verificarToken, async (req, res) => {
         distrito,
         ...(coordenadas ? { coordenadas } : {}),
       },
-      // AUTO-DESTAQUE: só o servidor decide
-      ...(ehPremium || ehAdmin
+      // Destaque: premium normal destaca automaticamente; admin escolhe no painel.
+      ...((ehAdmin ? req.body.destacado === true : ehPremium)
         ? { destacado: true, dataExpiracaoDestaque: null }
         : { destacado: false }
       ),

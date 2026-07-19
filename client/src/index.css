@@ -259,9 +259,7 @@ h1, h2, h3, h4 {
 .dark .desc-box,
 .dark .price-panel,
 .dark .tour-card,
-.dark .btn-icon,
-.dark .comparison-btn,
-.dark .comparison-link {
+.dark .btn-icon {
   background: #111c30 !important;
   border-color: #334155 !important;
 }
@@ -280,20 +278,16 @@ h1, h2, h3, h4 {
 .dark .meta-ref,
 .dark .decision-label,
 .dark .spec-label,
-.dark .desc-head,
-.dark .comparison-feedback {
+.dark .desc-head {
   color: #94a3b8 !important;
 }
 
 .dark .extra-item,
-.dark .desc-text,
-.dark .comparison-link,
-.dark .comparison-btn {
+.dark .desc-text {
   color: #cbd5e1 !important;
 }
 
-.dark .tab-btn.active,
-.dark .comparison-btn.active {
+.dark .tab-btn.active {
   color: #020617 !important;
 }
 
@@ -744,8 +738,6 @@ h1, h2, h3, h4 {
   .pl-btn,
   .lp-btn,
   .lp-search-submit,
-  .comparison-btn,
-  .comparison-link,
   .btn-owner-edit,
   .btn-owner-sold,
   .cv-btn,
@@ -770,8 +762,6 @@ h1, h2, h3, h4 {
   .pl-btn,
   .lp-btn,
   .lp-search-submit,
-  .comparison-btn,
-  .comparison-link,
   .seller-panel,
   .cv-banner,
   .spec-card,

@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
-import ComparisonNavButton from '../../components/ComparisonNavButton';
 import { publishIntentState } from '../../utils/navigationState';
 
 export default function NavbarLanding() {
@@ -539,8 +538,6 @@ export default function NavbarLanding() {
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
               )}
             </button>
-
-            <ComparisonNavButton />
             <ThemeToggle />
             <Link to={publicarTo} state={publicarState} className="nl-btn-solid">Anunciar grátis</Link>
 
