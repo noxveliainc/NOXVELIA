@@ -13,7 +13,7 @@ O AdSense é a forma de publicidade integrada na plataforma. Os slots aparecem a
 ## Variáveis do frontend
 
 ```env
-VITE_GOOGLE_ADSENSE_CLIENT=ca-pub-0000000000000000
+VITE_GOOGLE_ADSENSE_CLIENT=ca-pub-5338010567169539
 VITE_GOOGLE_ADSENSE_SLOT_LANDING=1234567890
 VITE_GOOGLE_ADSENSE_SLOT_SEARCH=1234567891
 VITE_GOOGLE_ADSENSE_SLOT_DETAIL=1234567892
@@ -27,7 +27,17 @@ Usar `VITE_GOOGLE_ADSENSE_TEST_MODE=true` em ambientes de teste/staging. Os valo
 Quando a conta AdSense indicar o publisher ID real, publicar `client/public/ads.txt` com a linha fornecida pela Google, normalmente neste formato:
 
 ```txt
-google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+google.com, pub-5338010567169539, DIRECT, f08c47fec0942fa0
 ```
 
 Não publicar este ficheiro com IDs fictícios.
+
+## Verificação do site
+
+O `client/index.html` inclui a meta tag de verificação do AdSense:
+
+```html
+<meta name="google-adsense-account" content="ca-pub-5338010567169539" />
+```
+
+O script do AdSense continua a ser carregado pela aplicação apenas depois de consentimento para serviços externos.
