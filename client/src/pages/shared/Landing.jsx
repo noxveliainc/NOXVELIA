@@ -2353,7 +2353,7 @@ export default function Landing() {
         }
 
         .lp-quick-section {
-          padding: 0 0 58px !important;
+          padding: 0 0 18px !important;
           background: var(--lp-bg) !important;
         }
 
@@ -2719,7 +2719,7 @@ export default function Landing() {
         }
 
         .lp-promo-section {
-          padding: 54px 0 !important;
+          padding: 20px 0 54px !important;
         }
 
         .lp-promo-grid {
