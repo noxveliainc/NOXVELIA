@@ -402,12 +402,12 @@ export default function Editar() {
           
           <div className="pub-header">
             <div>
-              <h1 className="pub-title">Editar Anúncio</h1>
-              <p className="pub-subtitle">Altera os parâmetros do teu {form.tipo === 'carro' ? 'veículo' : 'imóvel'}.</p>
+              <h1 className="pub-title">Editar anúncio</h1>
+              <p className="pub-subtitle">Atualiza os dados do teu {form.tipo === 'carro' ? 'veículo' : 'imóvel'}.</p>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button type="button" onClick={() => navigate(`/anuncio/${id}`)} className="btn-cancel">
-                Cancelar Edição
+                Cancelar edição
               </button>
             </div>
           </div>
@@ -425,7 +425,7 @@ export default function Editar() {
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">01</span>
-                <h2 className="pub-section-title">Segmento do Anúncio (Trancado)</h2>
+                <h2 className="pub-section-title">Tipo de anúncio (bloqueado)</h2>
               </div>
               <div className="pub-toggle-box">
                 <button type="button" className={`pub-toggle-btn ${form.tipo === 'imovel' ? 'active' : ''}`}>Imóveis</button>
@@ -437,7 +437,7 @@ export default function Editar() {
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">02</span>
-                <h2 className="pub-section-title">Galeria & Elementos Digitais *</h2>
+                <h2 className="pub-section-title">Fotografias *</h2>
               </div>
               <label className="pub-upload-zone">
                 <input type="file" multiple onChange={handleImageUpload} disabled={uploadingImage} style={{ display: 'none' }} accept="image/*" />
@@ -479,12 +479,12 @@ export default function Editar() {
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">03</span>
-                <h2 className="pub-section-title">Especificações de Mercado</h2>
+                <h2 className="pub-section-title">Dados principais</h2>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="pub-grid-2 pub-grid-title-price">
                   <div>
-                    <label className="pub-label">Título Comercial *</label>
+                    <label className="pub-label">Título do anúncio *</label>
                     <input className="pub-input" name="titulo" value={form.titulo} onChange={handle} required />
                   </div>
                   <div>
@@ -522,7 +522,7 @@ export default function Editar() {
                 </div>
 
                 <div>
-                  <label className="pub-label">Descrição Detalhada do Ativo</label>
+                  <label className="pub-label">Descrição</label>
                   <textarea className="pub-input" name="descricao" value={form.descricao} onChange={handle} rows={5} />
                 </div>
               </div>
@@ -532,7 +532,7 @@ export default function Editar() {
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">04</span>
-                <h2 className="pub-section-title">Atributos e Customização</h2>
+                <h2 className="pub-section-title">Detalhes</h2>
               </div>
               
               {form.tipo === 'imovel' ? (

@@ -101,7 +101,7 @@ export default function Footer() {
             
             <div className="nx-footer-brand">
               <img src="/logo-noxvelia.png" alt="NOXVELIA" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
-              <p>A plataforma que liga vendedores qualificados a compradores de automóveis e imóveis em Portugal.</p>
+              <p>Carros e imóveis em Portugal, com pesquisa simples e contacto direto.</p>
             </div>
 
             <div className="nx-footer-links">
@@ -112,7 +112,7 @@ export default function Footer() {
               </div>
               <div className="nx-footer-col">
                 <h4>Empresa</h4>
-                <button onClick={() => setModalSuporteAberto(true)}>Suporte Técnico</button>
+                <button onClick={() => setModalSuporteAberto(true)}>Ajuda</button>
                 {/* 🌟 USANDO TAGS HREF NORMAIS PARA FORÇAR A ABERTURA DA PÁGINA */}
                 <a href="/privacidade">Termos e Condições</a>
                 <a href="/privacidade">Política de Privacidade</a>

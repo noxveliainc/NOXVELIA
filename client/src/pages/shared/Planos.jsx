@@ -84,7 +84,7 @@ export default function Planos() {
     'Anúncios ilimitados em Estate e Drive',
     'Selo de Vendedor Verificado',
     'Destaque prioritário nos resultados de pesquisa',
-    'Gestor de conta dedicado',
+    'Perfil público com contactos e links',
   ];
 
   return (
@@ -306,8 +306,8 @@ export default function Planos() {
       <div className="pl-root">
         <div className="pl-header">
           <span className="pl-eyebrow">Planos</span>
-          <h1>Escolhe o teu estatuto</h1>
-          <p>Eleva a tua presença na NOXVELIA e publica sem limites em Estate e Drive.</p>
+          <h1>Escolhe como queres vender</h1>
+          <p>Publica com mais visibilidade e menos limites em Estate e Drive.</p>
         </div>
 
         {aSincronizar && (
@@ -348,7 +348,7 @@ export default function Planos() {
             {temAcessoProfissionalManual ? (
               <>
                 <button className="pl-btn pl-btn--outline-pro pl-btn--manual" disabled>
-                  Acesso Profissional Ativo
+                  Plano profissional ativo
                 </button>
                 <p className="pl-manual-note">
                   Este acesso foi atribuído pela administração e não tem portal de faturação Stripe.
@@ -360,7 +360,7 @@ export default function Planos() {
               </button>
             ) : (
               <button className="pl-btn pl-btn--dark" onClick={iniciarAssinatura} disabled={loadingStripe}>
-                {loadingStripe ? <SpinnerIcon /> : 'Aderir ao Profissional'}
+                {loadingStripe ? <SpinnerIcon /> : 'Aderir ao plano'}
               </button>
             )}
           </div>

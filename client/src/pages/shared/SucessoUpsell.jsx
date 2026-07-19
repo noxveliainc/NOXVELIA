@@ -74,7 +74,7 @@ export default function SucessoUpsell() {
           <Icon path={mdiCheckCircle} size={2.5} color="var(--nx-accent-home)" />
           <h1 className="upsell-title">Anúncio Publicado!</h1>
           <p className="upsell-subtitle">
-            O teu ativo já se encontra na nossa base de dados. Queres acelerar a venda e destacar-te no meio da concorrência?
+            O teu anúncio já está publicado. Queres dar-lhe mais visibilidade nos resultados?
           </p>
         </div>
 

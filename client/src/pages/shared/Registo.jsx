@@ -112,7 +112,7 @@ export default function Registo() {
         const erroRaw = JSON.stringify(err.response?.data);
         if (erroRaw.includes('email')) setErro('Este email já se encontra registado.');
         else if (erroRaw.includes('telefone')) setErro('Este número de telemóvel já se encontra em uso.');
-        else setErro('Estes dados já existem na nossa base de dados.');
+        else setErro('Já existe uma conta com estes dados.');
       } else {
         setErro('Erro ao efetuar o registo. Verifica os teus dados e a ligação à internet.');
       }

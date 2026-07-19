@@ -198,7 +198,7 @@ export default function Publicar() {
     setErro('');
 
     if (fotos.length === 0) {
-      setErro('É obrigatório carregar pelo menos 1 fotografia do ativo para publicar o anúncio.');
+      setErro('É obrigatório carregar pelo menos 1 fotografia para publicar o anúncio.');
       setLoading(false);
       return;
     }
@@ -459,12 +459,12 @@ export default function Publicar() {
             <div className="premium-icon-wrap">
               <Icon path={mdiCrown} size={1.8} />
             </div>
-            <h2 className="premium-title">Limite Atingido</h2>
+            <h2 className="premium-title">Limite atingido</h2>
             <p className="premium-desc">
-              O plano gratuito permite criar até <strong>10 anúncios</strong> em simultâneo. Para publicares este ativo, precisas de aderir ao <strong>Plano Premium</strong> para Vendedores Verificados.
+              O plano gratuito permite criar até <strong>10 anúncios</strong> em simultâneo. Para publicares mais anúncios, adere ao <strong>Plano Profissional</strong>.
             </p>
             <button className="premium-btn" onClick={() => navigate('/planos')}>
-              Aderir ao Plano Premium
+              Aderir ao Plano Profissional
             </button>
             <button className="premium-close-btn" onClick={() => navigate('/perfil')}>
               Voltar ao meu Perfil
@@ -478,8 +478,8 @@ export default function Publicar() {
 
           <div className="pub-header">
             <div>
-              <h1 className="pub-title">Criar Anúncio</h1>
-              <p className="pub-subtitle">Preenche a ficha técnica de forma rigorosa.</p>
+              <h1 className="pub-title">Criar anúncio</h1>
+              <p className="pub-subtitle">Adiciona os dados principais para o anúncio ficar claro.</p>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button type="button" onClick={() => navigate(form.tipo === 'carro' ? '/carros' : '/imoveis')} className="btn-cancel">
@@ -500,7 +500,7 @@ export default function Publicar() {
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">01</span>
-                <h2 className="pub-section-title">Segmento do Anúncio</h2>
+                <h2 className="pub-section-title">Tipo de anúncio</h2>
               </div>
               <div className="pub-toggle-box">
                 <button type="button" disabled={contextoFocado === 'carro'} className={`pub-toggle-btn ${form.tipo === 'imovel' ? 'active' : ''}`}>Imóveis</button>
@@ -511,7 +511,7 @@ export default function Publicar() {
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">02</span>
-                <h2 className="pub-section-title">Galeria & Elementos Digitais *</h2>
+                <h2 className="pub-section-title">Fotografias *</h2>
               </div>
               <label className="pub-upload-zone">
                 <input type="file" multiple onChange={handleImageUpload} disabled={uploadingImage} style={{ display: 'none' }} accept="image/*" />
@@ -541,15 +541,15 @@ export default function Publicar() {
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">03</span>
-                <h2 className="pub-section-title">Especificações de Mercado</h2>
+                <h2 className="pub-section-title">Dados principais</h2>
               </div>
 
               {ehPremium && (
                 <div className="pub-pro-badge" style={{ marginBottom: '20px' }}>
                   <Icon path={mdiShieldCheckOutline} size={1.1} className="pub-pro-badge-icon" />
                   <p className="pub-pro-badge-text">
-                    <strong>Conta Pro ativa</strong> — Este anúncio será publicado com{' '}
-                    <strong>destaque automático</strong> e sem limites de publicação.
+                    <strong>Plano profissional ativo</strong> — Este anúncio terá{' '}
+                    <strong>mais destaque</strong> e não conta para o limite gratuito.
                   </p>
                 </div>
               )}
@@ -557,8 +557,8 @@ export default function Publicar() {
               <div className="pub-quality-card">
                 <div className="pub-quality-head">
                   <div className="pub-quality-title">
-                    <strong>Qualidade do anuncio: {qualidade.nivel}</strong>
-                    <span>Melhores anuncios recebem mais cliques e contactos preparados.</span>
+                    <strong>Força do anúncio: {qualidade.nivel}</strong>
+                    <span>Anúncios completos tendem a receber mais contactos.</span>
                   </div>
                   <div className="pub-quality-score">{qualidade.score}<span>/10</span></div>
                 </div>
@@ -577,7 +577,7 @@ export default function Publicar() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="pub-grid-2 pub-grid-title-price">
                   <div>
-                    <label className="pub-label">Título Comercial *</label>
+                    <label className="pub-label">Título do anúncio *</label>
                     <input className="pub-input" name="titulo" value={form.titulo} onChange={handle} required placeholder={form.tipo === 'carro' ? "Ex: Audi A3 Sportback" : "Ex: Moradia T3 no Porto"} />
                   </div>
                   <div>
@@ -615,7 +615,7 @@ export default function Publicar() {
                 </div>
 
                 <div>
-                  <label className="pub-label">Descrição Detalhada do Ativo</label>
+                  <label className="pub-label">Descrição</label>
                   <textarea className="pub-input" name="descricao" value={form.descricao} onChange={handle} rows={5} placeholder={form.tipo === 'carro' ? "Características e detalhes gerais do veículo..." : "Características, localização e detalhes gerais do imóvel..."} />
                 </div>
               </div>
@@ -624,17 +624,17 @@ export default function Publicar() {
             <div>
               <div className="pub-section-header">
                 <span className="pub-section-num">04</span>
-                <h2 className="pub-section-title">Confiança & Garantias</h2>
+                <h2 className="pub-section-title">Condições</h2>
               </div>
 
               <div className="pub-trust-grid">
                 <div className={`pub-trust-card ${form.garantia ? 'is-active' : ''}`}>
                   <div className="pub-trust-card-head">
                     <Icon path={mdiShieldCheckOutline} size={0.9} color={accentColorVar} />
-                    <span className="pub-trust-card-title">Garantia Incluída</span>
+                    <span className="pub-trust-card-title">Garantia</span>
                   </div>
                   <p className="pub-trust-card-desc">
-                    Se ofereces garantia neste ativo, escolhe o período. Isto mostra uma badge de confiança no anúncio.
+                    Se ofereces garantia, escolhe o período para mostrar essa informação no anúncio.
                   </p>
                   <select className="pub-input" name="garantia" value={form.garantia} onChange={handle}>
                     <option value="">Sem garantia</option>
@@ -906,7 +906,7 @@ export default function Publicar() {
             </div>
 
             <button type="submit" disabled={loading || uploadingImage} className="pub-submit">
-              Finalizar e Publicar
+              Publicar anúncio
             </button>
 
           </form>

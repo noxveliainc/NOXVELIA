@@ -28,7 +28,7 @@ export default function SearchBar({ onSearch, loading }) {
         className="text-[11px] font-bold mb-3 tracking-widest uppercase"
         style={{ fontFamily: 'Syne, sans-serif', color: 'rgba(255,255,255,.5)' }}
       >
-        Pesquisa por intenção
+        Pesquisa rápida
       </div>
 
       <form onSubmit={handleSubmit}>

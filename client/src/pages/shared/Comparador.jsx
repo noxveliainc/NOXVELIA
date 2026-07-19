@@ -22,7 +22,7 @@ export default function Comparador() {
           </span>
           <h1 className="mt-6 text-2xl font-black tracking-tight sm:text-3xl">Ainda não existem anúncios para comparar</h1>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-600 dark:text-slate-400">
-            Abre um anúncio e utiliza “Adicionar à comparação”. Podes analisar até três opções lado a lado sem criar conta e sem enviar estes dados para a base de dados.
+            Abre um anúncio e utiliza “Adicionar à comparação”. Podes analisar até três opções lado a lado sem criar conta.
           </p>
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             <Link to="/carros" className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-extrabold text-white no-underline transition hover:bg-slate-800 dark:bg-teal-400 dark:text-slate-950 dark:hover:bg-teal-300">Explorar Drive</Link>

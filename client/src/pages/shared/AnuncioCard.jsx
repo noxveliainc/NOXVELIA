@@ -592,7 +592,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           </div>
           <div className="nxc-title">{anuncio?.titulo}</div>
           {scoreQualidade > 0 && (
-            <div className="nxc-quality" title={`Qualidade do anuncio: ${scoreQualidade}/10`}>
+            <div className="nxc-quality" title={`Força do anúncio: ${scoreQualidade}/10`}>
               <span className="nxc-quality-label">{scoreQualidade}/10</span>
               <span className="nxc-quality-track">
                 <span className="nxc-quality-fill" />

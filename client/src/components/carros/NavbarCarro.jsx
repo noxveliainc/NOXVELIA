@@ -277,7 +277,7 @@ export default function NavbarCarro() {
             <>
               <Link to="/publicar" className="ncr-btn-publish">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="6" y1="1" x2="6" y2="11" /><line x1="1" y1="6" x2="11" y2="6" /></svg>
-                Criar Anúncio
+                Criar anúncio
               </Link>
               {isAdmin && (
                 <Link to="/admin" className="ncr-icon-btn admin" title="Painel Admin">
@@ -339,7 +339,7 @@ export default function NavbarCarro() {
         </div>
 
         {/* 🌟 MOBILE BURGER BUTTON */}
-        <button type="button" className={`ncr-burger-btn${signed ? ' with-avatar' : ''}`} onClick={() => setMenuMobileAberto(true)} aria-label="Abrir menu">
+        <button type="button" className={`ncr-burger-btn${signed ? ' with-avatar' : ''}`} onClick={() => setMenuMobileAberto(true)} aria-label="Abrir menu" aria-expanded={menuMobileAberto} aria-controls="ncr-mobile-drawer">
           {signed ? (
             <div className="ncr-avatar">{avatarImg ? <img src={avatarImg} alt="Perfil" /> : <span className="ncr-avatar-initial">{inicial}</span>}</div>
           ) : (
@@ -348,7 +348,7 @@ export default function NavbarCarro() {
         </button>
 
         {/* 🌟 MOBILE DRAWER (GAVETA NATIVA) */}
-        <div className={`ncr-mobile-drawer ${menuMobileAberto ? 'active' : ''}`}>
+        <div id="ncr-mobile-drawer" className={`ncr-mobile-drawer ${menuMobileAberto ? 'active' : ''}`} role="dialog" aria-modal={menuMobileAberto ? 'true' : undefined} aria-hidden={!menuMobileAberto}>
           <div className="ncr-drawer-overlay" onClick={() => setMenuMobileAberto(false)} />
           <div className="ncr-drawer-content">
             <div className="ncr-drawer-header">
@@ -360,7 +360,7 @@ export default function NavbarCarro() {
               ) : (
                 <span style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>Menu</span>
               )}
-              <button className="ncr-drawer-close" onClick={() => setMenuMobileAberto(false)}>
+              <button type="button" className="ncr-drawer-close" onClick={() => setMenuMobileAberto(false)} aria-label="Fechar menu">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
@@ -378,7 +378,7 @@ export default function NavbarCarro() {
                 <>
                   <Link to="/publicar" className="ncr-drawer-link publish" onClick={() => setMenuMobileAberto(false)}>
                     <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                    Criar Anúncio
+                    Criar anúncio
                   </Link>
                   {isAdmin && (
                     <Link to="/admin" className="ncr-drawer-link admin" onClick={() => setMenuMobileAberto(false)}>
@@ -392,7 +392,7 @@ export default function NavbarCarro() {
                   </Link>
                   <button type="button" className="ncr-drawer-link" onClick={handlePremium}>
                     <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" /></svg>
-                    Plano Profissional {isPremium && <span className="ncr-ud-pro">PRO</span>}
+                    Plano profissional {isPremium && <span className="ncr-ud-pro">PRO</span>}
                   </button>
                   <Link to="/favoritos" className="ncr-drawer-link" onClick={() => setMenuMobileAberto(false)}>
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>

@@ -79,6 +79,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
   const [sidebarMobileAberta, setSidebarMobileAberta] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [vistaAtiva, setVistaAtiva] = useState('grelha');
   const [guardandoAlerta, setGuardandoAlerta] = useState(false);
   const [feedbackAlerta, setFeedbackAlerta] = useState('');
@@ -104,6 +105,14 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     const toggleSidebar = () => setSidebarMobileAberta(prev => !prev);
     window.addEventListener('toggle-filtros', toggleSidebar);
     return () => window.removeEventListener('toggle-filtros', toggleSidebar);
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
+    const atualizarViewport = () => setIsMobileViewport(mediaQuery.matches);
+    atualizarViewport();
+    mediaQuery.addEventListener('change', atualizarViewport);
+    return () => mediaQuery.removeEventListener('change', atualizarViewport);
   }, []);
 
   useEffect(() => {
@@ -208,7 +217,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
       setTemMais(maisDisponivel);
       if (maisDisponivel) paginaRef.current = paginaAlvo;
 
-    } catch { setError('Falha ao atualizar dados.'); setTemMais(false);
+    } catch { setError('Não conseguimos carregar novos anúncios neste momento.'); setTemMais(false);
     } finally { setLoading(false); setLoadingMais(false); isFetchingRef.current = false; }
   }, [tipoPadrao, location.pathname]);
 
@@ -306,6 +315,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const modelosDisponiveis = filtros.marca ? getModelosPorMarca(filtros.marca) : [];
   const cidadesDisponiveis = (filtros.distrito && filtros.distrito !== 'Todos') ? DISTRITOS_CIDADES_PT[filtros.distrito] : [];
   const accent = tipoSeguro === 'carro' ? 'var(--nx-accent-car)' : 'var(--nx-accent-home)';
+  const sidebarHidden = isMobileViewport ? !sidebarMobileAberta : !isSidebarOpen;
 
   const filtrosAtivos = [
     filtros.precoMax && `Ate ${Number(filtros.precoMax).toLocaleString('pt-PT')} EUR`,
@@ -706,7 +716,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         }
 
         .pesquisa-empty { text-align: center; padding: 100px 20px; color: var(--nx-text-sub); }
-        .pesquisa-empty-action { margin-top: 18px; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border-radius: 12px; background: ${accent}; color: #020617; text-decoration: none; font-size: 13px; font-weight: 900; }
+        .pesquisa-empty-action { margin-top: 18px; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border: 0; border-radius: 12px; background: ${accent}; color: #020617; text-decoration: none; font-family: var(--nx-font-body); font-size: 13px; font-weight: 900; cursor: pointer; }
         .pesquisa-empty-action:hover { filter: brightness(0.96); }
         .infinite-spinner-container { text-align: center; padding: 40px 0; font-size: 13px; color: var(--nx-text-sub); font-weight: 500; grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .infinite-dot-pulse { width: 6px; height: 6px; background: var(--nx-text-sub); border-radius: 50%; display: inline-block; animation: pulse 0.6s infinite alternate; }
@@ -720,7 +730,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
         <div className={`pesquisa-layout vista-${vistaAtiva}`}>
 
-          <aside className={`pesquisa-sidebar${isSidebarOpen ? '' : ' collapsed'}`} role={sidebarMobileAberta ? 'dialog' : undefined} aria-label="Filtros de pesquisa" aria-modal={sidebarMobileAberta ? 'true' : undefined}>
+          <aside className={`pesquisa-sidebar${isSidebarOpen ? '' : ' collapsed'}`} role={sidebarMobileAberta ? 'dialog' : undefined} aria-label="Filtros de pesquisa" aria-modal={sidebarMobileAberta ? 'true' : undefined} aria-hidden={sidebarHidden} inert={sidebarHidden ? '' : undefined}>
             <div className="pesquisa-sidebar-header">
               <span className="pesquisa-sidebar-title">
                 <Icon path={mdiFilterVariant} size={1} /> Filtros
@@ -852,7 +862,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               )}
             </div>
 
-            {error && <div style={{ color: 'var(--nx-danger)', padding: '16px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', fontSize: '14px', fontWeight: 500, border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '24px' }}>{error}</div>}
+            {error && <div style={{ color: '#92400e', padding: '16px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '8px', fontSize: '14px', fontWeight: 600, border: '1px solid rgba(245, 158, 11, 0.22)', marginBottom: '24px' }}>{error}</div>}
 
             {/* ── BANNER CTA ── */}
             {/* Remove esta linha e substitui por {!user && <BannerCTA tipo={tipoSeguro} origem={location.pathname} />} se tiveres contexto de autenticação */}
@@ -918,9 +928,13 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
             {vistaAtiva === 'grelha' && !loading && resultados.length === 0 && (
               <div className="pesquisa-empty">
                 <div style={{ fontSize: '32px', color: 'var(--nx-text-muted)', marginBottom: '16px' }}>&empty;</div>
-                <h3 style={{ fontFamily: 'var(--nx-font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--nx-text)', margin: '0 0 8px 0' }}>{tipoSeguro === 'carro' ? 'Ainda não há carros ativos no Drive' : 'Ainda não há imóveis ativos no Estate'}</h3>
-                <p style={{ fontSize: '14px', margin: 0 }}>{filtrosAtivos.length > 0 ? 'Tenta limpar alguns filtros na barra lateral.' : 'Quando houver anúncios ativos, aparecem aqui automaticamente.'}</p>
-                <Link to="/publicar" state={publicarState} className="pesquisa-empty-action">Publicar anúncio</Link>
+                <h3 style={{ fontFamily: 'var(--nx-font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--nx-text)', margin: '0 0 8px 0' }}>{error ? 'Pesquisa temporariamente indisponível' : (tipoSeguro === 'carro' ? 'Ainda não há carros publicados' : 'Ainda não há imóveis publicados')}</h3>
+                <p style={{ fontSize: '14px', margin: 0 }}>{error ? 'Tenta novamente daqui a instantes.' : (filtrosAtivos.length > 0 ? 'Tenta limpar alguns filtros.' : 'Assim que entrarem anúncios, aparecem aqui.')}</p>
+                {error ? (
+                  <button type="button" className="pesquisa-empty-action" onClick={() => puxarDadosServidor(1, false, tipoSeguro)}>Tentar novamente</button>
+                ) : (
+                  <Link to="/publicar" state={publicarState} className="pesquisa-empty-action">Publicar anúncio</Link>
+                )}
               </div>
             )}
           </main>

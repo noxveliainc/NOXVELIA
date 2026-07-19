@@ -2899,7 +2899,7 @@ export default function Landing() {
                   Carros e imóveis em Portugal. <span>Mais simples.</span>
                 </h1>
                 <p className="lp-hero-copy">
-                  Um marketplace para encontrar, comparar e publicar carros e imóveis com informação clara, pesquisa direta e contexto suficiente para decidir melhor.
+                  Encontra carros e imóveis com fotos, preço, localização e contactos num só sítio.
                 </p>
                 <div className="lp-actions">
                   <a className="lp-btn lp-btn-drive" href="#pesquisa">
@@ -2945,7 +2945,7 @@ export default function Landing() {
                 <div>
                   <span className="lp-eyebrow">Pesquisa rápida</span>
                   <h2 className="lp-quick-title" id="lp-quick-title">Começa pelo que queres encontrar.</h2>
-                  <p className="lp-quick-copy">Filtra por tipo, localização e preço sem atravessar conteúdo desnecessário.</p>
+                  <p className="lp-quick-copy">Filtra por tipo, localização e preço. Depois abres a lista certa: carros ou imóveis.</p>
                 </div>
                 <div className="lp-type-tabs" role="tablist" aria-label="Tipo de pesquisa">
                   <button
@@ -3243,8 +3243,8 @@ export default function Landing() {
                   Consulta histórico, quilometragem e registos disponíveis.
                 </p>
                 <ul className="lp-cv-points">
-                  <li>Mais contexto sobre o veículo</li>
-                  <li>Decisões com melhor informação</li>
+                  <li>Histórico antes do contacto</li>
+                  <li>Mais segurança na compra</li>
                 </ul>
                 <a className="lp-btn lp-btn-drive" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer">
                   Verificar um veículo

@@ -338,7 +338,7 @@ export default function Anuncio() {
     : null;
   const resumoDecisao = [
     { label: 'Localização', value: localizacaoString, icon: mdiMapMarkerOutline },
-    { label: isCarro ? 'Perfil' : 'Preço / m²', value: isCarro ? (anuncio.carro?.marca || 'Viatura') : (precoPorM2 || 'Sob análise'), icon: isCarro ? mdiCar : mdiRulerSquare },
+    { label: isCarro ? 'Marca' : 'Preço / m²', value: isCarro ? (anuncio.carro?.marca || 'Viatura') : (precoPorM2 || 'Sem dados'), icon: isCarro ? mdiCar : mdiRulerSquare },
     { label: 'Vendedor', value: vendedorVerificado ? 'Verificado' : (rating > 0 ? `${rating.toFixed(1)} estrelas` : 'Novo vendedor'), icon: mdiShieldCheckOutline },
     { label: 'Contacto', value: temTelefoneContacto ? 'Telefone' : (temEmailContacto ? 'Email' : 'Por mensagem'), icon: temTelefoneContacto ? mdiPhone : mdiEmailOutline },
   ];
@@ -892,8 +892,8 @@ export default function Anuncio() {
                       )}
                       
                       <div className="trust-strip">
-                        <span className="trust-item"><Icon path={mdiShieldCheckOutline} size={0.6} />Pagamento seguro</span>
-                        <span className="trust-item"><Icon path={mdiClockOutline} size={0.6} />Resposta rápida</span>
+                        <span className="trust-item"><Icon path={mdiShieldCheckOutline} size={0.6} />Contacto direto</span>
+                        <span className="trust-item"><Icon path={mdiClockOutline} size={0.6} />Sem comissão</span>
                       </div>
                     </>
                   )}

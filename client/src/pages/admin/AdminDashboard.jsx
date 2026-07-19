@@ -365,17 +365,17 @@ export default function AdminDashboard() {
                 width: '6px', height: '6px', borderRadius: '50%', background: COLORS.green,
                 display: 'inline-block', boxShadow: `0 0 8px ${COLORS.green}`
               }} />
-              Sistema operacional
+              Sistema ativo
             </div>
             <h1 className="nx-admin-title" style={{
               margin: 0, fontSize: '34px', fontFamily: FONT_DISPLAY, fontWeight: 700,
               color: COLORS.text, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '12px'
             }}>
-              Soberania NOXVELIA
+              Painel NOXVELIA
               <Icon path={mdiCrown} size={1.2} color={COLORS.gold} />
             </h1>
             <p style={{ margin: '8px 0 0 0', color: COLORS.textDim, fontSize: '14px' }}>
-              Bem-vindo ao quartel-general, <span style={{ color: COLORS.text, fontWeight: 600 }}>{user?.nome}</span>.
+              Bem-vindo ao painel, <span style={{ color: COLORS.text, fontWeight: 600 }}>{user?.nome}</span>.
             </p>
           </div>
           <button
