@@ -2243,8 +2243,10 @@ export default function Landing() {
           height: 420px !important;
           min-height: 0 !important;
           grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr) !important;
+          overflow: hidden !important;
           background: var(--lp-dark) !important;
           border-color: rgba(8, 33, 38, 0.22) !important;
+          border-radius: 8px !important;
           box-shadow: none !important;
           transform: translateY(8px) !important;
         }
@@ -2324,7 +2326,9 @@ export default function Landing() {
         }
 
         .lp-hero-media {
+          overflow: hidden !important;
           border-left: 1px solid rgba(255, 255, 255, 0.12) !important;
+          border-radius: 0 8px 8px 0 !important;
           background: #dfe9e3 !important;
         }
 
@@ -2358,7 +2362,7 @@ export default function Landing() {
         }
 
         .lp-quick-card {
-          margin-top: -8px !important;
+          margin-top: 10px !important;
           padding: clamp(18px, 2.4vw, 28px) !important;
           border-color: rgba(8, 33, 38, 0.18) !important;
           background: rgba(255, 255, 255, 0.98) !important;
@@ -2557,6 +2561,10 @@ export default function Landing() {
           .lp-promo-media {
             border-left: 0 !important;
             border-top: 1px solid var(--lp-border) !important;
+          }
+
+          .lp-hero-media {
+            border-radius: 0 0 8px 8px !important;
           }
 
           .lp-search-form,

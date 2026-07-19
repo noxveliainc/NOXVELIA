@@ -1,4 +1,4 @@
-import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import{E as a,S as o,T as s,d as c,f as l,g as u,l as d,u as f,v as p,w as m}from"./index-BcGWkopd.js";import{r as h}from"./seo-BmrZTbI5.js";import{t as g}from"./Seo-BspEwHRy.js";import{t as _}from"./GoogleAdSlot-BzRHShks.js";import{i as v,r as y,t as b}from"./localizacoes-CvOZjRrK.js";import{t as x}from"./funnelAnalytics-DVEFWPGk.js";var S=i(e(),1),C=n();function w(){let{user:e,signed:n,logout:r}=m(),i=t(),[s,c]=(0,S.useState)(!1),[u,d]=(0,S.useState)(!1),f=(0,S.useRef)(null),h=(0,S.useRef)(null);(0,S.useEffect)(()=>{let e=e=>{f.current&&!f.current.contains(e.target)&&c(!1),h.current&&!h.current.contains(e.target)&&d(!1)},t=e=>{e.key===`Escape`&&(c(!1),d(!1))};return window.addEventListener(`click`,e),window.addEventListener(`keydown`,t),()=>{window.removeEventListener(`click`,e),window.removeEventListener(`keydown`,t)}},[]),(0,S.useEffect)(()=>{c(!1),d(!1)},[i.pathname]);let g=e||(()=>{try{let e=sessionStorage.getItem(`@App:user`);return e?JSON.parse(e):null}catch{return null}})(),_=g?.avatarUrl||g?.avatar,v=g?.nome?.charAt(0).toUpperCase()||`U`,y=g?.nome?.split(` `)[0]||``,b=n?`/publicar`:`/login`,x=n?void 0:o(i,`/`);return(0,C.jsxs)(C.Fragment,{children:[(0,C.jsx)(`style`,{children:`
+import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import{E as a,S as o,T as s,d as c,f as l,g as u,l as d,u as f,v as p,w as m}from"./index-DaOINWdS.js";import{r as h}from"./seo-BmrZTbI5.js";import{t as g}from"./Seo-DHB8f2hk.js";import{t as _}from"./GoogleAdSlot-Tv_aWqIe.js";import{i as v,r as y,t as b}from"./localizacoes-CvOZjRrK.js";import{t as x}from"./funnelAnalytics-DqNPTIDD.js";var S=i(e(),1),C=n();function w(){let{user:e,signed:n,logout:r}=m(),i=t(),[s,c]=(0,S.useState)(!1),[u,d]=(0,S.useState)(!1),f=(0,S.useRef)(null),h=(0,S.useRef)(null);(0,S.useEffect)(()=>{let e=e=>{f.current&&!f.current.contains(e.target)&&c(!1),h.current&&!h.current.contains(e.target)&&d(!1)},t=e=>{e.key===`Escape`&&(c(!1),d(!1))};return window.addEventListener(`click`,e),window.addEventListener(`keydown`,t),()=>{window.removeEventListener(`click`,e),window.removeEventListener(`keydown`,t)}},[]),(0,S.useEffect)(()=>{c(!1),d(!1)},[i.pathname]);let g=e||(()=>{try{let e=sessionStorage.getItem(`@App:user`);return e?JSON.parse(e):null}catch{return null}})(),_=g?.avatarUrl||g?.avatar,v=g?.nome?.charAt(0).toUpperCase()||`U`,y=g?.nome?.split(` `)[0]||``,b=n?`/publicar`:`/login`,x=n?void 0:o(i,`/`);return(0,C.jsxs)(C.Fragment,{children:[(0,C.jsx)(`style`,{children:`
         .nl-root,
         .nl-root * {
           box-sizing: border-box;
@@ -2421,8 +2421,10 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
           height: 420px !important;
           min-height: 0 !important;
           grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr) !important;
+          overflow: hidden !important;
           background: var(--lp-dark) !important;
           border-color: rgba(8, 33, 38, 0.22) !important;
+          border-radius: 8px !important;
           box-shadow: none !important;
           transform: translateY(8px) !important;
         }
@@ -2502,7 +2504,9 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
         }
 
         .lp-hero-media {
+          overflow: hidden !important;
           border-left: 1px solid rgba(255, 255, 255, 0.12) !important;
+          border-radius: 0 8px 8px 0 !important;
           background: #dfe9e3 !important;
         }
 
@@ -2536,7 +2540,7 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
         }
 
         .lp-quick-card {
-          margin-top: -8px !important;
+          margin-top: 10px !important;
           padding: clamp(18px, 2.4vw, 28px) !important;
           border-color: rgba(8, 33, 38, 0.18) !important;
           background: rgba(255, 255, 255, 0.98) !important;
@@ -2735,6 +2739,10 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
           .lp-promo-media {
             border-left: 0 !important;
             border-top: 1px solid var(--lp-border) !important;
+          }
+
+          .lp-hero-media {
+            border-radius: 0 0 8px 8px !important;
           }
 
           .lp-search-form,
