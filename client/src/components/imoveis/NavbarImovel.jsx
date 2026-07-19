@@ -145,6 +145,7 @@ export default function NavbarImovel() {
         html, body { overflow-x: hidden; overscroll-behavior-x: none; }
         .nim-root { position: sticky; top: 0; z-index: 1000; height: 72px; display: flex; align-items: center; padding: 0 32px; justify-content: space-between; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid #e2e8f0; transition: all 0.25s ease; font-family: 'Inter', sans-serif; }
         .nim-root.scrolled { background: #ffffff; box-shadow: 0 4px 12px -4px rgba(15, 23, 42, 0.03); height: 68px; }
+        .nim-root { justify-content: flex-start; gap: 14px; }
         .nim-logo-wrapper { position: relative; display: flex; align-items: center; cursor: pointer; }
         .nim-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; user-select: none; }
         .nim-logo-brand-text { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; display: flex; align-items: center; gap: 6px; }
@@ -156,12 +157,12 @@ export default function NavbarImovel() {
         .nim-switcher-item:hover { background: #f1f5f9; color: #0f172a; }
         .nim-switcher-item.current { background: rgba(62, 207, 142, 0.08); color: #3ecf8e; pointer-events: none; }
 
-        .nim-actions { display: flex; align-items: center; gap: 8px; }
-        .nim-section-links { display: flex; align-items: center; gap: 6px; padding: 4px; border: 1px solid #e2e8f0; border-radius: 999px; background: #ffffff; box-shadow: 0 10px 24px -22px rgba(15, 23, 42, 0.55); }
-        .nim-section-link { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 999px; color: #64748b; text-decoration: none; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; }
-        .nim-section-link:hover { background: #f8fafc; color: #0f172a; transform: translateY(-1px); }
-        .nim-section-link.active.carros { background: rgba(42, 193, 180, 0.14); color: #0f9d92; }
-        .nim-section-link.active.imoveis { background: rgba(62, 207, 142, 0.14); color: #059669; }
+        .nim-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+        .nim-section-links { display: flex; align-items: center; gap: 3px; margin-left: 2px; padding: 3px; border: 1px solid rgba(148, 163, 184, 0.24); border-radius: 999px; background: rgba(255, 255, 255, 0.06); box-shadow: none; }
+        .nim-section-link { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 999px; color: #94a3b8; text-decoration: none; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; }
+        .nim-section-link:hover { background: rgba(148, 163, 184, 0.14); color: #0f172a; transform: translateY(-1px); }
+        .nim-section-link.active.carros { background: rgba(42, 193, 180, 0.18); color: #0f9d92; }
+        .nim-section-link.active.imoveis { background: rgba(62, 207, 142, 0.18); color: #059669; }
         .nim-section-link svg { width: 20px; height: 20px; stroke-width: 2.2; }
         .nim-btn-menu { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; background: #ffffff; color: #0f172a; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; }
         .nim-btn-menu:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
@@ -209,7 +210,7 @@ export default function NavbarImovel() {
         .nim-ud-admin-badge { margin-left: 6px; padding: 2px 7px; background: linear-gradient(135deg, #818cf8, #6366f1); color: #ffffff; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
         .nim-btn-login { display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; color: #0f172a; font-size: 13px; font-weight: 600; padding: 9px 20px; text-decoration: none; }
 
-        .nim-burger-btn { display: none; background: none; border: none; color: #475569; cursor: pointer; padding: 6px; align-items: center; justify-content: center; }
+        .nim-burger-btn { display: none; margin-left: auto; background: none; border: none; color: #475569; cursor: pointer; padding: 6px; align-items: center; justify-content: center; }
         .nim-burger-btn.with-avatar { padding: 3px; border: 1px solid #e2e8f0; border-radius: 999px; background: #ffffff; box-shadow: 0 8px 18px -16px rgba(15,23,42,0.5); }
         .nim-burger-btn.with-avatar .nim-avatar { width: 34px; height: 34px; }
         .nim-mobile-drawer { position: fixed; inset: 0; z-index: 9999; pointer-events: none; visibility: hidden; }
@@ -237,7 +238,7 @@ export default function NavbarImovel() {
           .nim-logo-brand-text { font-size: 15px; }
           .nim-logo-brand-text span { display: none; }
           .nim-section-links { gap: 4px; padding: 3px; }
-          .nim-section-link { width: 34px; height: 34px; }
+          .nim-section-link { width: 32px; height: 32px; }
           .nim-actions { display: none; }
           .nim-burger-btn { display: inline-flex; }
         }
