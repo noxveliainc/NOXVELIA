@@ -2236,7 +2236,7 @@ export default function Landing() {
         }
 
         .lp-hero .lp-shell {
-          width: min(980px, calc(100% - 48px)) !important;
+          width: min(1180px, calc(100% - 48px)) !important;
         }
 
         .lp-hero-card {
@@ -2967,17 +2967,6 @@ export default function Landing() {
               </div>
             </div>
 
-            <div className="lp-trust-bar" aria-label="Vantagens da Noxvelia">
-              <div className="lp-trust-item">
-                Pesquisa limpa por tipo, localização e preço
-              </div>
-              <div className="lp-trust-item">
-                Drive e Estate reunidos num só lugar
-              </div>
-              <div className="lp-trust-item">
-                Anúncios com dados essenciais antes do contacto
-              </div>
-            </div>
           </div>
         </section>
 
