@@ -1,0 +1,1 @@
+import{g as e,t}from"./jsx-runtime-On9Szgki.js";import{t as n}from"./Pesquisa-DVSiVizE.js";e();var r=t();function i(){return(0,r.jsx)(n,{tipoPadrao:`imovel`})}export{i as default};

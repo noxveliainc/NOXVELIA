@@ -3038,23 +3038,23 @@ export default function Landing() {
         <section className="lp-promo-section" id="anunciar" aria-label="Anunciar grátis na Noxvelia">
           <div className="lp-shell">
             <div className="lp-promo-grid">
-              <Link className="lp-promo-link drive" to={publicarTo} state={publicarState}>
+              <Link className="lp-promo-link drive" to="/carros">
                 <span className="lp-promo-copy">
                   <span className="lp-promo-label">NOXVELIA Drive</span>
                   <strong className="lp-promo-title">Carros apresentados com o essencial à frente.</strong>
                   <span className="lp-promo-text">Fotos, preço, localização e dados técnicos num formato direto.</span>
-                  <span className="lp-promo-overlay">Publicar carro</span>
+                  <span className="lp-promo-overlay">Pesquisar carro</span>
                 </span>
                 <span className="lp-promo-media">
                   <img src="/social/noxvelia-drive-photo-premium.webp" alt="Automóvel anunciado na Noxvelia Drive" loading="lazy" />
                 </span>
               </Link>
-              <Link className="lp-promo-link estate" to={publicarTo} state={publicarState}>
+              <Link className="lp-promo-link estate" to="/imoveis">
                 <span className="lp-promo-copy">
                   <span className="lp-promo-label">NOXVELIA Estate</span>
                   <strong className="lp-promo-title">Imóveis com leitura rápida antes do contacto.</strong>
                   <span className="lp-promo-text">Localização, fotografias e características fáceis de comparar.</span>
-                  <span className="lp-promo-overlay">Publicar imóvel</span>
+                  <span className="lp-promo-overlay">Pesquisar imóvel</span>
                 </span>
                 <span className="lp-promo-media">
                   <img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia Estate" loading="lazy" />
