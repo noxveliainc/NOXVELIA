@@ -2240,7 +2240,7 @@ export default function Landing() {
         }
 
         .lp-hero-card {
-          height: 480px !important;
+          height: 420px !important;
           min-height: 0 !important;
           grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr) !important;
           background: var(--lp-dark) !important;
@@ -2251,7 +2251,7 @@ export default function Landing() {
         .lp-hero-content {
           height: 100% !important;
           min-height: 0 !important;
-          padding: 38px 42px !important;
+          padding: 30px 42px !important;
           color: #ffffff !important;
           background: var(--lp-dark) !important;
         }
@@ -2285,7 +2285,7 @@ export default function Landing() {
 
         .lp-hero h1 {
           color: #ffffff !important;
-          font-size: clamp(32px, 3vw, 46px) !important;
+          font-size: clamp(31px, 2.7vw, 42px) !important;
           line-height: 1.02 !important;
         }
 

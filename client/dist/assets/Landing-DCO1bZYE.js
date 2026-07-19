@@ -1,4 +1,4 @@
-import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import{E as a,S as o,T as s,d as c,f as l,g as u,l as d,u as f,v as p,w as m}from"./index-CqwHinB_.js";import{r as h}from"./seo-BmrZTbI5.js";import{t as g}from"./Seo-CdAZTuNb.js";import{t as _}from"./GoogleAdSlot-Uv_vtw0g.js";import{i as v,r as y,t as b}from"./localizacoes-CvOZjRrK.js";import{t as x}from"./funnelAnalytics-BjB0OWSn.js";var S=i(e(),1),C=n();function w(){let{user:e,signed:n,logout:r}=m(),i=t(),[s,c]=(0,S.useState)(!1),[u,d]=(0,S.useState)(!1),f=(0,S.useRef)(null),h=(0,S.useRef)(null);(0,S.useEffect)(()=>{let e=e=>{f.current&&!f.current.contains(e.target)&&c(!1),h.current&&!h.current.contains(e.target)&&d(!1)},t=e=>{e.key===`Escape`&&(c(!1),d(!1))};return window.addEventListener(`click`,e),window.addEventListener(`keydown`,t),()=>{window.removeEventListener(`click`,e),window.removeEventListener(`keydown`,t)}},[]),(0,S.useEffect)(()=>{c(!1),d(!1)},[i.pathname]);let g=e||(()=>{try{let e=sessionStorage.getItem(`@App:user`);return e?JSON.parse(e):null}catch{return null}})(),_=g?.avatarUrl||g?.avatar,v=g?.nome?.charAt(0).toUpperCase()||`U`,y=g?.nome?.split(` `)[0]||``,b=n?`/publicar`:`/login`,x=n?void 0:o(i,`/`);return(0,C.jsxs)(C.Fragment,{children:[(0,C.jsx)(`style`,{children:`
+import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import{E as a,S as o,T as s,d as c,f as l,g as u,l as d,u as f,v as p,w as m}from"./index-C0OWt9kI.js";import{r as h}from"./seo-BmrZTbI5.js";import{t as g}from"./Seo-D6rBEEIr.js";import{t as _}from"./GoogleAdSlot-hh51a0FL.js";import{i as v,r as y,t as b}from"./localizacoes-CvOZjRrK.js";import{t as x}from"./funnelAnalytics-D8uTHRJ3.js";var S=i(e(),1),C=n();function w(){let{user:e,signed:n,logout:r}=m(),i=t(),[s,c]=(0,S.useState)(!1),[u,d]=(0,S.useState)(!1),f=(0,S.useRef)(null),h=(0,S.useRef)(null);(0,S.useEffect)(()=>{let e=e=>{f.current&&!f.current.contains(e.target)&&c(!1),h.current&&!h.current.contains(e.target)&&d(!1)},t=e=>{e.key===`Escape`&&(c(!1),d(!1))};return window.addEventListener(`click`,e),window.addEventListener(`keydown`,t),()=>{window.removeEventListener(`click`,e),window.removeEventListener(`keydown`,t)}},[]),(0,S.useEffect)(()=>{c(!1),d(!1)},[i.pathname]);let g=e||(()=>{try{let e=sessionStorage.getItem(`@App:user`);return e?JSON.parse(e):null}catch{return null}})(),_=g?.avatarUrl||g?.avatar,v=g?.nome?.charAt(0).toUpperCase()||`U`,y=g?.nome?.split(` `)[0]||``,b=n?`/publicar`:`/login`,x=n?void 0:o(i,`/`);return(0,C.jsxs)(C.Fragment,{children:[(0,C.jsx)(`style`,{children:`
         .nl-root,
         .nl-root * {
           box-sizing: border-box;
@@ -2416,7 +2416,7 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
         }
 
         .lp-hero-card {
-          height: 480px !important;
+          height: 420px !important;
           min-height: 0 !important;
           grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr) !important;
           background: var(--lp-dark) !important;
@@ -2427,7 +2427,7 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
         .lp-hero-content {
           height: 100% !important;
           min-height: 0 !important;
-          padding: 38px 42px !important;
+          padding: 30px 42px !important;
           color: #ffffff !important;
           background: var(--lp-dark) !important;
         }
@@ -2461,7 +2461,7 @@ import{g as e,l as t,t as n,u as r,y as i}from"./jsx-runtime-On9Szgki.js";import
 
         .lp-hero h1 {
           color: #ffffff !important;
-          font-size: clamp(32px, 3vw, 46px) !important;
+          font-size: clamp(31px, 2.7vw, 42px) !important;
           line-height: 1.02 !important;
         }
 
