@@ -263,7 +263,7 @@ export default function Landing() {
 
   return (
     <div className="lp-root">
-      <Seo title="Noxvelia | Carros e imóveis em Portugal" description="Encontra, compara e publica anúncios de carros e imóveis em Portugal na Noxvelia." path="/" jsonLd={[siteIdentityJsonLd, homePageJsonLd]} />
+      <Seo title="Noxvelia | Plataforma de carros e imóveis em Portugal" description="Noxvelia é uma plataforma portuguesa para pesquisar e publicar anúncios de carros e imóveis." path="/" jsonLd={[siteIdentityJsonLd, homePageJsonLd]} />
       <style>{`
         .lp-root,
         .lp-root * {
@@ -2977,7 +2977,7 @@ export default function Landing() {
                 </div>
                 <span className="lp-kicker">Drive / Estate</span>
                 <h1 id="lp-hero-title">
-                  Carros e imóveis em Portugal. <span>Mais simples.</span>
+                  Noxvelia: carros e imóveis em Portugal. <span>Mais simples.</span>
                 </h1>
                 <p className="lp-hero-copy">
                   Encontra carros e imóveis com fotos, preço, localização e contactos num só sítio.

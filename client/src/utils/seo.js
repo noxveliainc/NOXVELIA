@@ -1,7 +1,7 @@
 export const SITE_URL = 'https://www.noxvelia.com';
 export const SITE_NAME = 'Noxvelia';
 export const SITE_ALTERNATE_NAMES = ['NOXVELIA', 'Noxvelia Portugal'];
-export const SITE_DESCRIPTION = 'Encontra e publica anúncios de carros e imóveis em Portugal na Noxvelia.';
+export const SITE_DESCRIPTION = 'Noxvelia é uma plataforma portuguesa para pesquisar e publicar anúncios de carros e imóveis.';
 export const SITE_LOGO_URL = `${SITE_URL}/logo-noxvelia.png`;
 export const ORGANIZATION_ID = `${SITE_URL}/#organization`;
 export const WEBSITE_ID = `${SITE_URL}/#website`;
