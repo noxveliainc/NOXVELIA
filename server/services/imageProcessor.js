@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import {
   ALLOWED_IMAGE_FORMATS,
   ALLOWED_IMAGE_MIME_TYPES,
@@ -26,6 +27,83 @@ const normalizeMimeFromFormat = (format) => {
   if (format === 'png') return 'image/png';
   if (format === 'webp') return 'image/webp';
   return '';
+};
+
+const WATERMARK_LOGO_URL = new URL('../assets/noxvelia-watermark.png', import.meta.url);
+const WATERMARK_MIN_IMAGE_SIDE = 180;
+const WATERMARK_MIN_WIDTH = 54;
+const WATERMARK_MAX_WIDTH = 150;
+const WATERMARK_WIDTH_RATIO = 0.14;
+const WATERMARK_MARGIN_RATIO = 0.035;
+
+let watermarkLogoBufferPromise;
+
+const loadWatermarkLogoBuffer = () => {
+  if (!watermarkLogoBufferPromise) {
+    watermarkLogoBufferPromise = readFile(WATERMARK_LOGO_URL);
+  }
+  return watermarkLogoBufferPromise;
+};
+
+const normalizedSourceDimensions = (metadata) => {
+  const width = metadata.width || 1;
+  const height = metadata.height || 1;
+  if ([5, 6, 7, 8].includes(metadata.orientation)) {
+    return { width: height, height: width };
+  }
+  return { width, height };
+};
+
+const estimateVariantDimensions = ({ sourceWidth, sourceHeight, variant }) => {
+  const targetWidth = variant.width || sourceWidth;
+  const targetHeight = variant.height || sourceHeight;
+
+  if (variant.fit === 'cover') {
+    return {
+      width: Math.max(1, Math.min(targetWidth, sourceWidth)),
+      height: Math.max(1, Math.min(targetHeight, sourceHeight)),
+    };
+  }
+
+  const scale = Math.min(1, targetWidth / sourceWidth, targetHeight / sourceHeight);
+  return {
+    width: Math.max(1, Math.round(sourceWidth * scale)),
+    height: Math.max(1, Math.round(sourceHeight * scale)),
+  };
+};
+
+const createWatermarkOverlay = async ({ sharp, width, height }) => {
+  const smallestSide = Math.min(width, height);
+  if (smallestSide < WATERMARK_MIN_IMAGE_SIDE) return null;
+
+  const logoWidth = Math.round(Math.max(
+    WATERMARK_MIN_WIDTH,
+    Math.min(WATERMARK_MAX_WIDTH, width * WATERMARK_WIDTH_RATIO, smallestSide * 0.35)
+  ));
+  const margin = Math.round(Math.max(8, smallestSide * WATERMARK_MARGIN_RATIO));
+  const logoSource = await loadWatermarkLogoBuffer();
+  const { data: logoBuffer, info: logoInfo } = await sharp(logoSource)
+    .resize({ width: logoWidth, withoutEnlargement: true })
+    .png()
+    .toBuffer({ resolveWithObject: true });
+
+  const overlayWidth = logoInfo.width + margin;
+  const overlayHeight = logoInfo.height + margin;
+  if (overlayWidth > width || overlayHeight > height) return null;
+
+  const input = await sharp({
+    create: {
+      width: overlayWidth,
+      height: overlayHeight,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  })
+    .composite([{ input: logoBuffer, left: margin, top: 0 }])
+    .png()
+    .toBuffer();
+
+  return { input, gravity: 'southwest' };
 };
 
 export const checksumBuffer = (buffer) => crypto.createHash('sha256').update(buffer).digest('hex');
@@ -74,16 +152,35 @@ export const processImageUpload = async ({ file, kind = 'listing' }) => {
   }).rotate().toColorspace('srgb');
 
   const config = imageConfigForKind(normalizedKind);
+  const sourceDimensions = normalizedSourceDimensions(metadata);
   const variants = [];
 
   for (const variant of config.variants) {
-    const pipeline = base.clone().resize({
+    const dimensions = estimateVariantDimensions({
+      sourceWidth: sourceDimensions.width,
+      sourceHeight: sourceDimensions.height,
+      variant,
+    });
+    let pipeline = base.clone().resize({
       width: variant.width,
       height: variant.height,
       fit: variant.fit,
       position: variant.position || 'centre',
       withoutEnlargement: true,
-    }).webp({
+    });
+
+    if (normalizedKind === 'listing') {
+      const watermarkOverlay = await createWatermarkOverlay({
+        sharp,
+        width: dimensions.width,
+        height: dimensions.height,
+      });
+      if (watermarkOverlay) {
+        pipeline = pipeline.composite([watermarkOverlay]);
+      }
+    }
+
+    pipeline = pipeline.webp({
       quality: variant.quality,
       effort: 4,
       smartSubsample: true,

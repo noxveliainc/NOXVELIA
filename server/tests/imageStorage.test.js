@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { access, readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { normalizeImageKind } from '../config/imageStorage.js';
-import { assertUploadFileLooksSafe } from '../services/imageProcessor.js';
+import { assertUploadFileLooksSafe, processImageUpload } from '../services/imageProcessor.js';
 import { extractImageUrls, publicImageDto } from '../services/imageService.js';
 
 test('configuracao de imagens normaliza tipos suportados', () => {
@@ -26,6 +26,39 @@ test('validacao rejeita uploads perigosos antes do processamento', () => {
     () => assertUploadFileLooksSafe({ buffer: Buffer.from('x'), mimetype: 'text/html', originalname: 'x.html' }),
     /Formato de imagem nao suportado/
   );
+});
+
+test('processamento adiciona watermark Noxvelia a imagens de anuncio', async () => {
+  const { default: sharp } = await import('sharp');
+  const sourceColor = { r: 22, g: 38, b: 54 };
+  const buffer = await sharp({
+    create: {
+      width: 800,
+      height: 600,
+      channels: 3,
+      background: sourceColor,
+    },
+  }).jpeg({ quality: 92 }).toBuffer();
+
+  const processed = await processImageUpload({
+    file: { buffer, mimetype: 'image/jpeg', originalname: 'carro.jpg' },
+    kind: 'listing',
+  });
+  const original = processed.variants.find((variant) => variant.name === 'original');
+  const { data, info } = await sharp(original.buffer).raw().toBuffer({ resolveWithObject: true });
+  let brandedPixels = 0;
+
+  for (let y = Math.max(0, info.height - 150); y < info.height - 8; y += 1) {
+    for (let x = 8; x < Math.min(info.width, 190); x += 1) {
+      const offset = (y * info.width + x) * info.channels;
+      const diff = Math.abs(data[offset] - sourceColor.r)
+        + Math.abs(data[offset + 1] - sourceColor.g)
+        + Math.abs(data[offset + 2] - sourceColor.b);
+      if (diff > 45) brandedPixels += 1;
+    }
+  }
+
+  assert.ok(brandedPixels > 250, 'esperava encontrar a logo aplicada no canto inferior esquerdo');
 });
 
 test('DTO publico e extracao preservam variantes e URLs legadas', () => {
