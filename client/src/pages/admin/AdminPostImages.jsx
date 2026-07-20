@@ -19,6 +19,8 @@ import {
   mdiStorefrontOutline,
   mdiVideoOutline,
   mdiViewCarouselOutline,
+  mdiViewGridOutline,
+  mdiImageFrame,
 } from '@mdi/js';
 import { getImageUrl } from '../../utils/images';
 
@@ -33,26 +35,68 @@ const DESIGN_STYLES = {
   premium: { label: 'Premium' },
   launch: { label: 'Lançamento' },
   showroom: { label: 'Showroom' },
-  video: { label: 'Video centro' },
   gallery: { label: 'Galeria' },
+  mosaic: { label: 'Mosaico' },
+  duo: { label: 'Duo' },
+  strip: { label: 'Faixa' },
+  priceTag: { label: 'Preço forte' },
+  editorial: { label: 'Editorial' },
+  storyPro: { label: 'Story Pro' },
+  video: { label: 'Video centro' },
   cover: { label: 'Capa' },
   split: { label: 'Split' },
   clean: { label: 'Clean' },
 };
 
+const MULTI_IMAGE_STYLES = new Set(['gallery', 'mosaic', 'duo', 'strip']);
+
 const STYLE_ICONS = {
   premium: mdiStarFourPoints,
   launch: mdiRocketLaunchOutline,
   showroom: mdiStorefrontOutline,
-  video: mdiVideoOutline,
   gallery: mdiViewCarouselOutline,
+  mosaic: mdiImageMultipleOutline,
+  duo: mdiImageFrame || mdiImageMultipleOutline,
+  strip: mdiViewGridOutline || mdiViewCarouselOutline,
+  priceTag: mdiStarFourPoints,
+  editorial: mdiStorefrontOutline,
+  storyPro: mdiMonitorScreenshot,
+  video: mdiVideoOutline,
   cover: mdiMonitorScreenshot,
   split: mdiImageMultipleOutline,
   clean: mdiAutoFix,
 };
 
+const CREATIVE_DEFAULTS = {
+  imageFocus: 'center',
+  showLogo: true,
+  showBadge: true,
+  showPrice: true,
+  showLocation: true,
+  showDetails: true,
+  showCta: true,
+};
+
+const IMAGE_FOCUS_OPTIONS = [
+  { value: 'center', label: 'Centro' },
+  { value: 'top', label: 'Mais acima' },
+  { value: 'bottom', label: 'Mais abaixo' },
+  { value: 'left', label: 'Esquerda' },
+  { value: 'right', label: 'Direita' },
+];
+
+const ELEMENT_TOGGLES = [
+  { key: 'showLogo', label: 'Logo' },
+  { key: 'showBadge', label: 'Etiqueta' },
+  { key: 'showPrice', label: 'Preço' },
+  { key: 'showLocation', label: 'Local' },
+  { key: 'showDetails', label: 'Detalhes' },
+  { key: 'showCta', label: 'Chamada' },
+];
+
 const TEMPLATE_DEFAULTS = {
   car: {
+    ...CREATIVE_DEFAULTS,
     style: 'launch',
     title: 'Novo veiculo em destaque',
     price: 'Sob consulta',
@@ -66,6 +110,7 @@ const TEMPLATE_DEFAULTS = {
     cta: 'Ver veiculo em noxvelia.com',
   },
   property: {
+    ...CREATIVE_DEFAULTS,
     style: 'premium',
     title: 'Imovel em destaque',
     price: 'Sob consulta',
@@ -79,6 +124,7 @@ const TEMPLATE_DEFAULTS = {
     cta: 'Ver imovel em noxvelia.com',
   },
   brand: {
+    ...CREATIVE_DEFAULTS,
     style: 'premium',
     title: 'Carros e imoveis no mesmo sitio',
     subtitle: 'Pesquisa simples, contacto direto e anuncios bem apresentados.',
@@ -220,6 +266,29 @@ const uniqueDataUrls = (dataUrls = []) => {
   });
 };
 
+const imageFocusAnchor = (focus = 'center') => ({
+  center: 'xMidYMid',
+  top: 'xMidYMin',
+  bottom: 'xMidYMax',
+  left: 'xMinYMid',
+  right: 'xMaxYMid',
+}[focus] || 'xMidYMid');
+
+const normalizeCreativeForm = (form = {}) => ({
+  ...CREATIVE_DEFAULTS,
+  ...form,
+  badge: form.showBadge === false ? '' : form.badge,
+  price: form.showPrice === false ? '' : form.price,
+  location: form.showLocation === false ? '' : form.location,
+  cta: form.showCta === false ? '' : form.cta,
+  detail1: form.showDetails === false ? '' : form.detail1,
+  detail2: form.showDetails === false ? '' : form.detail2,
+  detail3: form.showDetails === false ? '' : form.detail3,
+  detail4: form.showDetails === false ? '' : form.detail4,
+});
+
+const showElement = (form, key) => form?.[key] !== false;
+
 function galleryPlaceholderCard({ x, y, width, height, accent, label, text }) {
   const title = escapeXml(label || 'Foto extra');
   const body = escapeXml(text || 'Adiciona outra imagem');
@@ -234,7 +303,8 @@ function galleryPlaceholderCard({ x, y, width, height, accent, label, text }) {
   `;
 }
 
-function brandMark({ x, y, accent, label, logoDataUrl }) {
+function brandMark({ x, y, accent, label, logoDataUrl, hidden = false }) {
+  if (hidden) return '';
   const mark = logoDataUrl
     ? `<image href="${logoDataUrl}" x="${x}" y="${y - 14}" width="58" height="50" preserveAspectRatio="xMidYMid meet"/>`
     : `<circle cx="${x + 25}" cy="${y + 12}" r="20" fill="${accent}" opacity="0.22"/><text x="${x + 25}" y="${y + 21}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="900" fill="${accent}">N</text>`;
@@ -287,6 +357,27 @@ function chips(items, { x, y }) {
   }).join('');
 }
 
+// Small corner strip of extra photos, used to surface additional uploaded
+// images on single-hero-photo templates (cover, launch, showroom, etc.)
+// so uploading more than one photo always has a visible effect.
+let stripCounter = 0;
+function extraPhotosStrip({ images = [], x, y, size = 62, gap = 10, align = 'left', accent = '#2ac1b4', extraCount = 0, tone = 'dark' }) {
+  const list = images.slice(0, 3);
+  if (!list.length) return '';
+  const startX = align === 'right' ? x - (list.length - 1) * (size + gap) : x;
+  const strokeColor = tone === 'light' ? 'rgba(7,17,22,0.28)' : 'rgba(255,255,255,0.42)';
+  const badgeBg = tone === 'light' ? 'rgba(7,17,22,0.82)' : 'rgba(3,7,18,0.72)';
+  return list.map((img, i) => {
+    const cx = startX + i * (size + gap);
+    const cid = `xstrip${stripCounter++}`;
+    const isLast = i === list.length - 1;
+    return `<clipPath id="${cid}"><rect x="${cx}" y="${y}" width="${size}" height="${size}" rx="15"/></clipPath>
+      <image href="${img}" x="${cx}" y="${y}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${cid})"/>
+      <rect x="${cx}" y="${y}" width="${size}" height="${size}" rx="15" fill="none" stroke="${strokeColor}" stroke-width="2"/>
+      ${isLast && extraCount > 0 ? `<rect x="${cx}" y="${y}" width="${size}" height="${size}" rx="15" fill="${badgeBg}"/><text x="${cx + size / 2}" y="${y + size / 2 + 7}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="#ffffff">+${extraCount}</text>` : ''}`;
+  }).join('');
+}
+
 const listingMeta = (form) => {
   const size = SIZES[form.size] || SIZES.square;
   const accent = form.template === 'property' ? '#3ecf8e' : '#2ac1b4';
@@ -295,19 +386,20 @@ const listingMeta = (form) => {
   return { size, accent, label, titleLines };
 };
 
-const photoImage = ({ imageDataUrl, x, y, width, height, rx = 34, opacity = 1, clipId = 'photoClip' }) => imageDataUrl
+const photoImage = ({ imageDataUrl, x, y, width, height, rx = 34, opacity = 1, clipId = 'photoClip', focus = 'center' }) => imageDataUrl
   ? `<clipPath id="${clipId}"><rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${rx}"/></clipPath>
-     <image href="${imageDataUrl}" x="${x}" y="${y}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})" opacity="${opacity}"/>`
+     <image href="${imageDataUrl}" x="${x}" y="${y}" width="${width}" height="${height}" preserveAspectRatio="${imageFocusAnchor(focus)} slice" clip-path="url(#${clipId})" opacity="${opacity}"/>`
   : '';
 
-function buildListingCoverSvg({ form, imageDataUrl, logoDataUrl }) {
+function buildListingCoverSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
   const { size, accent, label, titleLines } = listingMeta(form);
   const compact = size.height < 800;
-  const image = photoImage({ imageDataUrl, x: 0, y: 0, width: size.width, height: size.height, rx: 0, clipId: 'coverPhoto' });
+  const image = photoImage({ imageDataUrl, focus: form.imageFocus, x: 0, y: 0, width: size.width, height: size.height, rx: 0, clipId: 'coverPhoto' });
   const fallback = imageDataUrl ? '' : placeholderIcon({ x: 70, y: 168, width: size.width - 140, height: Math.round(size.height * 0.46), accent, template: form.template });
   const titleY = Math.round(size.height * (compact ? 0.42 : 0.55));
   const titleFont = compact ? 52 : 62;
   const titleGap = compact ? 58 : 68;
+  const extras = galleryDataUrls.slice(0, 3);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
     ${baseBackground({ width: size.width, height: size.height, accent })}
@@ -322,7 +414,8 @@ function buildListingCoverSvg({ form, imageDataUrl, logoDataUrl }) {
       </linearGradient>
     </defs>
     <rect width="${size.width}" height="${size.height}" fill="url(#coverShade)"/>
-    ${brandMark({ x: 64, y: 64, accent, label, logoDataUrl })}
+    ${brandMark({ x: 64, y: 64, accent, label, logoDataUrl, hidden: form.showLogo === false })}
+    ${extraPhotosStrip({ images: extras, x: size.width - 64, y: 56, align: 'right', accent, extraCount: Math.max(0, galleryDataUrls.length - extras.length) })}
     <rect x="64" y="${titleY - 86}" width="122" height="12" rx="6" fill="${accent}"/>
     ${titleLines.map((line, index) => `<text x="64" y="${titleY + index * titleGap}" font-family="Inter, Arial, sans-serif" font-size="${titleFont}" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
     <g transform="translate(64 ${size.height - (compact ? 158 : 246)})">
@@ -333,7 +426,7 @@ function buildListingCoverSvg({ form, imageDataUrl, logoDataUrl }) {
   </svg>`;
 }
 
-function buildListingSplitSvg({ form, imageDataUrl, logoDataUrl }) {
+function buildListingSplitSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
   const { size, accent, label, titleLines } = listingMeta(form);
   const compact = size.height < 800;
   const photoX = Math.round(size.width * 0.49);
@@ -345,16 +438,18 @@ function buildListingSplitSvg({ form, imageDataUrl, logoDataUrl }) {
   const titleGap = compact ? 48 : 62;
   const priceY = titleY + titleLines.length * titleGap + (compact ? 30 : 30);
   const locationY = priceY + (compact ? 38 : 46);
+  const extras = galleryDataUrls.slice(0, 3);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
     ${baseBackground({ width: size.width, height: size.height, accent })}
     <rect x="44" y="44" width="${size.width - 88}" height="${size.height - 88}" rx="34" fill="rgba(255,255,255,0.055)" stroke="rgba(255,255,255,0.13)" stroke-width="2"/>
-    ${brandMark({ x: 78, y: 82, accent, label, logoDataUrl })}
+    ${brandMark({ x: 78, y: 82, accent, label, logoDataUrl, hidden: form.showLogo === false })}
     ${imageDataUrl
-      ? `${photoImage({ imageDataUrl, x: photoX, y: photoY, width: photoW, height: photoH, rx: 34, clipId: 'splitPhoto' })}
+      ? `${photoImage({ imageDataUrl, focus: form.imageFocus, x: photoX, y: photoY, width: photoW, height: photoH, rx: 34, clipId: 'splitPhoto' })}
          <rect x="${photoX}" y="${photoY}" width="${photoW}" height="${photoH}" rx="34" fill="rgba(3,7,18,0.18)"/>
          <rect x="${photoX}" y="${photoY}" width="${photoW}" height="${photoH}" rx="34" fill="none" stroke="rgba(255,255,255,0.17)" stroke-width="2"/>`
       : placeholderIcon({ x: photoX, y: photoY, width: photoW, height: photoH, accent, template: form.template })}
+    ${extraPhotosStrip({ images: extras, x: photoX, y: photoY + photoH - 78, align: 'left', accent, extraCount: Math.max(0, galleryDataUrls.length - extras.length) })}
     <text x="78" y="${titleY - 64}" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
     ${titleLines.map((line, index) => `<text x="78" y="${titleY + index * titleGap}" font-family="Inter, Arial, sans-serif" font-size="${titleFont}" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
     <text x="78" y="${priceY}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 34 : 40}" font-weight="950" fill="${accent}">${escapeXml(form.price)}</text>
@@ -364,23 +459,25 @@ function buildListingSplitSvg({ form, imageDataUrl, logoDataUrl }) {
   </svg>`;
 }
 
-function buildListingCleanSvg({ form, imageDataUrl, logoDataUrl }) {
+function buildListingCleanSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
   const { size, accent, label, titleLines } = listingMeta(form);
   const photoX = 64;
   const photoY = 128;
   const photoW = size.width - 128;
   const photoH = Math.round(size.height * 0.48);
   const titleY = photoY + photoH + 112;
+  const extras = galleryDataUrls.slice(0, 3);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
     <rect width="${size.width}" height="${size.height}" fill="#f7faf9"/>
     <rect x="0" y="0" width="${size.width}" height="18" fill="${accent}"/>
     <circle cx="${size.width - 96}" cy="118" r="210" fill="${accent}" opacity="0.08"/>
-    ${brandMark({ x: 64, y: 72, accent, label, logoDataUrl }).replaceAll('fill="#ffffff"', 'fill="#071116"')}
+    ${brandMark({ x: 64, y: 72, accent, label, logoDataUrl, hidden: form.showLogo === false }).replaceAll('fill="#ffffff"', 'fill="#071116"')}
     ${imageDataUrl
-      ? `${photoImage({ imageDataUrl, x: photoX, y: photoY, width: photoW, height: photoH, rx: 32, clipId: 'cleanPhoto' })}
+      ? `${photoImage({ imageDataUrl, focus: form.imageFocus, x: photoX, y: photoY, width: photoW, height: photoH, rx: 32, clipId: 'cleanPhoto' })}
          <rect x="${photoX}" y="${photoY}" width="${photoW}" height="${photoH}" rx="32" fill="none" stroke="#d6e2df" stroke-width="2"/>`
       : placeholderIcon({ x: photoX, y: photoY, width: photoW, height: photoH, accent, template: form.template })}
+    ${extraPhotosStrip({ images: extras, x: photoX + photoW - 62, y: photoY + photoH - 78, align: 'right', accent, tone: 'light', extraCount: Math.max(0, galleryDataUrls.length - extras.length) })}
     <text x="64" y="${titleY - 50}" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
     ${titleLines.map((line, index) => `<text x="64" y="${titleY + index * 58}" font-family="Inter, Arial, sans-serif" font-size="50" font-weight="950" fill="#071116" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
     <text x="64" y="${titleY + titleLines.length * 60 + 36}" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="950" fill="#071116">${escapeXml(form.price)}</text>
@@ -434,15 +531,16 @@ function playOverlay({ cx, cy, r, accent }) {
     </g>`;
 }
 
-function buildListingLaunchSvg({ form, imageDataUrl, logoDataUrl }) {
+function buildListingLaunchSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
   const { size, accent, label, titleLines } = listingMeta(form);
   const compact = size.height < 800;
   const titleY = Math.round(size.height * (compact ? 0.42 : 0.48));
   const titleFont = compact ? 54 : 72;
   const titleGap = compact ? 58 : 76;
   const priceY = Math.min(size.height - (compact ? 132 : 220), titleY + titleLines.length * titleGap + 54);
-  const image = photoImage({ imageDataUrl, x: 0, y: 0, width: size.width, height: size.height, rx: 0, clipId: 'launchPhoto' });
+  const image = photoImage({ imageDataUrl, focus: form.imageFocus, x: 0, y: 0, width: size.width, height: size.height, rx: 0, clipId: 'launchPhoto' });
   const fallback = imageDataUrl ? '' : placeholderIcon({ x: 70, y: 150, width: size.width - 140, height: Math.round(size.height * 0.46), accent, template: form.template });
+  const extras = galleryDataUrls.slice(0, 3);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
     ${baseBackground({ width: size.width, height: size.height, accent })}
@@ -457,7 +555,8 @@ function buildListingLaunchSvg({ form, imageDataUrl, logoDataUrl }) {
     </defs>
     <rect width="${size.width}" height="${size.height}" fill="url(#launchShade)"/>
     <rect x="${size.width - 290}" y="0" width="220" height="${size.height}" fill="${accent}" opacity="0.16" transform="skewX(-14)"/>
-    ${brandMark({ x: 64, y: 60, accent, label, logoDataUrl })}
+    ${brandMark({ x: 64, y: 60, accent, label, logoDataUrl, hidden: form.showLogo === false })}
+    ${extraPhotosStrip({ images: extras, x: size.width - 64, y: 56, align: 'right', accent, extraCount: Math.max(0, galleryDataUrls.length - extras.length) })}
     <g transform="translate(64 ${compact ? 136 : 156})">
       <rect x="0" y="0" width="${Math.min(460, size.width - 128)}" height="58" rx="29" fill="rgba(255,255,255,0.92)"/>
       <text x="30" y="38" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="950" fill="#071116" letter-spacing="2">${escapeXml(form.badge)}</text>
@@ -470,7 +569,7 @@ function buildListingLaunchSvg({ form, imageDataUrl, logoDataUrl }) {
   </svg>`;
 }
 
-function buildListingShowroomSvg({ form, imageDataUrl, logoDataUrl }) {
+function buildListingShowroomSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
   const { size, accent, label, titleLines } = listingMeta(form);
   const compact = size.height < 800;
   const pad = compact ? 48 : 64;
@@ -481,16 +580,18 @@ function buildListingShowroomSvg({ form, imageDataUrl, logoDataUrl }) {
   const titleY = photoY + photoH + (compact ? 66 : 86);
   const titleFont = compact ? 42 : 56;
   const titleGap = compact ? 48 : 62;
+  const extras = galleryDataUrls.slice(0, 3);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
     <rect width="${size.width}" height="${size.height}" fill="#f4f7f3"/>
     <rect x="0" y="0" width="${size.width}" height="${topBand}" fill="#061116"/>
     <rect x="${size.width - 330}" y="0" width="260" height="${topBand}" fill="${accent}" opacity="0.22"/>
-    ${brandMark({ x: pad, y: compact ? 32 : 46, accent, label, logoDataUrl })}
+    ${brandMark({ x: pad, y: compact ? 32 : 46, accent, label, logoDataUrl, hidden: form.showLogo === false })}
     <rect x="${pad - 12}" y="${photoY - 12}" width="${photoW + 24}" height="${photoH + 24}" rx="32" fill="#ffffff"/>
     ${imageDataUrl
-      ? `${photoImage({ imageDataUrl, x: pad, y: photoY, width: photoW, height: photoH, rx: 28, clipId: 'showroomPhoto' })}<rect x="${pad}" y="${photoY}" width="${photoW}" height="${photoH}" rx="28" fill="none" stroke="#d7e4e0" stroke-width="2"/>`
+      ? `${photoImage({ imageDataUrl, focus: form.imageFocus, x: pad, y: photoY, width: photoW, height: photoH, rx: 28, clipId: 'showroomPhoto' })}<rect x="${pad}" y="${photoY}" width="${photoW}" height="${photoH}" rx="28" fill="none" stroke="#d7e4e0" stroke-width="2"/>`
       : placeholderIcon({ x: pad, y: photoY, width: photoW, height: photoH, accent, template: form.template })}
+    ${extraPhotosStrip({ images: extras, x: pad + photoW - 62, y: photoY + photoH - 78, align: 'right', accent, tone: 'light', extraCount: Math.max(0, galleryDataUrls.length - extras.length) })}
     <g transform="translate(${pad} ${photoY + photoH - 82})">
       <rect x="0" y="0" width="${Math.min(520, photoW - 24)}" height="64" rx="32" fill="rgba(6,17,22,0.88)"/>
       <text x="28" y="42" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="950" fill="#ffffff">${escapeXml(form.price)}</text>
@@ -519,7 +620,7 @@ function buildListingVideoSvg({ form, imageDataUrl, logoDataUrl }) {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
     ${baseBackground({ width: size.width, height: size.height, accent })}
-    ${brandMark({ x: 64, y: 60, accent, label, logoDataUrl })}
+    ${brandMark({ x: 64, y: 60, accent, label, logoDataUrl, hidden: form.showLogo === false })}
     <g transform="translate(${size.width - (compact ? 300 : 360)} 64)">
       <rect x="0" y="0" width="${compact ? 226 : 286}" height="54" rx="27" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.16)"/>
       <text x="28" y="35" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="2">VIDEO</text>
@@ -527,7 +628,7 @@ function buildListingVideoSvg({ form, imageDataUrl, logoDataUrl }) {
     </g>
     <rect x="${frameX - 18}" y="${frameY - 18}" width="${frameW + 36}" height="${frameH + 36}" rx="42" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
     ${imageDataUrl
-      ? `${photoImage({ imageDataUrl, x: frameX, y: frameY, width: frameW, height: frameH, rx: 32, clipId: 'videoPhoto' })}<rect x="${frameX}" y="${frameY}" width="${frameW}" height="${frameH}" rx="32" fill="rgba(3,7,18,0.24)"/>`
+      ? `${photoImage({ imageDataUrl, focus: form.imageFocus, x: frameX, y: frameY, width: frameW, height: frameH, rx: 32, clipId: 'videoPhoto' })}<rect x="${frameX}" y="${frameY}" width="${frameW}" height="${frameH}" rx="32" fill="rgba(3,7,18,0.24)"/>`
       : placeholderIcon({ x: frameX, y: frameY, width: frameW, height: frameH, accent, template: form.template })}
     ${playOverlay({ cx: Math.round(size.width / 2), cy: Math.round(frameY + frameH / 2), r: compact ? 44 : 62, accent })}
     <text x="64" y="${titleY - 44}" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
@@ -559,10 +660,10 @@ function buildListingGallerySvg({ form, imageDataUrl, galleryDataUrls = [], logo
     const mediaH = size.height - top - 126;
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
       ${baseBackground({ width: size.width, height: size.height, accent })}
-      ${brandMark({ x: pad, y: 52, accent, label, logoDataUrl })}
-      ${main ? photoImage({ imageDataUrl: main, x: pad, y: top, width: mainW, height: mediaH, rx: 30, clipId: 'galleryMain' }) : galleryPlaceholderCard({ x: pad, y: top, width: mainW, height: mediaH, accent, label: 'Imagem principal', text: 'Carrega uma foto' })}
-      ${second ? photoImage({ imageDataUrl: second, x: pad + mainW + gap, y: top, width: sideW, height: Math.round((mediaH - gap) / 2), rx: 26, clipId: 'gallerySecond' }) : galleryPlaceholderCard({ x: pad + mainW + gap, y: top, width: sideW, height: Math.round((mediaH - gap) / 2), accent, label: 'Foto 2', text: 'Sem repeticoes' })}
-      ${third ? photoImage({ imageDataUrl: third, x: pad + mainW + gap, y: top + Math.round((mediaH - gap) / 2) + gap, width: sideW, height: Math.round((mediaH - gap) / 2), rx: 26, clipId: 'galleryThird' }) : galleryPlaceholderCard({ x: pad + mainW + gap, y: top + Math.round((mediaH - gap) / 2) + gap, width: sideW, height: Math.round((mediaH - gap) / 2), accent, label: 'Foto 3', text: 'Adiciona mais fotos' })}
+      ${brandMark({ x: pad, y: 52, accent, label, logoDataUrl, hidden: form.showLogo === false })}
+      ${main ? photoImage({ imageDataUrl: main, focus: form.imageFocus, x: pad, y: top, width: mainW, height: mediaH, rx: 30, clipId: 'galleryMain' }) : galleryPlaceholderCard({ x: pad, y: top, width: mainW, height: mediaH, accent, label: 'Imagem principal', text: 'Carrega uma foto' })}
+      ${second ? photoImage({ imageDataUrl: second, focus: form.imageFocus, x: pad + mainW + gap, y: top, width: sideW, height: Math.round((mediaH - gap) / 2), rx: 26, clipId: 'gallerySecond' }) : galleryPlaceholderCard({ x: pad + mainW + gap, y: top, width: sideW, height: Math.round((mediaH - gap) / 2), accent, label: 'Foto 2', text: 'Sem repeticoes' })}
+      ${third ? photoImage({ imageDataUrl: third, focus: form.imageFocus, x: pad + mainW + gap, y: top + Math.round((mediaH - gap) / 2) + gap, width: sideW, height: Math.round((mediaH - gap) / 2), rx: 26, clipId: 'galleryThird' }) : galleryPlaceholderCard({ x: pad + mainW + gap, y: top + Math.round((mediaH - gap) / 2) + gap, width: sideW, height: Math.round((mediaH - gap) / 2), accent, label: 'Foto 3', text: 'Adiciona mais fotos' })}
       <rect x="${pad}" y="${top + mediaH - 92}" width="${mainW}" height="92" rx="0" fill="rgba(3,7,18,0.68)" clip-path="url(#galleryMain)"/>
       <text x="${pad + 28}" y="${top + mediaH - 34}" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="950" fill="#ffffff">${escapeXml(form.price)}</text>
       <text x="${pad}" y="${size.height - 54}" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff">${escapeXml(form.cta)}</text>
@@ -578,28 +679,216 @@ function buildListingGallerySvg({ form, imageDataUrl, galleryDataUrls = [], logo
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
     <rect width="${size.width}" height="${size.height}" fill="#061116"/>
     <rect x="0" y="0" width="${size.width}" height="${Math.round(size.height * 0.42)}" fill="#f4f7f3"/>
-    ${brandMark({ x: pad, y: 58, accent, label, logoDataUrl }).replaceAll('fill="#ffffff"', 'fill="#071116"')}
-    ${main ? photoImage({ imageDataUrl: main, x: pad, y: top, width: mainW, height: mainH, rx: 32, clipId: 'galleryMainTall' }) : galleryPlaceholderCard({ x: pad, y: top, width: mainW, height: mainH, accent, label: 'Imagem principal', text: 'Carrega uma foto' })}
-    ${second ? photoImage({ imageDataUrl: second, x: pad, y: top + mainH + gap, width: thumbW, height: thumbH, rx: 26, clipId: 'gallerySecondTall' }) : galleryPlaceholderCard({ x: pad, y: top + mainH + gap, width: thumbW, height: thumbH, accent, label: 'Foto 2', text: 'Sem repeticoes' })}
-    ${third ? photoImage({ imageDataUrl: third, x: pad + thumbW + gap, y: top + mainH + gap, width: thumbW, height: thumbH, rx: 26, clipId: 'galleryThirdTall' }) : galleryPlaceholderCard({ x: pad + thumbW + gap, y: top + mainH + gap, width: thumbW, height: thumbH, accent, label: 'Foto 3', text: 'Adiciona mais fotos' })}
+    ${brandMark({ x: pad, y: 58, accent, label, logoDataUrl, hidden: form.showLogo === false }).replaceAll('fill="#ffffff"', 'fill="#071116"')}
+    ${main ? photoImage({ imageDataUrl: main, focus: form.imageFocus, x: pad, y: top, width: mainW, height: mainH, rx: 32, clipId: 'galleryMainTall' }) : galleryPlaceholderCard({ x: pad, y: top, width: mainW, height: mainH, accent, label: 'Imagem principal', text: 'Carrega uma foto' })}
+    ${second ? photoImage({ imageDataUrl: second, focus: form.imageFocus, x: pad, y: top + mainH + gap, width: thumbW, height: thumbH, rx: 26, clipId: 'gallerySecondTall' }) : galleryPlaceholderCard({ x: pad, y: top + mainH + gap, width: thumbW, height: thumbH, accent, label: 'Foto 2', text: 'Sem repeticoes' })}
+    ${third ? photoImage({ imageDataUrl: third, focus: form.imageFocus, x: pad + thumbW + gap, y: top + mainH + gap, width: thumbW, height: thumbH, rx: 26, clipId: 'galleryThirdTall' }) : galleryPlaceholderCard({ x: pad + thumbW + gap, y: top + mainH + gap, width: thumbW, height: thumbH, accent, label: 'Foto 3', text: 'Adiciona mais fotos' })}
     <text x="${pad}" y="${titleStart - 46}" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
     ${titleLines.map((line, index) => `<text x="${pad}" y="${titleStart + index * 60}" font-family="Inter, Arial, sans-serif" font-size="52" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
     <text x="${pad}" y="${Math.min(size.height - 152, titleStart + titleLines.length * 62 + 32)}" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="950" fill="${accent}">${escapeXml(form.price)}</text>
     ${chips([form.location, form.detail1, form.detail2, form.detail3], { x: pad, y: size.height - 112 })}
   </svg>`;
 }
+function buildListingMosaicSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
+  const { size, accent, label, titleLines } = listingMeta(form);
+  const compact = size.height < 800;
+  const images = uniqueDataUrls([imageDataUrl, ...galleryDataUrls].filter(Boolean));
+  const pad = compact ? 44 : 58;
+  const top = compact ? 112 : 138;
+  const gap = 16;
+  const mediaH = Math.round(size.height * (compact ? 0.54 : 0.52));
+  const mainW = Math.round((size.width - pad * 2 - gap) * 0.62);
+  const sideW = size.width - pad * 2 - mainW - gap;
+  const halfH = Math.round((mediaH - gap) / 2);
+  const textY = top + mediaH + (compact ? 54 : 76);
+  const tile = (image, index, args) => image
+    ? photoImage({ imageDataUrl: image, focus: form.imageFocus, ...args })
+    : galleryPlaceholderCard({ ...args, accent, label: `Foto ${index + 1}`, text: index ? 'Adiciona foto' : 'Imagem principal' });
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
+    ${baseBackground({ width: size.width, height: size.height, accent })}
+    <rect x="${pad - 20}" y="${top - 20}" width="${size.width - pad * 2 + 40}" height="${mediaH + 40}" rx="40" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.13)" stroke-width="2"/>
+    ${brandMark({ x: pad, y: compact ? 46 : 58, accent, label, logoDataUrl, hidden: form.showLogo === false })}
+    ${tile(images[0], 0, { x: pad, y: top, width: mainW, height: mediaH, rx: 30, clipId: 'mosaicMain' })}
+    ${tile(images[1], 1, { x: pad + mainW + gap, y: top, width: sideW, height: halfH, rx: 26, clipId: 'mosaicSecond' })}
+    ${tile(images[2], 2, { x: pad + mainW + gap, y: top + halfH + gap, width: sideW, height: halfH, rx: 26, clipId: 'mosaicThird' })}
+    ${form.badge ? `<text x="${pad}" y="${textY - 36}" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>` : ''}
+    ${titleLines.map((line, index) => `<text x="${pad}" y="${textY + index * (compact ? 46 : 56)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 40 : 50}" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
+    ${form.price ? `<text x="${pad}" y="${Math.min(size.height - 74, textY + titleLines.length * (compact ? 48 : 58) + 30)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 34 : 44}" font-weight="950" fill="${accent}">${escapeXml(form.price)}</text>` : ''}
+    ${chips([form.location, form.detail1, form.detail2, form.detail3], { x: pad, y: size.height - (compact ? 64 : 98) })}
+  </svg>`;
+}
+
+// New: two big photos side by side (e.g. exterior + interior, before/after,
+// two angles of the same car). Falls back to a placeholder card for the
+// second photo slot so the layout still looks intentional with one image.
+function buildListingDuoSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
+  const { size, accent, label, titleLines } = listingMeta(form);
+  const compact = size.height < 800;
+  const pad = compact ? 44 : 58;
+  const top = compact ? 112 : 140;
+  const gap = 16;
+  const mediaH = Math.round(size.height * (compact ? 0.42 : 0.46));
+  const panelW = Math.round((size.width - pad * 2 - gap) / 2);
+  const second = galleryDataUrls[0];
+  const extraCount = Math.max(0, galleryDataUrls.length - 1);
+  const textY = top + mediaH + (compact ? 60 : 80);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
+    ${baseBackground({ width: size.width, height: size.height, accent })}
+    ${brandMark({ x: pad, y: compact ? 46 : 58, accent, label, logoDataUrl, hidden: form.showLogo === false })}
+    ${imageDataUrl ? photoImage({ imageDataUrl, focus: form.imageFocus, x: pad, y: top, width: panelW, height: mediaH, rx: 28, clipId: 'duoMain' }) : galleryPlaceholderCard({ x: pad, y: top, width: panelW, height: mediaH, accent, label: 'Foto 1', text: 'Imagem principal' })}
+    ${second
+      ? `${photoImage({ imageDataUrl: second, focus: form.imageFocus, x: pad + panelW + gap, y: top, width: panelW, height: mediaH, rx: 28, clipId: 'duoSecond' })}${extraCount > 0 ? `<rect x="${pad + panelW + gap}" y="${top}" width="${panelW}" height="${mediaH}" rx="28" fill="rgba(3,7,18,0.15)"/><g><rect x="${pad + panelW + gap + panelW - 74}" y="${top + mediaH - 50}" width="58" height="34" rx="17" fill="rgba(3,7,18,0.72)"/><text x="${pad + panelW + gap + panelW - 45}" y="${top + mediaH - 27}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="950" fill="#ffffff">+${extraCount}</text></g>` : ''}`
+      : galleryPlaceholderCard({ x: pad + panelW + gap, y: top, width: panelW, height: mediaH, accent, label: 'Foto 2', text: 'Carrega uma segunda foto' })}
+    ${form.badge ? `<text x="${pad}" y="${textY - 36}" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>` : ''}
+    ${titleLines.map((line, index) => `<text x="${pad}" y="${textY + index * (compact ? 46 : 58)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 40 : 52}" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
+    ${form.price ? `<text x="${pad}" y="${Math.min(size.height - 90, textY + titleLines.length * (compact ? 48 : 60) + 32)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 34 : 44}" font-weight="950" fill="${accent}">${escapeXml(form.price)}</text>` : ''}
+    ${chips([form.location, form.detail1, form.detail2, form.detail3], { x: pad, y: size.height - (compact ? 62 : 96) })}
+  </svg>`;
+}
+
+// New: big hero photo up top with a horizontal filmstrip of up to four more
+// photos underneath, so a full set of listing photos reads as one creative.
+function buildListingStripSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
+  const { size, accent, label, titleLines } = listingMeta(form);
+  const compact = size.height < 800;
+  const pad = compact ? 44 : 58;
+  const heroY = compact ? 108 : 138;
+  const heroH = Math.round(size.height * (compact ? 0.4 : 0.44));
+  const heroW = size.width - pad * 2;
+  const stripY = heroY + heroH + 16;
+  const stripH = compact ? 100 : 132;
+  const gap = 12;
+  const filmImages = galleryDataUrls.slice(0, 4);
+  const slotCount = Math.max(filmImages.length, 3);
+  const slotW = Math.round((heroW - gap * (slotCount - 1)) / slotCount);
+  const textY = stripY + stripH + (compact ? 56 : 76);
+
+  const filmSlots = Array.from({ length: slotCount }).map((_, index) => {
+    const x = pad + index * (slotW + gap);
+    const img = filmImages[index];
+    return img
+      ? photoImage({ imageDataUrl: img, focus: form.imageFocus, x, y: stripY, width: slotW, height: stripH, rx: 18, clipId: `stripFrame${index}` })
+      : galleryPlaceholderCard({ x, y: stripY, width: slotW, height: stripH, accent, label: `Foto ${index + 2}`, text: 'Adiciona foto' });
+  }).join('');
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
+    ${baseBackground({ width: size.width, height: size.height, accent })}
+    ${brandMark({ x: pad, y: compact ? 46 : 58, accent, label, logoDataUrl, hidden: form.showLogo === false })}
+    ${imageDataUrl ? photoImage({ imageDataUrl, focus: form.imageFocus, x: pad, y: heroY, width: heroW, height: heroH, rx: 30, clipId: 'stripHero' }) : placeholderIcon({ x: pad, y: heroY, width: heroW, height: heroH, accent, template: form.template })}
+    ${filmSlots}
+    ${form.badge ? `<text x="${pad}" y="${textY - 36}" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>` : ''}
+    ${titleLines.map((line, index) => `<text x="${pad}" y="${textY + index * (compact ? 44 : 56)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 38 : 48}" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
+    ${form.price ? `<text x="${pad}" y="${Math.min(size.height - 60, textY + titleLines.length * (compact ? 46 : 58) + 30)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 32 : 40}" font-weight="950" fill="${accent}">${escapeXml(form.price)}</text>` : ''}
+  </svg>`;
+}
+
+function buildListingPriceTagSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
+  const { size, accent, label, titleLines } = listingMeta(form);
+  const compact = size.height < 800;
+  const photo = imageDataUrl
+    ? photoImage({ imageDataUrl, focus: form.imageFocus, x: 0, y: 0, width: size.width, height: size.height, rx: 0, clipId: 'priceTagPhoto' })
+    : placeholderIcon({ x: 64, y: 140, width: size.width - 128, height: Math.round(size.height * 0.48), accent, template: form.template });
+  const titleY = Math.round(size.height * (compact ? 0.31 : 0.36));
+  const priceBoxW = Math.min(size.width - 128, compact ? 470 : 620);
+  const priceY = size.height - (compact ? 122 : 202);
+  const extras = galleryDataUrls.slice(0, 3);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
+    ${baseBackground({ width: size.width, height: size.height, accent })}
+    ${photo}
+    <defs>
+      <linearGradient id="priceShade" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#020617" stop-opacity="0.84"/>
+        <stop offset="0.48" stop-color="#020617" stop-opacity="0.18"/>
+        <stop offset="1" stop-color="#020617" stop-opacity="0.9"/>
+      </linearGradient>
+    </defs>
+    <rect width="${size.width}" height="${size.height}" fill="url(#priceShade)"/>
+    <rect x="${size.width - 160}" y="0" width="18" height="${size.height}" fill="${accent}" opacity="0.88"/>
+    ${brandMark({ x: 64, y: 62, accent, label, logoDataUrl, hidden: form.showLogo === false })}
+    ${extraPhotosStrip({ images: extras, x: size.width - 200, y: 56, align: 'right', accent, extraCount: Math.max(0, galleryDataUrls.length - extras.length) })}
+    ${form.badge ? `<text x="64" y="${titleY - 72}" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>` : ''}
+    ${titleLines.map((line, index) => `<text x="64" y="${titleY + index * (compact ? 58 : 70)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 54 : 66}" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
+    ${form.price ? `<g transform="translate(64 ${priceY})"><rect x="0" y="0" width="${priceBoxW}" height="${compact ? 78 : 96}" rx="${compact ? 20 : 26}" fill="${accent}"/><text x="34" y="${compact ? 51 : 63}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 38 : 52}" font-weight="950" fill="#041014">${escapeXml(form.price)}</text></g>` : ''}
+    ${form.location ? `<text x="68" y="${priceY + (compact ? 116 : 136)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 23 : 30}" font-weight="850" fill="#ffffff">${escapeXml(form.location)}</text>` : ''}
+    ${showElement(form, 'showDetails') ? chips([form.detail1, form.detail2, form.detail3], { x: 64, y: size.height - (compact ? 58 : 86) }) : ''}
+  </svg>`;
+}
+
+function buildListingEditorialSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
+  const { size, accent, label, titleLines } = listingMeta(form);
+  const compact = size.height < 800;
+  const pad = compact ? 48 : 64;
+  const leftW = Math.round(size.width * (compact ? 0.43 : 0.46));
+  const photoX = leftW + 24;
+  const photoY = compact ? 84 : 118;
+  const photoW = size.width - photoX - pad;
+  const photoH = size.height - photoY - (compact ? 76 : 118);
+  const titleY = compact ? 210 : 276;
+  const extras = galleryDataUrls.slice(0, 2);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
+    <rect width="${size.width}" height="${size.height}" fill="#f6faf9"/>
+    <rect x="0" y="0" width="${leftW}" height="${size.height}" fill="#071116"/>
+    <rect x="${leftW - 8}" y="0" width="16" height="${size.height}" fill="${accent}"/>
+    ${brandMark({ x: pad, y: compact ? 52 : 70, accent, label, logoDataUrl, hidden: form.showLogo === false })}
+    ${imageDataUrl ? `${photoImage({ imageDataUrl, focus: form.imageFocus, x: photoX, y: photoY, width: photoW, height: photoH, rx: 28, clipId: 'editorialPhoto' })}<rect x="${photoX}" y="${photoY}" width="${photoW}" height="${photoH}" rx="28" fill="none" stroke="#d5e3df" stroke-width="2"/>` : placeholderIcon({ x: photoX, y: photoY, width: photoW, height: photoH, accent, template: form.template })}
+    ${extraPhotosStrip({ images: extras, x: photoX + photoW - 62, y: photoY + photoH - 78, align: 'right', accent, tone: 'light', extraCount: Math.max(0, galleryDataUrls.length - extras.length) })}
+    ${form.badge ? `<text x="${pad}" y="${titleY - 58}" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>` : ''}
+    ${titleLines.map((line, index) => `<text x="${pad}" y="${titleY + index * (compact ? 50 : 66)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 44 : 58}" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
+    ${form.price ? `<text x="${pad}" y="${Math.min(size.height - 168, titleY + titleLines.length * (compact ? 52 : 68) + 34)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 36 : 48}" font-weight="950" fill="${accent}">${escapeXml(form.price)}</text>` : ''}
+    ${form.location ? `<text x="${pad + 2}" y="${Math.min(size.height - 126, titleY + titleLines.length * (compact ? 52 : 68) + 78)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 22 : 27}" font-weight="800" fill="#dbeafe">${escapeXml(form.location)}</text>` : ''}
+    ${form.cta ? `<text x="${pad}" y="${size.height - 60}" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff">${escapeXml(form.cta)}</text>` : ''}
+  </svg>`;
+}
+
+function buildListingStoryProSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
+  const { size, accent, label, titleLines } = listingMeta(form);
+  const topH = Math.round(size.height * 0.62);
+  const panelY = Math.max(0, topH - 22);
+  const pad = 64;
+  const photo = imageDataUrl
+    ? photoImage({ imageDataUrl, focus: form.imageFocus, x: 0, y: 0, width: size.width, height: topH + 30, rx: 0, clipId: 'storyProPhoto' })
+    : placeholderIcon({ x: pad, y: 132, width: size.width - pad * 2, height: Math.round(size.height * 0.42), accent, template: form.template });
+  const titleY = panelY + 132;
+  const extras = galleryDataUrls.slice(0, 3);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
+    ${baseBackground({ width: size.width, height: size.height, accent })}
+    ${photo}
+    <rect x="0" y="0" width="${size.width}" height="${topH + 30}" fill="rgba(3,7,18,0.22)"/>
+    ${extraPhotosStrip({ images: extras, x: size.width - 64, y: 56, align: 'right', accent, extraCount: Math.max(0, galleryDataUrls.length - extras.length) })}
+    <path d="M0 ${panelY} C ${size.width * 0.22} ${panelY - 42}, ${size.width * 0.65} ${panelY + 52}, ${size.width} ${panelY - 12} V ${size.height} H 0 Z" fill="#071116"/>
+    <rect x="${pad}" y="${panelY + 50}" width="116" height="12" rx="6" fill="${accent}"/>
+    ${brandMark({ x: pad, y: 62, accent, label, logoDataUrl, hidden: form.showLogo === false })}
+    ${form.badge ? `<text x="${pad}" y="${titleY - 54}" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>` : ''}
+    ${titleLines.map((line, index) => `<text x="${pad}" y="${titleY + index * 74}" font-family="Inter, Arial, sans-serif" font-size="66" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
+    ${form.price ? `<text x="${pad}" y="${Math.min(size.height - 248, titleY + titleLines.length * 78 + 36)}" font-family="Inter, Arial, sans-serif" font-size="66" font-weight="950" fill="${accent}">${escapeXml(form.price)}</text>` : ''}
+    ${chips([form.location, form.detail1, form.detail2, form.detail3], { x: pad, y: size.height - 178 })}
+    ${form.cta ? `<g transform="translate(${pad} ${size.height - 92})"><rect x="0" y="0" width="${size.width - pad * 2}" height="58" rx="29" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.13)"/><text x="28" y="37" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff">${escapeXml(form.cta)}</text></g>` : ''}
+  </svg>`;
+}
 function buildListingSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
+  form = normalizeCreativeForm(form);
   const selectedSize = SIZES[form.size] || SIZES.square;
   if (selectedSize.height < 800 && (!form.style || form.style === 'premium' || form.style === 'clean')) {
-    return buildListingSplitSvg({ form, imageDataUrl, logoDataUrl });
+    return buildListingSplitSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
   }
-  if (form.style === 'launch') return buildListingLaunchSvg({ form, imageDataUrl, logoDataUrl });
-  if (form.style === 'showroom') return buildListingShowroomSvg({ form, imageDataUrl, logoDataUrl });
+  if (form.style === 'launch') return buildListingLaunchSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
+  if (form.style === 'showroom') return buildListingShowroomSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
   if (form.style === 'video') return buildListingVideoSvg({ form, imageDataUrl, logoDataUrl });
   if (form.style === 'gallery') return buildListingGallerySvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
-  if (form.style === 'cover') return buildListingCoverSvg({ form, imageDataUrl, logoDataUrl });
-  if (form.style === 'split') return buildListingSplitSvg({ form, imageDataUrl, logoDataUrl });
-  if (form.style === 'clean') return buildListingCleanSvg({ form, imageDataUrl, logoDataUrl });
+  if (form.style === 'mosaic') return buildListingMosaicSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
+  if (form.style === 'duo') return buildListingDuoSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
+  if (form.style === 'strip') return buildListingStripSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
+  if (form.style === 'priceTag') return buildListingPriceTagSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
+  if (form.style === 'editorial') return buildListingEditorialSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
+  if (form.style === 'storyPro') return buildListingStoryProSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
+  if (form.style === 'cover') return buildListingCoverSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
+  if (form.style === 'split') return buildListingSplitSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
+  if (form.style === 'clean') return buildListingCleanSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
   const size = selectedSize;
   const accent = form.template === 'property' ? '#3ecf8e' : '#2ac1b4';
   const label = form.template === 'property' ? 'ESTATE' : 'DRIVE';
@@ -610,19 +899,20 @@ function buildListingSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl
   const badgeY = photoY + photoH + 44;
   const titleY = badgeY + 60;
   const titleLines = wrapText(form.title, size.width > 1100 ? 32 : 26, size.height > size.width ? 3 : 2);
+  const extras = galleryDataUrls.slice(0, 3);
   const photo = imageDataUrl
     ? `<clipPath id="photoClip"><rect x="${photoX}" y="${photoY}" width="${photoW}" height="${photoH}" rx="38"/></clipPath>
-       <image href="${imageDataUrl}" x="${photoX}" y="${photoY}" width="${photoW}" height="${photoH}" preserveAspectRatio="xMidYMid slice" clip-path="url(#photoClip)"/>
+       <image href="${imageDataUrl}" x="${photoX}" y="${photoY}" width="${photoW}" height="${photoH}" preserveAspectRatio="${imageFocusAnchor(form.imageFocus)} slice" clip-path="url(#photoClip)"/>
        <rect x="${photoX}" y="${photoY}" width="${photoW}" height="${photoH}" rx="38" fill="rgba(3,7,18,0.22)"/>
        <rect x="${photoX}" y="${photoY}" width="${photoW}" height="${photoH}" rx="38" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2"/>
-       <rect x="${photoX}" y="${photoY + photoH - 160}" width="${photoW}" height="160" fill="rgba(3,7,18,0.55)" clip-path="url(#photoClip)"/>
        <rect x="${photoX + 26}" y="${photoY + 26}" width="88" height="10" rx="5" fill="${accent}"/>`
     : placeholderIcon({ x: photoX, y: photoY, width: photoW, height: photoH, accent, template: form.template });
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
     ${baseBackground({ width: size.width, height: size.height, accent })}
-    ${brandMark({ x: 64, y: 58, accent, label, logoDataUrl })}
+    ${brandMark({ x: 64, y: 58, accent, label, logoDataUrl, hidden: form.showLogo === false })}
     ${photo}
+    ${extraPhotosStrip({ images: extras, x: photoX + photoW - 62, y: photoY + photoH - 78, align: 'right', accent, extraCount: Math.max(0, galleryDataUrls.length - extras.length) })}
     <text x="88" y="${photoY + photoH - 82}" font-family="Inter, Arial, sans-serif" font-size="68" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(form.price)}</text>
     <text x="90" y="${photoY + photoH - 38}" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800" fill="#dbeafe">${escapeXml(form.location)}</text>
     <text x="64" y="${badgeY}" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
@@ -647,7 +937,7 @@ function buildBrandCoverSvg({ form, logoDataUrl }) {
     ${baseBackground({ width: size.width, height: size.height, accent })}
     <rect x="${size.width - 290}" y="-80" width="190" height="${size.height + 160}" rx="95" fill="#3ecf8e" opacity="0.14" transform="rotate(18 ${size.width - 195} ${size.height / 2})"/>
     <rect x="${size.width - 190}" y="-100" width="88" height="${size.height + 200}" rx="44" fill="${accent}" opacity="0.2" transform="rotate(18 ${size.width - 146} ${size.height / 2})"/>
-    ${brandMark({ x: 64, y: 64, accent, label: 'PORTUGAL', logoDataUrl })}
+    ${brandMark({ x: 64, y: 64, accent, label: 'PORTUGAL', logoDataUrl, hidden: form.showLogo === false })}
     <text x="64" y="${startY - 54}" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
     ${headlineLines.map((line, index) => `<text x="64" y="${startY + index * 70}" font-family="Inter, Arial, sans-serif" font-size="62" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
     ${subtitleLines.map((line, index) => `<text x="68" y="${startY + headlineLines.length * 76 + 36 + index * 38}" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="650" fill="#b8c7d9">${escapeXml(line)}</text>`).join('')}
@@ -672,7 +962,7 @@ function buildBrandSplitSvg({ form, logoDataUrl }) {
     <rect width="${size.width}" height="${size.height}" fill="#071116"/>
     <rect x="${leftW}" y="0" width="${size.width - leftW}" height="${size.height}" fill="#f7faf9"/>
     <rect x="${leftW}" y="0" width="12" height="${size.height}" fill="${accent}"/>
-    ${brandMark({ x: 64, y: 68, accent, label: 'PORTUGAL', logoDataUrl })}
+    ${brandMark({ x: 64, y: 68, accent, label: 'PORTUGAL', logoDataUrl, hidden: form.showLogo === false })}
     ${headlineLines.map((line, index) => `<text x="64" y="${headlineY + index * (compact ? 50 : 68)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 44 : 60}" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
     ${subtitleLines.map((line, index) => `<text x="${leftW + 74}" y="${subtitleY + index * (compact ? 34 : 42)}" font-family="Inter, Arial, sans-serif" font-size="${compact ? 25 : 32}" font-weight="750" fill="#071116">${escapeXml(line)}</text>`).join('')}
     <g transform="translate(${leftW + 74} ${Math.round(size.height * (compact ? 0.58 : 0.56))})">
@@ -696,7 +986,7 @@ function buildBrandCleanSvg({ form, logoDataUrl }) {
     <rect x="0" y="0" width="${size.width}" height="20" fill="${accent}"/>
     <circle cx="${size.width - 170}" cy="190" r="260" fill="#0f2b42" opacity="0.08"/>
     <circle cx="${size.width - 110}" cy="${size.height - 130}" r="190" fill="${accent}" opacity="0.12"/>
-    ${brandMark({ x: 64, y: 72, accent, label: 'PORTUGAL', logoDataUrl }).replaceAll('fill="#ffffff"', 'fill="#071116"')}
+    ${brandMark({ x: 64, y: 72, accent, label: 'PORTUGAL', logoDataUrl, hidden: form.showLogo === false }).replaceAll('fill="#ffffff"', 'fill="#071116"')}
     <text x="64" y="${startY - 50}" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
     ${headlineLines.map((line, index) => `<text x="64" y="${startY + index * 72}" font-family="Inter, Arial, sans-serif" font-size="64" font-weight="950" fill="#071116" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
     ${subtitleLines.map((line, index) => `<text x="68" y="${startY + headlineLines.length * 78 + 32 + index * 38}" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700" fill="#53646b">${escapeXml(line)}</text>`).join('')}
@@ -708,6 +998,7 @@ function buildBrandCleanSvg({ form, logoDataUrl }) {
 }
 
 function buildBrandSvg({ form, logoDataUrl }) {
+  form = normalizeCreativeForm(form);
   const selectedSize = SIZES[form.size] || SIZES.square;
   if (selectedSize.height < 800 && (!form.style || form.style === 'premium' || form.style === 'clean')) {
     return buildBrandSplitSvg({ form, logoDataUrl });
@@ -722,7 +1013,7 @@ function buildBrandSvg({ form, logoDataUrl }) {
   const subtitleLines = wrapText(form.subtitle, size.width > 1100 ? 52 : 42, 3);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
     ${baseBackground({ width: size.width, height: size.height, accent })}
-    ${brandMark({ x: 64, y: 64, accent, label: 'PORTUGAL', logoDataUrl })}
+    ${brandMark({ x: 64, y: 64, accent, label: 'PORTUGAL', logoDataUrl, hidden: form.showLogo === false })}
     <g transform="translate(${size.width - 360} 70)" opacity="0.92">
       <rect x="0" y="0" width="280" height="72" rx="36" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.16)"/>
       <text x="40" y="46" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="900" fill="${accent}">DRIVE</text>
@@ -779,6 +1070,8 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
   }, []);
 
   const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
+  const toggleElement = (field) => setForm((current) => ({ ...current, [field]: current[field] === false }));
+  const resetCreativeControls = () => setForm((current) => ({ ...current, ...CREATIVE_DEFAULTS }));
 
   const switchTemplate = (template) => {
     setForm((current) => ({ ...TEMPLATE_DEFAULTS[template], template, size: current.size, style: template === 'brand' ? TEMPLATE_DEFAULTS.brand.style : current.style || TEMPLATE_DEFAULTS[template].style || 'premium' }));
@@ -800,7 +1093,9 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
   const currentSize = SIZES[form.size] || SIZES.square;
   const outputName = `${slugify(form.title || form.badge)}-${form.style || 'premium'}-${form.size}`;
   const mediaItems = useMemo(() => uniqueDataUrls([imageDataUrl, ...galleryDataUrls]), [galleryDataUrls, imageDataUrl]);
-  const galleryNeedsMoreImages = form.template !== 'brand' && form.style === 'gallery' && mediaItems.length > 0 && mediaItems.length < 3;
+  const isMultiImageStyle = form.template !== 'brand' && MULTI_IMAGE_STYLES.has(form.style);
+  const galleryNeedsMoreImages = isMultiImageStyle && mediaItems.length > 0 && mediaItems.length < (form.style === 'duo' ? 2 : 3);
+  const usesExtraPhotos = form.template !== 'brand' && !isMultiImageStyle && mediaItems.length > 1;
   const newVehicleAds = useMemo(() => anuncios
     .filter(isLaunchVehicle)
     .sort((a, b) => {
@@ -812,8 +1107,9 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
     })
     .slice(0, 6), [anuncios]);
 
-  const applyImageSet = (dataUrls, name = 'imagem') => {
-    const images = uniqueDataUrls(dataUrls).slice(0, 8);
+  const applyImageSet = (dataUrls, name = 'imagem', options = {}) => {
+    const base = options.append ? mediaItems : [];
+    const images = uniqueDataUrls([...base, ...dataUrls]).slice(0, 8);
     if (!images.length) return;
     setImageDataUrl(images[0]);
     setGalleryDataUrls(images.slice(1));
@@ -829,8 +1125,9 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
     setBusy(true);
     try {
       const dataUrls = uniqueDataUrls(await Promise.all(files.map(readFileAsDataUrl)));
-      applyImageSet(dataUrls, dataUrls.length === 1 ? files[0].name : `${dataUrls.length} imagens carregadas`);
-      setFeedback(dataUrls.length === 1 ? 'Imagem carregada.' : `${dataUrls.length} imagens unicas carregadas.`);
+      const total = uniqueDataUrls([...mediaItems, ...dataUrls]).slice(0, 8).length;
+      applyImageSet(dataUrls, dataUrls.length === 1 ? files[0].name : `${dataUrls.length} imagens carregadas`, { append: true });
+      setFeedback(dataUrls.length === 1 ? `Imagem adicionada. Total: ${total}.` : `${dataUrls.length} imagens adicionadas. Total: ${total}.`);
     } catch (error) {
       setFeedback(error.message);
     } finally {
@@ -851,12 +1148,12 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
     try {
       const loaded = await Promise.allSettled(urls.map((url) => imageUrlToDataUrl(url)));
       const dataUrls = uniqueDataUrls(loaded.map((item) => (item.status === 'fulfilled' ? item.value : '')).filter(Boolean));
-      applyImageSet(dataUrls.length ? dataUrls : urls, dataUrls.length > 1 ? `${dataUrls.length} imagens por URL` : 'imagem por URL');
+      applyImageSet(dataUrls.length ? dataUrls : urls, dataUrls.length > 1 ? `${dataUrls.length} imagens por URL` : 'imagem por URL', { append: true });
       setImageUrlInput('');
       setFeedback(dataUrls.length > 1 ? `${dataUrls.length} imagens por URL carregadas.` : 'Imagem por URL carregada.');
     } catch {
       if (urls.every((url) => /^https?:\/\//i.test(url))) {
-        applyImageSet(urls, urls.length > 1 ? `${urls.length} imagens por URL` : 'imagem por URL');
+        applyImageSet(urls, urls.length > 1 ? `${urls.length} imagens por URL` : 'imagem por URL', { append: true });
         setImageUrlInput('');
         setFeedback('Imagem aplicada por URL. Se o PNG falhar, usa upload direto para evitar bloqueios externos.');
       } else {
@@ -879,7 +1176,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
         if (!imageType) continue;
         const blob = await item.getType(imageType);
         const data = await blobToDataUrl(blob);
-        applyImageSet([data], 'imagem colada');
+        applyImageSet([data], 'imagem colada', { append: true });
         setFeedback('Imagem colada.');
         return;
       }
@@ -911,6 +1208,16 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
     const [first, ...rest] = mediaItems;
     applyImageSet([...rest, first], imageName || `${mediaItems.length} imagens`);
     setFeedback('Ordem das imagens alterada.');
+  };
+
+  const removeImage = (index) => {
+    const next = mediaItems.filter((_, itemIndex) => itemIndex !== index);
+    if (!next.length) {
+      clearImages();
+      return;
+    }
+    applyImageSet(next, `${next.length} imagem${next.length > 1 ? 's' : ''}`);
+    setFeedback('Foto removida.');
   };
 
   const handleDrop = (event) => {
@@ -959,7 +1266,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
       applyImageSet(dataUrls, dataUrls.length > 1 ? `${dataUrls.length} fotos do anuncio` : 'foto do anuncio');
       setFeedback(dataUrls.length > 1
         ? `Anuncio e ${dataUrls.length} fotos unicas carregados.`
-        : 'Anuncio carregado com 1 foto. A galeria nao vai repetir a imagem; adiciona mais fotos para completar.');
+        : 'Anuncio preenchido com 1 foto. Adiciona mais fotos manualmente se quiseres usar um modelo com varias imagens.');
     } catch {
       setImageDataUrl('');
       setGalleryDataUrls([]);
@@ -1048,9 +1355,10 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
         .nx-postgen-template-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
         .nx-postgen-template { min-height: 42px; border-radius: 9px; border: 1px solid ${palette.border || '#dfe8e4'}; background: #fff; color: ${palette.textDim || '#4f646a'}; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
         .nx-postgen-template.active { background: rgba(42,193,180,.12); border-color: rgba(42,193,180,.38); color: ${palette.text || '#102326'}; }
-        .nx-postgen-style-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-        .nx-postgen-style { min-height: 44px; border-radius: 8px; border: 1px solid ${palette.border || '#dfe8e4'}; background: #fff; color: ${palette.textDim || '#4f646a'}; font-size: 12px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; padding: 0 10px; text-align: left; }
+        .nx-postgen-style-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+        .nx-postgen-style { min-height: 44px; border-radius: 8px; border: 1px solid ${palette.border || '#dfe8e4'}; background: #fff; color: ${palette.textDim || '#4f646a'}; font-size: 12px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; padding: 0 10px; text-align: left; position: relative; }
         .nx-postgen-style.active { border-color: rgba(42,193,180,.46); background: rgba(42,193,180,.12); color: ${palette.text || '#102326'}; }
+        .nx-postgen-style-multi-dot { position: absolute; top: 6px; right: 7px; width: 7px; height: 7px; border-radius: 999px; background: ${palette.green || '#168b82'}; }
         .nx-postgen-launches { display: grid; gap: 8px; }
         .nx-postgen-launch-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
         .nx-postgen-launch-card { min-height: 66px; border-radius: 8px; border: 1px solid ${palette.border || '#dfe8e4'}; background: #fff; color: ${palette.text || '#102326'}; cursor: pointer; padding: 10px; text-align: left; display: grid; gap: 5px; }
@@ -1062,11 +1370,17 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
         .nx-postgen-media-drop span { color: ${palette.textFaint || '#7b8b90'}; font-size: 11px; line-height: 1.4; }
         .nx-postgen-url-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-top: 8px; }
         .nx-postgen-thumbs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
-        .nx-postgen-thumb { position: relative; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 10px; border: 1px solid ${palette.borderStrong || '#b9cac4'}; background: #f5fbfa; padding: 0; cursor: pointer; }
+        .nx-postgen-thumb { position: relative; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 10px; border: 1px solid ${palette.borderStrong || '#b9cac4'}; background: #f5fbfa; }
+        .nx-postgen-thumb-main { width: 100%; height: 100%; border: 0; padding: 0; background: transparent; cursor: pointer; display: block; }
         .nx-postgen-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .nx-postgen-thumb span { position: absolute; left: 6px; bottom: 6px; max-width: calc(100% - 12px); border-radius: 999px; padding: 3px 7px; background: rgba(5, 22, 27, .78); color: #fff; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nx-postgen-thumb span { position: absolute; left: 6px; bottom: 6px; max-width: calc(100% - 12px); border-radius: 999px; padding: 3px 7px; background: rgba(5, 22, 27, .78); color: #fff; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
         .nx-postgen-thumb.active { border-color: ${palette.green || '#168b82'}; box-shadow: 0 0 0 3px rgba(42,193,180,.18); }
+        .nx-postgen-thumb-remove { position: absolute; top: 5px; right: 5px; width: 23px; height: 23px; border-radius: 999px; border: 1px solid rgba(255,255,255,.38); background: rgba(5, 22, 27, .82); color: #fff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
         .nx-postgen-media-note { margin-top: 8px; padding: 9px 10px; border-radius: 9px; background: rgba(42,193,180,.1); color: ${palette.textDim || '#4f646a'}; font-size: 12px; font-weight: 800; line-height: 1.45; }
+        .nx-postgen-editor-card { display: grid; gap: 10px; border: 1px solid ${palette.border || '#dfe8e4'}; border-radius: 10px; background: #fff; padding: 12px; }
+        .nx-postgen-toggle-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+        .nx-postgen-toggle { min-height: 36px; border-radius: 8px; border: 1px solid ${palette.border || '#dfe8e4'}; background: #f8faf7; color: ${palette.textDim || '#4f646a'}; font-size: 11px; font-weight: 900; cursor: pointer; }
+        .nx-postgen-toggle.active { border-color: rgba(42,193,180,.52); background: rgba(42,193,180,.13); color: ${palette.text || '#102326'}; }
         .nx-postgen-media-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
         .nx-postgen-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
         .nx-postgen-btn { border: 1px solid ${palette.border || '#dfe8e4'}; border-radius: 9px; min-height: 40px; padding: 0 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 900; cursor: pointer; color: ${palette.text || '#102326'}; background: #fff; }
@@ -1117,7 +1431,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
             </div>
 
             <div>
-              <span style={labelStyle}>Modelo visual</span>
+              <span style={labelStyle}>Modelo visual {form.template !== 'brand' ? '(bolinha verde = usa varias fotos)' : ''}</span>
               <div className="nx-postgen-style-row">
                 {Object.entries(DESIGN_STYLES)
                   .filter(([id]) => form.template !== 'brand' || ['premium', 'cover', 'split', 'clean'].includes(id))
@@ -1129,6 +1443,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                       onClick={() => update('style', id)}
                     >
                       <Icon path={STYLE_ICONS[id] || mdiAutoFix} size={0.62} /> {style.label}
+                      {form.template !== 'brand' && MULTI_IMAGE_STYLES.has(id) && <span className="nx-postgen-style-multi-dot" />}
                     </button>
                   ))}
               </div>
@@ -1228,6 +1543,33 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
               </div>
             </div>
 
+            <div className="nx-postgen-editor-card">
+              {form.template !== 'brand' && (
+                <div>
+                  <label style={labelStyle} htmlFor="postgen-focus">Foco da foto</label>
+                  <select id="postgen-focus" value={form.imageFocus || 'center'} onChange={(e) => update('imageFocus', e.target.value)} style={inputStyle}>
+                    {IMAGE_FOCUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </select>
+                </div>
+              )}
+              <div>
+                <span style={labelStyle}>Elementos visiveis</span>
+                <div className="nx-postgen-toggle-grid">
+                  {ELEMENT_TOGGLES.map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      className={`nx-postgen-toggle ${form[item.key] !== false ? 'active' : ''}`}
+                      onClick={() => toggleElement(item.key)}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button type="button" className="nx-postgen-btn" onClick={resetCreativeControls}>Repor elementos</button>
+            </div>
+
             {form.template !== 'brand' && (
               <div>
                 <span style={labelStyle}>Media</span>
@@ -1245,22 +1587,26 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                 >
                   <Icon path={mdiCloudUploadOutline} size={0.9} />
                   <strong>{imageName || 'Carregar imagens'}</strong>
-                  <span>{mediaItems.length ? `${mediaItems.length} imagem${mediaItems.length > 1 ? 's' : ''} pronta${mediaItems.length > 1 ? 's' : ''}` : 'Upload, arrastar, URL ou colar imagem'}</span>
+                  <span>{mediaItems.length ? `${mediaItems.length} imagem${mediaItems.length > 1 ? 's' : ''} pronta${mediaItems.length > 1 ? 's' : ''}` : 'Upload ate 8, arrastar, URL ou colar imagem'}</span>
                 </div>
 
                 {mediaItems.length > 0 && (
                   <div className="nx-postgen-thumbs" aria-label="Imagens carregadas">
                     {mediaItems.slice(0, 8).map((src, index) => (
-                      <button
-                        type="button"
-                        key={`${index}-${src.slice(0, 48)}`}
-                        className={`nx-postgen-thumb ${index === 0 ? 'active' : ''}`}
-                        onClick={() => setMainImage(index)}
-                        title={index === 0 ? 'Imagem principal' : 'Tornar imagem principal'}
-                      >
-                        <img src={src} alt="" />
-                        <span>{index === 0 ? 'Principal' : `Foto ${index + 1}`}</span>
-                      </button>
+                      <div key={`${index}-${src.slice(0, 48)}`} className={`nx-postgen-thumb ${index === 0 ? 'active' : ''}`}>
+                        <button
+                          type="button"
+                          className="nx-postgen-thumb-main"
+                          onClick={() => setMainImage(index)}
+                          title={index === 0 ? 'Imagem principal' : 'Tornar imagem principal'}
+                        >
+                          <img src={src} alt="" />
+                          <span>{index === 0 ? 'Principal' : `Foto ${index + 1}`}</span>
+                        </button>
+                        <button type="button" className="nx-postgen-thumb-remove" onClick={() => removeImage(index)} title="Remover foto">
+                          <Icon path={mdiClose} size={0.48} />
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -1268,6 +1614,11 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                 {galleryNeedsMoreImages && (
                   <div className="nx-postgen-media-note">
                     A galeria tem {mediaItems.length} imagem{mediaItems.length > 1 ? 's' : ''}. O criativo preenche os espacos vazios com molduras elegantes, sem repetir a mesma foto.
+                  </div>
+                )}
+                {usesExtraPhotos && (
+                  <div className="nx-postgen-media-note">
+                    Este modelo mostra a foto principal em destaque e as restantes {mediaItems.length - 1} num pequeno mosaico no canto. Para todas as fotos em grande, escolhe Galeria, Mosaico, Duo ou Faixa.
                   </div>
                 )}
 
@@ -1279,7 +1630,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') loadImageFromUrl();
                     }}
-                    placeholder="URL da imagem"
+                    placeholder="URL da imagem ou varios URLs"
                     style={inputStyle}
                   />
                   <button type="button" className="nx-postgen-btn" onClick={loadImageFromUrl} disabled={busy || !imageUrlInput.trim()}>
@@ -1296,7 +1647,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                   <button type="button" className="nx-postgen-btn" onClick={rotateImages} disabled={busy || mediaItems.length < 2}>
                     <Icon path={mdiViewCarouselOutline} size={0.65} /> Variar ordem
                   </button>
-                  <button type="button" className="nx-postgen-btn" onClick={clearImages} disabled={busy || (!imageDataUrl && !galleryDataUrls.length)}>
+                  <button type="button" className="nx-postgen-btn" onClick={clearImages} disabled={busy || !mediaItems.length}>
                     <Icon path={mdiClose} size={0.65} /> Limpar
                   </button>
                 </div>
