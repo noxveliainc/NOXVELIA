@@ -34,6 +34,68 @@ const numeroParaWhatsapp = (raw) => {
   return digitos;
 };
 
+const VALORES_COMBUSTIVEL_CARRO = {
+  gasolina: 'Gasolina',
+  diesel: 'Diesel',
+  eletrico: 'Elétrico',
+  hibrido: 'Híbrido',
+  gpl: 'GPL',
+};
+const VALORES_TRANSMISSAO_CARRO = { manual: 'Manual', automatico: 'Automático' };
+const VALORES_TRACAO_CARRO = { dianteira: 'Dianteira', traseira: 'Traseira', integral: 'Integral / 4x4' };
+const VALORES_SECCAO_CARRO = { novo: 'Novo', usado: 'Usado', seminovo: 'Seminovo', classico: 'Clássico' };
+const VALORES_TIPO_VEICULO_CARRO = {
+  citadino: 'Citadino',
+  utilitario: 'Utilitário',
+  sedan: 'Sedan / Berlina',
+  carrinha: 'Carrinha',
+  suv: 'SUV',
+  crossover: 'Crossover',
+  coupe: 'Coupé',
+  cabrio: 'Cabrio',
+  monovolume: 'Monovolume',
+  pickup: 'Pick-up',
+  comercial: 'Comercial',
+  van: 'Van',
+  outro: 'Outro',
+};
+
+const formatarValorAuto = (value, mapa = {}) => {
+  if (value === null || value === undefined || value === '') return null;
+  const raw = String(value);
+  return mapa[raw] || raw.replace(/_/g, ' ');
+};
+
+const textoPesquisa = (value) => String(value || '')
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '');
+
+const CATEGORIAS_EQUIPAMENTO_CARRO = [
+  { titulo: 'Segurança', termos: ['airbag', 'abs', 'esp', 'isofix', 'travagem', 'alerta', 'seguranca', 'controlo estabilidade', 'controlo tracao'] },
+  { titulo: 'Tecnologia', termos: ['gps', 'navegacao', 'bluetooth', 'android', 'apple', 'carplay', 'usb', 'radio', 'multimedia', 'ecra', 'digital'] },
+  { titulo: 'Assistência', termos: ['sensor', 'sensores', 'camara', 'camera', 'cruise', 'estacionamento', 'assistente', 'lane', 'luzes', 'chuva'] },
+  { titulo: 'Conforto', termos: ['banco', 'bancos', 'aquecido', 'climatizacao', 'ar condicionado', 'volante', 'vidros', 'fecho', 'keyless'] },
+  { titulo: 'Exterior', termos: ['jantes', 'farois', 'farol', 'teto', 'panoramico', 'barras', 'gancho', 'pintura', 'spoiler'] },
+  { titulo: 'Performance', termos: ['sport', 'desportivo', 'suspensao', 'pack', 'amg', 'm sport', 's-line', 'tracao', 'diferencial'] },
+];
+
+const agruparExtras = (extras, isCarro) => {
+  if (!extras.length) return [];
+  if (!isCarro) return [{ titulo: 'Características', items: extras }];
+
+  const grupos = CATEGORIAS_EQUIPAMENTO_CARRO.map((categoria) => ({ ...categoria, items: [] }));
+  const outros = { titulo: 'Outros', items: [] };
+
+  extras.forEach((extra) => {
+    const texto = textoPesquisa(extra);
+    const grupo = grupos.find((categoria) => categoria.termos.some((termo) => texto.includes(termo)));
+    (grupo || outros).items.push(extra);
+  });
+
+  return [...grupos.filter((grupo) => grupo.items.length), ...(outros.items.length ? [outros] : [])];
+};
+
 export default function Anuncio() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -263,29 +325,37 @@ export default function Anuncio() {
     return texto.includes('varanda') || texto.includes('terraco');
   });
 
-  // Lógica do Ano/Mês combinada
   const valorAnoMes = anuncio.carro?.ano
-    ? (anuncio.carro?.mesRegisto ? `${anuncio.carro.ano} / ${String(anuncio.carro.mesRegisto).padStart(2, '0')}` : anuncio.carro.ano)
+    ? (anuncio.carro?.mesRegisto ? String(anuncio.carro.mesRegisto) + ' / ' + anuncio.carro.ano : anuncio.carro.ano)
     : null;
 
   // Link de afiliação carVertical
   const vin = anuncio.carro?.vin;
   const carVerticalLink = vin
-    ? `https://www.carvertical.deal/27H3X8P/CXW7M6/?uid=332&source_id=AFF&sub1=noxvelia&sub3=${vin}`
-    : `https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia`;
+    ? 'https://www.carvertical.deal/27H3X8P/CXW7M6/?uid=332&source_id=AFF&sub1=noxvelia&sub3=' + encodeURIComponent(vin)
+    : 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 
   const specs = isCarro ? [
-    { label: 'Ano / Mês', value: valorAnoMes, icon: mdiCalendarBlank },
-    { label: 'Quilómetros', value: anuncio.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null, icon: mdiSpeedometer },
-    { label: 'Combustível', value: anuncio.carro?.combustivel, icon: mdiGasStation },
-    { label: 'Transmissão', value: anuncio.carro?.transmissao, icon: mdiCarShiftPattern },
-    { label: 'Potência', value: anuncio.carro?.potencia ? `${anuncio.carro.potencia} cv` : null, icon: mdiEngineOutline },
-    { label: 'Cilindrada', value: anuncio.carro?.cilindrada ? `${anuncio.carro.cilindrada} cm³` : null, icon: mdiEngineOutline },
+    { label: 'Marca', value: anuncio.carro?.marca, icon: mdiCar },
+    { label: 'Modelo', value: anuncio.carro?.modelo, icon: mdiCar },
+    { label: 'Versão', value: anuncio.carro?.versao, icon: mdiFileDocumentOutline },
+    { label: 'Mês / Ano', value: valorAnoMes, icon: mdiCalendarBlank },
+    { label: 'Quilometragem', value: anuncio.carro?.km != null ? new Intl.NumberFormat('pt-PT').format(anuncio.carro.km) + ' km' : null, icon: mdiSpeedometer },
+    { label: 'Transmissão', value: formatarValorAuto(anuncio.carro?.transmissao, VALORES_TRANSMISSAO_CARRO), icon: mdiCarShiftPattern },
+    { label: 'Cilindrada', value: anuncio.carro?.cilindrada ? new Intl.NumberFormat('pt-PT').format(anuncio.carro.cilindrada) + ' cm³' : null, icon: mdiEngineOutline },
+    { label: 'Potência', value: anuncio.carro?.potencia ? anuncio.carro.potencia + ' cv' : null, icon: mdiEngineOutline },
+    { label: 'Cor Exterior', value: anuncio.carro?.cor, icon: mdiCar },
+    { label: 'Núm. Portas', value: anuncio.carro?.portas, icon: mdiCar },
+    { label: 'Núm. Lugares', value: anuncio.carro?.lugares, icon: mdiCar },
+    { label: 'Combustível', value: formatarValorAuto(anuncio.carro?.combustivel, VALORES_COMBUSTIVEL_CARRO), icon: mdiGasStation },
+    { label: 'Tracção', value: formatarValorAuto(anuncio.carro?.tracao, VALORES_TRACAO_CARRO), icon: mdiSwapHorizontal },
+    { label: 'Secção', value: formatarValorAuto(anuncio.carro?.seccao, VALORES_SECCAO_CARRO), icon: mdiCheckCircleOutline },
+    { label: 'Tipo de Veículo', value: formatarValorAuto(anuncio.carro?.tipoVeiculo, VALORES_TIPO_VEICULO_CARRO), icon: mdiCar },
   ] : [
     { label: 'Tipo de imóvel', value: anuncio.imovel?.tipoImovel, icon: mdiHomeCityOutline },
     { label: 'Tipologia', value: anuncio.imovel?.tipologia, icon: mdiHomeCityOutline },
-    { label: 'Área útil', value: anuncio.imovel?.area ? `${anuncio.imovel.area} m²` : null, icon: mdiRulerSquare },
-    { label: 'Area terreno/bruta', value: anuncio.imovel?.areaTerreno ? `${anuncio.imovel.areaTerreno} m2` : null, icon: mdiRulerSquare },
+    { label: 'Área útil', value: anuncio.imovel?.area ? anuncio.imovel.area + ' m²' : null, icon: mdiRulerSquare },
+    { label: 'Area terreno/bruta', value: anuncio.imovel?.areaTerreno ? anuncio.imovel.areaTerreno + ' m2' : null, icon: mdiRulerSquare },
     { label: 'Quartos', value: anuncio.imovel?.quartos, icon: mdiBedOutline },
     { label: 'Casas de banho', value: anuncio.imovel?.casasBanho, icon: mdiShower },
     { label: 'Ano construcao', value: anuncio.imovel?.anoConstrucao || anuncio.imovel?.ano, icon: mdiCalendarBlank },
@@ -301,6 +371,7 @@ export default function Anuncio() {
   ];
 
   const especificacoesVisiveis = specs.filter(s => s.value != null && s.value !== '');
+  const gruposExtras = agruparExtras(extrasOpcionais, isCarro);
   const valorFinanciado = Math.max(0, precoValor - entrada);
   const taxaMensal = 0.079 / 12;
   const prestacaoMensal = valorFinanciado > 0
@@ -476,9 +547,14 @@ export default function Anuncio() {
         .spec-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
         .spec-value { font-size: 15px; font-weight: 700; color: #0f172a; text-transform: capitalize; }
 
-        .extras-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-        .extra-item { display: flex; align-items: center; gap: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; font-size: 13px; font-weight: 700; color: #334155; line-height: 1.35; animation: nx-rise .35s ease backwards; box-shadow: 0 12px 28px -24px rgba(15,23,42,0.35); }
-        .extra-check { width: 28px; height: 28px; border-radius: 8px; background: rgba(42,193,180,0.1); color: ${accent}; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .extras-panel { display: flex; flex-direction: column; gap: 22px; }
+        .extras-group { display: flex; flex-direction: column; gap: 10px; }
+        .extras-group-title { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: #475569; }
+        .extras-group-title::before { content: ''; width: 8px; height: 8px; border-radius: 999px; background: ${accent}; box-shadow: 0 0 0 4px rgba(42,193,180,.1); }
+        .extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 10px; align-items: stretch; }
+        .extra-item { min-width: 0; min-height: 58px; display: flex; align-items: flex-start; gap: 11px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 13px 14px; font-size: 13px; font-weight: 750; color: #334155; line-height: 1.42; animation: nx-rise .35s ease backwards; box-shadow: 0 12px 28px -24px rgba(15,23,42,0.35); }
+        .extra-check { width: 24px; height: 24px; border-radius: 8px; background: rgba(42,193,180,0.1); color: ${accent}; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; margin-top: -1px; }
+        .extra-text { min-width: 0; overflow-wrap: anywhere; word-break: normal; white-space: normal; }
 
         .desc-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; margin-top: 4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
         .desc-head { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 16px; display: flex; align-items: center; gap: 7px; }
@@ -763,11 +839,19 @@ export default function Anuncio() {
               )}
 
               {abaAtiva === 'equipamento' && extrasOpcionais.length > 0 && (
-                <div className="extras-grid tab-panel">
-                  {extrasOpcionais.map((extra, i) => (
-                    <div key={i} className="extra-item" style={{ animationDelay: `${i * 30}ms` }}>
-                      <span className="extra-check"><Icon path={mdiCheckCircleOutline} size={0.75} /></span>{extra}
-                    </div>
+                <div className="extras-panel tab-panel">
+                  {gruposExtras.map((grupo, grupoIndex) => (
+                    <section key={grupo.titulo} className="extras-group">
+                      <div className="extras-group-title">{grupo.titulo}</div>
+                      <div className="extras-grid">
+                        {grupo.items.map((extra, i) => (
+                          <div key={grupo.titulo + '-' + extra + '-' + i} className="extra-item" style={{ animationDelay: String((grupoIndex + i) * 30) + 'ms' }}>
+                            <span className="extra-check"><Icon path={mdiCheckCircleOutline} size={0.7} /></span>
+                            <span className="extra-text">{extra}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
                   ))}
                 </div>
               )}

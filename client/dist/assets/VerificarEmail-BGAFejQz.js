@@ -1,4 +1,4 @@
-import{A as e,E as t,O as n,b as r,x as i,y as a}from"./index-Cd1jK0c6.js";var o=e(n(),1),s=a();function c(){let{token:e}=t(),[n,a]=(0,o.useState)(`a_verificar`),[c,l]=(0,o.useState)(``);return(0,o.useEffect)(()=>{e&&(async()=>{try{let t=await r.get(`/auth/verify-email/${e}`);l(t.data?.mensagem||`Email verificado com sucesso!`),a(`sucesso`)}catch(e){l(e.response?.data?.erro||`Não foi possível verificar o teu email.`),a(`erro`)}})()},[e]),(0,s.jsxs)(s.Fragment,{children:[(0,s.jsx)(`style`,{children:`
+import{A as e,E as t,O as n,b as r,x as i,y as a}from"./index--m2o87Sx.js";var o=e(n(),1),s=a();function c(){let{token:e}=t(),[n,a]=(0,o.useState)(`a_verificar`),[c,l]=(0,o.useState)(``);return(0,o.useEffect)(()=>{e&&(async()=>{try{let t=await r.get(`/auth/verify-email/${e}`);l(t.data?.mensagem||`Email verificado com sucesso!`),a(`sucesso`)}catch(e){l(e.response?.data?.erro||`Não foi possível verificar o teu email.`),a(`erro`)}})()},[e]),(0,s.jsxs)(s.Fragment,{children:[(0,s.jsx)(`style`,{children:`
         .auth-root {
           background-color: #040711;
           background-image: radial-gradient(circle at top right, rgba(42, 193, 180, 0.05), transparent 45%),

@@ -44,6 +44,61 @@ const COMODIDADES_IMOVEL = [
   { name: 'mobilado', label: 'Mobilado' },
   { name: 'condominio', label: 'Condominio' },
 ];
+const ANO_ATUAL = new Date().getFullYear();
+const CAMPOS_NUMERICOS_CARRO = new Set(['preco', 'km', 'ano', 'mesRegisto', 'potencia', 'cilindrada', 'portas', 'lugares']);
+const CAMPOS_TEXTO_CURTO_CARRO = new Set(['versao', 'cor']);
+const TRACOES_CARRO = [
+  { value: 'dianteira', label: 'Dianteira' },
+  { value: 'traseira', label: 'Traseira' },
+  { value: 'integral', label: 'Integral / 4x4' },
+];
+const SECCOES_CARRO = [
+  { value: 'usado', label: 'Usado' },
+  { value: 'seminovo', label: 'Seminovo' },
+  { value: 'novo', label: 'Novo' },
+  { value: 'classico', label: 'Clássico' },
+];
+const TIPOS_VEICULO_CARRO = [
+  { value: 'citadino', label: 'Citadino' },
+  { value: 'utilitario', label: 'Utilitário' },
+  { value: 'sedan', label: 'Sedan / Berlina' },
+  { value: 'carrinha', label: 'Carrinha' },
+  { value: 'suv', label: 'SUV' },
+  { value: 'crossover', label: 'Crossover' },
+  { value: 'coupe', label: 'Coupé' },
+  { value: 'cabrio', label: 'Cabrio' },
+  { value: 'monovolume', label: 'Monovolume' },
+  { value: 'pickup', label: 'Pick-up' },
+  { value: 'comercial', label: 'Comercial' },
+  { value: 'van', label: 'Van' },
+  { value: 'outro', label: 'Outro' },
+];
+
+const numeroInteiroValido = (value, min, max) => {
+  const numero = Number(value);
+  return Number.isInteger(numero) && numero >= min && numero <= max;
+};
+
+const validarCamposCarro = (form) => {
+  if (!form.marca) return 'Seleciona a marca da viatura.';
+  if (!form.modelo) return 'Seleciona o modelo da viatura.';
+  if (!numeroInteiroValido(form.ano, 1930, ANO_ATUAL + 1)) return `O ano deve estar entre 1930 e ${ANO_ATUAL + 1}.`;
+  if (!numeroInteiroValido(form.mesRegisto, 1, 12)) return 'Seleciona o mês de registo.';
+  if (!numeroInteiroValido(form.km, 0, 2000000)) return 'A quilometragem deve estar entre 0 e 2 000 000 km.';
+  if (!form.combustivel) return 'Seleciona o combustível.';
+  if (!form.transmissao) return 'Seleciona a transmissão.';
+  if (!numeroInteiroValido(form.potencia, 1, 2000)) return 'A potência deve estar entre 1 e 2000 cv.';
+  if (form.combustivel !== 'eletrico' && !numeroInteiroValido(form.cilindrada, 1, 10000)) return 'A cilindrada deve estar entre 1 e 10 000 cm³.';
+  if (!numeroInteiroValido(form.portas, 2, 6)) return 'O número de portas deve estar entre 2 e 6.';
+  if (!numeroInteiroValido(form.lugares, 1, 9)) return 'O número de lugares deve estar entre 1 e 9.';
+  if (!form.tracao) return 'Seleciona a tracção.';
+  if (!form.seccao) return 'Seleciona a secção.';
+  if (!form.tipoVeiculo) return 'Seleciona o tipo de veículo.';
+  if (form.seccao === 'novo' && Number(form.km || 0) > 1000) return 'Viaturas novas não devem ultrapassar 1000 km. Usa Seminovo ou Usado.';
+  if (form.vin && !/^[A-HJ-NPR-Z0-9]{17}$/.test(form.vin)) return 'O VIN deve ter 17 caracteres e não pode conter I, O ou Q.';
+  return '';
+};
+
 
 export default function Publicar() {
   const navigate = useNavigate();
@@ -93,6 +148,7 @@ export default function Publicar() {
     certEnergetico: 'C',
     marca: '',
     modelo: '',
+    versao: '',
     ano: '',
     mesRegisto: '',
     vin: '',
@@ -102,6 +158,11 @@ export default function Publicar() {
     potencia: '',
     cilindrada: '',
     cor: '',
+    portas: '',
+    lugares: '',
+    tracao: 'dianteira',
+    seccao: 'usado',
+    tipoVeiculo: '',
     garantia: '',
     aceitaRetoma: false,
     destacado: false,
@@ -132,7 +193,12 @@ export default function Publicar() {
     const { name, value, type, checked } = e.target;
     let val = type === 'checkbox' ? checked : value;
 
-    if ((name === 'preco' || name === 'km') && val !== '') val = Math.max(0, Number(val));
+    if (CAMPOS_NUMERICOS_CARRO.has(name) && val !== '') {
+      const numero = Number(val);
+      val = Number.isFinite(numero) ? Math.max(0, Math.floor(numero)) : '';
+    }
+    if (name === 'vin') val = String(val || '').toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '').slice(0, 17);
+    if (CAMPOS_TEXTO_CURTO_CARRO.has(name)) val = String(val || '').replace(/\s+/g, ' ').slice(0, name === 'versao' ? 100 : 40);
 
     setForm(f => {
       const updated = { ...f, [name]: val };
@@ -156,6 +222,9 @@ export default function Publicar() {
       if (name === 'combustivel' && val === 'eletrico') {
         updated.transmissao = 'automatico';
         updated.cilindrada = '';
+      }
+      if (name === 'seccao' && val === 'novo' && Number(updated.km || 0) > 1000) {
+        updated.seccao = 'seminovo';
       }
       return updated;
     });
@@ -213,16 +282,13 @@ export default function Publicar() {
       return;
     }
 
-    if (form.tipo === 'carro' && Number(form.ano) < 1930) {
-      setErro('O ano de matrícula tem de ser igual ou superior a 1930.');
-      setLoading(false);
-      return;
-    }
-
-    if (form.tipo === 'carro' && form.vin && form.vin.length !== 17) {
-      setErro('O número de chassis (VIN) deve ter exatamente 17 caracteres.');
-      setLoading(false);
-      return;
+    if (form.tipo === 'carro') {
+      const erroCarro = validarCamposCarro(form);
+      if (erroCarro) {
+        setErro(erroCarro);
+        setLoading(false);
+        return;
+      }
     }
 
     if (form.videoUrl && !isSupportedVideoUrl(form.videoUrl)) {
@@ -279,6 +345,7 @@ export default function Publicar() {
               carro: {
                 marca: form.marca,
                 modelo: form.modelo,
+                ...(form.versao.trim() ? { versao: form.versao.trim() } : {}),
                 ano: Number(form.ano),
                 ...(form.mesRegisto ? { mesRegisto: Number(form.mesRegisto) } : {}),
                 ...(form.vin ? { vin: form.vin.toUpperCase() } : {}),
@@ -287,7 +354,12 @@ export default function Publicar() {
                 transmissao: form.transmissao,
                 ...(form.potencia ? { potencia: Number(form.potencia) } : {}),
                 ...(form.cilindrada ? { cilindrada: Number(form.cilindrada) } : {}),
-                cor: form.cor,
+                cor: form.cor.trim(),
+                portas: Number(form.portas),
+                lugares: Number(form.lugares),
+                tracao: form.tracao,
+                seccao: form.seccao,
+                tipoVeiculo: form.tipoVeiculo,
               },
             }
         ),
@@ -827,11 +899,12 @@ export default function Publicar() {
                     </div>
                   </div>
 
+                  <div>
+                    <label className="pub-label">Versão</label>
+                    <input className="pub-input" name="versao" value={form.versao} onChange={handle} placeholder="Ex: 1.9 TDI Highline" maxLength={100} />
+                  </div>
+
                   <div className="pub-grid-4">
-                    <div>
-                      <label className="pub-label">Ano *</label>
-                      <input className="pub-input" name="ano" type="number" min="1930" max={new Date().getFullYear()} value={form.ano} onChange={handle} required placeholder={String(new Date().getFullYear())} />
-                    </div>
                     <div>
                       <label className="pub-label">Mês *</label>
                       <select className="pub-input" name="mesRegisto" value={form.mesRegisto} onChange={handle} required>
@@ -840,61 +913,97 @@ export default function Publicar() {
                       </select>
                     </div>
                     <div>
-                      <label className="pub-label">Quilómetros *</label>
-                      <input className="pub-input" name="km" type="number" min="0" value={form.km} onChange={handle} required placeholder="0" />
+                      <label className="pub-label">Ano *</label>
+                      <input className="pub-input" name="ano" type="number" min="1930" max={ANO_ATUAL + 1} step="1" value={form.ano} onChange={handle} required placeholder={String(ANO_ATUAL)} />
+                    </div>
+                    <div>
+                      <label className="pub-label">Quilometragem *</label>
+                      <input className="pub-input" name="km" type="number" min="0" max="2000000" step="1" value={form.km} onChange={handle} required placeholder="359515" />
                     </div>
                     <div>
                       <label className="pub-label">Cor Exterior</label>
-                      <input className="pub-input" name="cor" value={form.cor} onChange={handle} placeholder="Ex: Preto Pérola" />
+                      <input className="pub-input" name="cor" value={form.cor} onChange={handle} placeholder="Ex: Preto" maxLength={40} />
                     </div>
                   </div>
 
-                  <div className="pub-grid-2">
+                  <div className="pub-grid-4">
                     <div>
-                      <label className="pub-label">Combustível</label>
-                      <select className="pub-input" name="combustivel" value={form.combustivel} onChange={handle}>
+                      <label className="pub-label">Combustível *</label>
+                      <select className="pub-input" name="combustivel" value={form.combustivel} onChange={handle} required>
                         <option value="diesel">Diesel</option>
                         <option value="gasolina">Gasolina</option>
                         <option value="eletrico">Elétrico</option>
                         <option value="hibrido">Híbrido</option>
+                        <option value="gpl">GPL</option>
                       </select>
                     </div>
                     <div>
-                      <label className="pub-label">Transmissão</label>
-                      <select className="pub-input" name="transmissao" value={form.transmissao} onChange={handle} disabled={form.combustivel === 'eletrico'}>
+                      <label className="pub-label">Transmissão *</label>
+                      <select className="pub-input" name="transmissao" value={form.transmissao} onChange={handle} required disabled={form.combustivel === 'eletrico'}>
                         <option value="manual">Manual</option>
                         <option value="automatico">Automático</option>
                       </select>
                     </div>
+                    <div>
+                      <label className="pub-label">Tracção *</label>
+                      <select className="pub-input" name="tracao" value={form.tracao} onChange={handle} required>
+                        {TRACOES_CARRO.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="pub-label">Secção *</label>
+                      <select className="pub-input" name="seccao" value={form.seccao} onChange={handle} required>
+                        {SECCOES_CARRO.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
+                      </select>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="pub-label">Número de Quadro / Chassi (VIN)</label>
-                    <input 
-                      className="pub-input" 
-                      name="vin" 
-                      value={form.vin} 
-                      onChange={handle} 
-                      placeholder="Introduz o VIN (Opcional)" 
-                      style={{ textTransform: 'uppercase' }}
-                      maxLength={17}
-                    />
-                    <span style={{ display: 'block', fontSize: '11px', color: '#64748b', marginTop: '6px' }}>
-                      Se fornecido, permite aos compradores consultar o histórico na carVertical diretamente pelo teu anúncio.
-                    </span>
+                  <div className="pub-grid-4">
+                    <div>
+                      <label className="pub-label">Tipo de Veículo *</label>
+                      <select className="pub-input" name="tipoVeiculo" value={form.tipoVeiculo} onChange={handle} required>
+                        <option value="">Selecionar Tipo</option>
+                        {TIPOS_VEICULO_CARRO.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="pub-label">Núm. Portas *</label>
+                      <input className="pub-input" name="portas" type="number" min="2" max="6" step="1" value={form.portas} onChange={handle} required placeholder="5" />
+                    </div>
+                    <div>
+                      <label className="pub-label">Núm. Lugares *</label>
+                      <input className="pub-input" name="lugares" type="number" min="1" max="9" step="1" value={form.lugares} onChange={handle} required placeholder="5" />
+                    </div>
+                    <div>
+                      <label className="pub-label">Potência (cv) *</label>
+                      <input className="pub-input" name="potencia" type="number" min="1" max="2000" step="1" value={form.potencia} onChange={handle} required placeholder="130" />
+                    </div>
                   </div>
 
                   <div className="pub-grid-2">
-                    <div>
-                      <label className="pub-label">Potência (cv)</label>
-                      <input className="pub-input" name="potencia" type="number" min="0" value={form.potencia} onChange={handle} placeholder="150" />
-                    </div>
                     {form.combustivel !== 'eletrico' && (
                       <div>
-                        <label className="pub-label">Cilindrada (cm³)</label>
-                        <input className="pub-input" name="cilindrada" type="number" min="0" value={form.cilindrada} onChange={handle} placeholder="1998" />
+                        <label className="pub-label">Cilindrada (cm³) *</label>
+                        <input className="pub-input" name="cilindrada" type="number" min="1" max="10000" step="1" value={form.cilindrada} onChange={handle} required placeholder="1896" />
                       </div>
                     )}
+                    <div>
+                      <label className="pub-label">Número de Quadro / Chassi (VIN)</label>
+                      <input
+                        className="pub-input"
+                        name="vin"
+                        value={form.vin}
+                        onChange={handle}
+                        placeholder="Introduz o VIN (Opcional)"
+                        style={{ textTransform: 'uppercase' }}
+                        maxLength={17}
+                        pattern="[A-HJ-NPR-Z0-9]{17}"
+                        title="17 caracteres, sem I, O ou Q"
+                      />
+                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', marginTop: '6px' }}>
+                        Se fornecido, permite aos compradores consultar o histórico na carVertical diretamente pelo teu anúncio.
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}

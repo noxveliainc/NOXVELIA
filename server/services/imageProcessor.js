@@ -35,6 +35,10 @@ const WATERMARK_MIN_WIDTH = 54;
 const WATERMARK_MAX_WIDTH = 150;
 const WATERMARK_WIDTH_RATIO = 0.14;
 const WATERMARK_MARGIN_RATIO = 0.035;
+const WATERMARK_OPACITY = 0.52;
+const WATERMARK_MIN_BOTTOM_OFFSET = 56;
+const WATERMARK_MAX_BOTTOM_OFFSET = 130;
+const WATERMARK_BOTTOM_OFFSET_RATIO = 0.13;
 
 let watermarkLogoBufferPromise;
 
@@ -80,15 +84,30 @@ const createWatermarkOverlay = async ({ sharp, width, height }) => {
     WATERMARK_MIN_WIDTH,
     Math.min(WATERMARK_MAX_WIDTH, width * WATERMARK_WIDTH_RATIO, smallestSide * 0.35)
   ));
-  const margin = Math.round(Math.max(8, smallestSide * WATERMARK_MARGIN_RATIO));
+  const leftMargin = Math.round(Math.max(10, smallestSide * WATERMARK_MARGIN_RATIO));
+  const bottomOffset = Math.round(Math.max(
+    WATERMARK_MIN_BOTTOM_OFFSET,
+    Math.min(WATERMARK_MAX_BOTTOM_OFFSET, height * WATERMARK_BOTTOM_OFFSET_RATIO)
+  ));
   const logoSource = await loadWatermarkLogoBuffer();
-  const { data: logoBuffer, info: logoInfo } = await sharp(logoSource)
+  const { data: logoRawBuffer, info: logoInfo } = await sharp(logoSource)
     .resize({ width: logoWidth, withoutEnlargement: true })
-    .png()
+    .ensureAlpha()
+    .raw()
     .toBuffer({ resolveWithObject: true });
 
-  const overlayWidth = logoInfo.width + margin;
-  const overlayHeight = logoInfo.height + margin;
+  for (let index = 3; index < logoRawBuffer.length; index += logoInfo.channels) {
+    logoRawBuffer[index] = Math.round(logoRawBuffer[index] * WATERMARK_OPACITY);
+  }
+
+  const logoBuffer = await sharp(logoRawBuffer, {
+    raw: { width: logoInfo.width, height: logoInfo.height, channels: logoInfo.channels },
+  })
+    .png()
+    .toBuffer();
+
+  const overlayWidth = logoInfo.width + leftMargin;
+  const overlayHeight = logoInfo.height + bottomOffset;
   if (overlayWidth > width || overlayHeight > height) return null;
 
   const input = await sharp({
@@ -99,7 +118,7 @@ const createWatermarkOverlay = async ({ sharp, width, height }) => {
       background: { r: 0, g: 0, b: 0, alpha: 0 },
     },
   })
-    .composite([{ input: logoBuffer, left: margin, top: 0 }])
+    .composite([{ input: logoBuffer, left: leftMargin, top: 0 }])
     .png()
     .toBuffer();
 

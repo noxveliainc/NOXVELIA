@@ -7,7 +7,7 @@ import Notificacao from '../models/Notificacao.js';
 import { verificarToken } from '../middleware/auth.js';
 import { parsePagination } from '../utils/pagination.js';
 import { analisarPreco, calcularQualidadeAnuncio } from '../utils/anuncioInsights.js';
-import { normalizarEquipamento, normalizarImovel } from '../utils/anuncioNormalize.js';
+import { normalizarCarro, normalizarEquipamento, normalizarImovel } from '../utils/anuncioNormalize.js';
 import { attachImagesToOwnerByUrls, deleteImagesByOwner } from '../services/imageService.js';
 
 const router = express.Router();
@@ -444,6 +444,7 @@ router.post('/', verificarToken, async (req, res) => {
       ...bodyLimpo,
       equipamento: normalizarEquipamento(bodyLimpo.equipamento),
       ...(bodyLimpo.tipo === 'imovel' ? { imovel: normalizarImovel(bodyLimpo.imovel) } : {}),
+      ...(bodyLimpo.tipo === 'carro' ? { carro: normalizarCarro(bodyLimpo.carro, { obrigatorio: true }) } : {}),
     };
 
     // ── Construir o payload final ────────────────────────────
@@ -475,7 +476,7 @@ router.post('/', verificarToken, async (req, res) => {
 
   } catch (err) {
     console.error('❌ Erro ao publicar anúncio:', err);
-    res.status(500).json({ erro: 'Erro ao publicar o anúncio.' });
+    res.status(err.status || 500).json({ erro: err.status ? err.message : 'Erro ao publicar o anúncio.' });
   }
 });
 
@@ -520,6 +521,9 @@ router.put('/:id', verificarToken, async (req, res) => {
     if (tipoAtual === 'imovel' && bodyLimpo.imovel) {
       bodyNormalizado.imovel = normalizarImovel(bodyLimpo.imovel);
     }
+    if (tipoAtual === 'carro' && bodyLimpo.carro) {
+      bodyNormalizado.carro = normalizarCarro(bodyLimpo.carro);
+    }
 
     const camposAtualizados = {
       ...bodyNormalizado,
@@ -544,7 +548,7 @@ router.put('/:id', verificarToken, async (req, res) => {
     await attachImagesToOwnerByUrls({ urls: atualizado.fotos || [], ownerType: 'listing', ownerId: atualizado._id });
     res.json(atualizado);
   } catch (err) {
-    res.status(500).json({ erro: 'Erro ao atualizar o anúncio.' });
+    res.status(err.status || 500).json({ erro: err.status ? err.message : 'Erro ao atualizar o anúncio.' });
   }
 });
 

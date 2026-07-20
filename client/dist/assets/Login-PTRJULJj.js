@@ -1,4 +1,4 @@
-import{A as e,O as t,T as n,h as r,m as i,v as a,w as o,x as s,y as c}from"./index-Cd1jK0c6.js";var l=e(t(),1),u=c();function d(){let[e,t]=(0,l.useState)(``),[c,d]=(0,l.useState)(``),[f,p]=(0,l.useState)(!1),[m,h]=(0,l.useState)(!1),[g,_]=(0,l.useState)(``),[v,y]=(0,l.useState)(!1),b=n(),x=o(),{login:S}=a(),C=x.state?.mensagemRegisto,w=i(x.state,localStorage.getItem(`@App:contexto_visual`)===`carro`?`/carros`:`/imoveis`);return(0,u.jsxs)(u.Fragment,{children:[(0,u.jsx)(`style`,{children:`
+import{A as e,O as t,T as n,h as r,m as i,v as a,w as o,x as s,y as c}from"./index--m2o87Sx.js";var l=e(t(),1),u=c();function d(){let[e,t]=(0,l.useState)(``),[c,d]=(0,l.useState)(``),[f,p]=(0,l.useState)(!1),[m,h]=(0,l.useState)(!1),[g,_]=(0,l.useState)(``),[v,y]=(0,l.useState)(!1),b=n(),x=o(),{login:S}=a(),C=x.state?.mensagemRegisto,w=i(x.state,localStorage.getItem(`@App:contexto_visual`)===`carro`?`/carros`:`/imoveis`);return(0,u.jsxs)(u.Fragment,{children:[(0,u.jsx)(`style`,{children:`
         .auth-root {
           position: relative;
           overflow: hidden;
