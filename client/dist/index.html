@@ -10,6 +10,11 @@
       content="Encontra e publica anúncios de carros e imóveis em Portugal na Noxvelia."
     />
     <meta name="robots" content="index, follow" />
+    <meta name="application-name" content="Noxvelia" />
+    <meta name="apple-mobile-web-app-title" content="Noxvelia" />
+    <meta name="author" content="Noxvelia" />
+    <meta name="publisher" content="Noxvelia" />
+    <meta name="theme-color" content="#082126" />
     <link rel="canonical" href="https://www.noxvelia.com/" />
     <meta name="google-adsense-account" content="ca-pub-5338010567169539">
 
@@ -35,16 +40,34 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Noxvelia",
-        "alternateName": "NOXVELIA",
-        "url": "https://www.noxvelia.com/"
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://www.noxvelia.com/#organization",
+            "name": "Noxvelia",
+            "alternateName": ["NOXVELIA", "Noxvelia Portugal"],
+            "url": "https://www.noxvelia.com/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://www.noxvelia.com/logo-noxvelia.png"
+            }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://www.noxvelia.com/#website",
+            "name": "Noxvelia",
+            "alternateName": ["NOXVELIA", "Noxvelia Portugal"],
+            "url": "https://www.noxvelia.com/",
+            "publisher": { "@id": "https://www.noxvelia.com/#organization" },
+            "inLanguage": "pt-PT"
+          }
+        ]
       }
     </script>
-    <script type="module" crossorigin src="/assets/index-DbfBO2YU.js"></script>
+    <script type="module" crossorigin src="/assets/index-BFgRkQGX.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-CriyruYp.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
   </body>
 </html>

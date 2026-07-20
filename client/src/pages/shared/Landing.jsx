@@ -8,7 +8,7 @@ import NavbarLanding from './NavbarLanding';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
 import { getImageUrl } from '../../utils/images';
-import { anuncioPath } from '../../utils/seo';
+import { anuncioPath, homePageJsonLd, siteIdentityJsonLd } from '../../utils/seo';
 import { useAuth } from '../../context/AuthContext';
 import { publishIntentState } from '../../utils/navigationState';
 import { trackFunnelEvent } from '../../utils/funnelAnalytics';
@@ -263,7 +263,7 @@ export default function Landing() {
 
   return (
     <div className="lp-root">
-      <Seo title="Noxvelia | Carros e imóveis em Portugal" description="Encontra, compara e publica anúncios de carros e imóveis em Portugal na Noxvelia." path="/" jsonLd={[{ '@context': 'https://schema.org', '@type': 'Organization', name: 'Noxvelia', url: 'https://www.noxvelia.com', logo: 'https://www.noxvelia.com/logo-noxvelia.png' }, { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Noxvelia', url: 'https://www.noxvelia.com' }]} />
+      <Seo title="Noxvelia | Carros e imóveis em Portugal" description="Encontra, compara e publica anúncios de carros e imóveis em Portugal na Noxvelia." path="/" jsonLd={[siteIdentityJsonLd, homePageJsonLd]} />
       <style>{`
         .lp-root,
         .lp-root * {

@@ -1,12 +1,12 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { absoluteUrl, SITE_URL } from '../utils/seo';
+import { absoluteUrl, SITE_LOGO_URL, SITE_NAME } from '../utils/seo';
 
 export default function Seo({
   title,
   description,
   path = '/',
-  image = `${SITE_URL}/logo-noxvelia.png`,
+  image = SITE_LOGO_URL,
   type = 'website',
   noindex = false,
   jsonLd = [],
@@ -17,6 +17,10 @@ export default function Seo({
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
+      <meta name="application-name" content={SITE_NAME} />
+      <meta name="apple-mobile-web-app-title" content={SITE_NAME} />
+      <meta name="author" content={SITE_NAME} />
+      <meta name="publisher" content={SITE_NAME} />
       <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
       <link rel="canonical" href={canonical} />
       <meta property="og:locale" content="pt_PT" />
