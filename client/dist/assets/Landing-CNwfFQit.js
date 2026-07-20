@@ -1,270 +1,448 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import GoogleAdSlot from '../../components/GoogleAdSlot';
-import api from '../../services/api';
-import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
-import { DISTRITOS } from '../../data/localizacoes';
-import NavbarLanding from './NavbarLanding';
-import Footer from '../../components/Footer';
-import Seo from '../../components/Seo';
-import { getImageUrl } from '../../utils/images';
-import { anuncioPath, homePageJsonLd, siteIdentityJsonLd } from '../../utils/seo';
-import { useAuth } from '../../context/AuthContext';
-import { publishIntentState } from '../../utils/navigationState';
-import { trackFunnelEvent } from '../../utils/funnelAnalytics';
-import { COOKIE_CONSENT_CHANGED_EVENT, readCookieConsent } from '../../utils/cookieConsent';
-
-const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
-
-const MARCAS_POPULARES = ['Peugeot', 'Renault', 'Mercedes-Benz', 'BMW', 'Volkswagen', 'Audi', 'Toyota', 'Tesla'];
-const MODELOS_POPULARES = [
-  ['Renault', 'Clio'],
-  ['Peugeot', '208'],
-  ['Peugeot', '2008'],
-  ['Mercedes-Benz', 'A 180'],
-  ['BMW', '116'],
-  ['Opel', 'Corsa'],
-];
-const COMBUSTIVEIS_POPULARES = ['Diesel', 'Gasolina', 'Eléctrico', 'Híbrido', 'GPL'];
-const DISTRITOS_POPULARES = ['Lisboa', 'Porto', 'Braga', 'Setúbal', 'Aveiro', 'Faro', 'Coimbra', 'Leiria'];
-const TIPOLOGIAS_POPULARES = ['T1', 'T2', 'T3', 'T4', 'T5+'];
-const PRECOS_RAPIDOS = [
-  { label: 'Até 10.000 €', value: '10000' },
-  { label: 'Até 20.000 €', value: '20000' },
-  { label: 'Até 150.000 €', value: '150000' },
-  { label: 'Até 300.000 €', value: '300000' },
-];
-
-const formatarMoeda = (valor) =>
-  new Intl.NumberFormat('pt-PT', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(valor || 0);
-
-const slugMarca = (marca) => marca
-  .normalize('NFD')
-  .replace(/[\u0300-\u036f]/g, '')
-  .toLowerCase()
-  .replace(/&/g, ' and ')
-  .replace(/[^a-z0-9]+/g, '-')
-  .replace(/^-|-$/g, '');
-
-const logoMarca = (marca) => `/marcas/${slugMarca(marca)}.${marca === 'Jaecoo' ? 'svg' : 'png'}`;
-
-const iniciaisMarca = (marca) => marca
-  .split(/[\s&-]+/)
-  .filter(Boolean)
-  .slice(0, 2)
-  .map((parte) => parte[0])
-  .join('')
-  .toUpperCase();
-
-const LOGOS_COM_TEXTO_EMBUTIDO = new Set(['aiways', 'aston-martin', 'bentley']);
-
-export default function Landing() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { signed } = useAuth();
-  const marcasRef = useRef(null);
-  const landingViewTrackedRef = useRef(false);
-  const publicarTo = signed ? '/publicar' : '/login';
-  const publicarState = signed ? undefined : publishIntentState(location, '/');
-  const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
-  const [loadingExemplos, setLoadingExemplos] = useState(true);
-  const [erroExemplos, setErroExemplos] = useState(false);
-  const [pesquisaRapida, setPesquisaRapida] = useState({
-    tipo: 'carro',
-    marca: '',
-    modelo: '',
-    combustivel: '',
-    tipologia: '',
-    distrito: '',
-    precoMax: '',
-  });
-
-  useEffect(() => {
-    const trackLandingViewOnce = () => {
-      if (landingViewTrackedRef.current) return;
-      if (readCookieConsent()?.external !== true) return;
-      landingViewTrackedRef.current = true;
-      trackFunnelEvent('landing_view');
-    };
-
-    trackLandingViewOnce();
-    const onConsentChanged = (event) => {
-      if (event?.detail?.external === true || readCookieConsent()?.external === true) {
-        trackLandingViewOnce();
-      }
-    };
-    window.addEventListener(COOKIE_CONSENT_CHANGED_EVENT, onConsentChanged);
-    return () => window.removeEventListener(COOKIE_CONSENT_CHANGED_EVENT, onConsentChanged);
-  }, []);
-
-  const modelosPesquisa = pesquisaRapida.tipo === 'carro' && pesquisaRapida.marca
-    ? getModelosPorMarca(pesquisaRapida.marca).map((modelo) => (typeof modelo === 'object' ? modelo.modelo || modelo.nome : modelo)).filter(Boolean)
-    : [];
-
-  const criarLinkPesquisa = (tipo, filtros = {}) => {
-    const params = new URLSearchParams();
-    params.set('tipo', tipo);
-
-    Object.entries(filtros).forEach(([chave, valor]) => {
-      if (valor) params.set(chave, valor);
-    });
-
-    return `${tipo === 'carro' ? '/carros' : '/imoveis'}?${params.toString()}`;
-  };
-
-  const atualizarPesquisaRapida = (campo, valor) => {
-    setPesquisaRapida((atual) => {
-      const proximo = { ...atual, [campo]: valor };
-
-      if (campo === 'tipo') {
-        return {
-          ...proximo,
-          marca: '',
-          modelo: '',
-          combustivel: '',
-          tipologia: '',
-        };
-      }
-
-      if (campo === 'marca') {
-        proximo.modelo = '';
-      }
-
-      return proximo;
-    });
-  };
-
-  const submeterPesquisaRapida = (evento) => {
-    evento.preventDefault();
-
-    const { tipo, marca, modelo, combustivel, tipologia, distrito, precoMax } = pesquisaRapida;
-    const filtros = {
-      distrito,
-      precoMax,
-      ...(tipo === 'carro' ? { marca, modelo, combustivel } : { tipologia }),
-    };
-
-    trackFunnelEvent('search_start', { vertical: tipo });
-    navigate(criarLinkPesquisa(tipo, filtros));
-  };
-
-  useEffect(() => {
-    let ativo = true;
-
-    const carregarExemplos = async () => {
-      try {
-        const { data } = await api.get('/anuncios/em-alta/semana');
-
-        if (!ativo) return;
-        setExemplos({
-          carro: (data?.carro || []).slice(0, 2),
-          imovel: (data?.imovel || []).slice(0, 2),
-        });
-        setErroExemplos(false);
-      } catch {
-        if (ativo) {
-          setExemplos({ carro: [], imovel: [] });
-          setErroExemplos(true);
+import{A as e,O as t,T as n,b as r,d as i,f as a,g as o,l as s,u as c,v as l,w as u,x as d,y as f}from"./index-CxPvB2_g.js";import{r as p}from"./images-io1S19E8.js";import{a as m,i as h,o as g}from"./seo-BZnLo9Qd.js";import{t as _}from"./Seo-DtRQPOWO.js";import{t as v}from"./GoogleAdSlot-D7VixKgE.js";import{i as y,r as b,t as x}from"./localizacoes-CvOZjRrK.js";import{t as S}from"./funnelAnalytics-C-4-FPTj.js";var C=e(t(),1),w=f();function ee(){let{user:e,signed:t,logout:n}=l(),r=u(),[i,s]=(0,C.useState)(!1),[c,f]=(0,C.useState)(!1),p=(0,C.useRef)(null),m=(0,C.useRef)(null);(0,C.useEffect)(()=>{let e=e=>{p.current&&!p.current.contains(e.target)&&s(!1),m.current&&!m.current.contains(e.target)&&f(!1)},t=e=>{e.key===`Escape`&&(s(!1),f(!1))};return window.addEventListener(`click`,e),window.addEventListener(`keydown`,t),()=>{window.removeEventListener(`click`,e),window.removeEventListener(`keydown`,t)}},[]),(0,C.useEffect)(()=>{s(!1),f(!1)},[r.pathname]);let h=e||(()=>{try{let e=sessionStorage.getItem(`@App:user`);return e?JSON.parse(e):null}catch{return null}})(),g=h?.avatarUrl||h?.avatar,_=h?.nome?.charAt(0).toUpperCase()||`U`,v=h?.nome?.split(` `)[0]||``,y=t?`/publicar`:`/login`,b=t?void 0:o(r,`/`);return(0,w.jsxs)(w.Fragment,{children:[(0,w.jsx)(`style`,{children:`
+        .nl-root,
+        .nl-root * {
+          box-sizing: border-box;
         }
-      } finally {
-        if (ativo) setLoadingExemplos(false);
-      }
-    };
 
-    carregarExemplos();
-    return () => { ativo = false; };
-  }, []);
+        .nl-root {
+          position: sticky;
+          top: 0;
+          z-index: 9990;
+          width: 100%;
+          isolation: isolate;
+          height: 74px;
+          display: flex;
+          align-items: center;
+          padding: 0 24px;
+          border-bottom: 1px solid rgba(8, 33, 38, 0.1);
+          background: rgba(248, 246, 239, 0.88);
+          backdrop-filter: blur(18px) saturate(145%);
+          font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
 
-  const abrirExemplo = (anuncio, origem) => {
-    try {
-      localStorage.setItem('@App:contexto_visual', origem === '/carros' ? 'carro' : 'imovel');
-    } catch {
-      // A navegação continua disponível quando o armazenamento local está bloqueado.
-    }
-    navigate(anuncioPath(anuncio));
-  };
+        .nl-inner {
+          width: min(1260px, 100%);
+          height: 100%;
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          align-items: center;
+          gap: 28px;
+        }
 
-  const moverMarcas = (direcao) => {
-    marcasRef.current?.scrollBy({
-      left: direcao * Math.min(720, window.innerWidth * 0.72),
-      behavior: 'smooth',
-    });
-  };
+        .nl-brand {
+          display: inline-flex;
+          align-items: center;
+          gap: 11px;
+          color: #082126;
+          text-decoration: none;
+        }
 
-  const mostrarDestaques = loadingExemplos || exemplos.carro.length > 0 || exemplos.imovel.length > 0;
+        .nl-brand img {
+          width: 44px;
+          height: 44px;
+          display: block;
+          object-fit: contain;
+        }
 
-  const renderExemplo = (anuncio, origem) => {
-    const isCarro = anuncio.tipo === 'carro';
-    const foto = getImageUrl(anuncio.fotos?.[0] || anuncio.imagens?.[0], 'medium');
-    const detalhe = isCarro
-      ? [
-          anuncio.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null,
-          anuncio.carro?.combustivel,
-        ].filter(Boolean).join(' · ')
-      : [
-          anuncio.imovel?.tipologia || anuncio.imovel?.tipoImovel,
-          anuncio.imovel?.area ? `${anuncio.imovel.area} m²` : null,
-        ].filter(Boolean).join(' · ');
+        .nl-wordmark {
+          font-size: 15px;
+          font-weight: 850;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+        }
 
-    return (
-      <button
-        type="button"
-        key={anuncio._id}
-        className={`lp-example-card ${isCarro ? 'drive' : 'estate'}`}
-        onClick={() => abrirExemplo(anuncio, origem)}
-      >
-        <span className="lp-example-img">
-          {foto ? (
-            <img src={foto} width="800" height="600" alt={anuncio.titulo || (isCarro ? 'Automóvel' : 'Imóvel')} loading="lazy" />
-          ) : (
-            <span className="lp-example-no-photo">Sem fotografia</span>
-          )}
-          <span className="lp-example-weekly">Destaque {isCarro ? 'Drive' : 'Estate'}</span>
-        </span>
-        <span className="lp-example-body">
-          <span className="lp-example-price">{formatarMoeda(anuncio.preco)}</span>
-          <span className="lp-example-title">{anuncio.titulo}</span>
-          <span className="lp-example-meta">
-            {detalhe || (isCarro ? 'Dados técnicos disponíveis' : 'Detalhes do imóvel')}
-          </span>
-          <span className="lp-example-location">
-            {anuncio.localizacao?.cidade || 'Portugal'}
-          </span>
-        </span>
-      </button>
-    );
-  };
+        .nl-links {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: clamp(18px, 2.5vw, 34px);
+        }
 
-  const renderEstadoLista = (tipo, rota) => {
-    if (loadingExemplos) {
-      return (
-        <div className="lp-example-state" role="status">
-          <span className="lp-state-loader" aria-hidden="true" />
-          <strong>A selecionar os anúncios com mais interesse.</strong>
-          <span>Os destaques refletem as visitas dos últimos sete dias.</span>
-        </div>
-      );
-    }
+        .nl-links a {
+          position: relative;
+          padding: 8px 0;
+          color: #456067;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 760;
+          transition: color 0.2s ease;
+        }
 
-    return (
-      <div className="lp-example-state" role="status">
-        <strong>{erroExemplos ? 'A seleção semanal está a ser atualizada.' : `Descobre todas as oportunidades em ${tipo}.`}</strong>
-        <span>{erroExemplos ? 'Entretanto, encontra todos os anúncios na pesquisa completa.' : 'Explora a pesquisa e encontra o que combina contigo.'}</span>
-        <button type="button" className="lp-column-link" onClick={() => navigate(rota)}>
-          Explorar {tipo}
-        </button>
-      </div>
-    );
-  };
+        .nl-links a::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          right: 100%;
+          bottom: 3px;
+          height: 2px;
+          border-radius: 2px;
+          background: #2ac1b4;
+          transition: right 0.2s ease;
+        }
 
-  return (
-    <div className="lp-root">
-      <Seo title="Noxvelia | Plataforma de carros e imóveis em Portugal" description="Noxvelia é uma plataforma portuguesa para pesquisar e publicar anúncios de carros e imóveis." path="/" jsonLd={[siteIdentityJsonLd, homePageJsonLd]} />
-      <style>{`
+        .nl-links a:hover {
+          color: #082126;
+        }
+
+        .nl-links a:hover::after {
+          right: 0;
+        }
+
+        .nl-actions {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 9px;
+          min-width: 0;
+        }
+
+        .nl-menu-toggle {
+          width: 40px;
+          height: 40px;
+          display: none;
+          place-items: center;
+          padding: 0;
+          color: #143238;
+          border: 1px solid rgba(8, 33, 38, 0.16);
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.62);
+          cursor: pointer;
+        }
+
+        .nl-menu-toggle svg {
+          width: 19px;
+          height: 19px;
+          fill: none;
+          stroke: currentColor;
+          stroke-width: 2;
+          stroke-linecap: round;
+        }
+
+        .nl-mobile-menu {
+          position: absolute;
+          top: calc(100% + 8px);
+          left: 16px;
+          right: 16px;
+          display: none;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+          padding: 12px;
+          border: 1px solid rgba(8, 33, 38, 0.12);
+          border-radius: 14px;
+          background: rgba(255, 255, 255, 0.98);
+          box-shadow: 0 22px 54px -30px rgba(8, 33, 38, 0.5);
+        }
+
+        .nl-mobile-menu-head {
+          grid-column: 1 / -1;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          min-height: 52px;
+          padding: 6px 6px 12px;
+          border-bottom: 1px solid #e3ebe8;
+          color: #082126;
+        }
+
+        .nl-mobile-menu-head img {
+          width: 38px;
+          height: 38px;
+          display: block;
+          object-fit: contain;
+        }
+
+        .nl-mobile-menu-head strong {
+          display: block;
+          font-size: 13px;
+          font-weight: 900;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+        }
+
+        .nl-mobile-menu-head span {
+          display: block;
+          margin-top: 2px;
+          color: #60767c;
+          font-size: 11px;
+          font-weight: 720;
+        }
+
+        .dark .nl-mobile-menu-head {
+          color: #ecfdfb !important;
+          border-bottom-color: #334155 !important;
+        }
+
+        .dark .nl-mobile-menu-head span {
+          color: #b7c7cb !important;
+        }
+
+        .nl-mobile-menu a,
+        .nl-mobile-menu button {
+          display: flex;
+          align-items: center;
+          min-height: 42px;
+          width: 100%;
+          padding: 0 12px;
+          color: #355158;
+          border: 0;
+          border-radius: 9px;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 780;
+          background: transparent;
+          cursor: pointer;
+        }
+
+        .nl-mobile-menu a.nl-mobile-primary {
+          grid-column: 1 / -1;
+          justify-content: center;
+          min-height: 46px;
+          color: #ffffff;
+          background: #082126;
+        }
+
+        .nl-mobile-menu a:hover,
+        .nl-mobile-menu button:hover {
+          color: #082126;
+          background: #edf6f3;
+        }
+
+        .nl-mobile-menu a.nl-mobile-primary:hover {
+          color: #ffffff;
+          background: #0d3036;
+        }
+
+        .dark .nl-mobile-menu a.nl-mobile-primary {
+          color: #062326 !important;
+          background: #2ac1b4 !important;
+        }
+
+        .nl-btn-ghost,
+        .nl-btn-solid {
+          min-height: 40px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 16px;
+          border-radius: 10px;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 800;
+          transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .nl-btn-ghost {
+          color: #143238;
+          border: 1px solid rgba(8, 33, 38, 0.16);
+          background: rgba(255, 255, 255, 0.56);
+        }
+
+        .nl-btn-ghost:hover {
+          border-color: rgba(8, 33, 38, 0.28);
+          background: #fff;
+        }
+
+        .nl-btn-solid {
+          color: #fff;
+          border: 1px solid #082126;
+          background: #082126;
+          box-shadow: 0 12px 24px -18px rgba(8, 33, 38, 0.75);
+        }
+
+        .nl-btn-solid:hover {
+          transform: translateY(-1px);
+          background: #0d3036;
+          box-shadow: 0 16px 28px -18px rgba(8, 33, 38, 0.8);
+        }
+
+        .nl-user-wrap {
+          position: relative;
+        }
+
+        .nl-user-trigger {
+          min-height: 42px;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 4px 12px 4px 4px;
+          color: #143238;
+          border: 1px solid rgba(8, 33, 38, 0.14);
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.7);
+          cursor: pointer;
+          transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .nl-user-trigger:hover,
+        .nl-user-trigger.active {
+          border-color: rgba(42, 193, 180, 0.5);
+          background: #fff;
+        }
+
+        .nl-avatar {
+          width: 32px;
+          height: 32px;
+          flex: 0 0 auto;
+          overflow: hidden;
+          display: grid;
+          place-items: center;
+          color: #0d5955;
+          border: 1px solid rgba(42, 193, 180, 0.24);
+          border-radius: 50%;
+          background: rgba(42, 193, 180, 0.14);
+        }
+
+        .nl-avatar img {
+          width: 100%;
+          height: 100%;
+          display: block;
+          object-fit: cover;
+        }
+
+        .nl-avatar-initial,
+        .nl-username {
+          font-size: 12px;
+          font-weight: 800;
+        }
+
+        .nl-chevron {
+          stroke: #6b7d82;
+          transition: transform 0.2s ease;
+        }
+
+        .nl-user-trigger.active .nl-chevron {
+          transform: rotate(180deg);
+        }
+
+        .nl-user-dropdown {
+          position: absolute;
+          top: calc(100% + 12px);
+          right: 0;
+          width: 210px;
+          display: flex;
+          flex-direction: column;
+          padding: 8px;
+          border: 1px solid rgba(8, 33, 38, 0.12);
+          border-radius: 14px;
+          background: #fff;
+          box-shadow: 0 22px 54px -30px rgba(8, 33, 38, 0.5);
+        }
+
+        .nl-ud-item {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 11px;
+          color: #4d656b;
+          border: 0;
+          border-radius: 9px;
+          background: transparent;
+          text-align: left;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 720;
+          cursor: pointer;
+          transition: color 0.2s ease, background 0.2s ease;
+        }
+
+        .nl-ud-item:hover {
+          color: #082126;
+          background: #f1f6f4;
+        }
+
+        .nl-ud-item svg {
+          width: 16px;
+          height: 16px;
+          fill: none;
+          stroke: currentColor;
+          stroke-width: 2;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+
+        .nl-ud-divider {
+          height: 1px;
+          margin: 6px 0;
+          background: #e5eceb;
+        }
+
+        .nl-ud-item.logout:hover {
+          color: #b42318;
+          background: #fff3f1;
+        }
+
+        @media (max-width: 920px) {
+          .nl-inner {
+            gap: 18px;
+          }
+
+          .nl-links {
+            display: none;
+          }
+
+          .nl-inner {
+            grid-template-columns: auto 1fr;
+          }
+
+          .nl-actions {
+            grid-column: 2;
+          }
+
+          .nl-menu-toggle,
+          .nl-mobile-menu {
+            display: grid;
+          }
+        }
+
+        @media (max-width: 540px) {
+          .nl-root {
+            height: 66px;
+            padding: 0 14px;
+          }
+
+          .nl-inner {
+            gap: 10px;
+          }
+
+          .nl-brand img {
+            width: 38px;
+            height: 38px;
+          }
+
+          .nl-wordmark {
+            display: inline;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+          }
+
+          .nl-actions {
+            gap: 6px;
+          }
+
+          .nl-btn-ghost,
+          .nl-btn-solid,
+          .nl-user-wrap {
+            display: none;
+          }
+
+          .nl-user-trigger {
+            padding-right: 8px;
+          }
+
+          .nl-menu-toggle {
+            width: 36px;
+            height: 36px;
+          }
+
+          .nl-mobile-menu {
+            left: 10px;
+            right: 10px;
+            grid-template-columns: 1fr;
+          }
+        }
+      `}),(0,w.jsxs)(`nav`,{className:`nl-root`,"aria-label":`Navegação principal`,ref:m,children:[(0,w.jsxs)(`div`,{className:`nl-inner`,children:[(0,w.jsxs)(d,{to:`/`,className:`nl-brand`,"aria-label":`Noxvelia — página inicial`,children:[(0,w.jsx)(`img`,{src:`/logo-noxvelia.png`,alt:``}),(0,w.jsx)(`span`,{className:`nl-wordmark`,children:`Noxvelia`})]}),(0,w.jsxs)(`div`,{className:`nl-links`,children:[(0,w.jsx)(`a`,{href:`#pesquisa`,children:`Pesquisar`}),(0,w.jsx)(`a`,{href:`#anunciar`,children:`Anunciar grátis`}),(0,w.jsx)(`a`,{href:`#marcas`,children:`Marcas`}),(0,w.jsx)(`a`,{href:`#atalhos`,children:`Atalhos`})]}),(0,w.jsxs)(`div`,{className:`nl-actions`,children:[(0,w.jsx)(`button`,{type:`button`,className:`nl-menu-toggle`,onClick:()=>{s(!1),f(e=>!e)},"aria-expanded":c,"aria-controls":`nl-mobile-menu`,"aria-label":c?`Fechar navegação`:`Abrir navegação`,children:c?(0,w.jsx)(`svg`,{viewBox:`0 0 24 24`,"aria-hidden":`true`,children:(0,w.jsx)(`path`,{d:`M6 6l12 12M18 6L6 18`})}):(0,w.jsx)(`svg`,{viewBox:`0 0 24 24`,"aria-hidden":`true`,children:(0,w.jsx)(`path`,{d:`M4 7h16M4 12h16M4 17h16`})})}),(0,w.jsx)(a,{}),(0,w.jsx)(d,{to:y,state:b,className:`nl-btn-solid`,children:`Anunciar grátis`}),t?(0,w.jsxs)(`div`,{ref:p,className:`nl-user-wrap`,children:[(0,w.jsxs)(`button`,{type:`button`,className:`nl-user-trigger ${i?`active`:``}`,onClick:()=>{f(!1),s(e=>!e)},"aria-expanded":i,"aria-label":`Abrir menu de utilizador`,children:[(0,w.jsx)(`span`,{className:`nl-avatar`,children:g?(0,w.jsx)(`img`,{src:g,alt:``}):(0,w.jsx)(`span`,{className:`nl-avatar-initial`,children:_})}),v&&(0,w.jsx)(`span`,{className:`nl-username`,children:v}),(0,w.jsx)(`svg`,{className:`nl-chevron`,width:`14`,height:`14`,viewBox:`0 0 24 24`,fill:`none`,strokeWidth:`2`,"aria-hidden":`true`,children:(0,w.jsx)(`path`,{d:`M6 9l6 6 6-6`})})]}),i&&(0,w.jsxs)(`div`,{className:`nl-user-dropdown`,children:[(0,w.jsxs)(d,{to:`/perfil`,onClick:()=>s(!1),className:`nl-ud-item`,children:[(0,w.jsxs)(`svg`,{viewBox:`0 0 24 24`,"aria-hidden":`true`,children:[(0,w.jsx)(`path`,{d:`M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2`}),(0,w.jsx)(`circle`,{cx:`12`,cy:`7`,r:`4`})]}),`O meu perfil`]}),(0,w.jsx)(`div`,{className:`nl-ud-divider`}),(0,w.jsxs)(`button`,{type:`button`,onClick:()=>{s(!1),n()},className:`nl-ud-item logout`,children:[(0,w.jsxs)(`svg`,{viewBox:`0 0 24 24`,"aria-hidden":`true`,children:[(0,w.jsx)(`path`,{d:`M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4`}),(0,w.jsx)(`polyline`,{points:`16 17 21 12 16 7`}),(0,w.jsx)(`line`,{x1:`21`,y1:`12`,x2:`9`,y2:`12`})]}),`Terminar sessão`]})]})]}):(0,w.jsx)(w.Fragment,{children:(0,w.jsx)(d,{to:`/login`,state:{from:r.pathname},className:`nl-btn-ghost`,children:`Entrar`})})]})]}),c&&(0,w.jsxs)(`div`,{className:`nl-mobile-menu`,id:`nl-mobile-menu`,children:[(0,w.jsxs)(`div`,{className:`nl-mobile-menu-head`,"aria-hidden":`true`,children:[(0,w.jsx)(`img`,{src:`/logo-noxvelia.png`,alt:``}),(0,w.jsxs)(`div`,{children:[(0,w.jsx)(`strong`,{children:`Noxvelia`}),(0,w.jsx)(`span`,{children:`Drive e Estate em Portugal`})]})]}),(0,w.jsx)(`a`,{href:`#pesquisa`,onClick:()=>f(!1),children:`Pesquisar`}),(0,w.jsx)(`a`,{href:`#anunciar`,onClick:()=>f(!1),children:`Anunciar grátis`}),(0,w.jsx)(`a`,{href:`#marcas`,onClick:()=>f(!1),children:`Marcas`}),(0,w.jsx)(`a`,{href:`#atalhos`,onClick:()=>f(!1),children:`Atalhos`}),(0,w.jsx)(d,{to:`/carros`,onClick:()=>f(!1),children:`Drive`}),(0,w.jsx)(d,{to:`/imoveis`,onClick:()=>f(!1),children:`Estate`}),(0,w.jsx)(d,{className:`nl-mobile-primary`,to:y,state:b,onClick:()=>f(!1),children:`Publicar anúncio`}),t?(0,w.jsxs)(w.Fragment,{children:[(0,w.jsx)(d,{to:`/perfil`,onClick:()=>f(!1),children:`O meu perfil`}),(0,w.jsx)(`button`,{type:`button`,onClick:()=>{f(!1),n()},children:`Terminar sessão`})]}):(0,w.jsxs)(w.Fragment,{children:[(0,w.jsx)(d,{to:`/login`,state:{from:r.pathname},onClick:()=>f(!1),children:`Entrar`}),(0,w.jsx)(d,{to:`/registo`,onClick:()=>f(!1),children:`Registar`})]})]})]})]})}var T=`https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia`,E=[`Peugeot`,`Renault`,`Mercedes-Benz`,`BMW`,`Volkswagen`,`Audi`,`Toyota`,`Tesla`],D=[[`Renault`,`Clio`],[`Peugeot`,`208`],[`Peugeot`,`2008`],[`Mercedes-Benz`,`A 180`],[`BMW`,`116`],[`Opel`,`Corsa`]],O=[`Diesel`,`Gasolina`,`Eléctrico`,`Híbrido`,`GPL`],k=[`Lisboa`,`Porto`,`Braga`,`Setúbal`,`Aveiro`,`Faro`,`Coimbra`,`Leiria`],A=[`T1`,`T2`,`T3`,`T4`,`T5+`],j=[{label:`Até 10.000 €`,value:`10000`},{label:`Até 20.000 €`,value:`20000`},{label:`Até 150.000 €`,value:`150000`},{label:`Até 300.000 €`,value:`300000`}],M=e=>new Intl.NumberFormat(`pt-PT`,{style:`currency`,currency:`EUR`,maximumFractionDigits:0}).format(e||0),N=e=>e.normalize(`NFD`).replace(/[\u0300-\u036f]/g,``).toLowerCase().replace(/&/g,` and `).replace(/[^a-z0-9]+/g,`-`).replace(/^-|-$/g,``),P=e=>`/marcas/${N(e)}.${e===`Jaecoo`?`svg`:`png`}`,F=e=>e.split(/[\s&-]+/).filter(Boolean).slice(0,2).map(e=>e[0]).join(``).toUpperCase(),I=new Set([`aiways`,`aston-martin`,`bentley`]);function L(){let e=n(),t=u(),{signed:a}=l(),f=(0,C.useRef)(null),L=(0,C.useRef)(!1),te=a?`/publicar`:`/login`,ne=a?void 0:o(t,`/`),[R,z]=(0,C.useState)({carro:[],imovel:[]}),[B,V]=(0,C.useState)(!0),[H,U]=(0,C.useState)(!1),[W,G]=(0,C.useState)({tipo:`carro`,marca:``,modelo:``,combustivel:``,tipologia:``,distrito:``,precoMax:``});(0,C.useEffect)(()=>{let e=()=>{L.current||c()?.external===!0&&(L.current=!0,S(`landing_view`))};e();let t=t=>{(t?.detail?.external===!0||c()?.external===!0)&&e()};return window.addEventListener(s,t),()=>window.removeEventListener(s,t)},[]);let K=W.tipo===`carro`&&W.marca?y(W.marca).map(e=>typeof e==`object`?e.modelo||e.nome:e).filter(Boolean):[],q=(e,t={})=>{let n=new URLSearchParams;return n.set(`tipo`,e),Object.entries(t).forEach(([e,t])=>{t&&n.set(e,t)}),`${e===`carro`?`/carros`:`/imoveis`}?${n.toString()}`},J=(e,t)=>{G(n=>{let r={...n,[e]:t};return e===`tipo`?{...r,marca:``,modelo:``,combustivel:``,tipologia:``}:(e===`marca`&&(r.modelo=``),r)})},Y=t=>{t.preventDefault();let{tipo:n,marca:r,modelo:i,combustivel:a,tipologia:o,distrito:s,precoMax:c}=W,l={distrito:s,precoMax:c,...n===`carro`?{marca:r,modelo:i,combustivel:a}:{tipologia:o}};S(`search_start`,{vertical:n}),e(q(n,l))};(0,C.useEffect)(()=>{let e=!0;return(async()=>{try{let{data:t}=await r.get(`/anuncios/em-alta/semana`);if(!e)return;z({carro:(t?.carro||[]).slice(0,2),imovel:(t?.imovel||[]).slice(0,2)}),U(!1)}catch{e&&(z({carro:[],imovel:[]}),U(!0))}finally{e&&V(!1)}})(),()=>{e=!1}},[]);let X=(t,n)=>{try{localStorage.setItem(`@App:contexto_visual`,n===`/carros`?`carro`:`imovel`)}catch{}e(h(t))},Z=e=>{f.current?.scrollBy({left:e*Math.min(720,window.innerWidth*.72),behavior:`smooth`})},re=B||R.carro.length>0||R.imovel.length>0,Q=(e,t)=>{let n=e.tipo===`carro`,r=p(e.fotos?.[0]||e.imagens?.[0],`medium`),i=n?[e.carro?.km==null?null:`${new Intl.NumberFormat(`pt-PT`).format(e.carro.km)} km`,e.carro?.combustivel].filter(Boolean).join(` · `):[e.imovel?.tipologia||e.imovel?.tipoImovel,e.imovel?.area?`${e.imovel.area} m²`:null].filter(Boolean).join(` · `);return(0,w.jsxs)(`button`,{type:`button`,className:`lp-example-card ${n?`drive`:`estate`}`,onClick:()=>X(e,t),children:[(0,w.jsxs)(`span`,{className:`lp-example-img`,children:[r?(0,w.jsx)(`img`,{src:r,width:`800`,height:`600`,alt:e.titulo||(n?`Automóvel`:`Imóvel`),loading:`lazy`}):(0,w.jsx)(`span`,{className:`lp-example-no-photo`,children:`Sem fotografia`}),(0,w.jsxs)(`span`,{className:`lp-example-weekly`,children:[`Destaque `,n?`Drive`:`Estate`]})]}),(0,w.jsxs)(`span`,{className:`lp-example-body`,children:[(0,w.jsx)(`span`,{className:`lp-example-price`,children:M(e.preco)}),(0,w.jsx)(`span`,{className:`lp-example-title`,children:e.titulo}),(0,w.jsx)(`span`,{className:`lp-example-meta`,children:i||(n?`Dados técnicos disponíveis`:`Detalhes do imóvel`)}),(0,w.jsx)(`span`,{className:`lp-example-location`,children:e.localizacao?.cidade||`Portugal`})]})]},e._id)},$=(t,n)=>B?(0,w.jsxs)(`div`,{className:`lp-example-state`,role:`status`,children:[(0,w.jsx)(`span`,{className:`lp-state-loader`,"aria-hidden":`true`}),(0,w.jsx)(`strong`,{children:`A selecionar os anúncios com mais interesse.`}),(0,w.jsx)(`span`,{children:`Os destaques refletem as visitas dos últimos sete dias.`})]}):(0,w.jsxs)(`div`,{className:`lp-example-state`,role:`status`,children:[(0,w.jsx)(`strong`,{children:H?`A seleção semanal está a ser atualizada.`:`Descobre todas as oportunidades em ${t}.`}),(0,w.jsx)(`span`,{children:H?`Entretanto, encontra todos os anúncios na pesquisa completa.`:`Explora a pesquisa e encontra o que combina contigo.`}),(0,w.jsxs)(`button`,{type:`button`,className:`lp-column-link`,onClick:()=>e(n),children:[`Explorar `,t]})]});return(0,w.jsxs)(`div`,{className:`lp-root`,children:[(0,w.jsx)(_,{title:`Noxvelia | Plataforma de carros e imóveis em Portugal`,description:`Noxvelia é uma plataforma portuguesa para pesquisar e publicar anúncios de carros e imóveis.`,path:`/`,jsonLd:[g,m]}),(0,w.jsx)(`style`,{children:`
         .lp-root,
         .lp-root * {
           box-sizing: border-box;
@@ -3096,390 +3274,4 @@ export default function Landing() {
             align-items: stretch !important;
           }
         }
-      `}</style>
-
-      <NavbarLanding />
-
-      <div>
-        <section className="lp-hero" aria-labelledby="lp-hero-title">
-          <div className="lp-shell">
-            <div className="lp-hero-card">
-              <div className="lp-hero-content">
-                <div className="lp-hero-brand" aria-label="NOXVELIA">
-                  <img src="/logo-noxvelia.png" alt="" />
-                  <span>NOXVELIA</span>
-                </div>
-                <span className="lp-kicker">Drive / Estate</span>
-                <h1 id="lp-hero-title">
-                  NOXVELIA para carros e imóveis em Portugal. <span>Mais simples.</span>
-                </h1>
-                <p className="lp-hero-copy">
-                  Encontra carros e imóveis com fotos, preço, localização e contactos num só sítio.
-                </p>
-                <div className="lp-actions">
-                  <a className="lp-btn lp-btn-drive" href="#pesquisa">
-                    Começar pela pesquisa
-                  </a>
-                  <Link className="lp-text-link" to={publicarTo} state={publicarState}>
-                    Publicar grátis
-                  </Link>
-                </div>
-              </div>
-
-              <div className="lp-hero-media">
-                <img
-                  src="/noxvelia-hero-coast.webp"
-                  alt="Automóvel junto a uma casa contemporânea na costa portuguesa"
-                  fetchPriority="high"
-                  decoding="async"
-                />
-                <div className="lp-hero-photo-label" aria-hidden="true">
-                  Drive / Estate
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-        <section className="lp-quick-section" id="pesquisa" aria-labelledby="lp-quick-title">
-          <div className="lp-shell">
-            <form className="lp-quick-card" onSubmit={submeterPesquisaRapida}>
-              <div className="lp-quick-top">
-                <div>
-                  <span className="lp-eyebrow">Pesquisa rápida</span>
-                  <h2 className="lp-quick-title" id="lp-quick-title">Começa pelo que queres encontrar.</h2>
-                  <p className="lp-quick-copy">Filtra por tipo, localização e preço. Depois abres a lista certa: carros ou imóveis.</p>
-                </div>
-                <div className="lp-type-tabs" role="tablist" aria-label="Tipo de pesquisa">
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={pesquisaRapida.tipo === 'carro'}
-                    className={`lp-type-tab ${pesquisaRapida.tipo === 'carro' ? 'active' : ''}`}
-                    onClick={() => atualizarPesquisaRapida('tipo', 'carro')}
-                  >
-                    Drive
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={pesquisaRapida.tipo === 'imovel'}
-                    className={`lp-type-tab ${pesquisaRapida.tipo === 'imovel' ? 'active' : ''}`}
-                    onClick={() => atualizarPesquisaRapida('tipo', 'imovel')}
-                  >
-                    Estate
-                  </button>
-                </div>
-              </div>
-
-              <div className="lp-search-form">
-                {pesquisaRapida.tipo === 'carro' ? (
-                  <>
-                    <div className="lp-field">
-                      <label htmlFor="lp-marca">Marca</label>
-                      <select id="lp-marca" value={pesquisaRapida.marca} onChange={(evento) => atualizarPesquisaRapida('marca', evento.target.value)}>
-                        <option value="">Todas as marcas</option>
-                        {MARCAS.map((marca) => <option key={marca} value={marca}>{marca}</option>)}
-                      </select>
-                    </div>
-                    <div className="lp-field">
-                      <label htmlFor="lp-modelo">Modelo</label>
-                      <select id="lp-modelo" value={pesquisaRapida.modelo} onChange={(evento) => atualizarPesquisaRapida('modelo', evento.target.value)} disabled={!pesquisaRapida.marca}>
-                        <option value="">{pesquisaRapida.marca ? 'Todos os modelos' : 'Escolhe a marca'}</option>
-                        {modelosPesquisa.map((modelo) => <option key={modelo} value={modelo}>{modelo}</option>)}
-                      </select>
-                    </div>
-                    <div className="lp-field">
-                      <label htmlFor="lp-combustivel">Combustível</label>
-                      <select id="lp-combustivel" value={pesquisaRapida.combustivel} onChange={(evento) => atualizarPesquisaRapida('combustivel', evento.target.value)}>
-                        <option value="">Todos</option>
-                        {COMBUSTIVEIS_POPULARES.map((combustivel) => <option key={combustivel} value={combustivel}>{combustivel}</option>)}
-                      </select>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="lp-field">
-                      <label htmlFor="lp-tipologia">Tipologia</label>
-                      <select id="lp-tipologia" value={pesquisaRapida.tipologia} onChange={(evento) => atualizarPesquisaRapida('tipologia', evento.target.value)}>
-                        <option value="">Todas</option>
-                        {TIPOLOGIAS_POPULARES.map((tipologia) => <option key={tipologia} value={tipologia}>{tipologia}</option>)}
-                      </select>
-                    </div>
-                    <div className="lp-field">
-                      <label htmlFor="lp-estate-preco">Preço máximo</label>
-                      <select id="lp-estate-preco" value={pesquisaRapida.precoMax} onChange={(evento) => atualizarPesquisaRapida('precoMax', evento.target.value)}>
-                        <option value="">Qualquer preço</option>
-                        {PRECOS_RAPIDOS.slice(2).map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}
-                      </select>
-                    </div>
-                  </>
-                )}
-
-                <div className="lp-field">
-                  <label htmlFor="lp-distrito">Distrito</label>
-                  <select id="lp-distrito" value={pesquisaRapida.distrito} onChange={(evento) => atualizarPesquisaRapida('distrito', evento.target.value)}>
-                    <option value="">Portugal inteiro</option>
-                    {DISTRITOS.map((distrito) => <option key={distrito} value={distrito}>{distrito}</option>)}
-                  </select>
-                </div>
-
-                {pesquisaRapida.tipo === 'carro' && (
-                  <div className="lp-field">
-                    <label htmlFor="lp-preco">Preço máximo</label>
-                    <select id="lp-preco" value={pesquisaRapida.precoMax} onChange={(evento) => atualizarPesquisaRapida('precoMax', evento.target.value)}>
-                      <option value="">Qualquer preço</option>
-                      {PRECOS_RAPIDOS.slice(0, 2).map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}
-                    </select>
-                  </div>
-                )}
-
-                <button type="submit" className="lp-search-submit">
-                  Ver anúncios
-                </button>
-              </div>
-            </form>
-          </div>
-        </section>
-
-        <section className="lp-promo-section" id="anunciar" aria-label="Anunciar grátis na Noxvelia">
-          <div className="lp-shell">
-            <div className="lp-promo-grid">
-              <Link className="lp-promo-link drive" to="/carros">
-                <span className="lp-promo-copy">
-                  <span className="lp-promo-label">NOXVELIA Drive</span>
-                  <strong className="lp-promo-title">Carros apresentados com o essencial à frente.</strong>
-                  <span className="lp-promo-text">Fotos, preço, localização e dados técnicos num formato direto.</span>
-                  <span className="lp-promo-overlay">Pesquisar carro</span>
-                </span>
-                <span className="lp-promo-media">
-                  <img src="/social/noxvelia-drive-photo-premium.webp" alt="Automóvel anunciado na Noxvelia Drive" loading="lazy" />
-                </span>
-              </Link>
-              <Link className="lp-promo-link estate" to="/imoveis">
-                <span className="lp-promo-copy">
-                  <span className="lp-promo-label">NOXVELIA Estate</span>
-                  <strong className="lp-promo-title">Imóveis com leitura rápida antes do contacto.</strong>
-                  <span className="lp-promo-text">Localização, fotografias e características fáceis de comparar.</span>
-                  <span className="lp-promo-overlay">Pesquisar imóvel</span>
-                </span>
-                <span className="lp-promo-media">
-                  <img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia Estate" loading="lazy" />
-                </span>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <section className="lp-section lp-brands-section" id="marcas" aria-labelledby="lp-brands-title">
-          <div className="lp-shell">
-            <div className="lp-section-head">
-              <div>
-                <span className="lp-eyebrow">Drive</span>
-                <h2 className="lp-title" id="lp-brands-title">Marcas auto prontas a pesquisar.</h2>
-                <p className="lp-copy">
-                  Escolhe a marca e segue diretamente para resultados filtrados.
-                </p>
-              </div>
-              <div className="lp-brand-controls" aria-label="Navegar pelas marcas">
-                <button type="button" className="lp-round-btn" onClick={() => moverMarcas(-1)} aria-label="Ver marcas anteriores">
-                  Anterior
-                </button>
-                <button type="button" className="lp-round-btn" onClick={() => moverMarcas(1)} aria-label="Ver marcas seguintes">
-                  Seguinte
-                </button>
-              </div>
-            </div>
-
-            <div className="lp-brand-scroll" ref={marcasRef} aria-label="Lista de marcas automóveis">
-              <div className="lp-brand-grid">
-                {MARCAS.map((marca) => {
-                  const marcaSlug = slugMarca(marca);
-                  return (
-                    <Link
-                      className="lp-brand-card"
-                      to={`/carros?marca=${encodeURIComponent(marca)}`}
-                      key={marca}
-                      aria-label={`Ver anúncios ${marca}`}
-                    >
-                      <span className={`lp-brand-mark lp-brand-mark-${marcaSlug} ${LOGOS_COM_TEXTO_EMBUTIDO.has(marcaSlug) ? 'lp-brand-mark-clean' : ''}`}>
-                        <span className="lp-brand-fallback" aria-hidden="true">{iniciaisMarca(marca)}</span>
-                        <img
-                          src={logoMarca(marca)}
-                          alt=""
-                          loading="lazy"
-                          draggable="false"
-                          onError={(evento) => {
-                            evento.currentTarget.style.display = 'none';
-                            evento.currentTarget.parentElement?.classList.add('logo-error');
-                          }}
-                        />
-                      </span>
-                      <span className="lp-brand-name">{marca}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="lp-section lp-shortcuts-section" id="atalhos" aria-labelledby="lp-shortcuts-title">
-          <div className="lp-shell">
-            <div className="lp-section-head">
-              <div>
-                <span className="lp-eyebrow">Pesquisa guiada</span>
-                <h2 className="lp-title" id="lp-shortcuts-title">Caminhos rápidos para começar.</h2>
-                <p className="lp-copy">
-                  Entradas diretas para filtros comuns em Drive e Estate.
-                </p>
-              </div>
-            </div>
-
-            <div className="lp-shortcut-grid">
-              <div className="lp-shortcut-group">
-                <h3>Marcas mais procuradas</h3>
-                <div className="lp-chip-list">
-                  {MARCAS_POPULARES.map((marca) => (
-                    <Link key={marca} className="lp-chip" to={criarLinkPesquisa('carro', { marca })}>{marca}</Link>
-                  ))}
-                </div>
-              </div>
-
-              <div className="lp-shortcut-group wide">
-                <h3>Modelos rápidos</h3>
-                <div className="lp-chip-list">
-                  {MODELOS_POPULARES.map(([marca, modelo]) => (
-                    <Link key={`${marca}-${modelo}`} className="lp-chip" to={criarLinkPesquisa('carro', { marca, modelo })}>
-                      {marca} {modelo}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              <div className="lp-shortcut-group">
-                <h3>Combustíveis</h3>
-                <div className="lp-chip-list">
-                  {COMBUSTIVEIS_POPULARES.map((combustivel) => (
-                    <Link key={combustivel} className="lp-chip" to={criarLinkPesquisa('carro', { combustivel })}>{combustivel}</Link>
-                  ))}
-                </div>
-              </div>
-
-              <div className="lp-shortcut-group">
-                <h3>Distritos</h3>
-                <div className="lp-chip-list">
-                  {DISTRITOS_POPULARES.map((distrito) => (
-                    <Link key={distrito} className="lp-chip" to={criarLinkPesquisa('carro', { distrito })}>{distrito}</Link>
-                  ))}
-                </div>
-              </div>
-
-              <div className="lp-shortcut-group">
-                <h3>Imóveis</h3>
-                <div className="lp-chip-list">
-                  {TIPOLOGIAS_POPULARES.map((tipologia) => (
-                    <Link key={tipologia} className="lp-chip" to={criarLinkPesquisa('imovel', { tipologia })}>{tipologia}</Link>
-                  ))}
-                  {DISTRITOS_POPULARES.slice(0, 4).map((distrito) => (
-                    <Link key={`imovel-${distrito}`} className="lp-chip" to={criarLinkPesquisa('imovel', { distrito })}>{distrito}</Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {mostrarDestaques && (
-        <section className="lp-section lp-popular-section" id="destaques" aria-labelledby="lp-popular-title">
-          <div className="lp-shell">
-            <div className="lp-section-head">
-              <div>
-                <span className="lp-eyebrow">Seleção atual</span>
-                <h2 className="lp-title" id="lp-popular-title">Destaques para explorar.</h2>
-                <p className="lp-copy">
-                  Destaques atuais em Drive e Estate.
-                </p>
-              </div>
-            </div>
-
-            <div className="lp-examples-grid" aria-live="polite">
-              {(loadingExemplos || exemplos.carro.length > 0) && (
-              <div className="lp-example-column drive">
-                <div className="lp-column-top">
-                  <div className="lp-column-heading">
-                    <h3 className="lp-column-title">NOXVELIA Drive</h3>
-                  </div>
-                  <button type="button" className="lp-column-link" onClick={() => navigate('/carros')}>
-                    Ver carros
-                  </button>
-                </div>
-                <div className="lp-example-list">
-                  {exemplos.carro.length > 0
-                    ? exemplos.carro.map((anuncio) => renderExemplo(anuncio, '/carros'))
-                    : renderEstadoLista('Drive', '/carros')}
-                </div>
-              </div>
-              )}
-
-              {(loadingExemplos || exemplos.imovel.length > 0) && (
-              <div className="lp-example-column estate">
-                <div className="lp-column-top">
-                  <div className="lp-column-heading">
-                    <h3 className="lp-column-title">NOXVELIA Estate</h3>
-                  </div>
-                  <button type="button" className="lp-column-link" onClick={() => navigate('/imoveis')}>
-                    Ver imóveis
-                  </button>
-                </div>
-                <div className="lp-example-list">
-                  {exemplos.imovel.length > 0
-                    ? exemplos.imovel.map((anuncio) => renderExemplo(anuncio, '/imoveis'))
-                    : renderEstadoLista('Estate', '/imoveis')}
-                </div>
-              </div>
-              )}
-            </div>
-          </div>
-        </section>
-        )}
-
-        <GoogleAdSlot placement="landing_between_highlights" minHeight={96} />
-
-        <section className="lp-section lp-cv-section" id="carvertical" aria-labelledby="lp-cv-title">
-          <div className="lp-shell">
-            <div className="lp-cv-card">
-              <div className="lp-cv-copy">
-                <span className="lp-eyebrow">Parceiro de histórico automóvel</span>
-                <h2 className="lp-title" id="lp-cv-title">Conhece o carro antes da visita.</h2>
-                <p className="lp-copy">
-                  Consulta histórico, quilometragem e registos disponíveis.
-                </p>
-                <ul className="lp-cv-points">
-                  <li>Histórico antes do contacto</li>
-                  <li>Mais segurança na compra</li>
-                </ul>
-                <a className="lp-btn lp-btn-drive" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer">
-                  Verificar um veículo
-                </a>
-              </div>
-
-              <div className="lp-cv-panel">
-                <span>Histórico automóvel com</span>
-                <img src="/carvertical-logo.png" alt="carVertical" loading="lazy" />
-                <div className="lp-cv-code">
-                  <small>Código</small>
-                  <strong>NOXVELIA</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-      </div>
-
-      <Footer />
-    </div>
-  );
-}
+      `}),(0,w.jsx)(ee,{}),(0,w.jsxs)(`div`,{children:[(0,w.jsx)(`section`,{className:`lp-hero`,"aria-labelledby":`lp-hero-title`,children:(0,w.jsx)(`div`,{className:`lp-shell`,children:(0,w.jsxs)(`div`,{className:`lp-hero-card`,children:[(0,w.jsxs)(`div`,{className:`lp-hero-content`,children:[(0,w.jsxs)(`div`,{className:`lp-hero-brand`,"aria-label":`NOXVELIA`,children:[(0,w.jsx)(`img`,{src:`/logo-noxvelia.png`,alt:``}),(0,w.jsx)(`span`,{children:`NOXVELIA`})]}),(0,w.jsx)(`span`,{className:`lp-kicker`,children:`Drive / Estate`}),(0,w.jsxs)(`h1`,{id:`lp-hero-title`,children:[`NOXVELIA para carros e imóveis em Portugal. `,(0,w.jsx)(`span`,{children:`Mais simples.`})]}),(0,w.jsx)(`p`,{className:`lp-hero-copy`,children:`Encontra carros e imóveis com fotos, preço, localização e contactos num só sítio.`}),(0,w.jsxs)(`div`,{className:`lp-actions`,children:[(0,w.jsx)(`a`,{className:`lp-btn lp-btn-drive`,href:`#pesquisa`,children:`Começar pela pesquisa`}),(0,w.jsx)(d,{className:`lp-text-link`,to:te,state:ne,children:`Publicar grátis`})]})]}),(0,w.jsxs)(`div`,{className:`lp-hero-media`,children:[(0,w.jsx)(`img`,{src:`/noxvelia-hero-coast.webp`,alt:`Automóvel junto a uma casa contemporânea na costa portuguesa`,fetchPriority:`high`,decoding:`async`}),(0,w.jsx)(`div`,{className:`lp-hero-photo-label`,"aria-hidden":`true`,children:`Drive / Estate`})]})]})})}),(0,w.jsx)(`section`,{className:`lp-quick-section`,id:`pesquisa`,"aria-labelledby":`lp-quick-title`,children:(0,w.jsx)(`div`,{className:`lp-shell`,children:(0,w.jsxs)(`form`,{className:`lp-quick-card`,onSubmit:Y,children:[(0,w.jsxs)(`div`,{className:`lp-quick-top`,children:[(0,w.jsxs)(`div`,{children:[(0,w.jsx)(`span`,{className:`lp-eyebrow`,children:`Pesquisa rápida`}),(0,w.jsx)(`h2`,{className:`lp-quick-title`,id:`lp-quick-title`,children:`Começa pelo que queres encontrar.`}),(0,w.jsx)(`p`,{className:`lp-quick-copy`,children:`Filtra por tipo, localização e preço. Depois abres a lista certa: carros ou imóveis.`})]}),(0,w.jsxs)(`div`,{className:`lp-type-tabs`,role:`tablist`,"aria-label":`Tipo de pesquisa`,children:[(0,w.jsx)(`button`,{type:`button`,role:`tab`,"aria-selected":W.tipo===`carro`,className:`lp-type-tab ${W.tipo===`carro`?`active`:``}`,onClick:()=>J(`tipo`,`carro`),children:`Drive`}),(0,w.jsx)(`button`,{type:`button`,role:`tab`,"aria-selected":W.tipo===`imovel`,className:`lp-type-tab ${W.tipo===`imovel`?`active`:``}`,onClick:()=>J(`tipo`,`imovel`),children:`Estate`})]})]}),(0,w.jsxs)(`div`,{className:`lp-search-form`,children:[W.tipo===`carro`?(0,w.jsxs)(w.Fragment,{children:[(0,w.jsxs)(`div`,{className:`lp-field`,children:[(0,w.jsx)(`label`,{htmlFor:`lp-marca`,children:`Marca`}),(0,w.jsxs)(`select`,{id:`lp-marca`,value:W.marca,onChange:e=>J(`marca`,e.target.value),children:[(0,w.jsx)(`option`,{value:``,children:`Todas as marcas`}),b.map(e=>(0,w.jsx)(`option`,{value:e,children:e},e))]})]}),(0,w.jsxs)(`div`,{className:`lp-field`,children:[(0,w.jsx)(`label`,{htmlFor:`lp-modelo`,children:`Modelo`}),(0,w.jsxs)(`select`,{id:`lp-modelo`,value:W.modelo,onChange:e=>J(`modelo`,e.target.value),disabled:!W.marca,children:[(0,w.jsx)(`option`,{value:``,children:W.marca?`Todos os modelos`:`Escolhe a marca`}),K.map(e=>(0,w.jsx)(`option`,{value:e,children:e},e))]})]}),(0,w.jsxs)(`div`,{className:`lp-field`,children:[(0,w.jsx)(`label`,{htmlFor:`lp-combustivel`,children:`Combustível`}),(0,w.jsxs)(`select`,{id:`lp-combustivel`,value:W.combustivel,onChange:e=>J(`combustivel`,e.target.value),children:[(0,w.jsx)(`option`,{value:``,children:`Todos`}),O.map(e=>(0,w.jsx)(`option`,{value:e,children:e},e))]})]})]}):(0,w.jsxs)(w.Fragment,{children:[(0,w.jsxs)(`div`,{className:`lp-field`,children:[(0,w.jsx)(`label`,{htmlFor:`lp-tipologia`,children:`Tipologia`}),(0,w.jsxs)(`select`,{id:`lp-tipologia`,value:W.tipologia,onChange:e=>J(`tipologia`,e.target.value),children:[(0,w.jsx)(`option`,{value:``,children:`Todas`}),A.map(e=>(0,w.jsx)(`option`,{value:e,children:e},e))]})]}),(0,w.jsxs)(`div`,{className:`lp-field`,children:[(0,w.jsx)(`label`,{htmlFor:`lp-estate-preco`,children:`Preço máximo`}),(0,w.jsxs)(`select`,{id:`lp-estate-preco`,value:W.precoMax,onChange:e=>J(`precoMax`,e.target.value),children:[(0,w.jsx)(`option`,{value:``,children:`Qualquer preço`}),j.slice(2).map(e=>(0,w.jsx)(`option`,{value:e.value,children:e.label},e.value))]})]})]}),(0,w.jsxs)(`div`,{className:`lp-field`,children:[(0,w.jsx)(`label`,{htmlFor:`lp-distrito`,children:`Distrito`}),(0,w.jsxs)(`select`,{id:`lp-distrito`,value:W.distrito,onChange:e=>J(`distrito`,e.target.value),children:[(0,w.jsx)(`option`,{value:``,children:`Portugal inteiro`}),x.map(e=>(0,w.jsx)(`option`,{value:e,children:e},e))]})]}),W.tipo===`carro`&&(0,w.jsxs)(`div`,{className:`lp-field`,children:[(0,w.jsx)(`label`,{htmlFor:`lp-preco`,children:`Preço máximo`}),(0,w.jsxs)(`select`,{id:`lp-preco`,value:W.precoMax,onChange:e=>J(`precoMax`,e.target.value),children:[(0,w.jsx)(`option`,{value:``,children:`Qualquer preço`}),j.slice(0,2).map(e=>(0,w.jsx)(`option`,{value:e.value,children:e.label},e.value))]})]}),(0,w.jsx)(`button`,{type:`submit`,className:`lp-search-submit`,children:`Ver anúncios`})]})]})})}),(0,w.jsx)(`section`,{className:`lp-promo-section`,id:`anunciar`,"aria-label":`Anunciar grátis na Noxvelia`,children:(0,w.jsx)(`div`,{className:`lp-shell`,children:(0,w.jsxs)(`div`,{className:`lp-promo-grid`,children:[(0,w.jsxs)(d,{className:`lp-promo-link drive`,to:`/carros`,children:[(0,w.jsxs)(`span`,{className:`lp-promo-copy`,children:[(0,w.jsx)(`span`,{className:`lp-promo-label`,children:`NOXVELIA Drive`}),(0,w.jsx)(`strong`,{className:`lp-promo-title`,children:`Carros apresentados com o essencial à frente.`}),(0,w.jsx)(`span`,{className:`lp-promo-text`,children:`Fotos, preço, localização e dados técnicos num formato direto.`}),(0,w.jsx)(`span`,{className:`lp-promo-overlay`,children:`Pesquisar carro`})]}),(0,w.jsx)(`span`,{className:`lp-promo-media`,children:(0,w.jsx)(`img`,{src:`/social/noxvelia-drive-photo-premium.webp`,alt:`Automóvel anunciado na Noxvelia Drive`,loading:`lazy`})})]}),(0,w.jsxs)(d,{className:`lp-promo-link estate`,to:`/imoveis`,children:[(0,w.jsxs)(`span`,{className:`lp-promo-copy`,children:[(0,w.jsx)(`span`,{className:`lp-promo-label`,children:`NOXVELIA Estate`}),(0,w.jsx)(`strong`,{className:`lp-promo-title`,children:`Imóveis com leitura rápida antes do contacto.`}),(0,w.jsx)(`span`,{className:`lp-promo-text`,children:`Localização, fotografias e características fáceis de comparar.`}),(0,w.jsx)(`span`,{className:`lp-promo-overlay`,children:`Pesquisar imóvel`})]}),(0,w.jsx)(`span`,{className:`lp-promo-media`,children:(0,w.jsx)(`img`,{src:`/social/noxvelia-estate-photo-premium.webp`,alt:`Imóvel anunciado na Noxvelia Estate`,loading:`lazy`})})]})]})})}),(0,w.jsx)(`section`,{className:`lp-section lp-brands-section`,id:`marcas`,"aria-labelledby":`lp-brands-title`,children:(0,w.jsxs)(`div`,{className:`lp-shell`,children:[(0,w.jsxs)(`div`,{className:`lp-section-head`,children:[(0,w.jsxs)(`div`,{children:[(0,w.jsx)(`span`,{className:`lp-eyebrow`,children:`Drive`}),(0,w.jsx)(`h2`,{className:`lp-title`,id:`lp-brands-title`,children:`Marcas auto prontas a pesquisar.`}),(0,w.jsx)(`p`,{className:`lp-copy`,children:`Escolhe a marca e segue diretamente para resultados filtrados.`})]}),(0,w.jsxs)(`div`,{className:`lp-brand-controls`,"aria-label":`Navegar pelas marcas`,children:[(0,w.jsx)(`button`,{type:`button`,className:`lp-round-btn`,onClick:()=>Z(-1),"aria-label":`Ver marcas anteriores`,children:`Anterior`}),(0,w.jsx)(`button`,{type:`button`,className:`lp-round-btn`,onClick:()=>Z(1),"aria-label":`Ver marcas seguintes`,children:`Seguinte`})]})]}),(0,w.jsx)(`div`,{className:`lp-brand-scroll`,ref:f,"aria-label":`Lista de marcas automóveis`,children:(0,w.jsx)(`div`,{className:`lp-brand-grid`,children:b.map(e=>{let t=N(e);return(0,w.jsxs)(d,{className:`lp-brand-card`,to:`/carros?marca=${encodeURIComponent(e)}`,"aria-label":`Ver anúncios ${e}`,children:[(0,w.jsxs)(`span`,{className:`lp-brand-mark lp-brand-mark-${t} ${I.has(t)?`lp-brand-mark-clean`:``}`,children:[(0,w.jsx)(`span`,{className:`lp-brand-fallback`,"aria-hidden":`true`,children:F(e)}),(0,w.jsx)(`img`,{src:P(e),alt:``,loading:`lazy`,draggable:`false`,onError:e=>{e.currentTarget.style.display=`none`,e.currentTarget.parentElement?.classList.add(`logo-error`)}})]}),(0,w.jsx)(`span`,{className:`lp-brand-name`,children:e})]},e)})})})]})}),(0,w.jsx)(`section`,{className:`lp-section lp-shortcuts-section`,id:`atalhos`,"aria-labelledby":`lp-shortcuts-title`,children:(0,w.jsxs)(`div`,{className:`lp-shell`,children:[(0,w.jsx)(`div`,{className:`lp-section-head`,children:(0,w.jsxs)(`div`,{children:[(0,w.jsx)(`span`,{className:`lp-eyebrow`,children:`Pesquisa guiada`}),(0,w.jsx)(`h2`,{className:`lp-title`,id:`lp-shortcuts-title`,children:`Caminhos rápidos para começar.`}),(0,w.jsx)(`p`,{className:`lp-copy`,children:`Entradas diretas para filtros comuns em Drive e Estate.`})]})}),(0,w.jsxs)(`div`,{className:`lp-shortcut-grid`,children:[(0,w.jsxs)(`div`,{className:`lp-shortcut-group`,children:[(0,w.jsx)(`h3`,{children:`Marcas mais procuradas`}),(0,w.jsx)(`div`,{className:`lp-chip-list`,children:E.map(e=>(0,w.jsx)(d,{className:`lp-chip`,to:q(`carro`,{marca:e}),children:e},e))})]}),(0,w.jsxs)(`div`,{className:`lp-shortcut-group wide`,children:[(0,w.jsx)(`h3`,{children:`Modelos rápidos`}),(0,w.jsx)(`div`,{className:`lp-chip-list`,children:D.map(([e,t])=>(0,w.jsxs)(d,{className:`lp-chip`,to:q(`carro`,{marca:e,modelo:t}),children:[e,` `,t]},`${e}-${t}`))})]}),(0,w.jsxs)(`div`,{className:`lp-shortcut-group`,children:[(0,w.jsx)(`h3`,{children:`Combustíveis`}),(0,w.jsx)(`div`,{className:`lp-chip-list`,children:O.map(e=>(0,w.jsx)(d,{className:`lp-chip`,to:q(`carro`,{combustivel:e}),children:e},e))})]}),(0,w.jsxs)(`div`,{className:`lp-shortcut-group`,children:[(0,w.jsx)(`h3`,{children:`Distritos`}),(0,w.jsx)(`div`,{className:`lp-chip-list`,children:k.map(e=>(0,w.jsx)(d,{className:`lp-chip`,to:q(`carro`,{distrito:e}),children:e},e))})]}),(0,w.jsxs)(`div`,{className:`lp-shortcut-group`,children:[(0,w.jsx)(`h3`,{children:`Imóveis`}),(0,w.jsxs)(`div`,{className:`lp-chip-list`,children:[A.map(e=>(0,w.jsx)(d,{className:`lp-chip`,to:q(`imovel`,{tipologia:e}),children:e},e)),k.slice(0,4).map(e=>(0,w.jsx)(d,{className:`lp-chip`,to:q(`imovel`,{distrito:e}),children:e},`imovel-${e}`))]})]})]})]})}),re&&(0,w.jsx)(`section`,{className:`lp-section lp-popular-section`,id:`destaques`,"aria-labelledby":`lp-popular-title`,children:(0,w.jsxs)(`div`,{className:`lp-shell`,children:[(0,w.jsx)(`div`,{className:`lp-section-head`,children:(0,w.jsxs)(`div`,{children:[(0,w.jsx)(`span`,{className:`lp-eyebrow`,children:`Seleção atual`}),(0,w.jsx)(`h2`,{className:`lp-title`,id:`lp-popular-title`,children:`Destaques para explorar.`}),(0,w.jsx)(`p`,{className:`lp-copy`,children:`Destaques atuais em Drive e Estate.`})]})}),(0,w.jsxs)(`div`,{className:`lp-examples-grid`,"aria-live":`polite`,children:[(B||R.carro.length>0)&&(0,w.jsxs)(`div`,{className:`lp-example-column drive`,children:[(0,w.jsxs)(`div`,{className:`lp-column-top`,children:[(0,w.jsx)(`div`,{className:`lp-column-heading`,children:(0,w.jsx)(`h3`,{className:`lp-column-title`,children:`NOXVELIA Drive`})}),(0,w.jsx)(`button`,{type:`button`,className:`lp-column-link`,onClick:()=>e(`/carros`),children:`Ver carros`})]}),(0,w.jsx)(`div`,{className:`lp-example-list`,children:R.carro.length>0?R.carro.map(e=>Q(e,`/carros`)):$(`Drive`,`/carros`)})]}),(B||R.imovel.length>0)&&(0,w.jsxs)(`div`,{className:`lp-example-column estate`,children:[(0,w.jsxs)(`div`,{className:`lp-column-top`,children:[(0,w.jsx)(`div`,{className:`lp-column-heading`,children:(0,w.jsx)(`h3`,{className:`lp-column-title`,children:`NOXVELIA Estate`})}),(0,w.jsx)(`button`,{type:`button`,className:`lp-column-link`,onClick:()=>e(`/imoveis`),children:`Ver imóveis`})]}),(0,w.jsx)(`div`,{className:`lp-example-list`,children:R.imovel.length>0?R.imovel.map(e=>Q(e,`/imoveis`)):$(`Estate`,`/imoveis`)})]})]})]})}),(0,w.jsx)(v,{placement:`landing_between_highlights`,minHeight:96}),(0,w.jsx)(`section`,{className:`lp-section lp-cv-section`,id:`carvertical`,"aria-labelledby":`lp-cv-title`,children:(0,w.jsx)(`div`,{className:`lp-shell`,children:(0,w.jsxs)(`div`,{className:`lp-cv-card`,children:[(0,w.jsxs)(`div`,{className:`lp-cv-copy`,children:[(0,w.jsx)(`span`,{className:`lp-eyebrow`,children:`Parceiro de histórico automóvel`}),(0,w.jsx)(`h2`,{className:`lp-title`,id:`lp-cv-title`,children:`Conhece o carro antes da visita.`}),(0,w.jsx)(`p`,{className:`lp-copy`,children:`Consulta histórico, quilometragem e registos disponíveis.`}),(0,w.jsxs)(`ul`,{className:`lp-cv-points`,children:[(0,w.jsx)(`li`,{children:`Histórico antes do contacto`}),(0,w.jsx)(`li`,{children:`Mais segurança na compra`})]}),(0,w.jsx)(`a`,{className:`lp-btn lp-btn-drive`,href:T,target:`_blank`,rel:`noopener noreferrer`,children:`Verificar um veículo`})]}),(0,w.jsxs)(`div`,{className:`lp-cv-panel`,children:[(0,w.jsx)(`span`,{children:`Histórico automóvel com`}),(0,w.jsx)(`img`,{src:`/carvertical-logo.png`,alt:`carVertical`,loading:`lazy`}),(0,w.jsxs)(`div`,{className:`lp-cv-code`,children:[(0,w.jsx)(`small`,{children:`Código`}),(0,w.jsx)(`strong`,{children:`NOXVELIA`})]})]})]})})})]}),(0,w.jsx)(i,{})]})}export{L as default};
