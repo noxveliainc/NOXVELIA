@@ -165,6 +165,74 @@ async function imageUrlToDataUrl(url) {
   const blob = await response.blob();
   return blobToDataUrl(blob);
 }
+const normalizeImageKey = (url = '') => String(url).trim().split('#')[0].split('?')[0].toLowerCase();
+
+const uniqueUrls = (urls = []) => {
+  const seen = new Set();
+  return urls
+    .map((url) => (typeof url === 'string' ? url.trim() : ''))
+    .filter(Boolean)
+    .filter((url) => {
+      const key = normalizeImageKey(url);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+};
+
+const variantUrl = (variants, name) => {
+  if (!variants) return '';
+  if (Array.isArray(variants)) {
+    const match = variants.find((variant) => variant?.name === name || variant?.label === name || variant?.type === name);
+    return match?.url || match?.secure_url || '';
+  }
+  return variants?.[name]?.url || variants?.[name]?.secure_url || variants?.[name] || '';
+};
+
+const imageCandidateUrls = (image) => {
+  if (!image) return [];
+  if (typeof image === 'string') return [image];
+
+  const preferred = ['large', 'original', 'medium', 'thumbnail'];
+  return uniqueUrls([
+    ...preferred.map((name) => image.urls?.[name]),
+    ...preferred.map((name) => variantUrl(image.variants, name)),
+    image.url,
+    image.secure_url,
+    image.originalUrl,
+    image.path,
+    getImageUrl(image, 'large'),
+    getImageUrl(image, 'original'),
+    getImageUrl(image, 'medium'),
+    getImageUrl(image, 'thumbnail'),
+  ]);
+};
+
+const uniqueDataUrls = (dataUrls = []) => {
+  const seen = new Set();
+  return dataUrls.filter((url) => {
+    if (!url) return false;
+    const value = String(url);
+    const key = value.startsWith('data:') ? value : normalizeImageKey(value);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
+function galleryPlaceholderCard({ x, y, width, height, accent, label, text }) {
+  const title = escapeXml(label || 'Foto extra');
+  const body = escapeXml(text || 'Adiciona outra imagem');
+  return `
+    <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="28" fill="#11242b" opacity="0.94"/>
+    <rect x="${x + 14}" y="${y + 14}" width="${width - 28}" height="${height - 28}" rx="22" fill="none" stroke="${accent}" stroke-width="2" stroke-dasharray="10 12" opacity="0.55"/>
+    <circle cx="${x + Math.round(width / 2)}" cy="${y + Math.round(height / 2) - 20}" r="28" fill="${accent}" opacity="0.14"/>
+    <path d="M${x + Math.round(width / 2) - 18} ${y + Math.round(height / 2) - 26}h36v24h-36z" fill="none" stroke="${accent}" stroke-width="4" stroke-linejoin="round" opacity="0.92"/>
+    <path d="M${x + Math.round(width / 2) - 12} ${y + Math.round(height / 2) - 8}l9-9 8 7 6-6 11 14" fill="none" stroke="${accent}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
+    <text x="${x + Math.round(width / 2)}" y="${y + Math.round(height / 2) + 38}" text-anchor="middle" font-family="Montserrat, Arial" font-size="22" font-weight="900" fill="#ffffff">${title}</text>
+    <text x="${x + Math.round(width / 2)}" y="${y + Math.round(height / 2) + 66}" text-anchor="middle" font-family="Montserrat, Arial" font-size="15" font-weight="700" fill="#d9f8f5" opacity="0.78">${body}</text>
+  `;
+}
 
 function brandMark({ x, y, accent, label, logoDataUrl }) {
   const mark = logoDataUrl
@@ -334,14 +402,15 @@ const videoUrlLabel = (url = '') => {
 };
 
 const listingImages = (anuncio) => {
-  const rawImages = Array.isArray(anuncio?.fotos) && anuncio.fotos.length
-    ? anuncio.fotos
-    : Array.isArray(anuncio?.imagens)
-      ? anuncio.imagens
-      : [anuncio?.imagem].filter(Boolean);
-  return rawImages.map((image) => getImageUrl(image, 'large')).filter(Boolean);
-};
+  const rawImages = [
+    ...(Array.isArray(anuncio?.fotos) ? anuncio.fotos : []),
+    ...(Array.isArray(anuncio?.imagens) ? anuncio.imagens : []),
+    anuncio?.imagem,
+  ].filter(Boolean);
 
+  const urls = rawImages.flatMap((image) => imageCandidateUrls(image));
+  return uniqueUrls(urls);
+};
 const isLaunchVehicle = (anuncio) => {
   if (anuncio?.tipo !== 'carro') return false;
   const currentYear = new Date().getFullYear();
@@ -476,10 +545,10 @@ function buildListingGallerySvg({ form, imageDataUrl, galleryDataUrls = [], logo
   const { size, accent, label, titleLines } = listingMeta(form);
   const compact = size.height < 800;
   const portrait = size.height > size.width;
-  const images = [imageDataUrl, ...galleryDataUrls].filter(Boolean);
+  const images = uniqueDataUrls([imageDataUrl, ...galleryDataUrls].filter(Boolean));
   const main = images[0];
-  const second = images[1] || images[0];
-  const third = images[2] || images[1] || images[0];
+  const second = images[1];
+  const third = images[2];
   const pad = compact ? 48 : 64;
   const top = compact ? 106 : 144;
   const gap = 18;
@@ -491,9 +560,9 @@ function buildListingGallerySvg({ form, imageDataUrl, galleryDataUrls = [], logo
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}" viewBox="0 0 ${size.width} ${size.height}">
       ${baseBackground({ width: size.width, height: size.height, accent })}
       ${brandMark({ x: pad, y: 52, accent, label, logoDataUrl })}
-      ${main ? photoImage({ imageDataUrl: main, x: pad, y: top, width: mainW, height: mediaH, rx: 30, clipId: 'galleryMain' }) : placeholderIcon({ x: pad, y: top, width: mainW, height: mediaH, accent, template: form.template })}
-      ${second ? photoImage({ imageDataUrl: second, x: pad + mainW + gap, y: top, width: sideW, height: Math.round((mediaH - gap) / 2), rx: 26, clipId: 'gallerySecond' }) : placeholderIcon({ x: pad + mainW + gap, y: top, width: sideW, height: Math.round((mediaH - gap) / 2), accent, template: form.template })}
-      ${third ? photoImage({ imageDataUrl: third, x: pad + mainW + gap, y: top + Math.round((mediaH - gap) / 2) + gap, width: sideW, height: Math.round((mediaH - gap) / 2), rx: 26, clipId: 'galleryThird' }) : placeholderIcon({ x: pad + mainW + gap, y: top + Math.round((mediaH - gap) / 2) + gap, width: sideW, height: Math.round((mediaH - gap) / 2), accent, template: form.template })}
+      ${main ? photoImage({ imageDataUrl: main, x: pad, y: top, width: mainW, height: mediaH, rx: 30, clipId: 'galleryMain' }) : galleryPlaceholderCard({ x: pad, y: top, width: mainW, height: mediaH, accent, label: 'Imagem principal', text: 'Carrega uma foto' })}
+      ${second ? photoImage({ imageDataUrl: second, x: pad + mainW + gap, y: top, width: sideW, height: Math.round((mediaH - gap) / 2), rx: 26, clipId: 'gallerySecond' }) : galleryPlaceholderCard({ x: pad + mainW + gap, y: top, width: sideW, height: Math.round((mediaH - gap) / 2), accent, label: 'Foto 2', text: 'Sem repeticoes' })}
+      ${third ? photoImage({ imageDataUrl: third, x: pad + mainW + gap, y: top + Math.round((mediaH - gap) / 2) + gap, width: sideW, height: Math.round((mediaH - gap) / 2), rx: 26, clipId: 'galleryThird' }) : galleryPlaceholderCard({ x: pad + mainW + gap, y: top + Math.round((mediaH - gap) / 2) + gap, width: sideW, height: Math.round((mediaH - gap) / 2), accent, label: 'Foto 3', text: 'Adiciona mais fotos' })}
       <rect x="${pad}" y="${top + mediaH - 92}" width="${mainW}" height="92" rx="0" fill="rgba(3,7,18,0.68)" clip-path="url(#galleryMain)"/>
       <text x="${pad + 28}" y="${top + mediaH - 34}" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="950" fill="#ffffff">${escapeXml(form.price)}</text>
       <text x="${pad}" y="${size.height - 54}" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff">${escapeXml(form.cta)}</text>
@@ -510,9 +579,9 @@ function buildListingGallerySvg({ form, imageDataUrl, galleryDataUrls = [], logo
     <rect width="${size.width}" height="${size.height}" fill="#061116"/>
     <rect x="0" y="0" width="${size.width}" height="${Math.round(size.height * 0.42)}" fill="#f4f7f3"/>
     ${brandMark({ x: pad, y: 58, accent, label, logoDataUrl }).replaceAll('fill="#ffffff"', 'fill="#071116"')}
-    ${main ? photoImage({ imageDataUrl: main, x: pad, y: top, width: mainW, height: mainH, rx: 32, clipId: 'galleryMainTall' }) : placeholderIcon({ x: pad, y: top, width: mainW, height: mainH, accent, template: form.template })}
-    ${second ? photoImage({ imageDataUrl: second, x: pad, y: top + mainH + gap, width: thumbW, height: thumbH, rx: 26, clipId: 'gallerySecondTall' }) : placeholderIcon({ x: pad, y: top + mainH + gap, width: thumbW, height: thumbH, accent, template: form.template })}
-    ${third ? photoImage({ imageDataUrl: third, x: pad + thumbW + gap, y: top + mainH + gap, width: thumbW, height: thumbH, rx: 26, clipId: 'galleryThirdTall' }) : placeholderIcon({ x: pad + thumbW + gap, y: top + mainH + gap, width: thumbW, height: thumbH, accent, template: form.template })}
+    ${main ? photoImage({ imageDataUrl: main, x: pad, y: top, width: mainW, height: mainH, rx: 32, clipId: 'galleryMainTall' }) : galleryPlaceholderCard({ x: pad, y: top, width: mainW, height: mainH, accent, label: 'Imagem principal', text: 'Carrega uma foto' })}
+    ${second ? photoImage({ imageDataUrl: second, x: pad, y: top + mainH + gap, width: thumbW, height: thumbH, rx: 26, clipId: 'gallerySecondTall' }) : galleryPlaceholderCard({ x: pad, y: top + mainH + gap, width: thumbW, height: thumbH, accent, label: 'Foto 2', text: 'Sem repeticoes' })}
+    ${third ? photoImage({ imageDataUrl: third, x: pad + thumbW + gap, y: top + mainH + gap, width: thumbW, height: thumbH, rx: 26, clipId: 'galleryThirdTall' }) : galleryPlaceholderCard({ x: pad + thumbW + gap, y: top + mainH + gap, width: thumbW, height: thumbH, accent, label: 'Foto 3', text: 'Adiciona mais fotos' })}
     <text x="${pad}" y="${titleStart - 46}" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
     ${titleLines.map((line, index) => `<text x="${pad}" y="${titleStart + index * 60}" font-family="Inter, Arial, sans-serif" font-size="52" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
     <text x="${pad}" y="${Math.min(size.height - 152, titleStart + titleLines.length * 62 + 32)}" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="950" fill="${accent}">${escapeXml(form.price)}</text>
@@ -730,6 +799,8 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
   const previewUrl = useMemo(() => svgToDataUrl(svg), [svg]);
   const currentSize = SIZES[form.size] || SIZES.square;
   const outputName = `${slugify(form.title || form.badge)}-${form.style || 'premium'}-${form.size}`;
+  const mediaItems = useMemo(() => uniqueDataUrls([imageDataUrl, ...galleryDataUrls]), [galleryDataUrls, imageDataUrl]);
+  const galleryNeedsMoreImages = form.template !== 'brand' && form.style === 'gallery' && mediaItems.length > 0 && mediaItems.length < 3;
   const newVehicleAds = useMemo(() => anuncios
     .filter(isLaunchVehicle)
     .sort((a, b) => {
@@ -742,24 +813,24 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
     .slice(0, 6), [anuncios]);
 
   const applyImageSet = (dataUrls, name = 'imagem') => {
-    const images = dataUrls.filter(Boolean).slice(0, 4);
+    const images = uniqueDataUrls(dataUrls).slice(0, 8);
     if (!images.length) return;
     setImageDataUrl(images[0]);
     setGalleryDataUrls(images.slice(1));
-    setImageName(name);
+    setImageName(name || `${images.length} imagens`);
   };
 
   const handleFiles = async (fileList) => {
-    const files = Array.from(fileList || []).filter((file) => file.type.startsWith('image/')).slice(0, 4);
+    const files = Array.from(fileList || []).filter((file) => file.type.startsWith('image/')).slice(0, 8);
     if (!files.length) {
       setFeedback('Escolhe uma ou mais imagens. Para video, usa o campo de URL do video.');
       return;
     }
     setBusy(true);
     try {
-      const dataUrls = await Promise.all(files.map(readFileAsDataUrl));
-      applyImageSet(dataUrls, files.length === 1 ? files[0].name : `${files.length} imagens carregadas`);
-      setFeedback(files.length === 1 ? 'Imagem carregada.' : 'Galeria de imagens carregada.');
+      const dataUrls = uniqueDataUrls(await Promise.all(files.map(readFileAsDataUrl)));
+      applyImageSet(dataUrls, dataUrls.length === 1 ? files[0].name : `${dataUrls.length} imagens carregadas`);
+      setFeedback(dataUrls.length === 1 ? 'Imagem carregada.' : `${dataUrls.length} imagens unicas carregadas.`);
     } catch (error) {
       setFeedback(error.message);
     } finally {
@@ -773,17 +844,19 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
   };
 
   const loadImageFromUrl = async () => {
-    const url = imageUrlInput.trim();
-    if (!url) return;
+    const urls = uniqueUrls(imageUrlInput.split(/[\s,]+/).filter(Boolean)).slice(0, 8);
+    if (!urls.length) return;
     setBusy(true);
+    setFeedback('');
     try {
-      const data = await imageUrlToDataUrl(url);
-      applyImageSet([data], 'imagem por URL');
+      const loaded = await Promise.allSettled(urls.map((url) => imageUrlToDataUrl(url)));
+      const dataUrls = uniqueDataUrls(loaded.map((item) => (item.status === 'fulfilled' ? item.value : '')).filter(Boolean));
+      applyImageSet(dataUrls.length ? dataUrls : urls, dataUrls.length > 1 ? `${dataUrls.length} imagens por URL` : 'imagem por URL');
       setImageUrlInput('');
-      setFeedback('Imagem por URL carregada.');
+      setFeedback(dataUrls.length > 1 ? `${dataUrls.length} imagens por URL carregadas.` : 'Imagem por URL carregada.');
     } catch {
-      if (/^https?:\/\//i.test(url)) {
-        applyImageSet([url], 'imagem por URL');
+      if (urls.every((url) => /^https?:\/\//i.test(url))) {
+        applyImageSet(urls, urls.length > 1 ? `${urls.length} imagens por URL` : 'imagem por URL');
         setImageUrlInput('');
         setFeedback('Imagem aplicada por URL. Se o PNG falhar, usa upload direto para evitar bloqueios externos.');
       } else {
@@ -823,6 +896,23 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
     setFeedback('Imagens removidas.');
   };
 
+  const setMainImage = (index) => {
+    if (index <= 0 || index >= mediaItems.length) return;
+    const next = [mediaItems[index], ...mediaItems.filter((_, itemIndex) => itemIndex !== index)];
+    applyImageSet(next, imageName || `${next.length} imagens`);
+    setFeedback('Imagem principal atualizada.');
+  };
+
+  const rotateImages = () => {
+    if (mediaItems.length < 2) {
+      setFeedback('Carrega pelo menos duas imagens para variar a galeria.');
+      return;
+    }
+    const [first, ...rest] = mediaItems;
+    applyImageSet([...rest, first], imageName || `${mediaItems.length} imagens`);
+    setFeedback('Ordem das imagens alterada.');
+  };
+
   const handleDrop = (event) => {
     event.preventDefault();
     handleFiles(event.dataTransfer.files);
@@ -852,7 +942,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
       videoUrl: anuncio.videoUrl || anuncio.visitaVirtualUrl || current.videoUrl || '',
     }));
 
-    const imageUrls = listingImages(anuncio).slice(0, 4);
+    const imageUrls = listingImages(anuncio).slice(0, 8);
     if (!imageUrls.length) {
       setImageDataUrl('');
       setGalleryDataUrls([]);
@@ -864,10 +954,12 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
     setBusy(true);
     try {
       const loaded = await Promise.allSettled(imageUrls.map(imageUrlToDataUrl));
-      const dataUrls = loaded.filter((item) => item.status === 'fulfilled').map((item) => item.value);
+      const dataUrls = uniqueDataUrls(loaded.filter((item) => item.status === 'fulfilled').map((item) => item.value));
       if (!dataUrls.length) throw new Error('Sem imagens acessiveis.');
       applyImageSet(dataUrls, dataUrls.length > 1 ? `${dataUrls.length} fotos do anuncio` : 'foto do anuncio');
-      setFeedback(dataUrls.length > 1 ? 'Anuncio e galeria carregados.' : 'Anuncio e foto carregados.');
+      setFeedback(dataUrls.length > 1
+        ? `Anuncio e ${dataUrls.length} fotos unicas carregados.`
+        : 'Anuncio carregado com 1 foto. A galeria nao vai repetir a imagem; adiciona mais fotos para completar.');
     } catch {
       setImageDataUrl('');
       setGalleryDataUrls([]);
@@ -969,6 +1061,12 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
         .nx-postgen-media-drop strong { max-width: 100%; color: ${palette.text || '#102326'}; font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
         .nx-postgen-media-drop span { color: ${palette.textFaint || '#7b8b90'}; font-size: 11px; line-height: 1.4; }
         .nx-postgen-url-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-top: 8px; }
+        .nx-postgen-thumbs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+        .nx-postgen-thumb { position: relative; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 10px; border: 1px solid ${palette.borderStrong || '#b9cac4'}; background: #f5fbfa; padding: 0; cursor: pointer; }
+        .nx-postgen-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .nx-postgen-thumb span { position: absolute; left: 6px; bottom: 6px; max-width: calc(100% - 12px); border-radius: 999px; padding: 3px 7px; background: rgba(5, 22, 27, .78); color: #fff; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nx-postgen-thumb.active { border-color: ${palette.green || '#168b82'}; box-shadow: 0 0 0 3px rgba(42,193,180,.18); }
+        .nx-postgen-media-note { margin-top: 8px; padding: 9px 10px; border-radius: 9px; background: rgba(42,193,180,.1); color: ${palette.textDim || '#4f646a'}; font-size: 12px; font-weight: 800; line-height: 1.45; }
         .nx-postgen-media-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
         .nx-postgen-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
         .nx-postgen-btn { border: 1px solid ${palette.border || '#dfe8e4'}; border-radius: 9px; min-height: 40px; padding: 0 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 900; cursor: pointer; color: ${palette.text || '#102326'}; background: #fff; }
@@ -1147,8 +1245,32 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                 >
                   <Icon path={mdiCloudUploadOutline} size={0.9} />
                   <strong>{imageName || 'Carregar imagens'}</strong>
-                  <span>{galleryDataUrls.length ? `${galleryDataUrls.length + 1} imagens prontas para galeria` : 'Upload, arrastar, URL ou colar imagem'}</span>
+                  <span>{mediaItems.length ? `${mediaItems.length} imagem${mediaItems.length > 1 ? 's' : ''} pronta${mediaItems.length > 1 ? 's' : ''}` : 'Upload, arrastar, URL ou colar imagem'}</span>
                 </div>
+
+                {mediaItems.length > 0 && (
+                  <div className="nx-postgen-thumbs" aria-label="Imagens carregadas">
+                    {mediaItems.slice(0, 8).map((src, index) => (
+                      <button
+                        type="button"
+                        key={`${index}-${src.slice(0, 48)}`}
+                        className={`nx-postgen-thumb ${index === 0 ? 'active' : ''}`}
+                        onClick={() => setMainImage(index)}
+                        title={index === 0 ? 'Imagem principal' : 'Tornar imagem principal'}
+                      >
+                        <img src={src} alt="" />
+                        <span>{index === 0 ? 'Principal' : `Foto ${index + 1}`}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {galleryNeedsMoreImages && (
+                  <div className="nx-postgen-media-note">
+                    A galeria tem {mediaItems.length} imagem{mediaItems.length > 1 ? 's' : ''}. O criativo preenche os espacos vazios com molduras elegantes, sem repetir a mesma foto.
+                  </div>
+                )}
+
                 <div className="nx-postgen-url-row">
                   <input
                     id="postgen-image-url"
@@ -1170,6 +1292,9 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                   </button>
                   <button type="button" className="nx-postgen-btn" onClick={pasteImageFromClipboard} disabled={busy}>
                     <Icon path={mdiClipboardTextOutline} size={0.65} /> Colar
+                  </button>
+                  <button type="button" className="nx-postgen-btn" onClick={rotateImages} disabled={busy || mediaItems.length < 2}>
+                    <Icon path={mdiViewCarouselOutline} size={0.65} /> Variar ordem
                   </button>
                   <button type="button" className="nx-postgen-btn" onClick={clearImages} disabled={busy || (!imageDataUrl && !galleryDataUrls.length)}>
                     <Icon path={mdiClose} size={0.65} /> Limpar
