@@ -112,6 +112,7 @@ export default function Footer() {
               </div>
               <div className="nx-footer-col">
                 <h4>Empresa</h4>
+                <a href="/sobre-nos">Sobre nós</a>
                 <button onClick={() => setModalSuporteAberto(true)}>Ajuda</button>
                 {/* 🌟 USANDO TAGS HREF NORMAIS PARA FORÇAR A ABERTURA DA PÁGINA */}
                 <a href="/privacidade">Termos e Condições</a>

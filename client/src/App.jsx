@@ -36,6 +36,7 @@ const SeoPesquisa    = lazy(() => import('./pages/shared/SeoPesquisa'));
 
 // 🌟 NOVA PÁGINA IMPORTADA
 const PoliticaPrivacidade = lazy(() => import('./pages/shared/PoliticaPrivacidade'));
+const SobreNos = lazy(() => import('./pages/shared/SobreNos'));
 
 function LoadingFallback() {
   return (
@@ -92,6 +93,7 @@ function AppShell() {
             
             {/* 🌟 ROTA DA POLÍTICA E TERMOS */}
             <Route path="/privacidade" element={<PoliticaPrivacidade />} />
+            <Route path="/sobre-nos" element={<SobreNos />} />
             
             {/* Protegidas por Login (Auth) */}
             <Route path="/publicar" element={<ProtectedRoute><Publicar /></ProtectedRoute>} />
