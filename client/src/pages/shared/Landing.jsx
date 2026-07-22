@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
 import api from '../../services/api';
@@ -122,12 +122,13 @@ export default function Landing() {
   const modelosPesquisa = pesquisaRapida.tipo === 'carro' && pesquisaRapida.marca
     ? getModelosPorMarca(pesquisaRapida.marca).map((modelo) => (typeof modelo === 'object' ? modelo.modelo || modelo.nome : modelo)).filter(Boolean)
     : [];
+  const temProfissionaisAtivos = Number(resumoPublico?.profissionais || 0) > 0;
   const metricasHome = [
     { label: 'Anúncios ativos', value: resumoPublico?.totalAnuncios },
     { label: 'Carros', value: resumoPublico?.carros },
     { label: 'Imóveis', value: resumoPublico?.imoveis },
-    { label: 'Profissionais', value: resumoPublico?.profissionais },
-  ];
+    temProfissionaisAtivos ? { label: 'Profissionais', value: resumoPublico?.profissionais } : null,
+  ].filter((metrica) => metrica && Number(metrica.value || 0) > 0);
 
   const criarLinkPesquisa = (tipo, filtros = {}) => {
     const params = new URLSearchParams();
@@ -3198,7 +3199,190 @@ export default function Landing() {
             align-items: stretch !important;
           }
         }
-      `}</style>
+
+        /* Noxvelia editorial refresh */
+        .lp-root {
+          --lp-ink: #071116;
+          --lp-ink-soft: #243b42;
+          --lp-drive: #2ac1b4;
+          --lp-estate: #315f7d;
+          --lp-rust: #b56347;
+          --lp-gold: #c6a86a;
+          --lp-stone: #f7f2e9;
+          --lp-cream: #fffdf8;
+          --lp-line: rgba(7, 17, 22, 0.14);
+          background: var(--lp-stone);
+        }
+
+        .lp-shell { width: min(1240px, calc(100% - 48px)); }
+        .lp-hero { padding: 0 0 0 !important; min-height: 720px; background: #071116 !important; color: #fff; }
+        .lp-hero > .lp-shell { width: 100%; }
+        .lp-hero-card {
+          position: relative;
+          min-height: 650px;
+          display: block !important;
+          overflow: hidden;
+          border: 0 !important;
+          border-radius: 0 !important;
+          background: #071116 !important;
+        }
+        .lp-hero-media { position: absolute !important; inset: 0; z-index: 0; background: #071116; }
+        .lp-hero-media::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, rgba(4, 12, 15, 0.92) 0%, rgba(4, 12, 15, 0.72) 45%, rgba(4, 12, 15, 0.24) 100%), linear-gradient(0deg, rgba(4, 12, 15, 0.72), rgba(4, 12, 15, 0) 48%);
+        }
+        .lp-hero-media img { min-height: 650px !important; object-position: 58% center; filter: saturate(1.05) contrast(1.02); }
+        .lp-hero-content {
+          position: relative;
+          z-index: 2;
+          width: min(1240px, calc(100% - 48px));
+          min-height: 650px;
+          margin: 0 auto;
+          padding: 92px 0 112px !important;
+          justify-content: center;
+          background: transparent !important;
+          color: #ffffff !important;
+        }
+        .lp-hero-content::after { display: none !important; }
+        .lp-hero-brand { display: inline-flex; align-items: center; gap: 11px; margin-bottom: 28px; font-size: 13px; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; }
+        .lp-hero-brand img { width: 34px; height: 34px; object-fit: contain; }
+        .lp-kicker { margin-bottom: 18px !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; color: #9cefe7 !important; }
+        .lp-hero h1 { max-width: 760px; font-size: 72px !important; line-height: 0.96 !important; letter-spacing: 0 !important; font-weight: 950 !important; }
+        .lp-hero h1 span { color: #9cefe7 !important; }
+        .lp-hero-copy { max-width: 560px !important; color: rgba(255,255,255,0.82) !important; font-size: 17px !important; line-height: 1.65 !important; }
+        .lp-btn, .lp-text-link, .lp-search-submit, .lp-column-link, .lp-round-btn { border-radius: 8px !important; }
+        .lp-btn-drive { color: #061417 !important; background: var(--lp-drive) !important; box-shadow: none !important; }
+        .lp-text-link { min-height: 46px; display: inline-flex; align-items: center; color: #ffffff; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.48); font-weight: 900; }
+        .lp-hero-photo-label { right: calc((100% - min(1240px, calc(100% - 48px))) / 2); bottom: 32px; border-radius: 8px !important; background: rgba(255,253,248,0.92) !important; box-shadow: none !important; }
+
+        .lp-trust-bar {
+          position: relative;
+          z-index: 5;
+          width: min(1240px, calc(100% - 48px));
+          grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+          gap: 0 !important;
+          margin: -64px auto 0 !important;
+          overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.24);
+          border-radius: 8px;
+          background: rgba(255,253,248,0.94);
+          box-shadow: 0 18px 42px rgba(7,17,22,0.18);
+        }
+        .lp-trust-item {
+          min-height: 86px !important;
+          display: block !important;
+          padding: 18px !important;
+          border: 0 !important;
+          border-right: 1px solid rgba(7,17,22,0.1) !important;
+          border-radius: 0 !important;
+          background: transparent !important;
+          color: var(--lp-ink) !important;
+        }
+        .lp-trust-item:last-child { border-right: 0 !important; }
+        .lp-trust-item strong { display: block; font-size: 30px; line-height: 1; font-weight: 950; }
+        .lp-trust-item span { display: block; margin-top: 8px; color: #647178; font-size: 11px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+
+        .lp-quick-section { padding: 96px 0 70px !important; background: var(--lp-stone) !important; }
+        .lp-quick-card {
+          margin-top: 0 !important;
+          padding: 18px !important;
+          border-radius: 8px !important;
+          border-color: var(--lp-line) !important;
+          background: rgba(255,253,248,0.96) !important;
+          box-shadow: none !important;
+        }
+        .lp-quick-title { font-size: 24px !important; letter-spacing: 0 !important; }
+        .lp-type-tabs { border-radius: 8px !important; background: #ece7dc !important; }
+        .lp-type-tab { border-radius: 6px !important; }
+        .lp-type-tab.active { box-shadow: none !important; }
+        .lp-field select, .lp-field input { border-radius: 8px !important; }
+
+        .lp-promo-section { padding: 0 0 76px !important; background: var(--lp-stone) !important; }
+        .lp-promo-link, .lp-pro-strip, .lp-brand-card, .lp-shortcut-group, .lp-example-column, .lp-cv-card, .lp-cv-panel, .lp-cv-code { border-radius: 8px !important; }
+        .lp-promo-link { border-color: var(--lp-line) !important; background: var(--lp-cream) !important; box-shadow: none !important; }
+        .lp-promo-title { font-size: 28px !important; line-height: 1.08 !important; letter-spacing: 0 !important; }
+        .lp-promo-text { color: #566970 !important; }
+        .lp-promo-overlay { border-radius: 8px !important; background: #071116 !important; }
+        .lp-pro-strip { grid-template-columns: 150px minmax(0, 1fr) auto; background: #071116 !important; color: #fff !important; }
+        .lp-pro-strip span { color: #9cefe7 !important; }
+
+        .lp-section { padding: 82px 0 !important; }
+        .lp-brands-section { background: #fffaf1 !important; border-top: 1px solid rgba(7,17,22,0.08); border-bottom: 1px solid rgba(7,17,22,0.08); }
+        .lp-title { font-size: 38px !important; line-height: 1.05 !important; letter-spacing: 0 !important; font-weight: 950 !important; }
+        .lp-copy { color: #52676e !important; }
+        .lp-shortcuts-section { background: var(--lp-stone) !important; }
+        .lp-shortcut-grid { gap: 12px !important; }
+        .lp-shortcut-group { background: var(--lp-cream) !important; border-color: var(--lp-line) !important; }
+        .lp-chip { background: #fff !important; }
+        .lp-popular-section { background: #071116 !important; }
+        .lp-popular-section .lp-title { color: #fff !important; }
+        .lp-popular-section .lp-copy { color: rgba(255,255,255,0.72) !important; }
+        .lp-example-column { background: rgba(255,255,255,0.05) !important; border-color: rgba(255,255,255,0.16) !important; }
+        .lp-example-card { border-bottom-color: rgba(255,255,255,0.12) !important; }
+        .lp-example-price { color: #9cefe7 !important; }
+        .lp-cv-section { background: #fffaf1 !important; }
+        .lp-cv-card { background: #fff !important; border-color: var(--lp-line) !important; }
+
+        .dark .lp-root { background: #071116; }
+        .dark .lp-quick-section, .dark .lp-promo-section, .dark .lp-shortcuts-section { background: #071116 !important; }
+        .dark .lp-brands-section, .dark .lp-cv-section { background: #0d171d !important; }
+        .dark .lp-trust-bar, .dark .lp-quick-card { background: rgba(9,20,26,0.94) !important; border-color: rgba(255,255,255,0.16) !important; }
+        .dark .lp-trust-item { color: #f8fafc !important; border-color: rgba(255,255,255,0.12) !important; }
+        .dark .lp-trust-item span { color: #a8bac0 !important; }
+        .dark .lp-promo-link, .dark .lp-shortcut-group, .dark .lp-brand-card, .dark .lp-cv-card, .dark .lp-cv-panel { background: #111f27 !important; border-color: rgba(255,255,255,0.12) !important; }
+        .dark .lp-promo-title, .dark .lp-title, .dark .lp-shortcut-group h3 { color: #f8fafc !important; }
+        .dark .lp-promo-text, .dark .lp-copy, .dark .lp-brand-name { color: #b7c6ca !important; }
+
+        @media (max-width: 980px) {
+          .lp-hero-card, .lp-hero-content, .lp-hero-media img { min-height: 610px !important; }
+          .lp-hero h1 { font-size: 56px !important; }
+          .lp-trust-bar { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; margin-top: 0 !important; }
+          .lp-trust-item:nth-child(2n) { border-right: 0 !important; }
+          .lp-quick-section { padding-top: 44px !important; }
+        }
+
+        @media (max-width: 640px) {
+          .lp-shell, .lp-hero-content, .lp-trust-bar { width: min(100% - 28px, 1240px) !important; }
+          .lp-hero-card, .lp-hero-content, .lp-hero-media img { min-height: 580px !important; }
+          .lp-hero-content { padding: 62px 0 96px !important; }
+          .lp-hero h1 { font-size: 42px !important; line-height: 1 !important; }
+          .lp-hero-copy { font-size: 15px !important; }
+          .lp-hero-photo-label { right: 14px; bottom: 14px; }
+          .lp-trust-bar { grid-template-columns: 1fr !important; }
+          .lp-trust-item { border-right: 0 !important; border-bottom: 1px solid rgba(7,17,22,0.1) !important; }
+          .lp-trust-item:last-child { border-bottom: 0 !important; }
+          .lp-pro-strip { grid-template-columns: 1fr !important; }
+          .lp-title { font-size: 30px !important; }
+        }
+        /* Production copy/layout fixes */
+        .lp-hero { min-height: 0 !important; }
+        .lp-hero-card,
+        .lp-hero-content,
+        .lp-hero-media img { min-height: 590px !important; }
+        .lp-hero-content { padding: 96px 0 118px !important; }
+        .lp-hero h1 { max-width: 720px !important; font-size: 64px !important; line-height: 1 !important; }
+        .lp-actions { position: relative; z-index: 8; }
+        .lp-trust-bar { margin: -44px auto 0 !important; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important; }
+        .lp-trust-item strong { color: var(--lp-ink) !important; }
+        .dark .lp-trust-item strong { color: #f8fafc !important; }
+        .lp-quick-section { padding-top: 64px !important; }
+        @media (max-width: 980px) {
+          .lp-hero-card,
+          .lp-hero-content,
+          .lp-hero-media img { min-height: 560px !important; }
+          .lp-hero h1 { font-size: 48px !important; }
+          .lp-trust-bar { margin-top: 0 !important; }
+        }
+        @media (max-width: 640px) {
+          .lp-hero-card,
+          .lp-hero-content,
+          .lp-hero-media img { min-height: 520px !important; }
+          .lp-hero-content { padding: 68px 0 84px !important; }
+          .lp-hero h1 { font-size: 38px !important; }
+          .lp-quick-section { padding-top: 36px !important; }
+        }      `}</style>
 
       <NavbarLanding />
 
@@ -3211,12 +3395,12 @@ export default function Landing() {
                   <img src="/logo-noxvelia.png" alt="" />
                   <span>NOXVELIA</span>
                 </div>
-                <span className="lp-kicker">Drive / Estate</span>
+                <span className="lp-kicker">Pesquisa em Portugal</span>
                 <h1 id="lp-hero-title">
-                  Carros e imóveis em Portugal. <span>Mais simples.</span>
+                  Encontra carros e imóveis em Portugal.
                 </h1>
                 <p className="lp-hero-copy">
-                  Encontra carros e imóveis com fotos, preço, localização e contactos num só sítio.
+                  Pesquisa anúncios com fotografias, preço, localização e contacto direto. Tudo organizado para comparares melhor antes de visitar ou ligar.
                 </p>
                 <div className="lp-actions">
                   <a className="lp-btn lp-btn-drive" href="#pesquisa">
@@ -3236,19 +3420,21 @@ export default function Landing() {
                   decoding="async"
                 />
                 <div className="lp-hero-photo-label" aria-hidden="true">
-                  Drive / Estate
+                  Carros / Imóveis
                 </div>
               </div>
             </div>
 
-            <div className="lp-trust-bar" aria-label="Resumo da plataforma">
-              {metricasHome.map((metrica) => (
-                <div className="lp-trust-item" key={metrica.label}>
-                  <strong>{formatarContagem(metrica.value)}</strong>
-                  <span>{metrica.label}</span>
-                </div>
-              ))}
-            </div>
+            {metricasHome.length > 0 && (
+              <div className="lp-trust-bar" aria-label="Resumo da plataforma">
+                {metricasHome.map((metrica) => (
+                  <div className="lp-trust-item" key={metrica.label}>
+                    <strong>{formatarContagem(metrica.value)}</strong>
+                    <span>{metrica.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
           </div>
         </section>
@@ -3259,8 +3445,8 @@ export default function Landing() {
               <div className="lp-quick-top">
                 <div>
                   <span className="lp-eyebrow">Pesquisa rápida</span>
-                  <h2 className="lp-quick-title" id="lp-quick-title">Começa pelo que queres encontrar.</h2>
-                  <p className="lp-quick-copy">Filtra por tipo, localização e preço. Depois abres a lista certa: carros ou imóveis.</p>
+                  <h2 className="lp-quick-title" id="lp-quick-title">Pesquisa rápida</h2>
+                  <p className="lp-quick-copy">Filtra por tipo, localização e preço para chegares mais depressa aos anúncios certos.</p>
                 </div>
                 <div className="lp-type-tabs" role="tablist" aria-label="Tipo de pesquisa">
                   <button
@@ -3360,8 +3546,8 @@ export default function Landing() {
               <Link className="lp-promo-link drive" to="/carros">
                 <span className="lp-promo-copy">
                   <span className="lp-promo-label">NOXVELIA Drive</span>
-                  <strong className="lp-promo-title">Carros apresentados com o essencial à frente.</strong>
-                  <span className="lp-promo-text">Fotos, preço, localização e dados técnicos num formato direto.</span>
+                  <strong className="lp-promo-title">Pesquisa automóveis.</strong>
+                  <span className="lp-promo-text">Vê marca, modelo, quilómetros, combustível, preço e localização num formato fácil de comparar.</span>
                   <span className="lp-promo-overlay">Pesquisar carro</span>
                 </span>
                 <span className="lp-promo-media">
@@ -3371,8 +3557,8 @@ export default function Landing() {
               <Link className="lp-promo-link estate" to="/imoveis">
                 <span className="lp-promo-copy">
                   <span className="lp-promo-label">NOXVELIA Estate</span>
-                  <strong className="lp-promo-title">Imóveis com leitura rápida antes do contacto.</strong>
-                  <span className="lp-promo-text">Localização, fotografias e características fáceis de comparar.</span>
+                  <strong className="lp-promo-title">Pesquisa imóveis.</strong>
+                  <span className="lp-promo-text">Compara fotografias, localização, tipologia, áreas e preço antes de marcar visita.</span>
                   <span className="lp-promo-overlay">Pesquisar imóvel</span>
                 </span>
                 <span className="lp-promo-media">
@@ -3380,10 +3566,10 @@ export default function Landing() {
                 </span>
               </Link>
             </div>
-            <Link className="lp-pro-strip" to="/profissionais">
-              <span>Profissionais</span>
-              <strong>Stands, mediadores e vendedores premium num diretório próprio.</strong>
-              <em>Ver profissionais</em>
+            <Link className="lp-pro-strip" to={temProfissionaisAtivos ? '/profissionais' : publicarTo} state={temProfissionaisAtivos ? undefined : publicarState}>
+              <span>{temProfissionaisAtivos ? 'Profissionais' : 'Anunciar'}</span>
+              <strong>{temProfissionaisAtivos ? 'Stands, mediadores e vendedores com anúncios disponíveis.' : 'Publica o teu carro ou imóvel e recebe contactos diretamente.'}</strong>
+              <em>{temProfissionaisAtivos ? 'Ver profissionais' : 'Publicar anúncio'}</em>
             </Link>
           </div>
         </section>

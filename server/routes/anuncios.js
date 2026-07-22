@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import rateLimit from 'express-rate-limit';
 import Anuncio from '../models/Anuncio.js';
 import User from '../models/User.js';
@@ -106,7 +106,7 @@ const aplicarFiltrosPesquisa = async (query, filtros = {}) => {
     if (filtroBooleanoAtivo(garagem)) query['imovel.garagem'] = true;
   }
 };
-const ESTADOS_PUBLICOS = ['ativo', 'pendente'];
+const ESTADOS_PUBLICOS = ['ativo'];
 const filtroPublico = () => ({ estado: { $in: ESTADOS_PUBLICOS } });
 
 const compararTexto = (a, b) => normalizarFiltroTexto(a) === normalizarFiltroTexto(b);
@@ -340,7 +340,7 @@ router.get('/resumo-publico', async (_req, res) => {
       totalAnuncios,
       carros,
       imoveis,
-      profissionais,
+      profissionaisAtivos,
       destaques,
       comGarantia,
       comRetoma,
@@ -349,10 +349,29 @@ router.get('/resumo-publico', async (_req, res) => {
       Anuncio.countDocuments(publico),
       Anuncio.countDocuments({ ...publico, tipo: 'carro' }),
       Anuncio.countDocuments({ ...publico, tipo: 'imovel' }),
-      User.countDocuments({
-        tipo: { $ne: 'admin' },
-        $or: [{ tipoConta: 'profissional' }, { premiumAtivo: true }],
-      }),
+      Anuncio.aggregate([
+        { $match: publico },
+        { $group: { _id: '$utilizador' } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'utilizador',
+          },
+        },
+        { $unwind: '$utilizador' },
+        {
+          $match: {
+            'utilizador.tipo': { $ne: 'admin' },
+            $or: [
+              { 'utilizador.tipoConta': 'profissional' },
+              { 'utilizador.premiumAtivo': true },
+            ],
+          },
+        },
+        { $count: 'total' },
+      ]),
       Anuncio.countDocuments({ ...publico, destacado: true }),
       Anuncio.countDocuments({ ...publico, garantia: { $exists: true, $nin: [null, ''] } }),
       Anuncio.countDocuments({ ...publico, aceitaRetoma: true }),
@@ -363,7 +382,7 @@ router.get('/resumo-publico', async (_req, res) => {
       totalAnuncios,
       carros,
       imoveis,
-      profissionais,
+      profissionais: profissionaisAtivos[0]?.total || 0,
       destaques,
       comGarantia,
       comRetoma,
