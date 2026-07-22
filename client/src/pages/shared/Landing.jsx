@@ -156,7 +156,7 @@ export default function Landing() {
     }
 
     const ctx = gsap.context(() => {
-      gsap.from('.lp-hero-brand, .lp-kicker, #lp-hero-title, .lp-hero-copy, .lp-actions', {
+      gsap.from('.lp-hero-brand, .lp-kicker, #lp-hero-title, .lp-hero-copy, .lp-hero-proof span, .lp-actions', {
         y: 22,
         opacity: 0,
         duration: 0.78,
@@ -3810,6 +3810,143 @@ export default function Landing() {
         .dark .lp-promo-text {
           color: rgba(255, 250, 240, 0.76) !important;
         }
+
+        /* Restrained professional polish */
+        .lp-hero-card {
+          isolation: isolate !important;
+          overflow: hidden !important;
+          border-radius: 24px !important;
+          border-color: rgba(240, 223, 187, 0.18) !important;
+          box-shadow: 0 42px 110px -70px rgba(0, 0, 0, 0.7) !important;
+        }
+
+        .lp-hero-content {
+          z-index: 4 !important;
+          background: linear-gradient(90deg, rgba(7, 19, 38, 0.96) 0%, rgba(7, 19, 38, 0.82) 58%, rgba(7, 19, 38, 0.06) 100%) !important;
+        }
+
+        .lp-hero-media img {
+          filter: saturate(1.04) contrast(1.04) !important;
+          transform-origin: center center !important;
+          transition: transform 900ms cubic-bezier(.2,.8,.2,1), filter 900ms cubic-bezier(.2,.8,.2,1) !important;
+        }
+
+        .lp-hero-card:hover .lp-hero-media img {
+          transform: scale(1.025) !important;
+          filter: saturate(1.08) contrast(1.06) !important;
+        }
+
+        .lp-hero-proof {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 8px !important;
+          margin-top: 22px !important;
+        }
+
+        .lp-hero-proof span {
+          min-height: 34px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          padding: 0 11px !important;
+          color: #fffaf0 !important;
+          border: 1px solid rgba(240, 223, 187, 0.26) !important;
+          border-radius: 8px !important;
+          background: rgba(255, 250, 240, 0.08) !important;
+          font-size: 12px !important;
+          font-weight: 780 !important;
+          letter-spacing: 0 !important;
+          backdrop-filter: blur(10px) !important;
+        }
+
+        .lp-btn,
+        .lp-search-submit,
+        .lp-promo-overlay,
+        .lp-chip,
+        .lp-column-link,
+        .lp-brand-card,
+        .lp-promo-link,
+        .lp-shortcut-group,
+        .lp-example-card,
+        .lp-cv-card {
+          transition: transform 220ms ease, border-color 220ms ease, background 220ms ease, box-shadow 220ms ease, color 220ms ease, filter 220ms ease !important;
+        }
+
+        .lp-btn:hover,
+        .lp-search-submit:hover,
+        .lp-promo-overlay:hover,
+        .lp-chip:hover,
+        .lp-column-link:hover {
+          transform: translateY(-1px) !important;
+        }
+
+        .lp-promo-link:hover,
+        .lp-shortcut-group:hover,
+        .lp-brand-card:hover,
+        .lp-example-card:hover,
+        .lp-cv-card:hover {
+          transform: translateY(-3px) !important;
+          box-shadow: 0 24px 70px -58px rgba(7, 19, 38, 0.72) !important;
+        }
+
+        .lp-promo-link:hover .lp-promo-media img,
+        .lp-example-card:hover .lp-example-img img {
+          transform: scale(1.035) !important;
+        }
+
+        .lp-promo-media img,
+        .lp-example-img img {
+          transition: transform 700ms cubic-bezier(.2,.8,.2,1) !important;
+        }
+
+        .lp-quick-card {
+          border-radius: 14px !important;
+          box-shadow: 0 28px 80px -68px rgba(7, 19, 38, 0.82) !important;
+        }
+
+        .lp-quick-card:focus-within {
+          border-color: rgba(217, 196, 156, 0.82) !important;
+          box-shadow: 0 30px 86px -68px rgba(7, 19, 38, 0.82), 0 0 0 4px rgba(217, 196, 156, 0.16) !important;
+        }
+
+        .lp-field select:hover,
+        .lp-field input:hover {
+          border-color: rgba(217, 196, 156, 0.72) !important;
+        }
+
+        .lp-type-indicator {
+          background: linear-gradient(135deg, #f0dfbb 0%, #d9c49c 100%) !important;
+          box-shadow: inset 0 0 0 1px rgba(7, 19, 38, 0.12), 0 10px 22px -18px rgba(7, 19, 38, 0.7) !important;
+        }
+
+        .lp-brand-track {
+          animation-duration: 68s !important;
+        }
+
+        .lp-brand-card {
+          background: linear-gradient(180deg, rgba(255, 250, 240, 0.98), rgba(244, 239, 229, 0.92)) !important;
+        }
+
+        .lp-brand-card:hover {
+          border-color: rgba(217, 196, 156, 0.78) !important;
+          background: #fffaf0 !important;
+        }
+
+        .dark .lp-hero-proof span {
+          color: #fffaf0 !important;
+          background: rgba(240, 223, 187, 0.1) !important;
+          border-color: rgba(240, 223, 187, 0.22) !important;
+        }
+
+        @media (max-width: 700px) {
+          .lp-hero-proof {
+            gap: 7px !important;
+          }
+
+          .lp-hero-proof span {
+            min-height: 31px !important;
+            font-size: 11.5px !important;
+          }
+        }
       `}</style>
 
       <NavbarLanding />
@@ -3825,11 +3962,16 @@ export default function Landing() {
                 </div>
                 <span className="lp-kicker">Pesquisa em Portugal</span>
                 <h1 id="lp-hero-title">
-                  Carros e imóveis em Portugal, apresentados com clareza.
+                  Pesquisa carros e imóveis em Portugal com informação clara.
                 </h1>
                 <p className="lp-hero-copy">
-                  Pesquisa por marca, modelo, localização e preço. Compara fotografias, características e contactos antes de visitar ou ligar.
+                  Encontra anúncios com fotografias, preço, localização e contacto direto. Tudo organizado para comparares melhor antes de visitar ou ligar.
                 </p>
+                <div className="lp-hero-proof" aria-label="Vantagens da Noxvelia">
+                  <span>Fotografias grandes</span>
+                  <span>Preço visível</span>
+                  <span>Contacto direto</span>
+                </div>
                 <div className="lp-actions">
                   <a className="lp-btn lp-btn-drive" href="#pesquisa">
                     Pesquisar anúncios
@@ -3872,9 +4014,9 @@ export default function Landing() {
             <form className="lp-quick-card" onSubmit={submeterPesquisaRapida}>
               <div className="lp-quick-top">
                 <div>
-                  <span className="lp-eyebrow">Pesquisa rápida</span>
-                  <h2 className="lp-quick-title" id="lp-quick-title">Pesquisa rápida</h2>
-                  <p className="lp-quick-copy">Filtra por marca, modelo, localização e preço para chegares rapidamente aos anúncios certos.</p>
+                  <span className="lp-eyebrow">Começa por aqui</span>
+                  <h2 className="lp-quick-title" id="lp-quick-title">Encontra anúncios em segundos.</h2>
+                  <p className="lp-quick-copy">Escolhe tipo, localização e preço. Depois podes afinar pelos filtros da pesquisa.</p>
                 </div>
                 <div className="lp-type-tabs" role="tablist" aria-label="Tipo de pesquisa">
                   <span className="lp-type-indicator" ref={tabIndicatorRef} aria-hidden="true" />
