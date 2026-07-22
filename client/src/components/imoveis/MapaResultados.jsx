@@ -38,10 +38,10 @@ export default function MapaResultados({ imoveis, anuncios, tipo = 'imovel' }) {
   const centroDefault = [39.3999, -8.2245];
   const zoomDefault = 6;
 
-  // Função para criar o Pin com o Preço (Design NOXVELIA Estate)
+  // Função para criar o Pin com o Preço (Design Imóveis)
   const criarIconePreco = (precoNum, tipoAnuncio = tipo) => {
     const precoFormatado = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(precoNum);
-    const corPin = tipoAnuncio === 'carro' ? '#2ac1b4' : '#3ecf8e';
+    const corPin = tipoAnuncio === 'carro' ? '#d9c49c' : '#102f50';
     
     return L.divIcon({
       className: 'custom-NOXVELIA-pin',

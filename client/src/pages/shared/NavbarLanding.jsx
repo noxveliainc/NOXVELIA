@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
@@ -96,7 +96,7 @@ export default function NavbarLanding() {
           display: inline-flex;
           align-items: center;
           gap: 11px;
-          color: #082126;
+          color: #071326;
           text-decoration: none;
         }
 
@@ -139,12 +139,12 @@ export default function NavbarLanding() {
           bottom: 3px;
           height: 2px;
           border-radius: 2px;
-          background: #2ac1b4;
+          background: #d9c49c;
           transition: right 0.2s ease;
         }
 
         .nl-links a:hover {
-          color: #082126;
+          color: #071326;
         }
 
         .nl-links a:hover::after {
@@ -165,7 +165,7 @@ export default function NavbarLanding() {
           display: none;
           place-items: center;
           padding: 0;
-          color: #143238;
+          color: #102f50;
           border: 1px solid rgba(8, 33, 38, 0.16);
           border-radius: 10px;
           background: rgba(255, 255, 255, 0.62);
@@ -204,7 +204,7 @@ export default function NavbarLanding() {
           min-height: 52px;
           padding: 6px 6px 12px;
           border-bottom: 1px solid #e3ebe8;
-          color: #082126;
+          color: #071326;
         }
 
         .nl-mobile-menu-head img {
@@ -261,23 +261,23 @@ export default function NavbarLanding() {
           justify-content: center;
           min-height: 46px;
           color: #ffffff;
-          background: #082126;
+          background: #071326;
         }
 
         .nl-mobile-menu a:hover,
         .nl-mobile-menu button:hover {
-          color: #082126;
+          color: #071326;
           background: #edf6f3;
         }
 
         .nl-mobile-menu a.nl-mobile-primary:hover {
           color: #ffffff;
-          background: #0d3036;
+          background: #102f50;
         }
 
         .dark .nl-mobile-menu a.nl-mobile-primary {
           color: #062326 !important;
-          background: #2ac1b4 !important;
+          background: #d9c49c !important;
         }
 
         .nl-btn-ghost,
@@ -295,7 +295,7 @@ export default function NavbarLanding() {
         }
 
         .nl-btn-ghost {
-          color: #143238;
+          color: #102f50;
           border: 1px solid rgba(8, 33, 38, 0.16);
           background: rgba(255, 255, 255, 0.56);
         }
@@ -307,14 +307,14 @@ export default function NavbarLanding() {
 
         .nl-btn-solid {
           color: #fff;
-          border: 1px solid #082126;
-          background: #082126;
+          border: 1px solid #071326;
+          background: #071326;
           box-shadow: 0 12px 24px -18px rgba(8, 33, 38, 0.75);
         }
 
         .nl-btn-solid:hover {
           transform: translateY(-1px);
-          background: #0d3036;
+          background: #102f50;
           box-shadow: 0 16px 28px -18px rgba(8, 33, 38, 0.8);
         }
 
@@ -328,7 +328,7 @@ export default function NavbarLanding() {
           align-items: center;
           gap: 8px;
           padding: 4px 12px 4px 4px;
-          color: #143238;
+          color: #102f50;
           border: 1px solid rgba(8, 33, 38, 0.14);
           border-radius: 999px;
           background: rgba(255, 255, 255, 0.7);
@@ -338,7 +338,7 @@ export default function NavbarLanding() {
 
         .nl-user-trigger:hover,
         .nl-user-trigger.active {
-          border-color: rgba(42, 193, 180, 0.5);
+          border-color: rgba(217, 196, 156, 0.62);
           background: #fff;
         }
 
@@ -349,10 +349,10 @@ export default function NavbarLanding() {
           overflow: hidden;
           display: grid;
           place-items: center;
-          color: #0d5955;
-          border: 1px solid rgba(42, 193, 180, 0.24);
+          color: #102f50;
+          border: 1px solid rgba(217, 196, 156, 0.42);
           border-radius: 50%;
-          background: rgba(42, 193, 180, 0.14);
+          background: rgba(217, 196, 156, 0.18);
         }
 
         .nl-avatar img {
@@ -410,7 +410,7 @@ export default function NavbarLanding() {
         }
 
         .nl-ud-item:hover {
-          color: #082126;
+          color: #071326;
           background: #f1f6f4;
         }
 
@@ -504,6 +504,59 @@ export default function NavbarLanding() {
             grid-template-columns: 1fr;
           }
         }
+
+        /* Noxvelia logo palette navbar */
+        .nl-root {
+          border-bottom-color: rgba(7, 19, 38, 0.12) !important;
+          background: rgba(255, 250, 240, 0.9) !important;
+        }
+
+        .nl-brand,
+        .nl-links a,
+        .nl-btn-ghost,
+        .nl-user-trigger {
+          color: #071326 !important;
+        }
+
+        .nl-links a::after {
+          background: #d9c49c !important;
+        }
+
+        .nl-btn-ghost {
+          border-color: rgba(7, 19, 38, 0.16) !important;
+          background: rgba(255, 255, 255, 0.66) !important;
+        }
+
+        .nl-btn-ghost:hover {
+          border-color: #d9c49c !important;
+          background: #f0dfbb !important;
+        }
+
+        .nl-btn-solid,
+        .nl-mobile-menu a.nl-mobile-primary {
+          color: #071326 !important;
+          border-color: #d9c49c !important;
+          background: #d9c49c !important;
+        }
+
+        .nl-btn-solid:hover,
+        .nl-mobile-menu a.nl-mobile-primary:hover {
+          color: #071326 !important;
+          background: #f0dfbb !important;
+          border-color: #f0dfbb !important;
+        }
+
+        .dark .nl-root {
+          border-bottom-color: rgba(240, 223, 187, 0.14) !important;
+          background: rgba(7, 19, 38, 0.92) !important;
+        }
+
+        .dark .nl-brand,
+        .dark .nl-links a,
+        .dark .nl-btn-ghost,
+        .dark .nl-user-trigger {
+          color: #fffaf0 !important;
+        }
       `}</style>
 
       <nav className="nl-root" aria-label="Navegação principal" ref={navRef}>
@@ -540,6 +593,7 @@ export default function NavbarLanding() {
               )}
             </button>
             <ThemeToggle />
+            {!signed && <Link to="/login" state={{ from: location.pathname }} className="nl-btn-ghost">Entrar</Link>}
             <Link to={publicarTo} state={publicarState} className="nl-btn-solid">Anunciar grátis</Link>
 
             {signed ? (
@@ -581,11 +635,7 @@ export default function NavbarLanding() {
                   </div>
                 )}
               </div>
-            ) : (
-              <>
-                <Link to="/login" state={{ from: location.pathname }} className="nl-btn-ghost">Entrar</Link>
-              </>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -595,15 +645,15 @@ export default function NavbarLanding() {
               <img src="/logo-noxvelia.png" alt="" />
               <div>
                 <strong>Noxvelia</strong>
-                <span>Drive e Estate em Portugal</span>
+                <span>Carros e imóveis em Portugal</span>
               </div>
             </div>
             <a href="#pesquisa" onClick={() => setMenuMobileAberto(false)}>Pesquisar</a>
             <a href="#anunciar" onClick={() => setMenuMobileAberto(false)}>Anunciar grátis</a>
             <a href="#marcas" onClick={() => setMenuMobileAberto(false)}>Marcas</a>
             <a href="#atalhos" onClick={() => setMenuMobileAberto(false)}>Atalhos</a>
-            <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Drive</Link>
-            <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Estate</Link>
+            <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Carros</Link>
+            <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Imóveis</Link>
             <Link to="/profissionais" onClick={() => setMenuMobileAberto(false)}>Profissionais</Link>
             <Link className="nl-mobile-primary" to={publicarTo} state={publicarState} onClick={() => setMenuMobileAberto(false)}>Publicar anúncio</Link>
             {signed ? (

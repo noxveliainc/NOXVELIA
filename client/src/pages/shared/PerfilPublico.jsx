@@ -123,7 +123,7 @@ export default function PerfilPublico() {
         .dark .pp-section-copy, .dark .pp-count, .dark .pp-empty p { color: #cbd5e1; }
         .dark .pp-count { background: #111c30; border: 1px solid #334155; }
         .dark .pp-empty { background: #0b1220; border-color: #334155; }
-        .dark .pp-empty-btn { background: #2ac1b4; color: #041016; }
+        .dark .pp-empty-btn { background: #d9c49c; color: #041016; }
         .dark .pp-empty-btn:hover { background: #5eead4; }
         @media (max-width: 860px) {
           .pp-section-header { align-items: flex-start; flex-direction: column; }

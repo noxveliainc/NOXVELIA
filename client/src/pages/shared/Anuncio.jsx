@@ -378,8 +378,8 @@ export default function Anuncio() {
     ? Math.round((valorFinanciado * taxaMensal) / (1 - Math.pow(1 + taxaMensal, -meses)))
     : 0;
 
-  const accent = isCarro ? '#2ac1b4' : '#3ecf8e';
-  const accentShadow = isCarro ? 'rgba(42,193,180,.3)' : 'rgba(62,207,142,.3)';
+  const accent = '#102f50';
+  const accentShadow = 'rgba(16,47,80,.22)';
 
   const garantia = anuncio.garantia;
   const aceitaRetoma = anuncio.aceitaRetoma;
@@ -550,10 +550,10 @@ export default function Anuncio() {
         .extras-panel { display: flex; flex-direction: column; gap: 22px; }
         .extras-group { display: flex; flex-direction: column; gap: 10px; }
         .extras-group-title { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: #475569; }
-        .extras-group-title::before { content: ''; width: 8px; height: 8px; border-radius: 999px; background: ${accent}; box-shadow: 0 0 0 4px rgba(42,193,180,.1); }
+        .extras-group-title::before { content: ''; width: 8px; height: 8px; border-radius: 999px; background: ${accent}; box-shadow: 0 0 0 4px rgba(217,196,156,.16); }
         .extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 10px; align-items: stretch; }
         .extra-item { min-width: 0; min-height: 58px; display: flex; align-items: flex-start; gap: 11px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 13px 14px; font-size: 13px; font-weight: 750; color: #334155; line-height: 1.42; animation: nx-rise .35s ease backwards; box-shadow: 0 12px 28px -24px rgba(15,23,42,0.35); }
-        .extra-check { width: 24px; height: 24px; border-radius: 8px; background: rgba(42,193,180,0.1); color: ${accent}; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; margin-top: -1px; }
+        .extra-check { width: 24px; height: 24px; border-radius: 8px; background: rgba(217,196,156,0.1); color: ${accent}; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; margin-top: -1px; }
         .extra-text { min-width: 0; overflow-wrap: anywhere; word-break: normal; white-space: normal; }
 
         .desc-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; margin-top: 4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
@@ -563,7 +563,7 @@ export default function Anuncio() {
         .tour-card { margin-top: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 20px 48px -42px rgba(15,23,42,.55); }
         .tour-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #e2e8f0; }
         .tour-title { display: flex; align-items: center; gap: 8px; color: #0f172a; font-size: 15px; font-weight: 850; }
-        .tour-provider { padding: 4px 9px; border-radius: 999px; color: \${accent}; background: rgba(42,193,180,.08); border: 1px solid rgba(42,193,180,.18); font-size: 10px; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; }
+        .tour-provider { padding: 4px 9px; border-radius: 999px; color: \${accent}; background: rgba(217,196,156,.08); border: 1px solid rgba(217,196,156,.18); font-size: 10px; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; }
         .tour-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #020617; }
         .tour-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
@@ -576,7 +576,7 @@ export default function Anuncio() {
 
         .nx-price-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0; }
         .nx-badge-item { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; }
-        .nx-badge-item.garantia { background: rgba(42, 193, 180, 0.05); border-color: rgba(42, 193, 180, 0.2); color: #0d9488; }
+        .nx-badge-item.garantia { background: rgba(217, 196, 156, 0.05); border-color: rgba(217, 196, 156, 0.2); color: #0d9488; }
         .nx-badge-item.retoma { background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.2); color: #2563eb; }
 
         .btn-contact { width: 100%; box-sizing: border-box; padding: 16px; background: ${accent}; color: #fff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px ${accentShadow}; margin-bottom: 12px; }

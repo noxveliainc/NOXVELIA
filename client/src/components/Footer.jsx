@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 
 export default function Footer() {
   // 🌟 ESTADO PARA CONTROLAR OS TICKETS DE SUPORTE
@@ -8,21 +8,21 @@ export default function Footer() {
   return (
     <>
       <style>{`
-        .nx-footer { background: #082126; border-top: 1px solid rgba(126, 227, 215, 0.16); padding: 48px 32px 32px; margin-top: auto; font-family: var(--nx-font-body, 'Inter', sans-serif); }
+        .nx-footer { background: #071326; border-top: 1px solid rgba(217, 196, 156, 0.18); padding: 48px 32px 32px; margin-top: auto; font-family: var(--nx-font-body, 'Inter', sans-serif); }
         .nx-footer-inner { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
         .nx-footer-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 32px; }
-        .nx-footer-brand img { filter: drop-shadow(0 0 14px rgba(126, 227, 215, 0.18)); }
+        .nx-footer-brand img { filter: drop-shadow(0 0 14px rgba(217, 196, 156, 0.22)); }
         .nx-footer-brand p { color: #b7c9cd; font-size: 13px; line-height: 1.6; max-width: 320px; margin-top: 16px; }
         .nx-footer-links { display: flex; gap: 64px; }
         .nx-footer-col h4 { color: #f4fbfa; font-family: var(--nx-font-display, 'Plus Jakarta Sans', sans-serif); font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px; }
         .nx-footer-col a, .nx-footer-col button { display: block; color: #b7c9cd; text-decoration: none; font-size: 14px; margin-bottom: 12px; transition: color 0.2s; background: none; border: none; padding: 0; cursor: pointer; text-align: left; font-family: inherit; }
-        .nx-footer-col a:hover, .nx-footer-col button:hover { color: #7ee3d7; }
-        .nx-footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 32px; border-top: 1px solid rgba(126, 227, 215, 0.16); flex-wrap: wrap; gap: 20px; }
+        .nx-footer-col a:hover, .nx-footer-col button:hover { color: #f0dfbb; }
+        .nx-footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 32px; border-top: 1px solid rgba(217, 196, 156, 0.18); flex-wrap: wrap; gap: 20px; }
         .nx-footer-copy { color: #8fa3a7; font-size: 13px; }
         
         .nx-social-links { display: flex; gap: 16px; }
-        .nx-social-btn { width: 40px; height: 40px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(126, 227, 215, 0.18); display: flex; align-items: center; justify-content: center; color: #b7c9cd; transition: background-color 0.16s, border-color 0.16s, color 0.16s; text-decoration: none; }
-        .nx-social-btn:hover { background: rgba(42, 193, 180, 0.14); border-color: rgba(126, 227, 215, 0.42); color: #7ee3d7; }
+        .nx-social-btn { width: 40px; height: 40px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(217, 196, 156, 0.22); display: flex; align-items: center; justify-content: center; color: #b7c9cd; transition: background-color 0.16s, border-color 0.16s, color 0.16s; text-decoration: none; }
+        .nx-social-btn:hover { background: rgba(217, 196, 156, 0.14); border-color: rgba(217, 196, 156, 0.48); color: #f0dfbb; }
         .nx-social-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
         /* 🌟 CSS DO MODAL DE SUPORTE */
@@ -107,8 +107,8 @@ export default function Footer() {
             <div className="nx-footer-links">
               <div className="nx-footer-col">
                 <h4>Plataforma</h4>
-                <a href="/carros">NOXVELIA Drive</a>
-                <a href="/imoveis">NOXVELIA Estate</a>
+                <a href="/carros">Carros</a>
+                <a href="/imoveis">Imóveis</a>
                 <a href="/profissionais">Profissionais</a>
               </div>
               <div className="nx-footer-col">

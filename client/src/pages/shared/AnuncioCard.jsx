@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -312,7 +312,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           background: #f8fafc;
           color: #475569;
         }
-        .nxc-price-signal.baixo { background: #ecfdf5; border-color: #bbf7d0; color: #047857; }
+        .nxc-price-signal.baixo { background: #fff7e6; border-color: #d9c49c; color: #806040; }
         .nxc-price-signal.justo { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
         .nxc-price-signal.alto { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
 
@@ -339,9 +339,9 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           min-height: 22px;
           padding: 0 7px;
           border-radius: 999px;
-          border: 1px solid #c7f3ea;
-          background: #ecfdf8;
-          color: #047857;
+          border: 1px solid #e2d1a9;
+          background: #fff7e6;
+          color: #102f50;
           font-size: 10px;
           font-weight: 850;
           white-space: nowrap;
@@ -371,7 +371,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           height: 100%;
           width: ${qualidadePercentagem}%;
           border-radius: inherit;
-          background: #24b8ab;
+          background: linear-gradient(90deg, #102f50, #d9c49c);
         }
 
         .nxc-insights {

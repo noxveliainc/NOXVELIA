@@ -323,7 +323,7 @@ export default function Perfil() {
         .perfil-body { padding: 0 36px 36px; display: flex; gap: 32px; flex-wrap: wrap; position: relative; }
         
         .perfil-avatar-wrap { margin-top: -55px; position: relative; z-index: 2; flex-shrink: 0; cursor: pointer; }
-        .perfil-avatar { width: 120px; height: 120px; border-radius: 24px; border: 5px solid #ffffff; overflow: hidden; background: #ffffff; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 38px; color: #2ac1b4; transition: filter .2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .perfil-avatar { width: 120px; height: 120px; border-radius: 24px; border: 5px solid #ffffff; overflow: hidden; background: #ffffff; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 38px; color: #d9c49c; transition: filter .2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .perfil-avatar-wrap:hover .perfil-avatar { filter: brightness(.95); }
         .perfil-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .perfil-avatar-overlay { position: absolute; inset: 0; border-radius: 24px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; background: rgba(15,23,42,0.6); pointer-events: none; }
@@ -334,7 +334,7 @@ export default function Perfil() {
         
         .perfil-badges-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
         .perfil-badge-conta { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding: 5px 10px; border-radius: 6px; }
-        .badge-profissional { background: rgba(42, 193, 180, 0.1); color: #0d9488; border: 1px solid rgba(42, 193, 180, 0.2); }
+        .badge-profissional { background: rgba(217, 196, 156, 0.1); color: #0d9488; border: 1px solid rgba(217, 196, 156, 0.2); }
         .badge-particular { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
         .badge-premium { background: rgba(234, 179, 8, 0.1); color: #d97706; border: 1px solid rgba(234, 179, 8, 0.3); }
         
@@ -362,8 +362,8 @@ export default function Perfil() {
         .perfil-actions { display: flex; flex-direction: column; gap: 10px; width: 220px; padding-top: 16px; }
         @media (max-width: 768px) { .perfil-actions { width: 100%; padding-top: 0; } }
 
-        .btn-action-primary { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: rgba(42, 193, 180, 0.1); color: #0d9488; border: 1px solid rgba(42, 193, 180, 0.2); border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all .2s; }
-        .btn-action-primary:hover { background: rgba(42, 193, 180, 0.15); }
+        .btn-action-primary { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: rgba(217, 196, 156, 0.1); color: #0d9488; border: 1px solid rgba(217, 196, 156, 0.2); border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+        .btn-action-primary:hover { background: rgba(217, 196, 156, 0.15); }
 
         .btn-action-solid { padding: 12px; background: #0f172a; color: #ffffff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: opacity .2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-action-solid:hover { opacity: 0.85; }
@@ -375,8 +375,8 @@ export default function Perfil() {
         /* RESTO DA INTERFACE (Tabs, Cards, Analytics) MANTIDO INTACTO */
         .tabs-row { display: flex; gap: 4px; margin-bottom: 28px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 4px; width: fit-content; }
         .tab-btn { padding: 9px 22px; border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; background: transparent; color: #64748b; }
-        .tab-btn.active-imovel { background: #3ecf8e; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .tab-btn.active-carro { background: #2ac1b4; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tab-btn.active-imovel { background: #102f50; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tab-btn.active-carro { background: #d9c49c; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
         .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 24px; }
         .card-wrapper { display: flex; flex-direction: column; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px; gap: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); transition: border-color .2s; }
@@ -404,7 +404,7 @@ export default function Perfil() {
         .badge-destacado { background: #fefce8; color: #ca8a04; border: 1px dashed #fde047; text-align: center; }
         
         .analytics-trigger-btn { background: #f8fafc; border: 1px dashed #cbd5e1; color: #64748b; cursor: pointer; transition: all 0.2s;}
-        .analytics-trigger-btn:hover { border-color: #2ac1b4; color: #0d9488; background: #f1f5f9; }
+        .analytics-trigger-btn:hover { border-color: #d9c49c; color: #0d9488; background: #f1f5f9; }
         
         .analytics-panel { margin-top: 4px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
         .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
@@ -414,7 +414,7 @@ export default function Perfil() {
         
         .chart-row { display: flex; align-items: flex-end; justify-content: space-between; height: 60px; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
         .chart-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
-        .chart-bar { width: 8px; background: #2ac1b4; border-radius: 2px 2px 0 0; }
+        .chart-bar { width: 8px; background: #d9c49c; border-radius: 2px 2px 0 0; }
         .chart-day { font-size: 8px; font-weight: 700; color: #64748b; }
         
         .perfil-loading-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; border-radius: 32px; }
@@ -448,7 +448,7 @@ export default function Perfil() {
         .link-add-btn:hover { background: #eff6ff; }
         .link-add-btn:disabled { opacity: 0.45; cursor: not-allowed; }
         .privacy-toggle { display: flex; align-items: flex-start; gap: 12px; padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
-        .privacy-toggle input { width: 18px; height: 18px; margin-top: 2px; accent-color: #2ac1b4; flex: 0 0 auto; }
+        .privacy-toggle input { width: 18px; height: 18px; margin-top: 2px; accent-color: #d9c49c; flex: 0 0 auto; }
         .privacy-toggle-title { display: block; font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
         .privacy-toggle-text { display: block; font-size: 12px; line-height: 1.45; color: #64748b; text-transform: none; letter-spacing: 0; font-weight: 600; }
 
@@ -626,7 +626,7 @@ export default function Perfil() {
           {isDeleting && (
             <div className="perfil-loading-overlay">
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                <div className="nx-spinner" style={{ borderColor: 'rgba(42, 193, 180, 0.2)', borderTopColor: '#2ac1b4' }} />
+                <div className="nx-spinner" style={{ borderColor: 'rgba(217, 196, 156, 0.2)', borderTopColor: '#d9c49c' }} />
                 <span style={{ fontFamily: 'var(--nx-font-body)', fontWeight: 600, color: '#0f172a', fontSize: '14px' }}>A processar...</span>
               </div>
             </div>
@@ -802,7 +802,7 @@ export default function Perfil() {
                     <div className="stat-grid">
                       <div className="stat-box"><div className="stat-box-val">{dadosGrafico.totalVisitas}</div><div className="stat-box-lbl">Visitas</div></div>
                       <div className="stat-box" style={{ borderLeft: '1px solid #e2e8f0', borderRight: '1px solid #e2e8f0' }}><div className="stat-box-val" style={{ color: '#3b82f6' }}>{dadosGrafico.guardadoEmFavoritos}</div><div className="stat-box-lbl">Favoritos</div></div>
-                      <div className="stat-box"><div className="stat-box-val" style={{ color: '#2ac1b4' }}>{dadosGrafico.contactosGerados}</div><div className="stat-box-lbl">Mensagens</div></div>
+                      <div className="stat-box"><div className="stat-box-val" style={{ color: '#d9c49c' }}>{dadosGrafico.contactosGerados}</div><div className="stat-box-lbl">Mensagens</div></div>
                     </div>
                     <div className="chart-row">
                       {dadosGrafico.graficoSeteDias.map((dia, idx) => (

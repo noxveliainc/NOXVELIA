@@ -27,7 +27,7 @@ export default function VerificarEmail() {
       <style>{`
         .auth-root {
           background-color: #040711;
-          background-image: radial-gradient(circle at top right, rgba(42, 193, 180, 0.05), transparent 45%),
+          background-image: radial-gradient(circle at top right, rgba(217, 196, 156, 0.05), transparent 45%),
                             radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.05), transparent 45%);
 
           --nx-text: #f8fafc;
@@ -70,7 +70,7 @@ export default function VerificarEmail() {
           margin: 0 auto 24px;
         }
         .verify-icon.loading { background: rgba(148, 163, 184, 0.1); color: #94a3b8; }
-        .verify-icon.sucesso { background: rgba(42, 193, 180, 0.1); color: #2ac1b4; }
+        .verify-icon.sucesso { background: rgba(217, 196, 156, 0.1); color: #d9c49c; }
         .verify-icon.erro { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
         .verify-icon.loading svg {

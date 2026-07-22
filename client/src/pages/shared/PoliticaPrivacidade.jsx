@@ -67,9 +67,9 @@ export default function PoliticaPrivacidade() {
         .legal-cookie-table code { color: #0a625c; background: #e8f6f3; border-radius: 5px; padding: 2px 5px; font-size: 11px; }
         .legal-cookie-badge { display: inline-flex; align-items: center; min-height: 24px; padding: 0 8px; border-radius: 999px; background: #e5f7f3; color: #126b63; font-size: 9px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
         .legal-cookie-badge.optional { color: #7c5715; background: #fff3d5; }
-        .legal-cookie-action { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; margin: 6px 0 24px; padding: 0 16px; color: #06282b; border: 0; border-radius: 10px; background: #2ac1b4; font-size: 12px; font-weight: 800; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
+        .legal-cookie-action { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; margin: 6px 0 24px; padding: 0 16px; color: #06282b; border: 0; border-radius: 10px; background: #d9c49c; font-size: 12px; font-weight: 800; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
         .legal-cookie-action:hover { transform: translateY(-1px); box-shadow: 0 12px 24px -18px rgba(13, 148, 136, .8); }
-        .legal-source-note { padding: 16px; color: #52696f; border-left: 3px solid #2ac1b4; border-radius: 0 10px 10px 0; background: #f0f8f6; font-size: 13px; line-height: 1.6; }
+        .legal-source-note { padding: 16px; color: #52696f; border-left: 3px solid #d9c49c; border-radius: 0 10px 10px 0; background: #f0f8f6; font-size: 13px; line-height: 1.6; }
       `}</style>
 
       <div className="legal-root">
@@ -91,7 +91,7 @@ export default function PoliticaPrivacidade() {
               <strong>Entidade Responsável:</strong> Diogo Moreira<br />
               <strong>Sede:</strong> Lousada, Porto, Portugal<br />
               <strong>Contacto de privacidade:</strong> <a href="mailto:suporte@noxvelia.com">suporte@noxvelia.com</a><br />
-              <strong>Plataforma:</strong> NOXVELIA (Noxvelia Drive & Noxvelia Estate)<br />
+              <strong>Plataforma:</strong> NOXVELIA (carros e imóveis)<br />
               <span style={{ fontSize: '13px', marginTop: '8px', display: 'block' }}>Este documento constitui um acordo legal e vinculativo entre a NOXVELIA e qualquer pessoa que utilize a plataforma (doravante "Utilizador").</span>
             </div>
 
@@ -99,7 +99,7 @@ export default function PoliticaPrivacidade() {
               A leitura e aceitação deste documento são obrigatórias para a utilização da plataforma NOXVELIA. Ao aceder, registar-se ou publicar anúncios, o Utilizador declara ter lido, compreendido e aceite integralmente e sem reservas as presentes condições.
             </p>
 
-            <h2><Icon path={mdiHandshakeOutline} size={1.1} color="#2ac1b4" /> 1. Natureza do Serviço e Isenção de Responsabilidade</h2>
+            <h2><Icon path={mdiHandshakeOutline} size={1.1} color="#d9c49c" /> 1. Natureza do Serviço e Isenção de Responsabilidade</h2>
             <p>
               A NOXVELIA é um portal de classificados focado no segmento premium, atuando <strong>exclusivamente como prestador intermediário de serviços em rede</strong>, ao abrigo da Lei n.º 7/2004 de 6 de janeiro (Lei do Comércio Eletrónico).
             </p>
@@ -114,7 +114,7 @@ export default function PoliticaPrivacidade() {
               A NOXVELIA declina de forma expressa, categórica e irrevogável qualquer responsabilidade por vícios ocultos, defeitos de fabrico, anomalias mecânicas, litígios documentais, fraudes financeiras, incumprimento de garantias legais ou comerciais, bem como por quaisquer danos diretos ou indiretos resultantes de negócios iniciados através da plataforma. Qualquer reclamação, litígio ou exigência de devolução tem de ser endereçada exclusivamente ao Vendedor do bem.
             </div>
 
-            <h2><Icon path={mdiScaleBalance} size={1.1} color="#2ac1b4" /> 2. Regras de Utilização e Conduta</h2>
+            <h2><Icon path={mdiScaleBalance} size={1.1} color="#d9c49c" /> 2. Regras de Utilização e Conduta</h2>
             <p>A NOXVELIA reserva-se o direito de manter a integridade do seu mercado premium. O Utilizador compromete-se a:</p>
             <ul>
               <li>Criar apenas uma conta por pessoa/entidade, com informações verídicas e atualizadas.</li>
@@ -124,7 +124,7 @@ export default function PoliticaPrivacidade() {
             </ul>
             <p>A NOXVELIA reserva-se o direito absoluto de editar, suspender ou eliminar permanentemente, sem aviso prévio ou direito a compensação, anúncios ou contas que violem os presentes Termos ou que afetem negativamente a reputação da plataforma.</p>
 
-            <h2><Icon path={mdiShieldCheckOutline} size={1.1} color="#2ac1b4" /> 3. Política de Privacidade e Proteção de Dados (RGPD)</h2>
+            <h2><Icon path={mdiShieldCheckOutline} size={1.1} color="#d9c49c" /> 3. Política de Privacidade e Proteção de Dados (RGPD)</h2>
             <p>
               O tratamento de dados pessoais é realizado de acordo com o <strong>Regulamento (UE) 2016/679 (RGPD)</strong> e com a Lei n.º 58/2019 de 8 de agosto. O responsável pelo tratamento é Diogo Moreira, identificado no início deste documento.
             </p>
@@ -185,7 +185,7 @@ export default function PoliticaPrivacidade() {
               A NOXVELIA não toma decisões exclusivamente automatizadas que produzam efeitos jurídicos ou afetem significativamente o Utilizador. As funções de inteligência artificial fornecem sugestões ou resultados auxiliares, cabendo ao Utilizador confirmar a informação antes de a utilizar ou publicar.
             </p>
 
-            <h2 id="cookies"><Icon path={mdiCookieOutline} size={1.1} color="#2ac1b4" /> 4. Política de Cookies e Armazenamento Local</h2>
+            <h2 id="cookies"><Icon path={mdiCookieOutline} size={1.1} color="#d9c49c" /> 4. Política de Cookies e Armazenamento Local</h2>
             <p>
               A NOXVELIA utiliza <strong>cookies e tecnologias com função semelhante</strong>, incluindo armazenamento local do navegador (<em>localStorage</em>), para disponibilizar funções essenciais e guardar escolhas feitas pelo Utilizador. Serviços externos opcionais, como Buy Me a Coffee e Google AdSense, só são carregados mediante autorização. A expressão “cookies” nesta secção abrange estas tecnologias sempre que armazenem ou consultem informação no dispositivo.
             </p>
@@ -193,7 +193,7 @@ export default function PoliticaPrivacidade() {
             <h3>4.1. Objetivos destas tecnologias</h3>
             <ul>
               <li><strong>Autenticação e segurança:</strong> manter a sessão iniciada, associar os pedidos autenticados à conta correta e proteger áreas reservadas.</li>
-              <li><strong>Funcionamento e preferências solicitadas:</strong> recordar se o Utilizador está a navegar em Drive ou Estate e conservar o tema visual escolhido.</li>
+              <li><strong>Funcionamento e preferências solicitadas:</strong> recordar se o Utilizador está a navegar entre carros e imóveis e conservar o tema visual escolhido.</li>
               <li><strong>Prova e gestão do consentimento:</strong> guardar a versão, data, validade e categorias aceites ou rejeitadas, permitindo demonstrar e respeitar a escolha.</li>
               <li><strong>Serviços externos opcionais:</strong> carregar o widget Buy Me a Coffee e publicidade Google apenas quando o Utilizador autoriza expressamente essa categoria.</li>
             </ul>
@@ -224,7 +224,7 @@ export default function PoliticaPrivacidade() {
                   </tr>
                   <tr>
                     <td><em>localStorage</em><br /><code>@App:contexto_visual</code><br /><code>@App:tema</code></td>
-                    <td>Recordar a área Drive/Estate e a preferência visual expressamente escolhida.</td>
+                    <td>Recordar a área de carros/imóveis e a preferência visual expressamente escolhida.</td>
                     <td>Até a escolha ser alterada ou os dados do navegador serem eliminados.</td>
                     <td><span className="legal-cookie-badge">Funcional</span></td>
                   </tr>
@@ -279,7 +279,7 @@ export default function PoliticaPrivacidade() {
               Este mecanismo segue o princípio de que o consentimento deve ser livre, específico, informado, inequívoco e tão fácil de retirar como de dar. A NOXVELIA conserva apenas o registo necessário para aplicar e demonstrar essa escolha.
             </div>
 
-            <h2><Icon path={mdiFileDocumentOutline} size={1.1} color="#2ac1b4" /> 5. Os Seus Direitos enquanto Titular de Dados</h2>
+            <h2><Icon path={mdiFileDocumentOutline} size={1.1} color="#d9c49c" /> 5. Os Seus Direitos enquanto Titular de Dados</h2>
             <p>Ao abrigo do RGPD, a qualquer momento, o Utilizador possui o direito de:</p>
             <ul>
               <li><strong>Acesso e Retificação:</strong> Aceder aos seus dados e alterá-los diretamente no painel "O Meu Perfil".</li>
@@ -291,12 +291,12 @@ export default function PoliticaPrivacidade() {
             </ul>
             <p>Para exercer estes direitos, o Utilizador pode contactar <a href="mailto:suporte@noxvelia.com">suporte@noxvelia.com</a>. A NOXVELIA poderá solicitar informação estritamente necessária para confirmar a identidade e proteger a conta.</p>
 
-            <h2><Icon path={mdiScaleBalance} size={1.1} color="#2ac1b4" /> 6. Faturação e Serviços Premium</h2>
+            <h2><Icon path={mdiScaleBalance} size={1.1} color="#d9c49c" /> 6. Faturação e Serviços Premium</h2>
             <p>
               Caso o Utilizador opte por adquirir serviços digitais (tais como "Destaques Premium" ou "Plano para Profissionais"), reconhece que se tratam de serviços de disponibilização imediata. Nos termos da legislação aplicável aos contratos celebrados à distância de conteúdos digitais (Decreto-Lei n.º 24/2014), o Utilizador consente que a prestação do serviço seja iniciada de imediato, <strong>perdendo assim o direito de livre resolução (direito de arrependimento) no prazo de 14 dias</strong>.
             </p>
 
-            <h2><Icon path={mdiHandshakeOutline} size={1.1} color="#2ac1b4" /> 7. Foro Competente e Disposições Finais</h2>
+            <h2><Icon path={mdiHandshakeOutline} size={1.1} color="#d9c49c" /> 7. Foro Competente e Disposições Finais</h2>
             <p>
               A NOXVELIA reserva-se o direito de alterar os presentes Termos e Políticas a qualquer momento. Alterações substanciais serão notificadas na plataforma.
             </p>

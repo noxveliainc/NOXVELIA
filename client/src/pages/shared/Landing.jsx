@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { animate, stagger } from 'animejs';
+import { gsap } from 'gsap';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
 import api from '../../services/api';
@@ -69,6 +71,7 @@ export default function Landing() {
   const navigate = useNavigate();
   const location = useLocation();
   const { signed } = useAuth();
+  const landingRootRef = useRef(null);
   const marcasRef = useRef(null);
   const landingViewTrackedRef = useRef(false);
   const publicarTo = signed ? '/publicar' : '/login';
@@ -87,6 +90,35 @@ export default function Landing() {
     precoMax: '',
   });
 
+  useEffect(() => {
+    const root = landingRootRef.current;
+    if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return undefined;
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.from('.lp-hero-brand, .lp-kicker, #lp-hero-title, .lp-hero-copy, .lp-actions, .lp-quick-card', {
+        y: 22,
+        opacity: 0,
+        duration: 0.78,
+        stagger: 0.075,
+        ease: 'power3.out',
+      });
+    }, root);
+
+    const brandAnimation = animate(root.querySelectorAll('.lp-brand-card'), {
+      opacity: [0, 1],
+      y: [12, 0],
+      delay: stagger(18, { start: 160 }),
+      duration: 520,
+      ease: 'outCubic',
+    });
+
+    return () => {
+      ctx.revert();
+      brandAnimation?.pause?.();
+    };
+  }, []);
   useEffect(() => {
     const trackLandingViewOnce = () => {
       if (landingViewTrackedRef.current) return;
@@ -248,7 +280,7 @@ export default function Landing() {
           ) : (
             <span className="lp-example-no-photo">Sem fotografia</span>
           )}
-          <span className="lp-example-weekly">Destaque {isCarro ? 'Drive' : 'Estate'}</span>
+          <span className="lp-example-weekly">Destaque {isCarro ? 'Carros' : 'Imóveis'}</span>
         </span>
         <span className="lp-example-body">
           <span className="lp-example-price">{formatarMoeda(anuncio.preco)}</span>
@@ -287,7 +319,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="lp-root">
+    <div className="lp-root" ref={landingRootRef}>
       <Seo title="Noxvelia | Plataforma de carros e imóveis em Portugal" description="Noxvelia é uma plataforma portuguesa para pesquisar e publicar anúncios de carros e imóveis." path="/" jsonLd={[siteIdentityJsonLd, homePageJsonLd]} />
       <style>{`
         .lp-root,
@@ -298,8 +330,8 @@ export default function Landing() {
         .lp-root {
           --lp-ink: #082126;
           --lp-ink-soft: #254047;
-          --lp-drive: #2ac1b4;
-          --lp-estate: #3ecf8e;
+          --lp-drive: #d9c49c;
+          --lp-estate: #102f50;
           --lp-gold: #c6a86a;
           --lp-stone: #f2f0e8;
           --lp-cream: #fbfaf6;
@@ -317,7 +349,7 @@ export default function Landing() {
 
         .lp-root a:focus-visible,
         .lp-root button:focus-visible {
-          outline: 3px solid rgba(42, 193, 180, 0.48);
+          outline: 3px solid rgba(217, 196, 156, 0.48);
           outline-offset: 3px;
         }
 
@@ -384,7 +416,7 @@ export default function Landing() {
           color: #dcfff9;
           border: 1px solid rgba(104, 232, 214, 0.28);
           border-radius: 999px;
-          background: rgba(42, 193, 180, 0.12);
+          background: rgba(217, 196, 156, 0.12);
         }
 
         .lp-hero h1 {
@@ -798,7 +830,7 @@ export default function Landing() {
 
         .lp-chip:hover {
           color: var(--lp-ink);
-          border-color: rgba(42, 193, 180, 0.52);
+          border-color: rgba(217, 196, 156, 0.52);
         }
 
         .lp-guides-section {
@@ -983,7 +1015,7 @@ export default function Landing() {
         }
 
         .lp-brand-card:hover {
-          border-color: rgba(42, 193, 180, 0.5);
+          border-color: rgba(217, 196, 156, 0.5);
           background: #fff;
         }
 
@@ -1240,7 +1272,7 @@ export default function Landing() {
           width: 24px;
           height: 24px;
           margin-bottom: 3px;
-          border: 3px solid rgba(42, 193, 180, 0.2);
+          border: 3px solid rgba(217, 196, 156, 0.2);
           border-top-color: var(--lp-drive);
           border-radius: 50%;
         }
@@ -1281,7 +1313,7 @@ export default function Landing() {
         }
 
         .lp-cv-copy .lp-eyebrow {
-          color: #7ee3d7;
+          color: #f0dfbb;
         }
 
         .lp-cv-copy .lp-title {
@@ -1390,7 +1422,7 @@ export default function Landing() {
         }
 
         .lp-closing-card .lp-eyebrow {
-          color: #7ee3d7;
+          color: #f0dfbb;
         }
 
         .lp-closing-card .lp-title {
@@ -1685,7 +1717,7 @@ export default function Landing() {
           --lp-bg: #eceee8;
           --lp-bg-alt: #f6f7f3;
           --lp-dark: #0d2327;
-          --lp-drive: #24b8ab;
+          --lp-drive: #d9c49c;
           --lp-estate: #2f8f63;
           --lp-gold: #9d7b3f;
           --lp-radius: 10px;
@@ -2318,7 +2350,7 @@ export default function Landing() {
         }
 
         .lp-hero h1 span {
-          color: #7ee3d7 !important;
+          color: #f0dfbb !important;
         }
 
         .lp-hero-copy {
@@ -2542,7 +2574,7 @@ export default function Landing() {
         }
 
         .lp-pro-strip span {
-          color: #7ee3d7 !important;
+          color: #f0dfbb !important;
           font-size: 11px !important;
           font-weight: 900 !important;
           letter-spacing: 0.1em !important;
@@ -2922,15 +2954,15 @@ export default function Landing() {
         }
 
         .dark .lp-promo-label {
-          color: #7ee3d7 !important;
+          color: #f0dfbb !important;
           border-color: rgba(126, 227, 215, 0.28) !important;
-          background: rgba(42, 193, 180, 0.12) !important;
+          background: rgba(217, 196, 156, 0.12) !important;
         }
 
         .dark .lp-promo-overlay {
           color: #062326 !important;
           border-color: transparent !important;
-          background: #7ee3d7 !important;
+          background: #f0dfbb !important;
         }
 
         .dark .lp-promo-media {
@@ -3011,8 +3043,8 @@ export default function Landing() {
         }
 
         .dark .lp-type-tab.active {
-          border-color: #7ee3d7 !important;
-          background: #7ee3d7 !important;
+          border-color: #f0dfbb !important;
+          background: #f0dfbb !important;
           color: #062326 !important;
           box-shadow: 0 10px 20px -16px rgba(126, 227, 215, 0.62) !important;
         }
@@ -3204,7 +3236,7 @@ export default function Landing() {
         .lp-root {
           --lp-ink: #071116;
           --lp-ink-soft: #243b42;
-          --lp-drive: #2ac1b4;
+          --lp-drive: #d9c49c;
           --lp-estate: #315f7d;
           --lp-rust: #b56347;
           --lp-gold: #c6a86a;
@@ -3476,7 +3508,223 @@ export default function Landing() {
           .lp-hero .lp-text-link {
             width: 100% !important;
           }
-        }      `}</style>
+        }      
+        /* Noxvelia premium production direction */
+        .lp-root {
+          --lp-ink: #071326;
+          --lp-ink-soft: #24364a;
+          --lp-drive: #d9c49c;
+          --lp-estate: #102f50;
+          --lp-gold: #d9c49c;
+          --lp-gold-soft: #f0dfbb;
+          --lp-stone: #f4efe5;
+          --lp-cream: #fffaf0;
+          --lp-line: rgba(7, 19, 38, 0.14);
+          background: var(--lp-stone) !important;
+          color: var(--lp-ink) !important;
+        }
+
+        .lp-root a:focus-visible,
+        .lp-root button:focus-visible {
+          outline-color: rgba(217, 196, 156, 0.72) !important;
+        }
+
+        .lp-hero {
+          background: #071326 !important;
+        }
+
+        .lp-hero-card,
+        .lp-hero-media {
+          background-color: #071326 !important;
+        }
+
+        .lp-hero-media::after {
+          background:
+            linear-gradient(90deg, rgba(7, 19, 38, 0.96) 0%, rgba(7, 19, 38, 0.82) 42%, rgba(7, 19, 38, 0.42) 68%, rgba(7, 19, 38, 0.12) 100%),
+            linear-gradient(0deg, rgba(7, 19, 38, 0.62), rgba(7, 19, 38, 0) 50%) !important;
+        }
+
+        .lp-kicker,
+        .lp-eyebrow {
+          color: var(--lp-gold-soft) !important;
+          background: rgba(217, 196, 156, 0.12) !important;
+          border-color: rgba(217, 196, 156, 0.34) !important;
+        }
+
+        .lp-kicker {
+          padding: 9px 13px !important;
+          border: 1px solid rgba(217, 196, 156, 0.34) !important;
+          border-radius: 6px !important;
+        }
+
+        .lp-hero h1 {
+          max-width: 800px !important;
+          text-wrap: balance;
+        }
+
+        .lp-btn-drive,
+        .lp-search-submit,
+        .lp-type-tab.active {
+          color: #071326 !important;
+          border-color: #d9c49c !important;
+          background: #d9c49c !important;
+          box-shadow: 0 18px 34px -24px rgba(217, 196, 156, 0.78) !important;
+        }
+
+        .lp-btn-drive:hover,
+        .lp-search-submit:hover,
+        .lp-type-tab.active:hover {
+          background: #f0dfbb !important;
+          border-color: #f0dfbb !important;
+        }
+
+        .lp-hero .lp-text-link {
+          color: #fffaf0 !important;
+          border-color: rgba(240, 223, 187, 0.42) !important;
+          background: rgba(255, 250, 240, 0.09) !important;
+        }
+
+        .lp-hero .lp-text-link:hover {
+          color: #071326 !important;
+          border-color: #f0dfbb !important;
+          background: #f0dfbb !important;
+        }
+
+        .lp-hero-photo-label,
+        .lp-trust-bar,
+        .lp-quick-card,
+        .lp-promo-link,
+        .lp-shortcut-group,
+        .lp-brand-card,
+        .lp-cv-card {
+          border-color: var(--lp-line) !important;
+          background: rgba(255, 250, 240, 0.96) !important;
+        }
+
+        .lp-trust-item strong,
+        .lp-title,
+        .lp-quick-title,
+        .lp-promo-title,
+        .lp-column-title,
+        .lp-shortcut-group h3 {
+          color: #071326 !important;
+        }
+
+        .lp-copy,
+        .lp-quick-copy,
+        .lp-promo-text,
+        .lp-brand-name,
+        .lp-field label {
+          color: #4a5a6a !important;
+        }
+
+        .lp-field select,
+        .lp-field input {
+          color: #071326 !important;
+          border-color: rgba(7, 19, 38, 0.18) !important;
+          background: #ffffff !important;
+        }
+
+        .lp-type-tabs {
+          border-color: rgba(7, 19, 38, 0.16) !important;
+          background: #e8dfcf !important;
+        }
+
+        .lp-type-tab {
+          color: #26384d !important;
+        }
+
+        .lp-promo-overlay {
+          color: #071326 !important;
+          border-color: #d9c49c !important;
+          background: #d9c49c !important;
+        }
+
+        .lp-pro-strip,
+        .lp-popular-section {
+          background: #071326 !important;
+        }
+
+        .lp-pro-strip span,
+        .lp-popular-section .lp-eyebrow,
+        .lp-example-price {
+          color: #f0dfbb !important;
+        }
+
+        .lp-popular-section .lp-title,
+        .lp-popular-section .lp-column-title {
+          color: #fffaf0 !important;
+        }
+
+        .lp-popular-section .lp-copy,
+        .lp-example-title,
+        .lp-example-meta,
+        .lp-example-location {
+          color: rgba(255, 250, 240, 0.74) !important;
+        }
+
+        .lp-example-column {
+          background: rgba(255, 250, 240, 0.06) !important;
+          border-color: rgba(240, 223, 187, 0.18) !important;
+        }
+
+        .lp-column-link,
+        .lp-round-btn,
+        .lp-chip {
+          color: #071326 !important;
+          border-color: rgba(7, 19, 38, 0.14) !important;
+          background: #fffaf0 !important;
+        }
+
+        .lp-column-link:hover,
+        .lp-round-btn:hover,
+        .lp-chip:hover {
+          color: #071326 !important;
+          border-color: #d9c49c !important;
+          background: #f0dfbb !important;
+        }
+
+        .dark .lp-root {
+          --lp-stone: #071326;
+          --lp-cream: #0d1d33;
+          background: #071326 !important;
+        }
+
+        .dark .lp-quick-section,
+        .dark .lp-promo-section,
+        .dark .lp-shortcuts-section {
+          background: #071326 !important;
+        }
+
+        .dark .lp-brands-section,
+        .dark .lp-cv-section {
+          background: #0d1d33 !important;
+        }
+
+        .dark .lp-quick-card,
+        .dark .lp-promo-link,
+        .dark .lp-shortcut-group,
+        .dark .lp-brand-card,
+        .dark .lp-cv-card {
+          color: #fffaf0 !important;
+          background: #102f50 !important;
+          border-color: rgba(240, 223, 187, 0.18) !important;
+        }
+
+        .dark .lp-title,
+        .dark .lp-quick-title,
+        .dark .lp-promo-title,
+        .dark .lp-shortcut-group h3,
+        .dark .lp-brand-name {
+          color: #fffaf0 !important;
+        }
+
+        .dark .lp-copy,
+        .dark .lp-quick-copy,
+        .dark .lp-promo-text {
+          color: rgba(255, 250, 240, 0.76) !important;
+        }
+      `}</style>
 
       <NavbarLanding />
 
@@ -3491,14 +3739,14 @@ export default function Landing() {
                 </div>
                 <span className="lp-kicker">Pesquisa em Portugal</span>
                 <h1 id="lp-hero-title">
-                  Encontra carros e imóveis em Portugal.
+                  Carros e imóveis em Portugal, apresentados com clareza.
                 </h1>
                 <p className="lp-hero-copy">
-                  Pesquisa anúncios com fotografias, preço, localização e contacto direto. Tudo organizado para comparares melhor antes de visitar ou ligar.
+                  Pesquisa por marca, modelo, localização e preço. Compara fotografias, características e contactos antes de visitar ou ligar.
                 </p>
                 <div className="lp-actions">
                   <a className="lp-btn lp-btn-drive" href="#pesquisa">
-                    Começar pela pesquisa
+                    Pesquisar anúncios
                   </a>
                   <Link className="lp-text-link" to={publicarTo} state={publicarState}>
                     Publicar grátis
@@ -3543,7 +3791,7 @@ export default function Landing() {
                 <div>
                   <span className="lp-eyebrow">Pesquisa rápida</span>
                   <h2 className="lp-quick-title" id="lp-quick-title">Pesquisa rápida</h2>
-                  <p className="lp-quick-copy">Filtra por tipo, localização e preço para chegares mais depressa aos anúncios certos.</p>
+                  <p className="lp-quick-copy">Filtra por marca, modelo, localização e preço para chegares rapidamente aos anúncios certos.</p>
                 </div>
                 <div className="lp-type-tabs" role="tablist" aria-label="Tipo de pesquisa">
                   <button
@@ -3553,7 +3801,7 @@ export default function Landing() {
                     className={`lp-type-tab ${pesquisaRapida.tipo === 'carro' ? 'active' : ''}`}
                     onClick={() => atualizarPesquisaRapida('tipo', 'carro')}
                   >
-                    Drive
+                    Carros
                   </button>
                   <button
                     type="button"
@@ -3562,7 +3810,7 @@ export default function Landing() {
                     className={`lp-type-tab ${pesquisaRapida.tipo === 'imovel' ? 'active' : ''}`}
                     onClick={() => atualizarPesquisaRapida('tipo', 'imovel')}
                   >
-                    Estate
+                    Imóveis
                   </button>
                 </div>
               </div>
@@ -3642,24 +3890,24 @@ export default function Landing() {
             <div className="lp-promo-grid">
               <Link className="lp-promo-link drive" to="/carros">
                 <span className="lp-promo-copy">
-                  <span className="lp-promo-label">NOXVELIA Drive</span>
-                  <strong className="lp-promo-title">Pesquisa automóveis.</strong>
+                  <span className="lp-promo-label">Carros</span>
+                  <strong className="lp-promo-title">Automóveis com informação clara.</strong>
                   <span className="lp-promo-text">Vê marca, modelo, quilómetros, combustível, preço e localização num formato fácil de comparar.</span>
                   <span className="lp-promo-overlay">Pesquisar carro</span>
                 </span>
                 <span className="lp-promo-media">
-                  <img src="/social/noxvelia-drive-photo-premium.webp" alt="Automóvel anunciado na Noxvelia Drive" loading="lazy" />
+                  <img src="/social/noxvelia-drive-photo-premium.webp" alt="Automóvel anunciado na Noxvelia" loading="lazy" />
                 </span>
               </Link>
               <Link className="lp-promo-link estate" to="/imoveis">
                 <span className="lp-promo-copy">
-                  <span className="lp-promo-label">NOXVELIA Estate</span>
-                  <strong className="lp-promo-title">Pesquisa imóveis.</strong>
+                  <span className="lp-promo-label">Imóveis</span>
+                  <strong className="lp-promo-title">Imóveis fáceis de comparar.</strong>
                   <span className="lp-promo-text">Compara fotografias, localização, tipologia, áreas e preço antes de marcar visita.</span>
                   <span className="lp-promo-overlay">Pesquisar imóvel</span>
                 </span>
                 <span className="lp-promo-media">
-                  <img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia Estate" loading="lazy" />
+                  <img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia" loading="lazy" />
                 </span>
               </Link>
             </div>
@@ -3675,7 +3923,7 @@ export default function Landing() {
           <div className="lp-shell">
             <div className="lp-section-head">
               <div>
-                <span className="lp-eyebrow">Drive</span>
+                <span className="lp-eyebrow">Marcas</span>
                 <h2 className="lp-title" id="lp-brands-title">Marcas auto prontas a pesquisar.</h2>
                 <p className="lp-copy">
                   Escolhe a marca e segue diretamente para resultados filtrados.
@@ -3731,7 +3979,7 @@ export default function Landing() {
                 <span className="lp-eyebrow">Pesquisa guiada</span>
                 <h2 className="lp-title" id="lp-shortcuts-title">Caminhos rápidos para começar.</h2>
                 <p className="lp-copy">
-                  Entradas diretas para filtros comuns em Drive e Estate.
+                  Entradas diretas para marcas, modelos, distritos e tipologias comuns.
                 </p>
               </div>
             </div>
@@ -3798,7 +4046,7 @@ export default function Landing() {
                 <span className="lp-eyebrow">Seleção atual</span>
                 <h2 className="lp-title" id="lp-popular-title">Destaques para explorar.</h2>
                 <p className="lp-copy">
-                  Destaques atuais em Drive e Estate.
+                  Anúncios recentes de carros e imóveis, prontos a explorar.
                 </p>
               </div>
             </div>
@@ -3808,7 +4056,7 @@ export default function Landing() {
               <div className="lp-example-column drive">
                 <div className="lp-column-top">
                   <div className="lp-column-heading">
-                    <h3 className="lp-column-title">NOXVELIA Drive</h3>
+                    <h3 className="lp-column-title">Carros</h3>
                   </div>
                   <button type="button" className="lp-column-link" onClick={() => navigate('/carros')}>
                     Ver carros
@@ -3817,7 +4065,7 @@ export default function Landing() {
                 <div className="lp-example-list">
                   {exemplos.carro.length > 0
                     ? exemplos.carro.map((anuncio) => renderExemplo(anuncio, '/carros'))
-                    : renderEstadoLista('Drive', '/carros')}
+                    : renderEstadoLista('carros', '/carros')}
                 </div>
               </div>
               )}
@@ -3826,7 +4074,7 @@ export default function Landing() {
               <div className="lp-example-column estate">
                 <div className="lp-column-top">
                   <div className="lp-column-heading">
-                    <h3 className="lp-column-title">NOXVELIA Estate</h3>
+                    <h3 className="lp-column-title">Imóveis</h3>
                   </div>
                   <button type="button" className="lp-column-link" onClick={() => navigate('/imoveis')}>
                     Ver imóveis
@@ -3835,7 +4083,7 @@ export default function Landing() {
                 <div className="lp-example-list">
                   {exemplos.imovel.length > 0
                     ? exemplos.imovel.map((anuncio) => renderExemplo(anuncio, '/imoveis'))
-                    : renderEstadoLista('Estate', '/imoveis')}
+                    : renderEstadoLista('imóveis', '/imoveis')}
                 </div>
               </div>
               )}

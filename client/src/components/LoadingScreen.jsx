@@ -54,8 +54,8 @@ export default function LoadingScreen({
           content: "";
           position: absolute;
           inset: 0;
-          border: 1px solid rgba(42, 193, 180, 0.24);
-          border-top-color: #2ac1b4;
+          border: 1px solid rgba(217, 196, 156, 0.24);
+          border-top-color: #d9c49c;
           border-radius: 50%;
           animation: nx-loading-spin 1.1s linear infinite;
         }

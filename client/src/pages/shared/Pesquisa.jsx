@@ -1,4 +1,4 @@
-﻿import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
@@ -344,7 +344,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
   const modelosDisponiveis = filtros.marca ? getModelosPorMarca(filtros.marca) : [];
   const cidadesDisponiveis = (filtros.distrito && filtros.distrito !== 'Todos') ? DISTRITOS_CIDADES_PT[filtros.distrito] : [];
-  const accent = tipoSeguro === 'carro' ? 'var(--nx-accent-car)' : 'var(--nx-accent-home)';
+  const accent = 'var(--nx-gold)';
   const sidebarHidden = isMobileViewport ? !sidebarMobileAberta : !isSidebarOpen;
 
   const filtrosAtivos = [
@@ -447,7 +447,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .pesquisa-tags { display: flex; flex-wrap: wrap; gap: 8px; }
         .pesquisa-tag { padding: 8px 12px; border: 1px solid var(--nx-border); border-radius: 6px; background: var(--nx-bg-3); font-size: 12px; font-weight: 600; cursor: pointer; color: var(--nx-text-sub); transition: all 0.2s ease; flex: 1 1 calc(50% - 8px); text-align: center; }
         .pesquisa-tag:hover { background: var(--nx-border); color: var(--nx-text); }
-        .pesquisa-tag.active { background: ${accent}; color: #040711; border-color: ${accent}; }
+        .pesquisa-tag.active { background: ${accent}; color: #071326; border-color: ${accent}; }
 
         .pesquisa-apply-btn { width: 100%; padding: 14px; background: var(--nx-text); color: var(--nx-bg); border: none; border-radius: var(--nx-radius-sm); font-family: var(--nx-font-body); font-weight: 800; font-size: 13px; cursor: pointer; transition: opacity 0.2s ease; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 8px; }
         .pesquisa-apply-btn:hover { opacity: 0.85; }
@@ -481,7 +481,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .pesquisa-search-row .pesquisa-omnibar-wrapper { margin-bottom: 0; flex: 1; }
 
         .pesquisa-omnibar-wrapper { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: var(--nx-radius-md); display: flex; align-items: center; padding: 10px 20px; box-shadow: 0 10px 26px -24px rgba(15,23,42,0.45); }
-        .pesquisa-omnibar-wrapper:focus-within { border-color: ${accent}; box-shadow: 0 0 0 3px rgba(42,193,180,0.12); }
+        .pesquisa-omnibar-wrapper:focus-within { border-color: ${accent}; box-shadow: 0 0 0 3px rgba(217,196,156,0.18); }
         .pesquisa-omnibar-wrapper input { flex: 1; border: none; padding: 8px; font-size: 15px; color: var(--nx-text); outline: none; background: transparent; }
 
         .pesquisa-mobile-filter-btn { display: none; align-items: center; gap: 6px; padding: 0 18px; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: var(--nx-radius-md); color: var(--nx-text); font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
@@ -589,7 +589,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         }
         .pesquisa-alert-btn {
           min-height: 44px;
-          border: 1px solid rgba(42,193,180,.24);
+          border: 1px solid rgba(217,196,156,.24);
           border-radius: 14px;
           padding: 0 14px;
           display: inline-flex;
@@ -603,14 +603,14 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           box-shadow: 0 12px 24px -22px rgba(15,23,42,.5);
           transition: transform .2s ease, border-color .2s ease, background .2s ease;
         }
-        .pesquisa-alert-btn:hover:not(:disabled) { transform: translateY(-1px); border-color: ${accent}; background: rgba(42,193,180,.06); }
+        .pesquisa-alert-btn:hover:not(:disabled) { transform: translateY(-1px); border-color: ${accent}; background: rgba(217,196,156,.06); }
         .pesquisa-alert-btn:disabled { opacity: .65; cursor: wait; }
         .pesquisa-alert-feedback {
           display: inline-flex;
           align-items: center;
           border: 1px solid rgba(16,185,129,.18);
           background: rgba(16,185,129,.08);
-          color: #047857;
+          color: #806040;
           border-radius: 999px;
           padding: 8px 11px;
           font-size: 12px;

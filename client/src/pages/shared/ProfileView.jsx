@@ -153,7 +153,7 @@ export default function ProfileView({
           justify-content: center;
           font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 38px;
-          color: #2ac1b4;
+          color: #d9c49c;
           transition: filter .2s;
           box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
@@ -202,7 +202,7 @@ export default function ProfileView({
           background: #f1f5f9;
           color: #475569;
         }
-        .profile-badge.profissional { background: rgba(42,193,180,0.1); color: #0d9488; border-color: rgba(42,193,180,0.2); }
+        .profile-badge.profissional { background: rgba(217,196,156,0.1); color: #0d9488; border-color: rgba(217,196,156,0.2); }
         .profile-badge.premium { background: rgba(234,179,8,0.1); color: #d97706; border-color: rgba(234,179,8,0.3); }
         .profile-upgrade {
           background: transparent;
@@ -303,7 +303,7 @@ export default function ProfileView({
           text-decoration: none;
         }
         .profile-btn-solid { background: #0f172a; color: #ffffff; border: none; }
-        .profile-btn-primary { background: rgba(42,193,180,0.1); color: #0d9488; border: 1px solid rgba(42,193,180,0.2); }
+        .profile-btn-primary { background: rgba(217,196,156,0.1); color: #0d9488; border: 1px solid rgba(217,196,156,0.2); }
         .profile-btn-outline { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; }
         .profile-btn-outline.danger:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
         .dark .profile-card {
@@ -317,7 +317,7 @@ export default function ProfileView({
         .dark .profile-avatar {
           background: #0f172a;
           border-color: #111c30;
-          color: #2ac1b4;
+          color: #d9c49c;
         }
         .dark .profile-name,
         .dark .profile-stars-text,
@@ -342,8 +342,8 @@ export default function ProfileView({
         .dark .profile-badge.profissional,
         .dark .profile-link.whatsapp,
         .dark .profile-btn-primary {
-          background: rgba(42,193,180,0.14);
-          border-color: rgba(42,193,180,0.32);
+          background: rgba(217,196,156,0.14);
+          border-color: rgba(217,196,156,0.32);
           color: #5eead4;
         }
         .dark .profile-badge.premium {

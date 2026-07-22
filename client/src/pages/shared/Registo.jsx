@@ -288,7 +288,7 @@ export default function Registo() {
           width: 18px;
           height: 18px;
           margin-top: 3px;
-          accent-color: #2ac1b4;
+          accent-color: #d9c49c;
           cursor: pointer;
           flex: 0 0 auto;
         }
@@ -321,7 +321,7 @@ export default function Registo() {
           width: 18px;
           height: 18px;
           margin-top: 2px;
-          accent-color: #2ac1b4;
+          accent-color: #d9c49c;
           cursor: pointer;
           flex: 0 0 auto;
         }

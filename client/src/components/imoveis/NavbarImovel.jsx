@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -148,26 +148,26 @@ export default function NavbarImovel() {
         .nim-logo-wrapper { position: relative; display: flex; align-items: center; cursor: pointer; }
         .nim-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; user-select: none; }
         .nim-logo-brand-text { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; display: flex; align-items: center; gap: 6px; }
-        .nim-logo-brand-text span { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; color: #3ecf8e; letter-spacing: 0.05em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; }
+        .nim-logo-brand-text span { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; color: #102f50; letter-spacing: 0.05em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; }
         .nim-logo-brand-text span::after { content: '▾'; font-size: 12px; color: #64748b; transition: transform 0.2s ease; }
         .nim-logo-wrapper.active .nim-logo-brand-text span::after { transform: rotate(180deg); }
         .nim-switcher-dropdown { position: absolute; top: calc(100% + 12px); left: 0; background: rgba(255, 255, 255, 0.9); border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08); padding: 6px; min-width: 220px; display: flex; flex-direction: column; gap: 4px; z-index: 1010; }
         .nim-switcher-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; color: #475569; }
         .nim-switcher-item:hover { background: #f1f5f9; color: #0f172a; }
-        .nim-switcher-item.current { background: rgba(62, 207, 142, 0.08); color: #3ecf8e; pointer-events: none; }
+        .nim-switcher-item.current { background: rgba(16, 47, 80, 0.08); color: #102f50; pointer-events: none; }
 
         .nim-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
         .nim-section-links { display: flex; align-items: center; gap: 3px; margin-left: 2px; padding: 3px; border: 1px solid rgba(148, 163, 184, 0.24); border-radius: 999px; background: rgba(255, 255, 255, 0.06); box-shadow: none; }
         .nim-section-link { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 999px; color: #94a3b8; text-decoration: none; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; }
         .nim-section-link:hover { background: rgba(148, 163, 184, 0.14); color: #0f172a; transform: translateY(-1px); }
-        .nim-section-link.active.carros { background: rgba(42, 193, 180, 0.18); color: #0f9d92; }
-        .nim-section-link.active.imoveis { background: rgba(62, 207, 142, 0.18); color: #059669; }
+        .nim-section-link.active.carros { background: rgba(217, 196, 156, 0.18); color: #0f9d92; }
+        .nim-section-link.active.imoveis { background: rgba(16, 47, 80, 0.18); color: #102f50; }
         .nim-section-link svg { width: 20px; height: 20px; stroke-width: 2.2; }
         .nim-btn-menu { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; background: #ffffff; color: #0f172a; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; }
         .nim-btn-menu:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
         .nim-btn-menu svg { width: 17px; height: 17px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
-        .nim-btn-publish { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #059669; color: #ffffff; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s ease; margin-right: 12px; }
-        .nim-btn-publish:hover { background: #047857; }
+        .nim-btn-publish { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #102f50; color: #ffffff; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s ease; margin-right: 12px; }
+        .nim-btn-publish:hover { background: #071326; }
         .nim-divider { width: 1px; height: 20px; background: #e2e8f0; margin: 0 8px; flex-shrink: 0; }
         .nim-icon-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: transparent; border: none; cursor: pointer; color: #475569; text-decoration: none; transition: all 0.2s ease; }
         .nim-icon-btn:hover { background: #f8fafc; color: #0f172a; }
@@ -186,7 +186,7 @@ export default function NavbarImovel() {
         .nim-sino-body { max-height: 320px; overflow-y: auto; }
         .nim-sino-item { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s; text-align: left; }
         .nim-sino-item:hover { background: #f8fafc; }
-        .nim-sino-item.unread { background: rgba(62, 207, 142, 0.05); border-left: 3px solid #3ecf8e; padding-left: 13px; }
+        .nim-sino-item.unread { background: rgba(16, 47, 80, 0.05); border-left: 3px solid #102f50; padding-left: 13px; }
         .nim-sino-text { font-size: 13px; color: #334155; margin-bottom: 6px; line-height: 1.4; }
         .nim-sino-date { font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
         .nim-sino-empty { padding: 32px 16px; text-align: center; font-size: 13px; color: #94a3b8; }
@@ -197,7 +197,7 @@ export default function NavbarImovel() {
         .nim-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .nim-avatar-initial { font-size: 13px; font-weight: 700; color: #0f172a; }
         .nim-username { font-size: 13px; font-weight: 600; color: #0f172a; display: flex; align-items: center; gap: 5px; }
-        .nim-pro-badge { display: inline-flex; align-items: center; padding: 2px 7px; background: linear-gradient(135deg, #3ecf8e, #2ac1b4); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
+        .nim-pro-badge { display: inline-flex; align-items: center; padding: 2px 7px; background: linear-gradient(135deg, #102f50, #d9c49c); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
         .nim-user-dropdown { position: absolute; top: calc(100% + 12px); right: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); width: 220px; display: flex; flex-direction: column; padding: 8px; z-index: 1020; }
         .nim-ud-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #475569; text-decoration: none; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; transition: all 0.2s; }
         .nim-ud-item:hover { background: #f8fafc; color: #0f172a; }
@@ -205,7 +205,7 @@ export default function NavbarImovel() {
         .nim-ud-divider { height: 1px; background: #e2e8f0; margin: 6px 0; }
         .nim-ud-item.logout:hover { background: #fff1f2; color: #be123c; }
         /* CORREÇÃO DO MENU AQUI */
-        .nim-ud-pro { margin-left: 6px; padding: 2px 7px; background: linear-gradient(135deg, #3ecf8e, #2ac1b4); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
+        .nim-ud-pro { margin-left: 6px; padding: 2px 7px; background: linear-gradient(135deg, #102f50, #d9c49c); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
         .nim-ud-admin-badge { margin-left: 6px; padding: 2px 7px; background: linear-gradient(135deg, #818cf8, #6366f1); color: #ffffff; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
         .nim-btn-login { display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; color: #0f172a; font-size: 13px; font-weight: 600; padding: 9px 20px; text-decoration: none; }
 
@@ -227,7 +227,7 @@ export default function NavbarImovel() {
         .nim-drawer-link { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; color: #334155; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.2s; border: none; background: transparent; width: 100%; text-align: left; cursor: pointer; }
         .nim-drawer-link svg { width: 18px; height: 18px; flex-shrink: 0; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
         .nim-drawer-link:hover { background: #f1f5f9; color: #0f172a; }
-        .nim-drawer-link.publish { background: #059669; color: #ffffff; justify-content: center; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(5,150,105,0.2); }
+        .nim-drawer-link.publish { background: #102f50; color: #ffffff; justify-content: center; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(16,47,80,0.2); }
         .nim-drawer-link.admin { background: rgba(99, 102, 241, 0.08); color: #4f46e5; }
         .nim-drawer-link.admin:hover { background: rgba(99, 102, 241, 0.14); }
         .nim-drawer-link.logout-btn { color: #ef4444; margin-top: auto; border-top: 1px solid #f1f5f9; padding-top: 16px; border-radius: 0; }
@@ -257,11 +257,11 @@ export default function NavbarImovel() {
         .nim-pwm-field { display: flex; flex-direction: column; gap: 6px; }
         .nim-pwm-label { font-size: 12px; font-weight: 700; color: #475569; }
         .nim-pwm-input { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: 'Inter', sans-serif; color: #0f172a; outline: none; transition: border-color 0.2s; }
-        .nim-pwm-input:focus { border-color: #3ecf8e; }
+        .nim-pwm-input:focus { border-color: #102f50; }
         .nim-pwm-error { font-size: 12px; font-weight: 600; color: #be123c; background: #fff1f2; padding: 8px 10px; border-radius: 8px; }
         .nim-pwm-success { font-size: 12px; font-weight: 600; color: #047857; background: #ecfdf5; padding: 8px 10px; border-radius: 8px; }
-        .nim-pwm-submit { margin-top: 4px; background: #059669; color: #ffffff; border: none; border-radius: 8px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-        .nim-pwm-submit:hover { background: #047857; }
+        .nim-pwm-submit { margin-top: 4px; background: #102f50; color: #ffffff; border: none; border-radius: 8px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .nim-pwm-submit:hover { background: #071326; }
         .nim-pwm-submit:disabled { opacity: 0.6; cursor: not-allowed; }
       `}</style>
 
@@ -269,12 +269,12 @@ export default function NavbarImovel() {
         <div ref={logoRef} className={`nim-logo-wrapper ${dropdownAberto ? 'active' : ''}`} onClick={() => setDropdownAberto(prev => !prev)}>
           <div className="nim-logo">
             <img src="/logo-noxvelia.png" alt="NOXVELIA" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
-            <div className="nim-logo-brand-text">NOXVELIA <span style={{ color: '#3ecf8e' }}>Estate</span></div>
+            <div className="nim-logo-brand-text">NOXVELIA <span>Imóveis</span></div>
           </div>
           {dropdownAberto && (
             <div className="nim-switcher-dropdown" onClick={e => e.stopPropagation()}>
-              <Link to="/imoveis" className="nim-switcher-item current" onClick={() => setDropdownAberto(false)}>NOXVELIA Estate</Link>
-              <Link to="/carros" className="nim-switcher-item" onClick={() => setDropdownAberto(false)}>NOXVELIA Drive</Link>
+              <Link to="/imoveis" className="nim-switcher-item current" onClick={() => setDropdownAberto(false)}>Imóveis</Link>
+              <Link to="/carros" className="nim-switcher-item" onClick={() => setDropdownAberto(false)}>Carros</Link>
             </div>
           )}
         </div>

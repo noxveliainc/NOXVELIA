@@ -10,9 +10,9 @@
   --nx-font-display: 'Plus Jakarta Sans', sans-serif;
 
   /* Cores base (Modo Claro - Boutique Premium) */
-  --nx-bg: #f8fafc;          /* Cinza gelo ultra suave */
+  --nx-bg: #f4efe5;          /* Base quente ligada ao logo */
   --nx-bg-2: #ffffff;        /* Branco puro (Cards) */
-  --nx-bg-3: #f1f5f9;        /* Hover / Secundário */
+  --nx-bg-3: #efe6d6;        /* Hover / Secundário */
   
   --nx-text: #0f172a;        /* Azul marinho profundo (não preto puro) */
   --nx-text-2: #334155;      /* Textos secundários */
@@ -36,10 +36,10 @@
   --nx-shadow-btn: 0 2px 4px rgba(0, 0, 0, 0.05);
 
   /* Identidade */
-  --nx-accent-car: #2ac1b4;   /* Teal (Drive) */
-  --nx-accent-home: #3ecf8e;  /* Esmeralda (Estate) */
-  --nx-accent-blue: #3b82f6;  /* Azul (Global) */
-  --nx-gold: #d97706;        /* Dourado (Premium) - mais escuro para leitura */
+  --nx-accent-car: #d9c49c;   /* Dourado Noxvelia */
+  --nx-accent-home: #102f50;  /* Azul profundo Noxvelia */
+  --nx-accent-blue: #102f50;  /* Azul Noxvelia */
+  --nx-gold: #d9c49c;        /* Dourado Noxvelia */
   --nx-danger: #ef4444;      /* Alerta */
   --nx-overlay: rgba(255, 255, 255, 0.9);
 }
@@ -377,7 +377,7 @@ h1, h2, h3, h4 {
 .dark .lp-eyebrow,
 .dark .lp-guide-card span,
 .dark .lp-column-link {
-  color: #7ee3d7 !important;
+  color: #f0dfbb !important;
 }
 
 .dark .lp-quick-title,
@@ -405,12 +405,12 @@ h1, h2, h3, h4 {
 .dark .lp-brand-card:hover,
 .dark .lp-round-btn:hover {
   background: rgba(15, 31, 36, 0.96) !important;
-  border-color: rgba(42, 193, 180, 0.55) !important;
+  border-color: rgba(217, 196, 156, 0.55) !important;
   color: #ecfdfb !important;
 }
 
 .dark .lp-type-tab.active {
-  background: rgba(42, 193, 180, 0.95) !important;
+  background: rgba(217, 196, 156, 0.95) !important;
   color: #042326 !important;
 }
 
@@ -570,8 +570,8 @@ h1, h2, h3, h4 {
   --nx-shadow-btn: none;
   --nx-surface-line: #d8e0dd;
   --nx-surface-muted: #f4f6f2;
-  --nx-brand-drive: #24b8ab;
-  --nx-brand-estate: #2f8f63;
+  --nx-brand-drive: #d9c49c;
+  --nx-brand-estate: #102f50;
   --nx-brand-ink: #102326;
 }
 
@@ -851,4 +851,66 @@ h1, h2, h3, h4 {
   ) {
     border-radius: 10px !important;
   }
+}
+
+/* ========================================================================== 
+   NOXVELIA · GLOBAL PREMIUM PASS
+   Aplicado em todo o site: paleta do logo, foco mais limpo e motion discreto.
+   ========================================================================== */
+
+:root {
+  --nx-logo-navy: #071326;
+  --nx-logo-blue: #102f50;
+  --nx-logo-gold: #d9c49c;
+  --nx-logo-gold-soft: #f0dfbb;
+  --nx-logo-stone: #f4efe5;
+}
+
+:focus-visible {
+  outline-color: rgba(217, 196, 156, 0.68) !important;
+}
+
+.nx-spinner {
+  border-color: rgba(217, 196, 156, 0.28) !important;
+  border-top-color: var(--nx-logo-gold) !important;
+}
+
+:where(.ncr-btn-publish, .nim-btn-publish, .pub-submit, .auth-btn, .pl-btn--dark, .modal-btn-submit, .legal-cookie-action, .fav-btn.primary) {
+  background: var(--nx-logo-blue) !important;
+  border-color: var(--nx-logo-blue) !important;
+  color: #ffffff !important;
+}
+
+:where(.ncr-btn-publish, .nim-btn-publish, .pub-submit, .auth-btn, .pl-btn--dark, .modal-btn-submit, .legal-cookie-action, .fav-btn.primary):hover {
+  background: var(--nx-logo-navy) !important;
+  border-color: var(--nx-logo-navy) !important;
+}
+
+:where(.ncr-section-link.active, .nim-section-link.active, .ncr-switcher-item.current, .nim-switcher-item.current, .ncr-pro-badge, .nim-pro-badge, .ncr-ud-pro, .nim-ud-pro, .profile-badge.profissional, .badge-profissional) {
+  background: rgba(217, 196, 156, 0.18) !important;
+  border-color: rgba(217, 196, 156, 0.4) !important;
+  color: var(--nx-logo-blue) !important;
+}
+
+:where(.ncr-logo-brand-text span, .nim-logo-brand-text span, .pl-eyebrow, .fav-eyebrow, .about-kicker, .profile-rating, .pp-empty-btn) {
+  color: var(--nx-logo-blue) !important;
+}
+
+:where(.pesquisa-filter-input:focus, .pub-input:focus, .auth-input:focus, .modal-input:focus, .nim-pwm-input:focus, .ncr-pwm-input:focus) {
+  border-color: var(--nx-logo-gold) !important;
+  box-shadow: 0 0 0 3px rgba(217, 196, 156, 0.2) !important;
+}
+
+:where(.nxc-wrap, .pesquisa-command, .pesquisa-sidebar, .auth-card, .pub-form, .pl-card, .pro-card, .perfil-moldura, .legal-container, .profile-card, .pp-user-section) {
+  transition: border-color .18s ease, background-color .18s ease, opacity .18s ease !important;
+}
+
+:where(.nxc-wrap:hover, .pro-card:hover, .pl-card:hover, .pub-trust-card:hover, .pub-feature-tile:hover, .profile-card:hover) {
+  border-color: rgba(16, 47, 80, 0.28) !important;
+}
+
+.dark :where(.ncr-btn-publish, .nim-btn-publish, .pub-submit, .auth-btn, .pl-btn--dark, .modal-btn-submit, .legal-cookie-action, .fav-btn.primary) {
+  background: var(--nx-logo-gold) !important;
+  border-color: var(--nx-logo-gold) !important;
+  color: var(--nx-logo-navy) !important;
 }

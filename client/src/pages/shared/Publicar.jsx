@@ -392,7 +392,7 @@ export default function Publicar() {
 
   const modelosDisponiveis = form.marca ? getModelosPorMarca(form.marca) : [];
   const cidadesDisponiveis = form.distrito ? DISTRITOS_CIDADES_PT[form.distrito] : [];
-  const accentColorVar = form.tipo === 'carro' ? '#2ac1b4' : '#3ecf8e';
+  const accentColorVar = '#102f50';
   const accentRgb = form.tipo === 'carro' ? '42, 193, 180' : '62, 207, 142';
   const ehPremium = user?.premiumAtivo === true;
   const qualidade = calcularQualidadeFormulario(form, fotos, equipamento);
@@ -490,7 +490,7 @@ export default function Publicar() {
         .pub-quality-score { flex-shrink: 0; min-width: 78px; text-align: right; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 900; color: ${accentColorVar}; line-height: 1; }
         .pub-quality-score span { font-size: 11px; color: #64748b; font-family: 'Inter', sans-serif; font-weight: 800; }
         .pub-quality-track { height: 9px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
-        .pub-quality-fill { height: 100%; width: ${qualidade.percentagem}%; background: linear-gradient(90deg, ${accentColorVar}, #0f172a); border-radius: inherit; transition: width .25s ease; }
+        .pub-quality-fill { height: 100%; width: ${qualidade.percentagem}%; background: linear-gradient(90deg, #102f50, #d9c49c); border-radius: inherit; transition: width .25s ease; }
         .pub-quality-tips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
         .pub-quality-tip { border: 1px solid #e2e8f0; background: rgba(255,255,255,.84); border-radius: 999px; padding: 7px 10px; color: #475569; font-size: 11px; font-weight: 700; }
 

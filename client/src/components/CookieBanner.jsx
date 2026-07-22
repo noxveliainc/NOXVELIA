@@ -32,7 +32,7 @@ const loadExternalWidget = () => {
   script.setAttribute('data-id', 'noxvelia');
   script.setAttribute('data-description', 'Apoia a NOXVELIA');
   script.setAttribute('data-message', '');
-  script.setAttribute('data-color', '#2ac1b4');
+  script.setAttribute('data-color', '#d9c49c');
   script.setAttribute('data-position', 'Right');
   script.setAttribute('data-x_margin', '18');
   script.setAttribute('data-y_margin', '18');

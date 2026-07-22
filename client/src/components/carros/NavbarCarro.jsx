@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -148,20 +148,20 @@ export default function NavbarCarro() {
         .ncr-logo-wrapper { position: relative; display: flex; align-items: center; cursor: pointer; }
         .ncr-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; user-select: none; }
         .ncr-logo-brand-text { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; display: flex; align-items: center; gap: 6px; }
-        .ncr-logo-brand-text span { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; color: #2ac1b4; letter-spacing: 0.05em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; }
+        .ncr-logo-brand-text span { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; color: #d9c49c; letter-spacing: 0.05em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; }
         .ncr-logo-brand-text span::after { content: '▾'; font-size: 12px; color: #64748b; transition: transform 0.2s ease; }
         .ncr-logo-wrapper.active .ncr-logo-brand-text span::after { transform: rotate(180deg); }
         .ncr-switcher-dropdown { position: absolute; top: calc(100% + 12px); left: 0; background: rgba(255, 255, 255, 0.9); border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08); padding: 6px; min-width: 220px; display: flex; flex-direction: column; gap: 4px; z-index: 1010; }
         .ncr-switcher-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; color: #475569; }
         .ncr-switcher-item:hover { background: #f1f5f9; color: #0f172a; }
-        .ncr-switcher-item.current { background: rgba(42, 193, 180, 0.08); color: #2ac1b4; pointer-events: none; }
+        .ncr-switcher-item.current { background: rgba(217, 196, 156, 0.08); color: #d9c49c; pointer-events: none; }
         
         .ncr-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
         .ncr-section-links { display: flex; align-items: center; gap: 3px; margin-left: 2px; padding: 3px; border: 1px solid rgba(148, 163, 184, 0.24); border-radius: 999px; background: rgba(255, 255, 255, 0.06); box-shadow: none; }
         .ncr-section-link { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 999px; color: #94a3b8; text-decoration: none; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; }
         .ncr-section-link:hover { background: rgba(148, 163, 184, 0.14); color: #0f172a; transform: translateY(-1px); }
-        .ncr-section-link.active.carros { background: rgba(42, 193, 180, 0.18); color: #0f9d92; }
-        .ncr-section-link.active.imoveis { background: rgba(62, 207, 142, 0.18); color: #059669; }
+        .ncr-section-link.active.carros { background: rgba(217, 196, 156, 0.18); color: #0f9d92; }
+        .ncr-section-link.active.imoveis { background: rgba(16, 47, 80, 0.18); color: #102f50; }
         .ncr-section-link svg { width: 20px; height: 20px; stroke-width: 2.2; }
         .ncr-btn-menu { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; background: #ffffff; color: #0f172a; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; }
         .ncr-btn-menu:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
@@ -181,9 +181,9 @@ export default function NavbarCarro() {
         .ncr-btn-premium.active { color: #eab308; }
         .ncr-btn-premium.active svg { fill: rgba(234,179,8,0.15); }
 
-        .ncr-pro-badge { display: inline-flex; align-items: center; padding: 2px 7px; background: linear-gradient(135deg, #2ac1b4, #0f9d92); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
+        .ncr-pro-badge { display: inline-flex; align-items: center; padding: 2px 7px; background: #d9c49c; color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
         /* CORREÇÃO DO MENU AQUI */
-        .ncr-ud-pro { margin-left: 6px; padding: 2px 7px; background: linear-gradient(135deg, #2ac1b4, #0f9d92); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
+        .ncr-ud-pro { margin-left: 6px; padding: 2px 7px; background: #d9c49c; color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
         .ncr-ud-admin-badge { margin-left: 6px; padding: 2px 7px; background: linear-gradient(135deg, #818cf8, #6366f1); color: #ffffff; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
 
         .ncr-sino-dropdown { position: absolute; top: calc(100% + 12px); right: -6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); width: 320px; display: flex; flex-direction: column; z-index: 1020; overflow: hidden; }
@@ -191,7 +191,7 @@ export default function NavbarCarro() {
         .ncr-sino-body { max-height: 320px; overflow-y: auto; }
         .ncr-sino-item { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s; text-align: left; }
         .ncr-sino-item:hover { background: #f8fafc; }
-        .ncr-sino-item.unread { background: rgba(42, 193, 180, 0.05); border-left: 3px solid #2ac1b4; padding-left: 13px; }
+        .ncr-sino-item.unread { background: rgba(217, 196, 156, 0.05); border-left: 3px solid #d9c49c; padding-left: 13px; }
         .ncr-sino-text { font-size: 13px; color: #334155; margin-bottom: 6px; line-height: 1.4; }
         .ncr-sino-date { font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
         .ncr-sino-empty { padding: 32px 16px; text-align: center; font-size: 13px; color: #94a3b8; }
@@ -258,7 +258,7 @@ export default function NavbarCarro() {
         .ncr-pwm-field { display: flex; flex-direction: column; gap: 6px; }
         .ncr-pwm-label { font-size: 12px; font-weight: 700; color: #475569; }
         .ncr-pwm-input { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: 'Inter', sans-serif; color: #0f172a; outline: none; transition: border-color 0.2s; }
-        .ncr-pwm-input:focus { border-color: #2ac1b4; }
+        .ncr-pwm-input:focus { border-color: #d9c49c; }
         .ncr-pwm-error { font-size: 12px; font-weight: 600; color: #be123c; background: #fff1f2; padding: 8px 10px; border-radius: 8px; }
         .ncr-pwm-success { font-size: 12px; font-weight: 600; color: #047857; background: #ecfdf5; padding: 8px 10px; border-radius: 8px; }
         .ncr-pwm-submit { margin-top: 4px; background: #0f172a; color: #ffffff; border: none; border-radius: 8px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
@@ -270,12 +270,12 @@ export default function NavbarCarro() {
         <div ref={logoRef} className={`ncr-logo-wrapper ${dropdownAberto ? 'active' : ''}`} onClick={() => setDropdownAberto(prev => !prev)}>
           <div className="ncr-logo">
             <img src="/logo-noxvelia.png" alt="NOXVELIA" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
-            <div className="ncr-logo-brand-text">NOXVELIA <span>Drive</span></div>
+            <div className="ncr-logo-brand-text">NOXVELIA <span>Carros</span></div>
           </div>
           {dropdownAberto && (
             <div className="ncr-switcher-dropdown" onClick={e => e.stopPropagation()}>
-              <Link to="/carros" className="ncr-switcher-item current" onClick={() => setDropdownAberto(false)}>NOXVELIA Drive</Link>
-              <Link to="/imoveis" className="ncr-switcher-item" onClick={() => setDropdownAberto(false)}>NOXVELIA Estate</Link>
+              <Link to="/carros" className="ncr-switcher-item current" onClick={() => setDropdownAberto(false)}>Carros</Link>
+              <Link to="/imoveis" className="ncr-switcher-item" onClick={() => setDropdownAberto(false)}>Imóveis</Link>
             </div>
           )}
         </div>

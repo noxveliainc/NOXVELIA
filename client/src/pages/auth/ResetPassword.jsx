@@ -46,7 +46,7 @@ export default function ResetPassword() {
   return (
     <>
       <style>{`
-        .auth-root { background-color: #040711; background-image: radial-gradient(circle at top right, rgba(42, 193, 180, 0.05), transparent 45%), radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.05), transparent 45%); --nx-text: #f8fafc; --nx-text-sub: #94a3b8; --nx-text-muted: #64748b; --nx-card-bg: rgba(15, 23, 42, 0.6); --nx-card-border: rgba(255, 255, 255, 0.08); --nx-input-bg: rgba(15, 23, 42, 0.5); --nx-input-border: rgba(255, 255, 255, 0.1); height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; color: var(--nx-text); font-family: var(--nx-font-body, 'Inter', sans-serif); overflow: hidden; box-sizing: border-box; }
+        .auth-root { background-color: #040711; background-image: radial-gradient(circle at top right, rgba(217, 196, 156, 0.05), transparent 45%), radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.05), transparent 45%); --nx-text: #f8fafc; --nx-text-sub: #94a3b8; --nx-text-muted: #64748b; --nx-card-bg: rgba(15, 23, 42, 0.6); --nx-card-border: rgba(255, 255, 255, 0.08); --nx-input-bg: rgba(15, 23, 42, 0.5); --nx-input-border: rgba(255, 255, 255, 0.1); height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; color: var(--nx-text); font-family: var(--nx-font-body, 'Inter', sans-serif); overflow: hidden; box-sizing: border-box; }
         .auth-card { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: var(--nx-radius-lg, 20px); padding: 48px; width: 100%; max-width: 460px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
         .auth-title { font-family: var(--nx-font-display, 'Plus Jakarta Sans', sans-serif); font-size: 32px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em; }
         .auth-subtitle { font-size: 14px; color: var(--nx-text-sub); margin-bottom: 32px; line-height: 1.5; }
@@ -54,7 +54,7 @@ export default function ResetPassword() {
         .auth-form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--nx-text-muted); margin-bottom: 8px; }
         .auth-input-wrapper { position: relative; display: flex; align-items: center; }
         .auth-input { width: 100%; padding: 14px 16px; background: var(--nx-input-bg); border: 1px solid var(--nx-input-border); border-radius: var(--nx-radius-sm, 8px); color: var(--nx-text); outline: none; font-family: inherit; font-size: 14px; transition: all 0.2s; box-sizing: border-box; }
-        .auth-input:focus { border-color: var(--nx-accent-car, #2ac1b4); box-shadow: 0 0 0 3px rgba(42, 193, 180, 0.12); }
+        .auth-input:focus { border-color: var(--nx-accent-car, #d9c49c); box-shadow: 0 0 0 3px rgba(217, 196, 156, 0.12); }
         .auth-input-wrapper .auth-input { padding-right: 48px; }
         .auth-toggle-pwd { position: absolute; right: 12px; background: transparent; border: none; color: var(--nx-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; transition: color 0.2s; }
         .auth-toggle-pwd:hover { color: var(--nx-text); }
@@ -64,7 +64,7 @@ export default function ResetPassword() {
         .auth-error { color: #ef4444; font-size: 13px; font-weight: 500; margin-bottom: 24px; background: rgba(239, 68, 68, 0.08); padding: 14px; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--nx-radius-sm, 8px); line-height: 1.4; }
         .auth-hint { display: block; font-size: 11px; color: var(--nx-text-muted); margin-top: -10px; margin-bottom: 24px; }
         .auth-success { text-align: center; padding: 20px 0; }
-        .auth-success h2 { font-family: var(--nx-font-display); font-size: 24px; color: #2ac1b4; margin-bottom: 12px; }
+        .auth-success h2 { font-family: var(--nx-font-display); font-size: 24px; color: #d9c49c; margin-bottom: 12px; }
       `}</style>
 
       <div className="auth-root">

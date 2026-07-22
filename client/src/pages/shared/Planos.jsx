@@ -81,7 +81,7 @@ export default function Planos() {
   ];
 
   const featuresProfissional = [
-    'Anúncios ilimitados em Estate e Drive',
+    'Anúncios ilimitados em carros e imóveis',
     'Selo de Vendedor Verificado',
     'Destaque prioritário nos resultados de pesquisa',
     'Perfil público com contactos e links',
@@ -129,7 +129,7 @@ export default function Planos() {
           text-align: center;
           font-size: 13px;
           font-weight: 600;
-          color: #2ac1b4;
+          color: #d9c49c;
           margin-bottom: 20px;
         }
 
@@ -163,7 +163,7 @@ export default function Planos() {
           position: absolute;
           top: 0; left: 0; right: 0;
           height: 4px;
-          background: linear-gradient(90deg, #3ecf8e, #2ac1b4);
+          background: linear-gradient(90deg, #102f50, #d9c49c);
         }
 
         .pl-badge {
@@ -236,7 +236,7 @@ export default function Planos() {
           width: 15px; height: 15px;
           flex-shrink: 0;
           margin-top: 1px;
-          color: #2ac1b4;
+          color: #d9c49c;
         }
         .pl-card:not(.pl-card--pro) .pl-features svg { color: #94a3b8; }
 
@@ -273,7 +273,7 @@ export default function Planos() {
 
         .pl-btn--outline-pro {
           background: transparent;
-          border-color: #2ac1b4;
+          border-color: #d9c49c;
           color: #0f766e;
         }
         .pl-btn--outline-pro:hover { background: #f0fdfa; }
@@ -307,7 +307,7 @@ export default function Planos() {
         <div className="pl-header">
           <span className="pl-eyebrow">Planos</span>
           <h1>Escolhe como queres vender</h1>
-          <p>Publica com mais visibilidade e menos limites em Estate e Drive.</p>
+          <p>Publica com mais visibilidade e menos limites em carros e imóveis.</p>
         </div>
 
         {aSincronizar && (

@@ -187,8 +187,8 @@ export default function Favoritos() {
           text-decoration: none;
         }
         .fav-btn.primary {
-          background: #2ac1b4;
-          border-color: #2ac1b4;
+          background: #d9c49c;
+          border-color: #d9c49c;
           color: #020617;
         }
         .fav-error {
@@ -245,10 +245,10 @@ export default function Favoritos() {
                 </p>
                 <div className="fav-empty-actions">
                   <button type="button" className="fav-btn primary" onClick={() => navigate('/carros')}>
-                    Ver Drive <Icon path={mdiArrowRight} size={0.72} />
+                    Ver carros <Icon path={mdiArrowRight} size={0.72} />
                   </button>
                   <button type="button" className="fav-btn" onClick={() => navigate('/imoveis')}>
-                    Ver Estate <Icon path={mdiArrowRight} size={0.72} />
+                    Ver imóveis <Icon path={mdiArrowRight} size={0.72} />
                   </button>
                 </div>
               </div>
