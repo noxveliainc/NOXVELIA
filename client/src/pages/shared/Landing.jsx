@@ -3382,6 +3382,100 @@ export default function Landing() {
           .lp-hero-content { padding: 68px 0 84px !important; }
           .lp-hero h1 { font-size: 38px !important; }
           .lp-quick-section { padding-top: 36px !important; }
+        }
+        /* Production visual fixes */
+        .lp-hero-card {
+          min-height: 620px !important;
+          background: #071116 url('/noxvelia-hero-coast.webp') center center / cover no-repeat !important;
+        }
+
+        .lp-hero-media {
+          display: block !important;
+          position: absolute !important;
+          inset: 0 !important;
+          z-index: 0 !important;
+          overflow: hidden !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          background: #071116 url('/noxvelia-hero-coast.webp') center center / cover no-repeat !important;
+        }
+
+        .lp-hero-media::after {
+          display: block !important;
+          content: "" !important;
+          position: absolute !important;
+          inset: 0 !important;
+          pointer-events: none !important;
+          background:
+            linear-gradient(90deg, rgba(4, 12, 15, 0.94) 0%, rgba(4, 12, 15, 0.78) 42%, rgba(4, 12, 15, 0.34) 66%, rgba(4, 12, 15, 0.08) 100%),
+            linear-gradient(0deg, rgba(4, 12, 15, 0.50), rgba(4, 12, 15, 0) 48%) !important;
+        }
+
+        .lp-hero-media img {
+          width: 100% !important;
+          height: 100% !important;
+          min-height: 620px !important;
+          display: block !important;
+          object-fit: cover !important;
+          object-position: 64% center !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          filter: saturate(1.04) contrast(1.03) !important;
+        }
+
+        .lp-hero-content {
+          min-height: 620px !important;
+          background: transparent !important;
+        }
+
+        .lp-hero .lp-text-link {
+          min-height: 50px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 19px !important;
+          border: 1px solid rgba(255, 255, 255, 0.34) !important;
+          border-radius: 8px !important;
+          background: rgba(255, 255, 255, 0.10) !important;
+          color: #ffffff !important;
+          text-decoration: none !important;
+          box-shadow: none !important;
+        }
+
+        .lp-hero .lp-text-link:hover {
+          border-color: rgba(255, 255, 255, 0.58) !important;
+          background: rgba(255, 255, 255, 0.17) !important;
+        }
+
+        .lp-promo-overlay {
+          color: #ffffff !important;
+          border-color: #071116 !important;
+          background: #071116 !important;
+        }
+
+        @media (max-width: 980px) {
+          .lp-hero-card,
+          .lp-hero-content,
+          .lp-hero-media img {
+            min-height: 580px !important;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .lp-hero-card,
+          .lp-hero-content,
+          .lp-hero-media img {
+            min-height: 560px !important;
+          }
+
+          .lp-hero .lp-actions {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+          }
+
+          .lp-hero .lp-text-link {
+            width: 100% !important;
+          }
         }      `}</style>
 
       <NavbarLanding />
@@ -3418,6 +3512,9 @@ export default function Landing() {
                   alt="Automóvel junto a uma casa contemporânea na costa portuguesa"
                   fetchPriority="high"
                   decoding="async"
+                  onError={(event) => {
+                    event.currentTarget.src = '/social/noxvelia-estate-photo-premium.webp';
+                  }}
                 />
                 <div className="lp-hero-photo-label" aria-hidden="true">
                   Carros / Imóveis
