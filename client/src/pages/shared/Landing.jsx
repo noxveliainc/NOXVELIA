@@ -17,7 +17,6 @@ import { COOKIE_CONSENT_CHANGED_EVENT, readCookieConsent } from '../../utils/coo
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 
 const MARCAS_POPULARES = ['Peugeot', 'Renault', 'Mercedes-Benz', 'BMW', 'Volkswagen', 'Audi', 'Toyota', 'Tesla'];
-const MARCAS_MONTRA = ['BMW', 'Mercedes-Benz', 'Audi', 'Volkswagen', 'Peugeot', 'Renault', 'Toyota', 'Tesla', 'Porsche', 'Volvo', 'Hyundai', 'Kia'].filter((marca) => MARCAS.includes(marca));
 const MODELOS_POPULARES = [
   ['Renault', 'Clio'],
   ['Peugeot', '208'],
@@ -73,6 +72,7 @@ export default function Landing() {
   const { signed } = useAuth();
   const landingViewTrackedRef = useRef(false);
   const heroRef = useRef(null);
+  const brandRailRef = useRef(null);
   const publicarTo = signed ? '/publicar' : '/login';
   const publicarState = signed ? undefined : publishIntentState(location, '/');
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
@@ -88,6 +88,12 @@ export default function Landing() {
     distrito: '',
     precoMax: '',
   });
+
+  const rolarMarcas = (direcao) => {
+    const rail = brandRailRef.current;
+    if (!rail) return;
+    rail.scrollBy({ left: direcao * Math.max(320, rail.clientWidth * 0.82), behavior: 'smooth' });
+  };
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -294,7 +300,7 @@ export default function Landing() {
       <style>{`
         .lp-root, .lp-root * { box-sizing: border-box; }
         .lp-root {
-          --lp-navy: #071326; --lp-blue: #102f50; --lp-gold: #d9c49c; --lp-gold-soft: #f0dfbb;
+          --lp-navy: #071326; --lp-blue: #102f50; --lp-gold: #d9c49c; --lp-gold-soft: #f0dfbb; --lp-cyan: #d9c49c; --lp-emerald: #b89961;
           --lp-paper: #fffaf0; --lp-stone: #f4efe5; --lp-line: rgba(7, 19, 38, 0.14); --lp-muted: #546575;
           min-height: 100vh; overflow-x: hidden; background: var(--lp-stone); color: var(--lp-navy);
           font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -307,6 +313,11 @@ export default function Landing() {
         .lp-reveal-delay-2 { transition-delay: .22s; }
         @keyframes lp-orbit { 0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: .55; } 50% { transform: translate3d(18px,-16px,0) scale(1.08); opacity: .9; } }
         @keyframes lp-sheen { 0% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
+        @keyframes lp-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @keyframes lp-pulse-border { 0%, 100% { box-shadow: 0 32px 90px -62px rgba(0,0,0,.9), 0 0 0 1px rgba(217,196,156,.28); } 50% { box-shadow: 0 38px 100px -56px rgba(0,0,0,.95), 0 0 0 1px rgba(217,196,156,.52), 0 0 38px rgba(217,196,156,.18); } }
+        @keyframes lp-row-slide { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(-3px); opacity: .82; } }
+        @keyframes lp-scan { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
+        @keyframes lp-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         .lp-shell { width: min(1220px, calc(100% - 48px)); margin: 0 auto; }
         .lp-hero { --lp-pointer-x: 72%; --lp-pointer-y: 34%; position: relative; isolation: isolate; min-height: clamp(620px, calc(100vh - 74px), 760px); display: flex; align-items: stretch; overflow: hidden; background: var(--lp-navy); }
         .lp-hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 62% center; z-index: -2; }
@@ -318,21 +329,29 @@ export default function Landing() {
         .lp-hero-orbits span:nth-child(2) { right: 26%; bottom: 10%; width: 150px; height: 150px; animation-delay: -2.2s; }
         .lp-hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 470px); gap: clamp(28px, 5vw, 70px); align-items: center; padding: clamp(64px, 8vw, 112px) 0 54px; }
         .lp-hero-copyblock { max-width: 690px; color: #fffaf0; }
-        .lp-hero-brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 22px; color: #fffaf0; font-size: 13px; font-weight: 900; letter-spacing: .12em; }
-        .lp-hero-brand img { width: 32px; height: 32px; object-fit: contain; }
-        .lp-kicker, .lp-eyebrow { display: inline-flex; width: fit-content; margin: 0 0 14px; padding: 7px 10px; color: var(--lp-gold-soft); border: 1px solid rgba(240,223,187,.3); border-radius: 8px; background: rgba(240,223,187,.1); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
-        .lp-hero h1 { max-width: 680px; margin: 0; color: #fffaf0; font-size: clamp(42px, 5vw, 68px); font-weight: 850; line-height: .98; letter-spacing: 0; text-wrap: balance; }
-        .lp-hero-copy { max-width: 570px; margin: 22px 0 0; color: rgba(255,250,240,.82); font-size: 16px; line-height: 1.7; }
+        .lp-eyebrow { display: inline-flex; width: fit-content; margin: 0 0 14px; padding: 7px 10px; color: var(--lp-gold-soft); border: 1px solid rgba(240,223,187,.3); border-radius: 8px; background: rgba(240,223,187,.1); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+        .lp-hero h1 { max-width: 760px; margin: 0; color: #fffaf0; font-size: clamp(46px, 6vw, 82px); font-weight: 900; line-height: .9; letter-spacing: 0; text-wrap: balance; }
+        .lp-gradient-word { display: inline-block; color: transparent; background: linear-gradient(90deg, #fffaf0, var(--lp-gold-soft), var(--lp-cyan)); -webkit-background-clip: text; background-clip: text; }
+        .lp-hero-copy { max-width: 610px; margin: 22px 0 0; color: rgba(255,250,240,.86); font-size: 17px; line-height: 1.72; }
+        .lp-proof-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; max-width: 620px; margin-top: 24px; }
+        .lp-proof-card { min-width: 0; padding: 13px 14px; border: 1px solid rgba(240,223,187,.24); border-radius: 12px; background: rgba(255,250,240,.09); backdrop-filter: blur(14px); }
+        .lp-proof-card strong { display: block; color: #fffaf0; font-size: 18px; line-height: 1; }
+        .lp-proof-card span { display: block; margin-top: 7px; color: rgba(255,250,240,.68); font-size: 11px; font-weight: 850; letter-spacing: .06em; text-transform: uppercase; }
         .lp-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
         .lp-hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-        .lp-hero-badges span { min-height: 34px; display: inline-flex; align-items: center; color: rgba(255,250,240,.86); border: 1px solid rgba(240,223,187,.26); border-radius: 999px; background: rgba(255,250,240,.08); padding: 0 11px; font-size: 12px; font-weight: 780; backdrop-filter: blur(10px); }        .lp-btn, .lp-text-link, .lp-search-submit, .lp-link-button { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 18px; border: 1px solid transparent; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 850; cursor: pointer; transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease !important; }
+        .lp-hero-badges span { min-height: 34px; display: inline-flex; align-items: center; color: rgba(255,250,240,.86); border: 1px solid rgba(240,223,187,.26); border-radius: 999px; background: rgba(255,250,240,.08); padding: 0 11px; font-size: 12px; font-weight: 780; backdrop-filter: blur(10px); }
+        .lp-btn, .lp-text-link, .lp-search-submit, .lp-link-button { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 18px; border: 1px solid transparent; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 850; cursor: pointer; transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease !important; }
         .lp-btn-primary, .lp-search-submit { color: var(--lp-navy); background: var(--lp-gold); border-color: var(--lp-gold); }
         .lp-text-link { color: #fffaf0; border-color: rgba(240,223,187,.35); background: rgba(255,250,240,.08); }
         .lp-btn:hover, .lp-text-link:hover, .lp-search-submit:hover, .lp-link-button:hover { transform: translateY(-1px) !important; }
-                .lp-search-panel { position: relative; align-self: center; padding: 18px; border: 1px solid rgba(240,223,187,.28); border-radius: 14px; background: rgba(255,250,240,.96); box-shadow: 0 32px 90px -62px rgba(0,0,0,.9); overflow: hidden; }
+                .lp-search-panel { position: relative; align-self: center; padding: 20px; border: 1px solid rgba(240,223,187,.34); border-radius: 18px; background: rgba(255,250,240,.97); box-shadow: 0 32px 90px -62px rgba(0,0,0,.9); overflow: hidden; animation: lp-pulse-border 6s ease-in-out infinite; }
         .lp-search-panel::before { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,.72) 42%, transparent 58%); transform: translateX(-130%); animation: lp-sheen 7s ease-in-out infinite; pointer-events: none; }
         .lp-search-panel > * { position: relative; z-index: 1; }
         .lp-search-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+        .lp-command-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -2px 0 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(7,19,38,.11); }
+        .lp-command-brand { display: inline-flex; align-items: center; color: var(--lp-navy); font-size: 12px; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
+        .lp-command-dot { display: none; }
+        .lp-command-live { display: none; }
         .lp-search-head h2 { margin: 0; color: var(--lp-navy); font-size: 24px; line-height: 1.08; letter-spacing: 0; }
         .lp-search-head p { margin: 8px 0 0; color: var(--lp-muted); font-size: 13px; line-height: 1.45; }
         .lp-type-tabs { flex: 0 0 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border: 1px solid rgba(7,19,38,.13); border-radius: 10px; background: #e9dfce; }
@@ -341,9 +360,23 @@ export default function Landing() {
         .lp-search-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
         .lp-field { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
         .lp-field label { color: #4d5f70; font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-        .lp-field select { width: 100%; min-height: 46px; padding: 0 12px; color: var(--lp-navy); border: 1px solid rgba(7,19,38,.16); border-radius: 8px; background: #fff; font-size: 13px; font-weight: 740; }
+        .lp-field select { width: 100%; min-height: 48px; padding: 0 12px; color: var(--lp-navy); border: 1px solid rgba(7,19,38,.16); border-radius: 10px; background: #fff; font-size: 13px; font-weight: 760; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+        .lp-field select:hover { border-color: rgba(16,47,80,.28); transform: translateY(-1px); }
+        .lp-field select:focus { border-color: rgba(217,196,156,.78); box-shadow: 0 0 0 4px rgba(217,196,156,.22); }
         .lp-field select:disabled { color: #8793a0; background: #f4f2eb; }
         .lp-search-submit { grid-column: 1 / -1; width: 100%; margin-top: 2px; }
+        .lp-command-preview { display: grid; gap: 8px; margin-top: 14px; padding: 12px; border: 1px solid rgba(7,19,38,.1); border-radius: 12px; background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(246,242,233,.9)); }
+        .lp-command-row { min-height: 40px; display: flex; align-items: center; padding: 0 12px; color: var(--lp-navy); border: 1px solid rgba(7,19,38,.08); border-radius: 10px; background: #fff; animation: lp-row-slide 5.4s ease-in-out infinite; }
+        .lp-command-row:nth-child(2) { animation-delay: -1.8s; }
+        .lp-command-row:nth-child(3) { animation-delay: -3.6s; }
+        .lp-command-icon { display: none; }
+        .lp-command-row strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+        .lp-command-row span:last-child { display: none; }
+        .lp-market-ticker { overflow: hidden; background: #fffaf0; border-bottom: 1px solid var(--lp-line); }
+        .lp-market-track { display: flex; width: max-content; animation: lp-marquee 26s linear infinite; }
+        .lp-market-track:hover { animation-play-state: paused; }
+        .lp-market-item { min-height: 58px; display: inline-flex; align-items: center; gap: 10px; padding: 0 24px; color: var(--lp-blue); border-right: 1px solid var(--lp-line); font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+        .lp-market-item::before { content: ''; width: 8px; height: 8px; border-radius: 999px; background: var(--lp-gold); box-shadow: none; }
         .lp-metrics { background: var(--lp-paper); border-bottom: 1px solid var(--lp-line); }
         .lp-metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0; border-left: 1px solid var(--lp-line); }
         .lp-metric { min-height: 92px; display: flex; flex-direction: column; justify-content: center; padding: 18px; border-right: 1px solid var(--lp-line); }
@@ -355,6 +388,34 @@ export default function Landing() {
         .lp-section-head > div:first-child { max-width: 720px; }
         .lp-title { margin: 0; color: var(--lp-navy); font-size: clamp(30px, 4vw, 46px); line-height: 1.05; letter-spacing: 0; }
         .lp-copy { margin: 14px 0 0; color: var(--lp-muted); font-size: 15px; line-height: 1.65; }
+        .lp-section .lp-eyebrow, .lp-showcase-band .lp-eyebrow { color: var(--lp-blue); border-color: rgba(16,47,80,.16); background: rgba(255,255,255,.72); }
+        .lp-search-eyebrow { color: var(--lp-navy); border-color: rgba(217,196,156,.58); background: rgba(217,196,156,.22); }
+        .lp-showcase-band { position: relative; overflow: hidden; padding: 64px 0; background: linear-gradient(180deg, #fffaf0 0%, #f5efe3 100%); border-bottom: 1px solid var(--lp-line); }
+        .lp-showcase-band::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 78% 18%, rgba(217,196,156,.22), transparent 34%), radial-gradient(circle at 12% 82%, rgba(16,47,80,.07), transparent 30%); pointer-events: none; }
+        .lp-showcase-grid { position: relative; display: grid; grid-template-columns: minmax(0, .88fr) minmax(0, 1.12fr); gap: clamp(24px, 5vw, 62px); align-items: center; }
+        .lp-showcase-copy { max-width: 520px; }
+        .lp-showcase-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 24px; }
+        .lp-showcase-kpi { padding: 14px; border: 1px solid var(--lp-line); border-radius: 10px; background: rgba(255,255,255,.78); }
+        .lp-showcase-kpi strong { display: block; color: var(--lp-navy); font-size: 20px; line-height: 1; }
+        .lp-showcase-kpi span { display: block; margin-top: 7px; color: var(--lp-muted); font-size: 11px; font-weight: 850; text-transform: uppercase; }
+        .lp-bento-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+        .lp-bento-card { position: relative; min-height: 172px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 16px; padding: 18px; color: inherit; border: 1px solid rgba(16,47,80,.12); border-radius: 12px; background: rgba(255,255,255,.88); text-decoration: none; box-shadow: 0 18px 50px -38px rgba(7,19,38,.55); transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease !important; }
+        .lp-bento-card::before { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 10%, rgba(217,196,156,.16) 48%, transparent 86%); transform: translateX(-120%); animation: lp-scan 8s ease-in-out infinite; pointer-events: none; }
+        .lp-bento-card:hover { transform: translateY(-4px) !important; border-color: rgba(217,196,156,.7); box-shadow: 0 26px 70px -42px rgba(7,19,38,.7); }
+        .lp-bento-main { grid-column: span 4; min-height: 230px; background: linear-gradient(135deg, #fff, #f6f1e7 58%, rgba(217,196,156,.22)); }
+        .lp-bento-side { grid-column: span 2; }
+        .lp-bento-wide { grid-column: span 3; }
+        .lp-bento-kicker { width: fit-content; padding: 6px 9px; color: var(--lp-blue); border: 1px solid rgba(16,47,80,.13); border-radius: 7px; background: #fff; font-size: 10px; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
+        .lp-bento-card strong { position: relative; color: var(--lp-navy); font-size: clamp(20px, 2.4vw, 30px); line-height: 1.08; }
+        .lp-bento-card p { position: relative; margin: 0; color: var(--lp-muted); font-size: 13px; line-height: 1.55; }
+        .lp-bento-stat { position: relative; display: flex; justify-content: space-between; gap: 12px; color: var(--lp-blue); font-size: 12px; font-weight: 900; }
+        .lp-sparkline { position: relative; height: 46px; display: flex; align-items: end; gap: 6px; margin-top: 10px; }
+        .lp-sparkline span { flex: 1; min-width: 10px; border-radius: 999px 999px 4px 4px; background: linear-gradient(180deg, var(--lp-gold), rgba(217,196,156,.2)); animation: lp-float 4.8s ease-in-out infinite; }
+        .lp-sparkline span:nth-child(1) { height: 42%; }
+        .lp-sparkline span:nth-child(2) { height: 72%; animation-delay: -.7s; }
+        .lp-sparkline span:nth-child(3) { height: 54%; animation-delay: -1.1s; }
+        .lp-sparkline span:nth-child(4) { height: 86%; animation-delay: -1.6s; }
+        .lp-sparkline span:nth-child(5) { height: 64%; animation-delay: -2.1s; }
         .lp-promo-section { background: var(--lp-stone); }
         .lp-promo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
         .lp-promo-link { min-width: 0; overflow: hidden; display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); min-height: 300px; color: inherit; border: 1px solid var(--lp-line); border-radius: 12px; background: var(--lp-paper); text-decoration: none; transition: border-color .18s ease, transform .18s ease !important; }
@@ -365,12 +426,18 @@ export default function Landing() {
         .lp-promo-text { color: var(--lp-muted); font-size: 14px; line-height: 1.58; }
         .lp-promo-overlay { width: fit-content; color: var(--lp-navy); font-size: 13px; font-weight: 850; }
         .lp-promo-media img { width: 100%; height: 100%; min-height: 300px; display: block; object-fit: cover; }
-        .lp-pro-strip { display: grid; grid-template-columns: 130px minmax(0, 1fr) auto; gap: 18px; align-items: center; margin-top: 18px; padding: 20px; color: #fffaf0; border-radius: 12px; background: var(--lp-navy); text-decoration: none; }
+        .lp-pro-strip { display: grid; grid-template-columns: 130px minmax(0, 1fr) auto; gap: 18px; align-items: center; margin-top: 18px; padding: 20px; color: #fffaf0; border-radius: 12px; background: var(--lp-navy); }
         .lp-pro-strip span { color: var(--lp-gold-soft); font-size: 11px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
         .lp-pro-strip strong { font-size: 20px; line-height: 1.2; }
-        .lp-pro-strip em { color: var(--lp-navy); background: var(--lp-gold); border-radius: 8px; padding: 11px 14px; font-style: normal; font-size: 13px; font-weight: 850; }
+        .lp-pro-cta { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; color: var(--lp-navy); background: var(--lp-gold); border-radius: 8px; padding: 0 14px; text-decoration: none; font-size: 13px; font-weight: 850; transition: transform .18s ease, background-color .18s ease !important; } .lp-pro-cta:hover { transform: translateY(-1px) !important; background: var(--lp-gold-soft); }
         .lp-brands-section { background: var(--lp-paper); border-top: 1px solid var(--lp-line); border-bottom: 1px solid var(--lp-line); }
-        .lp-brand-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 10px; }
+        .lp-brand-carousel { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 12px; }
+        .lp-brand-rail { min-width: 0; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth; scrollbar-width: none; padding: 2px; }
+        .lp-brand-rail::-webkit-scrollbar { display: none; }
+        .lp-brand-grid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(2, 92px); grid-auto-columns: minmax(132px, 152px); gap: 10px; width: max-content; }
+        .lp-brand-arrow { width: 44px; height: 44px; display: grid; place-items: center; color: var(--lp-navy); border: 1px solid rgba(7,19,38,.14); border-radius: 999px; background: #fff; cursor: pointer; box-shadow: 0 14px 34px -28px rgba(7,19,38,.65); transition: transform .18s ease, border-color .18s ease, background-color .18s ease !important; }
+        .lp-brand-arrow:hover { transform: translateY(-1px) !important; border-color: rgba(217,196,156,.84); background: var(--lp-gold-soft); }
+        .lp-brand-arrow span { display: block; font-size: 23px; line-height: 1; transform: translateY(-1px); }
         .lp-brand-card { min-height: 92px; display: grid; grid-template-rows: 42px auto; place-items: center; gap: 7px; padding: 12px; color: #384b5c; border: 1px solid var(--lp-line); border-radius: 10px; background: #fff; text-decoration: none; transition: border-color .18s ease, transform .18s ease !important; }
         .lp-brand-card:hover { border-color: rgba(217,196,156,.84); transform: translateY(-2px) !important; }
         .lp-brand-mark { position: relative; width: 100px; height: 42px; display: grid; place-items: center; overflow: hidden; }
@@ -378,7 +445,8 @@ export default function Landing() {
         .lp-brand-fallback { position: absolute; inset: 0; display: none; place-items: center; color: var(--lp-blue); font-weight: 900; }
         .lp-brand-mark.logo-error .lp-brand-fallback { display: grid; }
         .lp-brand-mark-clean::after { content: ""; position: absolute; z-index: 2; right: 0; bottom: 0; left: 0; height: 15px; background: linear-gradient(180deg, rgba(255,255,255,0), #fff 56%); pointer-events: none; }
-        .lp-brand-name { color: #435668; font-size: 11px; font-weight: 820; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }        .lp-shortcuts-section { background: var(--lp-stone); }
+        .lp-brand-name { color: #435668; font-size: 11px; font-weight: 820; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .lp-shortcuts-section { background: var(--lp-stone); }
         .lp-shortcut-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
         .lp-shortcut-group { min-width: 0; padding: 18px; border: 1px solid var(--lp-line); border-radius: 12px; background: var(--lp-paper); }
         .lp-shortcut-group.wide { grid-column: span 2; }
@@ -415,14 +483,32 @@ export default function Landing() {
         .lp-cv-code strong { color: var(--lp-navy); }
         .dark .lp-root { background: #071326; color: #fffaf0; }
         .dark .lp-metrics, .dark .lp-brands-section, .dark .lp-cv-section { background: #0d1d33; border-color: rgba(240,223,187,.14); }
-        .dark .lp-search-panel, .dark .lp-promo-link, .dark .lp-shortcut-group, .dark .lp-brand-card, .dark .lp-cv-card { background: #102f50; border-color: rgba(240,223,187,.18); color: #fffaf0; }
+        .dark .lp-search-panel, .dark .lp-promo-link, .dark .lp-shortcut-group, .dark .lp-brand-card, .dark .lp-brand-arrow, .dark .lp-cv-card, .dark .lp-bento-card, .dark .lp-showcase-kpi { background: #102f50; border-color: rgba(240,223,187,.18); color: #fffaf0; }
         .dark .lp-title, .dark .lp-search-head h2, .dark .lp-promo-title, .dark .lp-shortcut-group h3, .dark .lp-metric strong, .dark .lp-cv-code strong { color: #fffaf0; }
         .dark .lp-copy, .dark .lp-search-head p, .dark .lp-promo-text, .dark .lp-brand-name, .dark .lp-field label { color: rgba(255,250,240,.72); }
         .dark .lp-field select { background: #071326; color: #fffaf0; border-color: rgba(240,223,187,.18); }
         .dark .lp-type-tabs, .dark .lp-cv-panel { background: #071326; }
-        @media (max-width: 1040px) { .lp-hero { min-height: auto; } .lp-hero-inner { grid-template-columns: 1fr; padding-top: 58px; } .lp-search-panel { max-width: 760px; } .lp-promo-grid, .lp-examples-grid, .lp-cv-card { grid-template-columns: 1fr; } }
-        @media (prefers-reduced-motion: reduce) { .lp-reveal { opacity: 1; transform: none; transition: none; } .lp-hero-orbits span, .lp-search-panel::before { animation: none; } .lp-btn, .lp-text-link, .lp-search-submit, .lp-link-button, .lp-promo-link, .lp-brand-card { transition: none !important; } }
-        @media (max-width: 720px) { .lp-shell { width: min(100% - 30px, 1220px); } .lp-hero-inner { padding: 42px 0 34px; gap: 24px; } .lp-hero h1 { font-size: clamp(36px, 12vw, 48px); } .lp-hero-copy { font-size: 15px; } .lp-search-panel { padding: 14px; border-radius: 10px; } .lp-search-head { display: grid; } .lp-type-tabs { width: 100%; } .lp-search-form { grid-template-columns: 1fr; } .lp-section { padding: 54px 0; } .lp-section-head { display: grid; } .lp-promo-link { grid-template-columns: 1fr; } .lp-promo-media img { min-height: 220px; } .lp-pro-strip { grid-template-columns: 1fr; } .lp-shortcut-grid { grid-template-columns: 1fr; } .lp-shortcut-group.wide { grid-column: auto; } .lp-example-list { grid-template-columns: 1fr; } }
+        .dark .lp-market-ticker { background: #071326; border-color: rgba(240,223,187,.14); }
+        .dark .lp-market-item { color: rgba(255,250,240,.86); border-color: rgba(240,223,187,.14); }
+        .dark .lp-market-item::before { background: var(--lp-gold); }
+        .dark .lp-showcase-band { background: linear-gradient(180deg, #071326 0%, #0d1d33 100%); border-color: rgba(240,223,187,.14); }
+        .dark .lp-showcase-band::before { background: radial-gradient(circle at 74% 18%, rgba(217,196,156,.14), transparent 34%), radial-gradient(circle at 10% 82%, rgba(255,250,240,.07), transparent 30%); }
+        .dark .lp-showcase-band .lp-title,
+        .dark .lp-bento-card strong,
+        .dark .lp-showcase-kpi strong { color: #fffaf0; }
+        .dark .lp-showcase-band .lp-copy,
+        .dark .lp-bento-card p,
+        .dark .lp-showcase-kpi span { color: rgba(255,250,240,.72); }
+        .dark .lp-showcase-band .lp-eyebrow,
+        .dark .lp-bento-kicker { color: var(--lp-gold-soft); border-color: rgba(240,223,187,.28); background: rgba(255,250,240,.08); }
+        .dark .lp-bento-card { background: rgba(16,47,80,.96); box-shadow: 0 24px 70px -46px rgba(0,0,0,.85); }
+        .dark .lp-bento-main { background: linear-gradient(135deg, #102f50, #0d1d33 62%, rgba(217,196,156,.14)); }
+        .dark .lp-bento-card::before { background: linear-gradient(110deg, transparent 10%, rgba(240,223,187,.12) 48%, transparent 86%); }
+        .dark .lp-bento-stat { color: var(--lp-gold-soft); }
+        .dark .lp-sparkline span { background: linear-gradient(180deg, var(--lp-gold-soft), rgba(240,223,187,.16)); }
+        @media (max-width: 1040px) { .lp-hero { min-height: auto; } .lp-hero-inner, .lp-showcase-grid { grid-template-columns: 1fr; padding-top: 58px; } .lp-search-panel { max-width: 760px; } .lp-promo-grid, .lp-examples-grid, .lp-cv-card { grid-template-columns: 1fr; } }
+        @media (prefers-reduced-motion: reduce) { .lp-reveal { opacity: 1; transform: none; transition: none; } .lp-hero-orbits span, .lp-search-panel::before, .lp-market-track, .lp-search-panel, .lp-command-row, .lp-bento-card::before, .lp-sparkline span { animation: none; } .lp-btn, .lp-text-link, .lp-search-submit, .lp-link-button, .lp-promo-link, .lp-brand-card, .lp-bento-card { transition: none !important; } }
+        @media (max-width: 720px) { .lp-proof-row, .lp-showcase-kpis { grid-template-columns: 1fr; } .lp-shell { width: min(100% - 30px, 1220px); } .lp-hero-inner { padding: 42px 0 34px; gap: 24px; } .lp-hero h1 { font-size: clamp(36px, 12vw, 48px); } .lp-hero-copy { font-size: 15px; } .lp-search-panel { padding: 14px; border-radius: 10px; } .lp-command-top, .lp-search-head { display: grid; } .lp-type-tabs { width: 100%; } .lp-search-form { grid-template-columns: 1fr; } .lp-command-row span:last-child { display: none; } .lp-market-item { min-height: 48px; padding: 0 16px; font-size: 11px; } .lp-brand-carousel { grid-template-columns: 38px minmax(0, 1fr) 38px; gap: 8px; } .lp-brand-arrow { width: 38px; height: 38px; } .lp-brand-grid { grid-auto-columns: minmax(118px, 132px); grid-template-rows: repeat(2, 86px); } .lp-brand-card { min-height: 86px; } .lp-showcase-band { padding: 46px 0; } .lp-bento-grid { grid-template-columns: 1fr; } .lp-bento-main, .lp-bento-side, .lp-bento-wide { grid-column: auto; min-height: 180px; } .lp-section { padding: 54px 0; } .lp-section-head { display: grid; } .lp-promo-link { grid-template-columns: 1fr; } .lp-promo-media img { min-height: 220px; } .lp-pro-strip { grid-template-columns: 1fr; } .lp-shortcut-grid { grid-template-columns: 1fr; } .lp-shortcut-group.wide { grid-column: auto; } .lp-example-list { grid-template-columns: 1fr; } }
       `}</style>
 
       <NavbarLanding />
@@ -432,13 +518,8 @@ export default function Landing() {
         <div className="lp-hero-orbits" aria-hidden="true"><span></span><span></span></div>
         <div className="lp-shell lp-hero-inner">
           <div className="lp-hero-copyblock lp-reveal">
-            <div className="lp-hero-brand" aria-label="NOXVELIA">
-              <img src="/logo-noxvelia.png" alt="" />
-              <span>NOXVELIA</span>
-            </div>
-            <span className="lp-kicker">Pesquisa em Portugal</span>
-            <h1 id="lp-hero-title">Compra, vende e compara carros e imóveis sem perder tempo.</h1>
-            <p className="lp-hero-copy">A Noxvelia junta anúncios com fotografias, preço, localização e contacto direto para decidires melhor antes da visita.</p>
+            <h1 id="lp-hero-title">Carros e imóveis, <span className="lp-gradient-word">encontrados sem perder tempo.</span></h1>
+            <p className="lp-hero-copy">Pesquisa anúncios, compara informação essencial e chega ao contacto certo com menos passos.</p>
             <div className="lp-actions">
               <a className="lp-btn lp-btn-primary" href="#pesquisa">Pesquisar agora</a>
               <Link className="lp-text-link" to={publicarTo} state={publicarState}>Publicar grátis</Link>
@@ -448,12 +529,20 @@ export default function Landing() {
               <span>Contactos diretos</span>
               <span>Perfis públicos</span>
             </div>
+            <div className="lp-proof-row" aria-label="Fluxo principal da Noxvelia">
+              <div className="lp-proof-card"><strong>01</strong><span>Pesquisar</span></div>
+              <div className="lp-proof-card"><strong>02</strong><span>Comparar</span></div>
+              <div className="lp-proof-card"><strong>03</strong><span>Contactar</span></div>
+            </div>
           </div>
 
           <form className="lp-search-panel lp-reveal lp-reveal-delay-1" id="pesquisa" aria-labelledby="lp-search-title" onSubmit={submeterPesquisaRapida}>
+            <div className="lp-command-top" aria-hidden="true">
+              <span className="lp-command-brand">Pesquisa rápida</span>
+            </div>
             <div className="lp-search-head">
               <div>
-                <span className="lp-eyebrow">Começa por aqui</span>
+                <span className="lp-eyebrow lp-search-eyebrow">Começa por aqui</span>
                 <h2 id="lp-search-title">Pesquisa direta.</h2>
                 <p>Filtra por tipo, localização e preço. Podes afinar mais depois.</p>
               </div>
@@ -461,7 +550,8 @@ export default function Landing() {
                 <button type="button" role="tab" aria-selected={pesquisaRapida.tipo === 'carro'} className={`lp-type-tab ${pesquisaRapida.tipo === 'carro' ? 'active' : ''}`} onClick={() => atualizarPesquisaRapida('tipo', 'carro')}>Carros</button>
                 <button type="button" role="tab" aria-selected={pesquisaRapida.tipo === 'imovel'} className={`lp-type-tab ${pesquisaRapida.tipo === 'imovel' ? 'active' : ''}`} onClick={() => atualizarPesquisaRapida('tipo', 'imovel')}>Imóveis</button>
               </div>
-            </div>            <div className="lp-search-form">
+            </div>
+            <div className="lp-search-form">
               {pesquisaRapida.tipo === 'carro' ? (
                 <>
                   <div className="lp-field"><label htmlFor="lp-marca">Marca</label><select id="lp-marca" value={pesquisaRapida.marca} onChange={(evento) => atualizarPesquisaRapida('marca', evento.target.value)}><option value="">Todas as marcas</option>{MARCAS.map((marca) => <option key={marca} value={marca}>{marca}</option>)}</select></div>
@@ -478,7 +568,70 @@ export default function Landing() {
               <div className="lp-field"><label htmlFor="lp-distrito">Distrito</label><select id="lp-distrito" value={pesquisaRapida.distrito} onChange={(evento) => atualizarPesquisaRapida('distrito', evento.target.value)}><option value="">Portugal inteiro</option>{DISTRITOS.map((distrito) => <option key={distrito} value={distrito}>{distrito}</option>)}</select></div>
               <button type="submit" className="lp-search-submit">Ver anúncios</button>
             </div>
+            <div className="lp-command-preview" aria-hidden="true">
+              <div className="lp-command-row"><strong>{pesquisaRapida.tipo === 'carro' ? (pesquisaRapida.marca || 'Carros em destaque') : (pesquisaRapida.tipologia || 'Imóveis em destaque')}</strong></div>
+              <div className="lp-command-row"><strong>{pesquisaRapida.distrito || 'Portugal inteiro'}</strong></div>
+              <div className="lp-command-row"><strong>{pesquisaRapida.precoMax ? `Até ${Number(pesquisaRapida.precoMax).toLocaleString('pt-PT')} €` : 'Preço flexível'}</strong></div>
+            </div>
           </form>
+        </div>
+      </section>
+
+      <section className="lp-market-ticker" aria-label="Atalhos de pesquisa populares">
+        <div className="lp-market-track" aria-hidden="true">
+          <span className="lp-market-item">Carros até 20.000 €</span>
+          <span className="lp-market-item">T2 no Porto</span>
+          <span className="lp-market-item">BMW em Lisboa</span>
+          <span className="lp-market-item">Imóveis com garagem</span>
+          <span className="lp-market-item">Diesel recentes</span>
+          <span className="lp-market-item">Moradias em Braga</span>
+          <span className="lp-market-item">Carros até 20.000 €</span>
+          <span className="lp-market-item">T2 no Porto</span>
+          <span className="lp-market-item">BMW em Lisboa</span>
+          <span className="lp-market-item">Imóveis com garagem</span>
+          <span className="lp-market-item">Diesel recentes</span>
+          <span className="lp-market-item">Moradias em Braga</span>
+        </div>
+      </section>
+
+      <section className="lp-showcase-band" aria-labelledby="lp-showcase-title">
+        <div className="lp-shell lp-showcase-grid">
+          <div className="lp-showcase-copy lp-reveal">
+            <span className="lp-eyebrow">Novo ritmo</span>
+            <h2 className="lp-title" id="lp-showcase-title">Encontra carros e imóveis com menos passos.</h2>
+            <p className="lp-copy">Descobre anúncios reais, compara os detalhes importantes e avança para contacto sem percursos complicados.</p>
+            <div className="lp-showcase-kpis" aria-label="Benefícios principais">
+              <div className="lp-showcase-kpi"><strong>Rápido</strong><span>Pesquisa direta</span></div>
+              <div className="lp-showcase-kpi"><strong>Claro</strong><span>Anúncios organizados</span></div>
+              <div className="lp-showcase-kpi"><strong>Direto</strong><span>Contacto simples</span></div>
+            </div>
+          </div>
+          <div className="lp-bento-grid" aria-label="Funcionalidades da Noxvelia">
+            <Link className="lp-bento-card lp-bento-main lp-reveal" to="/carros">
+              <span className="lp-bento-kicker">Pesquisa inteligente</span>
+              <strong>Procura por marca, distrito, preço ou tipologia.</strong>
+              <p>A primeira pesquisa já leva o visitante para resultados úteis, com filtros claros desde o início.</p>
+              <span className="lp-sparkline" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
+            </Link>
+            <Link className="lp-bento-card lp-bento-side lp-reveal lp-reveal-delay-1" to="/profissionais">
+              <span className="lp-bento-kicker">Perfis</span>
+              <strong>Perfis de vendedores completos.</strong>
+              <p>Bio, website e redes sociais ajudam o comprador a confiar antes do primeiro contacto.</p>
+              <span className="lp-bento-stat"><span>Redes sociais</span><span>Bio</span></span>
+            </Link>
+            <Link className="lp-bento-card lp-bento-wide lp-reveal" to="/imoveis">
+              <span className="lp-bento-kicker">Imóveis</span>
+              <strong>Imóveis com informação essencial à vista.</strong>
+              <p>Tipologia, localização e preço aparecem cedo para acelerar a escolha.</p>
+              <span className="lp-bento-stat"><span>T2</span><span>Lisboa</span><span>Garagem</span></span>
+            </Link>
+            <Link className="lp-bento-card lp-bento-wide lp-reveal lp-reveal-delay-1" to={publicarTo} state={publicarState}>
+              <span className="lp-bento-kicker">Publicar</span>
+              <strong>Publicar fica simples e direto.</strong>
+              <p>O vendedor entra no fluxo de anúncio sem distrações e com um caminho claro.</p>
+              <span className="lp-bento-stat"><span>Grátis</span><span>Direto</span></span>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -502,30 +655,36 @@ export default function Landing() {
               <span className="lp-promo-media"><img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia" loading="lazy" /></span>
             </Link>
           </div>
-          <Link className="lp-pro-strip" to={temProfissionaisAtivos ? '/profissionais' : publicarTo} state={temProfissionaisAtivos ? undefined : publicarState}>
+          <div className="lp-pro-strip">
             <span>{temProfissionaisAtivos ? 'Profissionais' : 'Anunciar'}</span>
             <strong>{temProfissionaisAtivos ? 'Stands, mediadores e vendedores com anúncios disponíveis.' : 'Publica o teu carro ou imóvel e recebe contactos diretamente.'}</strong>
-            <em>{temProfissionaisAtivos ? 'Ver profissionais' : 'Publicar anúncio'}</em>
-          </Link>
+            <Link className="lp-pro-cta" to={temProfissionaisAtivos ? '/profissionais' : publicarTo} state={temProfissionaisAtivos ? undefined : publicarState}>{temProfissionaisAtivos ? 'Ver profissionais' : 'Publicar anúncio'}</Link>
+          </div>
         </div>
       </section>
 
       <section className="lp-section lp-brands-section" id="marcas" aria-labelledby="lp-brands-title">
         <div className="lp-shell">
-          <div className="lp-section-head"><div><span className="lp-eyebrow">Marcas</span><h2 className="lp-title" id="lp-brands-title">Pesquisa por marca, sem voltar ao início.</h2><p className="lp-copy">Escolhe uma marca popular ou usa o campo de marca na pesquisa principal.</p></div></div>
-          <div className="lp-brand-grid" aria-label="Marcas automóveis populares">
-            {(MARCAS_MONTRA.length > 0 ? MARCAS_MONTRA : MARCAS_POPULARES).map((marca) => {
-              const marcaSlug = slugMarca(marca);
-              return (
-                <Link className="lp-brand-card lp-reveal" to={`/carros?marca=${encodeURIComponent(marca)}`} key={marca} aria-label={`Ver anúncios ${marca}`}>
-                  <span className={`lp-brand-mark lp-brand-mark-${marcaSlug} ${LOGOS_COM_TEXTO_EMBUTIDO.has(marcaSlug) ? 'lp-brand-mark-clean' : ''}`}>
-                    <span className="lp-brand-fallback" aria-hidden="true">{iniciaisMarca(marca)}</span>
-                    <img src={logoMarca(marca)} alt="" loading="lazy" draggable="false" onError={(evento) => { evento.currentTarget.style.display = 'none'; evento.currentTarget.parentElement?.classList.add('logo-error'); }} />
-                  </span>
-                  <span className="lp-brand-name">{marca}</span>
-                </Link>
-              );
-            })}
+          <div className="lp-section-head"><div><h2 className="lp-title" id="lp-brands-title">Pesquisa por marca, sem voltar ao início.</h2><p className="lp-copy">Explora todas as marcas disponíveis ou usa o campo de marca na pesquisa principal.</p></div></div>
+          <div className="lp-brand-carousel" aria-label="Todas as marcas automóveis disponíveis">
+            <button type="button" className="lp-brand-arrow" onClick={() => rolarMarcas(-1)} aria-label="Ver marcas anteriores"><span aria-hidden="true">‹</span></button>
+            <div className="lp-brand-rail" ref={brandRailRef}>
+              <div className="lp-brand-grid">
+                {MARCAS.map((marca) => {
+                  const marcaSlug = slugMarca(marca);
+                  return (
+                    <Link className="lp-brand-card lp-reveal" to={`/carros?marca=${encodeURIComponent(marca)}`} key={marca} aria-label={`Ver anúncios ${marca}`}>
+                      <span className={`lp-brand-mark lp-brand-mark-${marcaSlug} ${LOGOS_COM_TEXTO_EMBUTIDO.has(marcaSlug) ? 'lp-brand-mark-clean' : ''}`}>
+                        <span className="lp-brand-fallback" aria-hidden="true">{iniciaisMarca(marca)}</span>
+                        <img src={logoMarca(marca)} alt="" loading="lazy" draggable="false" onError={(evento) => { evento.currentTarget.style.display = 'none'; evento.currentTarget.parentElement?.classList.add('logo-error'); }} />
+                      </span>
+                      <span className="lp-brand-name">{marca}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+            <button type="button" className="lp-brand-arrow" onClick={() => rolarMarcas(1)} aria-label="Ver mais marcas"><span aria-hidden="true">›</span></button>
           </div>
         </div>
       </section>
@@ -589,5 +748,4 @@ export default function Landing() {
     </div>
   );
 }
-
 
