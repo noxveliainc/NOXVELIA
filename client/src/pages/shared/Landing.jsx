@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { animate, stagger } from 'animejs';
+import { animate } from 'animejs';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
 import api from '../../services/api';
@@ -15,6 +16,8 @@ import { useAuth } from '../../context/AuthContext';
 import { publishIntentState } from '../../utils/navigationState';
 import { trackFunnelEvent } from '../../utils/funnelAnalytics';
 import { COOKIE_CONSENT_CHANGED_EVENT, readCookieConsent } from '../../utils/cookieConsent';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 
@@ -67,12 +70,68 @@ const iniciaisMarca = (marca) => marca
 
 const LOGOS_COM_TEXTO_EMBUTIDO = new Set(['aiways', 'aston-martin', 'bentley']);
 
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function useCountUp(target, { duration = 1200 } = {}) {
+  const [displayValue, setDisplayValue] = useState(null);
+  const nodeRef = useRef(null);
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    const node = nodeRef.current;
+    const numericTarget = Number(target);
+
+    if (!node || target === null || target === undefined || Number.isNaN(numericTarget)) {
+      return undefined;
+    }
+
+    if (prefersReducedMotion()) {
+      setDisplayValue(numericTarget);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting || startedRef.current) return;
+      startedRef.current = true;
+      const start = performance.now();
+
+      const step = (now) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - (1 - progress) ** 3;
+        setDisplayValue(Math.round(numericTarget * eased));
+
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        }
+      };
+
+      requestAnimationFrame(step);
+    }, { threshold: 0.4 });
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [target, duration]);
+
+  return [displayValue, nodeRef];
+}
+
+function TrustMetric({ label, value }) {
+  const [count, ref] = useCountUp(value);
+
+  return (
+    <div className="lp-trust-item" ref={ref}>
+      <strong>{formatarContagem(count)}</strong>
+      <span>{label}</span>
+    </div>
+  );
+}
+
 export default function Landing() {
   const navigate = useNavigate();
   const location = useLocation();
   const { signed } = useAuth();
   const landingRootRef = useRef(null);
-  const marcasRef = useRef(null);
+  const tabIndicatorRef = useRef(null);
   const landingViewTrackedRef = useRef(false);
   const publicarTo = signed ? '/publicar' : '/login';
   const publicarState = signed ? undefined : publishIntentState(location, '/');
@@ -92,33 +151,57 @@ export default function Landing() {
 
   useEffect(() => {
     const root = landingRootRef.current;
-    if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (!root || prefersReducedMotion()) {
       return undefined;
     }
 
     const ctx = gsap.context(() => {
-      gsap.from('.lp-hero-brand, .lp-kicker, #lp-hero-title, .lp-hero-copy, .lp-actions, .lp-quick-card', {
+      gsap.from('.lp-hero-brand, .lp-kicker, #lp-hero-title, .lp-hero-copy, .lp-actions', {
         y: 22,
         opacity: 0,
         duration: 0.78,
         stagger: 0.075,
         ease: 'power3.out',
       });
-    }, root);
 
-    const brandAnimation = animate(root.querySelectorAll('.lp-brand-card'), {
-      opacity: [0, 1],
-      y: [12, 0],
-      delay: stagger(18, { start: 160 }),
-      duration: 520,
-      ease: 'outCubic',
-    });
+      gsap.from('.lp-trust-item', {
+        y: 16,
+        opacity: 0,
+        duration: 0.6,
+        delay: 0.25,
+        stagger: 0.06,
+        ease: 'power2.out',
+      });
+
+      root.querySelectorAll('.lp-quick-card, .lp-promo-link, .lp-pro-strip, .lp-brands-section, .lp-shortcut-group, .lp-example-column, .lp-cv-card').forEach((el) => {
+        gsap.from(el, {
+          y: 26,
+          opacity: 0,
+          duration: 0.65,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 88%',
+            once: true,
+          },
+        });
+      });
+    }, root);
 
     return () => {
       ctx.revert();
-      brandAnimation?.pause?.();
     };
   }, []);
+
+  useEffect(() => {
+    if (!tabIndicatorRef.current) return;
+
+    animate(tabIndicatorRef.current, {
+      translateX: pesquisaRapida.tipo === 'carro' ? '0%' : '100%',
+      duration: 260,
+      ease: 'outCubic',
+    });
+  }, [pesquisaRapida.tipo]);
   useEffect(() => {
     const trackLandingViewOnce = () => {
       if (landingViewTrackedRef.current) return;
@@ -245,12 +328,6 @@ export default function Landing() {
     navigate(anuncioPath(anuncio));
   };
 
-  const moverMarcas = (direcao) => {
-    marcasRef.current?.scrollBy({
-      left: direcao * Math.min(720, window.innerWidth * 0.72),
-      behavior: 'smooth',
-    });
-  };
 
   const mostrarDestaques = loadingExemplos || exemplos.carro.length > 0 || exemplos.imovel.length > 0;
 
@@ -531,24 +608,40 @@ export default function Landing() {
 
         .lp-trust-bar {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
           gap: 10px;
           margin-top: 14px;
         }
 
         .lp-trust-item {
-          min-height: 62px;
+          min-height: 70px;
           display: flex;
           align-items: center;
-          gap: 11px;
-          padding: 13px 15px;
+          gap: 12px;
+          padding: 14px 16px;
           color: #365158;
           border: 1px solid rgba(8, 33, 38, 0.1);
           border-radius: 14px;
-          background: rgba(255, 255, 255, 0.58);
+          background: rgba(255, 255, 255, 0.66);
           font-size: 12.5px;
           font-weight: 750;
           backdrop-filter: none;
+        }
+
+        .lp-trust-item strong {
+          color: var(--lp-ink);
+          font-size: 26px;
+          font-weight: 900;
+          line-height: 1;
+          letter-spacing: 0;
+        }
+
+        .lp-trust-item span {
+          color: #5b7076;
+          font-size: 10.5px;
+          font-weight: 850;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
         }
 
         .lp-quick-section {
@@ -585,16 +678,33 @@ export default function Landing() {
         }
 
         .lp-type-tabs {
+          position: relative;
           display: inline-grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 5px;
+          min-width: 204px;
+          overflow: hidden;
           padding: 5px;
           border: 1px solid rgba(8, 33, 38, 0.09);
           border-radius: 13px;
           background: #f4f7f4;
         }
 
+        .lp-type-indicator {
+          position: absolute;
+          top: 5px;
+          bottom: 5px;
+          left: 5px;
+          width: calc(50% - 5px);
+          border-radius: 9px;
+          background: var(--lp-drive);
+          box-shadow: inset 0 0 0 1px rgba(8, 33, 38, 0.08);
+          pointer-events: none;
+          z-index: 0;
+        }
+
         .lp-type-tab {
+          position: relative;
+          z-index: 1;
           min-height: 38px;
           display: inline-flex;
           align-items: center;
@@ -608,11 +718,12 @@ export default function Landing() {
           font-size: 12px;
           font-weight: 820;
           cursor: pointer;
+          transition: color 0.18s ease;
         }
 
         .lp-type-tab.active {
           color: #042326;
-          background: #fff;
+          background: transparent;
           box-shadow: none;
         }
 
@@ -953,52 +1064,37 @@ export default function Landing() {
           background: #f3f0e6;
         }
 
-        .lp-brand-controls {
-          display: flex;
-          gap: 8px;
-          flex: 0 0 auto;
-        }
-
-        .lp-round-btn {
-          width: 43px;
-          height: 43px;
-          display: grid;
-          place-items: center;
-          color: var(--lp-ink);
-          border: 1px solid rgba(8, 33, 38, 0.15);
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.7);
-          cursor: pointer;
-          transition: transform 0.2s ease, background 0.2s ease;
-        }
-
-        .lp-round-btn:hover {
-          background: #fff;
-        }
-
         .lp-brand-scroll {
-          overflow-x: auto;
-          overscroll-behavior-inline: contain;
-          scroll-snap-type: x proximity;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(8, 33, 38, 0.22) transparent;
+          overflow: hidden;
           padding: 4px 0 14px;
+          -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
         }
 
-        .lp-brand-grid {
+        .lp-brand-track {
           width: max-content;
-          display: grid;
-          grid-auto-flow: column;
-          grid-auto-columns: 158px;
-          grid-template-rows: repeat(2, 94px);
+          display: flex;
           gap: 10px;
-          padding-right: 24px;
+          animation: lp-brand-loop 52s linear infinite !important;
+          will-change: transform;
+        }
+
+        .lp-brand-scroll:hover .lp-brand-track,
+        .lp-brand-track:focus-within {
+          animation-play-state: paused !important;
+        }
+
+        @keyframes lp-brand-loop {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
         }
 
         .lp-brand-card {
           --lp-brand-card-bg: rgba(255, 255, 255, 0.7);
           scroll-snap-align: start;
+          flex: 0 0 158px;
           min-width: 0;
+          min-height: 94px;
           display: grid;
           grid-template-rows: 46px auto;
           align-items: center;
@@ -1015,6 +1111,7 @@ export default function Landing() {
         }
 
         .lp-brand-card:hover {
+          transform: translateY(-3px);
           border-color: rgba(217, 196, 156, 0.5);
           background: #fff;
         }
@@ -1635,17 +1732,9 @@ export default function Landing() {
             font-size: 13.5px;
           }
 
-          .lp-brand-controls {
-            display: none;
-          }
-
-          .lp-brand-grid {
-            grid-auto-columns: 132px;
-            grid-template-rows: repeat(2, 82px);
-            gap: 8px;
-          }
-
           .lp-brand-card {
+            flex-basis: 132px;
+            min-height: 82px;
             grid-template-rows: 38px auto;
             padding: 8px;
             border-radius: 13px;
@@ -2799,9 +2888,6 @@ export default function Landing() {
             min-height: 210px !important;
           }
 
-          .lp-brand-controls {
-            display: none !important;
-          }
 
           .lp-examples-grid {
             grid-template-columns: 1fr !important;
@@ -3773,10 +3859,7 @@ export default function Landing() {
             {metricasHome.length > 0 && (
               <div className="lp-trust-bar" aria-label="Resumo da plataforma">
                 {metricasHome.map((metrica) => (
-                  <div className="lp-trust-item" key={metrica.label}>
-                    <strong>{formatarContagem(metrica.value)}</strong>
-                    <span>{metrica.label}</span>
-                  </div>
+                  <TrustMetric key={metrica.label} label={metrica.label} value={metrica.value} />
                 ))}
               </div>
             )}
@@ -3794,6 +3877,7 @@ export default function Landing() {
                   <p className="lp-quick-copy">Filtra por marca, modelo, localização e preço para chegares rapidamente aos anúncios certos.</p>
                 </div>
                 <div className="lp-type-tabs" role="tablist" aria-label="Tipo de pesquisa">
+                  <span className="lp-type-indicator" ref={tabIndicatorRef} aria-hidden="true" />
                   <button
                     type="button"
                     role="tab"
@@ -3929,26 +4013,21 @@ export default function Landing() {
                   Escolhe a marca e segue diretamente para resultados filtrados.
                 </p>
               </div>
-              <div className="lp-brand-controls" aria-label="Navegar pelas marcas">
-                <button type="button" className="lp-round-btn" onClick={() => moverMarcas(-1)} aria-label="Ver marcas anteriores">
-                  Anterior
-                </button>
-                <button type="button" className="lp-round-btn" onClick={() => moverMarcas(1)} aria-label="Ver marcas seguintes">
-                  Seguinte
-                </button>
-              </div>
             </div>
 
-            <div className="lp-brand-scroll" ref={marcasRef} aria-label="Lista de marcas automóveis">
-              <div className="lp-brand-grid">
-                {MARCAS.map((marca) => {
+            <div className="lp-brand-scroll" aria-label="Lista de marcas automóveis">
+              <div className="lp-brand-track">
+                {[...MARCAS, ...MARCAS].map((marca, index) => {
                   const marcaSlug = slugMarca(marca);
+                  const duplicado = index >= MARCAS.length;
                   return (
                     <Link
                       className="lp-brand-card"
                       to={`/carros?marca=${encodeURIComponent(marca)}`}
-                      key={marca}
-                      aria-label={`Ver anúncios ${marca}`}
+                      key={`${marca}-${index}`}
+                      aria-label={duplicado ? undefined : `Ver anúncios ${marca}`}
+                      aria-hidden={duplicado || undefined}
+                      tabIndex={duplicado ? -1 : undefined}
                     >
                       <span className={`lp-brand-mark lp-brand-mark-${marcaSlug} ${LOGOS_COM_TEXTO_EMBUTIDO.has(marcaSlug) ? 'lp-brand-mark-clean' : ''}`}>
                         <span className="lp-brand-fallback" aria-hidden="true">{iniciaisMarca(marca)}</span>
