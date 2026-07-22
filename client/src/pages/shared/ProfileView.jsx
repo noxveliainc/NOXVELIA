@@ -455,17 +455,17 @@ export default function ProfileView({
                     <Icon key={i} path={mdiStar} size={0.7} color={i < Math.round(user.rating) ? '#f59e0b' : '#e2e8f0'} />
                   ))}
                   <span className="profile-stars-text">{user.rating.toFixed(1)}</span>
-                  <span className="profile-stars-count">({user.totalAvaliacoes || 0} avaliacoes)</span>
+                  <span className="profile-stars-count">({user.totalAvaliacoes || 0} avaliações)</span>
                 </>
               ) : (
-                <span className="profile-stars-count" style={{ marginLeft: 0 }}>Sem avaliacoes recebidas</span>
+                <span className="profile-stars-count" style={{ marginLeft: 0 }}>Sem avaliações recebidas</span>
               )}
             </div>
 
             <div className="profile-stats">
-              <div><div className="profile-stat-val">{totalImoveis}</div><div className="profile-stat-label">Imoveis</div></div>
+              <div><div className="profile-stat-val">{totalImoveis}</div><div className="profile-stat-label">Imóveis</div></div>
               <div className="profile-stat-divider" />
-              <div><div className="profile-stat-val">{totalCarros}</div><div className="profile-stat-label">Automoveis</div></div>
+              <div><div className="profile-stat-val">{totalCarros}</div><div className="profile-stat-label">Automóveis</div></div>
             </div>
           </div>
 

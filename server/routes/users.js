@@ -253,72 +253,107 @@ router.get('/profissionais', async (req, res) => {
     const distrito = String(req.query.distrito || '').trim();
     const q = String(req.query.q || '').trim();
 
-    const conditions = [
-      { tipo: { $ne: 'admin' } },
-      { $or: [{ tipoConta: 'profissional' }, { premiumAtivo: true }] },
+    const profissionalConditions = [
+      { 'profissional.tipo': { $ne: 'admin' } },
+      { $or: [{ 'profissional.tipoConta': 'profissional' }, { 'profissional.premiumAtivo': true }] },
     ];
 
     if (distrito && distrito !== 'Todos') {
-      conditions.push({ localidade: distrito });
+      profissionalConditions.push({ 'profissional.localidade': distrito });
     }
 
     if (q) {
       const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-      conditions.push({
+      profissionalConditions.push({
         $or: [
-          { nome: regex },
-          { bio: regex },
-          { localidade: regex },
+          { 'profissional.nome': regex },
+          { 'profissional.bio': regex },
+          { 'profissional.localidade': regex },
         ],
       });
     }
 
-    const query = { $and: conditions };
-    const [totalProfissionais, profissionaisBase] = await Promise.all([
-      User.countDocuments(query),
-      User.find(query)
-        .select('nome avatarUrl capaUrl bio localidade tipoConta website linksPerfil premiumAtivo rating totalAvaliacoes createdAt')
-        .sort({ premiumAtivo: -1, totalAvaliacoes: -1, rating: -1, createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
+    const [resultado] = await Anuncio.aggregate([
+      { $match: { estado: 'ativo' } },
+      {
+        $group: {
+          _id: '$utilizador',
+          totalAnuncios: { $sum: 1 },
+          carros: { $sum: { $cond: [{ $eq: ['$tipo', 'carro'] }, 1, 0] } },
+          imoveis: { $sum: { $cond: [{ $eq: ['$tipo', 'imovel'] }, 1, 0] } },
+          destaque: { $max: { $cond: ['$destacado', 1, 0] } },
+          ultimoAnuncioEm: { $max: '$createdAt' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'profissional',
+        },
+      },
+      { $unwind: '$profissional' },
+      { $match: { $and: profissionalConditions } },
+      {
+        $facet: {
+          profissionais: [
+            {
+              $sort: {
+                totalAnuncios: -1,
+                destaque: -1,
+                'profissional.premiumAtivo': -1,
+                'profissional.totalAvaliacoes': -1,
+                'profissional.rating': -1,
+                ultimoAnuncioEm: -1,
+              },
+            },
+            { $skip: skip },
+            { $limit: limit },
+            {
+              $project: {
+                _id: '$profissional._id',
+                nome: '$profissional.nome',
+                avatarUrl: '$profissional.avatarUrl',
+                capaUrl: '$profissional.capaUrl',
+                bio: '$profissional.bio',
+                localidade: '$profissional.localidade',
+                tipoConta: '$profissional.tipoConta',
+                website: '$profissional.website',
+                linksPerfil: '$profissional.linksPerfil',
+                premiumAtivo: '$profissional.premiumAtivo',
+                rating: '$profissional.rating',
+                totalAvaliacoes: '$profissional.totalAvaliacoes',
+                createdAt: '$profissional.createdAt',
+                totalAnuncios: 1,
+                carros: 1,
+                imoveis: 1,
+                temDestaque: { $eq: ['$destaque', 1] },
+                ultimoAnuncioEm: 1,
+              },
+            },
+          ],
+          metadata: [
+            {
+              $group: {
+                _id: null,
+                totalProfissionais: { $sum: 1 },
+                totalAnunciosAtivos: { $sum: '$totalAnuncios' },
+              },
+            },
+          ],
+        },
+      },
     ]);
 
-    const ids = profissionaisBase.map((profissional) => profissional._id);
-    const stats = ids.length
-      ? await Anuncio.aggregate([
-          { $match: { utilizador: { $in: ids }, estado: { $in: ['ativo', 'pendente'] } } },
-          {
-            $group: {
-              _id: '$utilizador',
-              totalAnuncios: { $sum: 1 },
-              carros: { $sum: { $cond: [{ $eq: ['$tipo', 'carro'] }, 1, 0] } },
-              imoveis: { $sum: { $cond: [{ $eq: ['$tipo', 'imovel'] }, 1, 0] } },
-              destaque: { $max: { $cond: ['$destacado', 1, 0] } },
-              ultimoAnuncioEm: { $max: '$createdAt' },
-            },
-          },
-        ])
-      : [];
-
-    const statsPorId = new Map(stats.map((item) => [String(item._id), item]));
-    const profissionais = profissionaisBase
-      .map((profissional) => {
-        const itemStats = statsPorId.get(String(profissional._id)) || {};
-        return {
-          ...profissional,
-          totalAnuncios: itemStats.totalAnuncios || 0,
-          carros: itemStats.carros || 0,
-          imoveis: itemStats.imoveis || 0,
-          temDestaque: itemStats.destaque === 1,
-          ultimoAnuncioEm: itemStats.ultimoAnuncioEm || null,
-        };
-      })
-      .sort((a, b) => Number(b.premiumAtivo) - Number(a.premiumAtivo) || b.totalAnuncios - a.totalAnuncios || (b.rating || 0) - (a.rating || 0));
+    const profissionais = resultado?.profissionais || [];
+    const metadata = resultado?.metadata?.[0] || {};
+    const totalProfissionais = metadata.totalProfissionais || 0;
 
     res.json({
       profissionais,
       totalProfissionais,
+      totalAnunciosAtivos: metadata.totalAnunciosAtivos || 0,
       pagination: {
         page,
         limit,
@@ -345,9 +380,9 @@ router.get('/vendedor/:id', async (req, res) => {
     } else if (vendedor.mostrarTelefonePublico === false) {
       delete vendedor.telefone;
     }
-    const anuncios = await Anuncio.find({ utilizador: req.params.id, estado: { $in: ['ativo', 'pendente'] } })
+    const anuncios = await Anuncio.find({ utilizador: req.params.id, estado: 'ativo' })
       .select('_id titulo preco fotos tipo estado destacado utilizador scoreQualidade scoreDetalhes carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area imovel.areaTerreno imovel.quartos imovel.casasBanho localizacao.cidade localizacao.distrito createdAt')
-      .sort({ createdAt: -1 })
+      .sort({ destacado: -1, createdAt: -1 })
       .populate('utilizador', 'nome avatarUrl tipo premiumAtivo')
       .lean();
     res.json({ vendedor, anuncios });
