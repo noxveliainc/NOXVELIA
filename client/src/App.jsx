@@ -1,4 +1,4 @@
-import React, { useEffect, useState, lazy, Suspense } from 'react';
+﻿import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext'; 
 import { HelmetProvider } from 'react-helmet-async'; 
@@ -33,6 +33,7 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const SucessoUpsell  = lazy(() => import('./pages/shared/SucessoUpsell'));
 const Planos         = lazy(() => import('./pages/shared/Planos'));
 const SeoPesquisa    = lazy(() => import('./pages/shared/SeoPesquisa'));
+const Profissionais  = lazy(() => import('./pages/shared/Profissionais'));
 
 // 🌟 NOVA PÁGINA IMPORTADA
 const PoliticaPrivacidade = lazy(() => import('./pages/shared/PoliticaPrivacidade'));
@@ -90,6 +91,7 @@ function AppShell() {
             <Route path="/carros/:marca/:modelo/:cidade/:id" element={<Anuncio />} />
             <Route path="/imoveis/:categoria/:cidade/:id" element={<Anuncio />} />
             <Route path="/vendedor/:id" element={<PerfilPublico />} />
+            <Route path="/profissionais" element={<Profissionais />} />
             
             {/* 🌟 ROTA DA POLÍTICA E TERMOS */}
             <Route path="/privacidade" element={<PoliticaPrivacidade />} />
@@ -125,3 +127,4 @@ export default function App() {
     </HelmetProvider>
   );
 }
+

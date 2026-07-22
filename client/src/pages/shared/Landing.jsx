@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
 import api from '../../services/api';
@@ -41,6 +41,9 @@ const formatarMoeda = (valor) =>
     currency: 'EUR',
     maximumFractionDigits: 0,
   }).format(valor || 0);
+const formatarContagem = (valor) => (
+  valor === null || valor === undefined ? '...' : new Intl.NumberFormat('pt-PT').format(valor)
+);
 
 const slugMarca = (marca) => marca
   .normalize('NFD')
@@ -71,6 +74,7 @@ export default function Landing() {
   const publicarTo = signed ? '/publicar' : '/login';
   const publicarState = signed ? undefined : publishIntentState(location, '/');
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
+  const [resumoPublico, setResumoPublico] = useState(null);
   const [loadingExemplos, setLoadingExemplos] = useState(true);
   const [erroExemplos, setErroExemplos] = useState(false);
   const [pesquisaRapida, setPesquisaRapida] = useState({
@@ -101,9 +105,29 @@ export default function Landing() {
     return () => window.removeEventListener(COOKIE_CONSENT_CHANGED_EVENT, onConsentChanged);
   }, []);
 
+  useEffect(() => {
+    let ativo = true;
+
+    api.get('/anuncios/resumo-publico')
+      .then(({ data }) => {
+        if (ativo) setResumoPublico(data || null);
+      })
+      .catch(() => {
+        if (ativo) setResumoPublico(null);
+      });
+
+    return () => { ativo = false; };
+  }, []);
+
   const modelosPesquisa = pesquisaRapida.tipo === 'carro' && pesquisaRapida.marca
     ? getModelosPorMarca(pesquisaRapida.marca).map((modelo) => (typeof modelo === 'object' ? modelo.modelo || modelo.nome : modelo)).filter(Boolean)
     : [];
+  const metricasHome = [
+    { label: 'Anúncios ativos', value: resumoPublico?.totalAnuncios },
+    { label: 'Carros', value: resumoPublico?.carros },
+    { label: 'Imóveis', value: resumoPublico?.imoveis },
+    { label: 'Profissionais', value: resumoPublico?.profissionais },
+  ];
 
   const criarLinkPesquisa = (tipo, filtros = {}) => {
     const params = new URLSearchParams();
@@ -2334,7 +2358,7 @@ export default function Landing() {
 
         .lp-trust-bar {
           display: grid !important;
-          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
           gap: 0 !important;
           margin-top: 0 !important;
           border: 1px solid var(--lp-border) !important;
@@ -2354,6 +2378,28 @@ export default function Landing() {
 
         .lp-trust-item:last-child {
           border-right: 0 !important;
+        }
+
+        .lp-trust-item {
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          justify-content: center !important;
+          gap: 5px !important;
+        }
+
+        .lp-trust-item strong {
+          color: #082126;
+          font-size: 20px;
+          font-weight: 900;
+          line-height: 1;
+        }
+
+        .lp-trust-item span {
+          color: #5e747a;
+          font-size: 11px;
+          font-weight: 850;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
         }
 
         .lp-quick-section {
@@ -2470,6 +2516,62 @@ export default function Landing() {
           color: #082126 !important;
           border-color: transparent !important;
           background: #ffffff !important;
+        }
+
+        .lp-pro-strip {
+          width: 100% !important;
+          min-height: 86px !important;
+          margin-top: 18px !important;
+          display: grid !important;
+          grid-template-columns: auto minmax(0, 1fr) auto !important;
+          align-items: center !important;
+          gap: 18px !important;
+          padding: 18px 22px !important;
+          border: 1px solid rgba(255, 255, 255, 0.16) !important;
+          border-radius: 14px !important;
+          background: rgba(255, 255, 255, 0.08) !important;
+          color: #ffffff !important;
+          text-decoration: none !important;
+          box-shadow: none !important;
+        }
+
+        .lp-pro-strip:hover {
+          border-color: rgba(126, 227, 215, 0.44) !important;
+          background: rgba(255, 255, 255, 0.12) !important;
+        }
+
+        .lp-pro-strip span {
+          color: #7ee3d7 !important;
+          font-size: 11px !important;
+          font-weight: 900 !important;
+          letter-spacing: 0.1em !important;
+          text-transform: uppercase !important;
+          white-space: nowrap !important;
+        }
+
+        .lp-pro-strip strong {
+          min-width: 0 !important;
+          color: #ffffff !important;
+          font-size: clamp(17px, 2vw, 24px) !important;
+          font-weight: 850 !important;
+          line-height: 1.15 !important;
+          letter-spacing: 0 !important;
+        }
+
+        .lp-pro-strip em {
+          justify-self: end !important;
+          min-height: 42px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 14px !important;
+          border-radius: 10px !important;
+          background: #ffffff !important;
+          color: #082126 !important;
+          font-size: 12px !important;
+          font-style: normal !important;
+          font-weight: 900 !important;
+          white-space: nowrap !important;
         }
 
         .lp-brands-section {
@@ -3042,7 +3144,7 @@ export default function Landing() {
 
         @media (max-width: 1180px) {
           .lp-search-form {
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
           }
 
           .lp-search-submit {
@@ -3137,6 +3239,15 @@ export default function Landing() {
                   Drive / Estate
                 </div>
               </div>
+            </div>
+
+            <div className="lp-trust-bar" aria-label="Resumo da plataforma">
+              {metricasHome.map((metrica) => (
+                <div className="lp-trust-item" key={metrica.label}>
+                  <strong>{formatarContagem(metrica.value)}</strong>
+                  <span>{metrica.label}</span>
+                </div>
+              ))}
             </div>
 
           </div>
@@ -3269,6 +3380,11 @@ export default function Landing() {
                 </span>
               </Link>
             </div>
+            <Link className="lp-pro-strip" to="/profissionais">
+              <span>Profissionais</span>
+              <strong>Stands, mediadores e vendedores premium num diretório próprio.</strong>
+              <em>Ver profissionais</em>
+            </Link>
           </div>
         </section>
 
@@ -3483,3 +3599,6 @@ export default function Landing() {
     </div>
   );
 }
+
+
+

@@ -245,6 +245,91 @@ router.get('/me/guardados', verificarToken, async (req, res) => {
   }
 });
 
+router.get('/profissionais', async (req, res) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(48, Math.max(6, Number(req.query.limit) || 24));
+    const skip = (page - 1) * limit;
+    const distrito = String(req.query.distrito || '').trim();
+    const q = String(req.query.q || '').trim();
+
+    const conditions = [
+      { tipo: { $ne: 'admin' } },
+      { $or: [{ tipoConta: 'profissional' }, { premiumAtivo: true }] },
+    ];
+
+    if (distrito && distrito !== 'Todos') {
+      conditions.push({ localidade: distrito });
+    }
+
+    if (q) {
+      const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      conditions.push({
+        $or: [
+          { nome: regex },
+          { bio: regex },
+          { localidade: regex },
+        ],
+      });
+    }
+
+    const query = { $and: conditions };
+    const [totalProfissionais, profissionaisBase] = await Promise.all([
+      User.countDocuments(query),
+      User.find(query)
+        .select('nome avatarUrl capaUrl bio localidade tipoConta website linksPerfil premiumAtivo rating totalAvaliacoes createdAt')
+        .sort({ premiumAtivo: -1, totalAvaliacoes: -1, rating: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+    ]);
+
+    const ids = profissionaisBase.map((profissional) => profissional._id);
+    const stats = ids.length
+      ? await Anuncio.aggregate([
+          { $match: { utilizador: { $in: ids }, estado: { $in: ['ativo', 'pendente'] } } },
+          {
+            $group: {
+              _id: '$utilizador',
+              totalAnuncios: { $sum: 1 },
+              carros: { $sum: { $cond: [{ $eq: ['$tipo', 'carro'] }, 1, 0] } },
+              imoveis: { $sum: { $cond: [{ $eq: ['$tipo', 'imovel'] }, 1, 0] } },
+              destaque: { $max: { $cond: ['$destacado', 1, 0] } },
+              ultimoAnuncioEm: { $max: '$createdAt' },
+            },
+          },
+        ])
+      : [];
+
+    const statsPorId = new Map(stats.map((item) => [String(item._id), item]));
+    const profissionais = profissionaisBase
+      .map((profissional) => {
+        const itemStats = statsPorId.get(String(profissional._id)) || {};
+        return {
+          ...profissional,
+          totalAnuncios: itemStats.totalAnuncios || 0,
+          carros: itemStats.carros || 0,
+          imoveis: itemStats.imoveis || 0,
+          temDestaque: itemStats.destaque === 1,
+          ultimoAnuncioEm: itemStats.ultimoAnuncioEm || null,
+        };
+      })
+      .sort((a, b) => Number(b.premiumAtivo) - Number(a.premiumAtivo) || b.totalAnuncios - a.totalAnuncios || (b.rating || 0) - (a.rating || 0));
+
+    res.json({
+      profissionais,
+      totalProfissionais,
+      pagination: {
+        page,
+        limit,
+        totalPages: Math.ceil(totalProfissionais / limit),
+        hasNextPage: page * limit < totalProfissionais,
+      },
+    });
+  } catch (erro) {
+    res.status(500).json({ erro: 'Erro ao carregar profissionais.' });
+  }
+});
 // ─────────────────────────────────────────────────────────────
 // 4. VER MONTRA PÚBLICA DE UM VENDEDOR
 // ─────────────────────────────────────────────────────────────

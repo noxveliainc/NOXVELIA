@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import rateLimit from 'express-rate-limit';
 import Anuncio from '../models/Anuncio.js';
 import User from '../models/User.js';
@@ -38,6 +38,74 @@ const dividirTipoImovelFiltro = (valor) => {
   )))];
 };
 
+const filtroBooleanoAtivo = (valor) => ['true', '1', 'sim', 'yes'].includes(normalizarFiltroTexto(valor));
+
+const aplicarIntervaloNumerico = (query, campo, { min, max }) => {
+  const minimo = min !== undefined && min !== '' ? Number(min) : null;
+  const maximo = max !== undefined && max !== '' ? Number(max) : null;
+  const intervalo = {};
+
+  if (Number.isFinite(minimo)) intervalo.$gte = minimo;
+  if (Number.isFinite(maximo)) intervalo.$lte = maximo;
+  if (Object.keys(intervalo).length) query[campo] = { ...(query[campo] || {}), ...intervalo };
+};
+
+const aplicarFiltrosPesquisa = async (query, filtros = {}) => {
+  const {
+    tipo, distrito, cidade, q, precoMin, precoMax,
+    marca, modelo, combustivel, transmissao, tipoVeiculo,
+    tipologia, tipoImovel, anoMin, anoMax, kmMax,
+    potenciaMin, potenciaMax, garantia, aceitaRetoma,
+    tipoAnunciante, areaMin, quartosMin, garagem,
+  } = filtros;
+
+  const tipoFiltro = tipo && tipo !== 'Todos' ? tipo : null;
+
+  if (tipoFiltro) query.tipo = tipoFiltro;
+  if (distrito && distrito !== 'Todos') query['localizacao.distrito'] = distrito;
+  if (cidade) query['localizacao.cidade'] = cidade;
+  aplicarIntervaloNumerico(query, 'preco', { min: precoMin, max: precoMax });
+  if (q) query.$text = { $search: q };
+
+  if (filtroBooleanoAtivo(garantia)) query.garantia = { $exists: true, $nin: [null, ''] };
+  if (filtroBooleanoAtivo(aceitaRetoma)) query.aceitaRetoma = true;
+
+  if (tipoAnunciante === 'profissional') {
+    const profissionais = await User.find({
+      tipo: { $ne: 'admin' },
+      $or: [{ tipoConta: 'profissional' }, { premiumAtivo: true }],
+    }).distinct('_id');
+    query.utilizador = { $in: profissionais };
+  }
+
+  if (tipoAnunciante === 'particular') {
+    const particulares = await User.find({
+      tipo: { $ne: 'admin' },
+      tipoConta: { $ne: 'profissional' },
+      premiumAtivo: { $ne: true },
+    }).distinct('_id');
+    query.utilizador = { $in: particulares };
+  }
+
+  if (tipoFiltro === 'carro') {
+    if (marca) query['carro.marca'] = marca;
+    if (modelo) query['carro.modelo'] = modelo;
+    if (combustivel) query['carro.combustivel'] = { $in: dividirFiltroTexto(combustivel) };
+    if (transmissao) query['carro.transmissao'] = { $in: dividirFiltroTexto(transmissao) };
+    if (tipoVeiculo) query['carro.tipoVeiculo'] = { $in: dividirFiltroTexto(tipoVeiculo) };
+    aplicarIntervaloNumerico(query, 'carro.ano', { min: anoMin, max: anoMax });
+    aplicarIntervaloNumerico(query, 'carro.km', { max: kmMax });
+    aplicarIntervaloNumerico(query, 'carro.potencia', { min: potenciaMin, max: potenciaMax });
+  }
+
+  if (tipoFiltro === 'imovel') {
+    if (tipologia) query['imovel.tipologia'] = { $in: tipologia.split(',') };
+    if (tipoImovel) query['imovel.tipoImovel'] = { $in: dividirTipoImovelFiltro(tipoImovel) };
+    aplicarIntervaloNumerico(query, 'imovel.area', { min: areaMin });
+    aplicarIntervaloNumerico(query, 'imovel.quartos', { min: quartosMin });
+    if (filtroBooleanoAtivo(garagem)) query['imovel.garagem'] = true;
+  }
+};
 const ESTADOS_PUBLICOS = ['ativo', 'pendente'];
 const filtroPublico = () => ({ estado: { $in: ESTADOS_PUBLICOS } });
 
@@ -138,45 +206,28 @@ async function resolverCoordenadas(cidade, distrito) {
 // ─────────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
-    const {
-      sort = 'relevancia', q,
-      tipo, distrito, cidade, precoMax,
-      marca, modelo, combustivel, transmissao, tipologia, tipoImovel
-    } = req.query;
-
+    const { sort = 'relevancia', q } = req.query;
     const query = filtroPublico();
 
-    if (tipo && tipo !== 'Todos') query.tipo = tipo;
-    if (distrito && distrito !== 'Todos') query['localizacao.distrito'] = distrito;
-    if (cidade) query['localizacao.cidade'] = cidade;
-    if (precoMax) query.preco = { $lte: Number(precoMax) };
-    if (q) query.$text = { $search: q };
-
-    if (tipo === 'carro') {
-      if (marca) query['carro.marca'] = marca;
-      if (modelo) query['carro.modelo'] = modelo;
-      if (combustivel) query['carro.combustivel'] = { $in: dividirFiltroTexto(combustivel) };
-      if (transmissao) query['carro.transmissao'] = { $in: dividirFiltroTexto(transmissao) };
-    }
-
-    if (tipo === 'imovel') {
-      if (tipologia) query['imovel.tipologia'] = { $in: tipologia.split(',') };
-      if (tipoImovel) query['imovel.tipoImovel'] = { $in: dividirTipoImovelFiltro(tipoImovel) };
-    }
+    await aplicarFiltrosPesquisa(query, req.query);
 
     let sortOption = { destacado: -1, createdAt: -1 };
-    if (sort === 'preco_asc')  sortOption = { preco: 1 };
-    if (sort === 'preco_desc') sortOption = { preco: -1 };
+    if (sort === 'recentes') sortOption = { createdAt: -1 };
+    if (sort === 'preco_asc') sortOption = { preco: 1, createdAt: -1 };
+    if (sort === 'preco_desc') sortOption = { preco: -1, createdAt: -1 };
+    if (sort === 'ano_desc') sortOption = { 'carro.ano': -1, createdAt: -1 };
+    if (sort === 'km_asc') sortOption = { 'carro.km': 1, createdAt: -1 };
+    if (sort === 'qualidade_desc') sortOption = { scoreQualidade: -1, destacado: -1, createdAt: -1 };
     if (q && sort === 'relevancia') sortOption = { score: { $meta: 'textScore' } };
 
     const { page, limit, skip } = parsePagination(req.query);
 
     const anuncios = await Anuncio.find(query)
-      .select('_id titulo preco fotos tipo estado destacado utilizador scoreQualidade scoreDetalhes carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area imovel.areaTerreno imovel.quartos imovel.casasBanho localizacao.cidade localizacao.distrito createdAt')
+      .select('_id titulo preco fotos tipo estado destacado garantia aceitaRetoma utilizador scoreQualidade scoreDetalhes carro.marca carro.modelo carro.ano carro.km carro.combustivel carro.transmissao carro.cilindrada carro.potencia carro.tipoVeiculo imovel.tipoImovel imovel.tipologia imovel.area imovel.areaTerreno imovel.quartos imovel.casasBanho imovel.garagem localizacao.cidade localizacao.distrito createdAt')
       .sort(sortOption)
       .skip(skip)
       .limit(limit)
-      .populate('utilizador', 'nome avatarUrl tipo premiumAtivo')
+      .populate('utilizador', 'nome avatarUrl tipo tipoConta premiumAtivo')
       .lean();
 
     const [totalAnuncios, resumoPrecoAgregado] = await Promise.all([
@@ -219,7 +270,6 @@ router.get('/', async (req, res) => {
     res.status(500).json({ erro: 'Erro interno ao processar a pesquisa.' });
   }
 });
-
 // Anúncios reais com maior interesse nos últimos 7 dias para a landing page.
 // Em caso de empate, privilegiamos o interesse acumulado, os favoritos e a recência.
 router.get('/em-alta/semana', async (req, res) => {
@@ -280,41 +330,68 @@ router.get('/em-alta/semana', async (req, res) => {
   }
 });
 
+router.get('/resumo-publico', async (_req, res) => {
+  try {
+    const semana = new Date();
+    semana.setUTCDate(semana.getUTCDate() - 7);
+
+    const publico = filtroPublico();
+    const [
+      totalAnuncios,
+      carros,
+      imoveis,
+      profissionais,
+      destaques,
+      comGarantia,
+      comRetoma,
+      novos7d,
+    ] = await Promise.all([
+      Anuncio.countDocuments(publico),
+      Anuncio.countDocuments({ ...publico, tipo: 'carro' }),
+      Anuncio.countDocuments({ ...publico, tipo: 'imovel' }),
+      User.countDocuments({
+        tipo: { $ne: 'admin' },
+        $or: [{ tipoConta: 'profissional' }, { premiumAtivo: true }],
+      }),
+      Anuncio.countDocuments({ ...publico, destacado: true }),
+      Anuncio.countDocuments({ ...publico, garantia: { $exists: true, $nin: [null, ''] } }),
+      Anuncio.countDocuments({ ...publico, aceitaRetoma: true }),
+      Anuncio.countDocuments({ ...publico, createdAt: { $gte: semana } }),
+    ]);
+
+    res.json({
+      totalAnuncios,
+      carros,
+      imoveis,
+      profissionais,
+      destaques,
+      comGarantia,
+      comRetoma,
+      novos7d,
+    });
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao carregar o resumo público.' });
+  }
+});
 // ─────────────────────────────────────────────────────────────
 // 2. MAPA DE RESULTADOS
 // ─────────────────────────────────────────────────────────────
 router.get('/pesquisa/mapa', async (req, res) => {
   try {
-    const {
-      tipo, distrito, cidade, q, precoMax,
-      marca, modelo, combustivel, transmissao, tipologia, tipoImovel
-    } = req.query;
     const query = filtroPublico();
-    if (tipo) query.tipo = tipo;
-    if (distrito && distrito !== 'Todos') query['localizacao.distrito'] = distrito;
-    if (cidade) query['localizacao.cidade'] = cidade;
-    if (precoMax) query.preco = { $lte: Number(precoMax) };
-    if (q) query.$text = { $search: q };
-    if (tipo === 'carro') {
-      if (marca) query['carro.marca'] = marca;
-      if (modelo) query['carro.modelo'] = modelo;
-      if (combustivel) query['carro.combustivel'] = { $in: dividirFiltroTexto(combustivel) };
-      if (transmissao) query['carro.transmissao'] = { $in: dividirFiltroTexto(transmissao) };
-    }
-    if (tipo === 'imovel' && tipologia) {
-      query['imovel.tipologia'] = { $in: tipologia.split(',') };
-    }
-    if (tipo === 'imovel' && tipoImovel) {
-      query['imovel.tipoImovel'] = { $in: dividirTipoImovelFiltro(tipoImovel) };
-    }
+    await aplicarFiltrosPesquisa(query, req.query);
 
-    const anuncios = await Anuncio.find(query).select('_id titulo preco localizacao fotos tipo').slice('fotos', 1).lean();
+    const anuncios = await Anuncio.find(query)
+      .select('_id titulo preco localizacao fotos tipo garantia aceitaRetoma carro.marca carro.modelo carro.ano imovel.tipologia imovel.tipoImovel')
+      .slice('fotos', 1)
+      .limit(700)
+      .lean();
+
     res.json(anuncios);
   } catch (err) {
     res.status(500).json({ erro: 'Erro ao carregar mapa.' });
   }
 });
-
 // ─────────────────────────────────────────────────────────────
 // 3. FAVORITOS
 // ─────────────────────────────────────────────────────────────
@@ -645,3 +722,5 @@ router.post('/:id/visita', visitLimiter, async (req, res) => {
 });
 
 export default router;
+
+

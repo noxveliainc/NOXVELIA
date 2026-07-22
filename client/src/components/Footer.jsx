@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 
 export default function Footer() {
   // 🌟 ESTADO PARA CONTROLAR OS TICKETS DE SUPORTE
@@ -109,6 +109,7 @@ export default function Footer() {
                 <h4>Plataforma</h4>
                 <a href="/carros">NOXVELIA Drive</a>
                 <a href="/imoveis">NOXVELIA Estate</a>
+                <a href="/profissionais">Profissionais</a>
               </div>
               <div className="nx-footer-col">
                 <h4>Empresa</h4>
@@ -147,3 +148,4 @@ export default function Footer() {
     </>
   );
 }
+

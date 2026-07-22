@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
@@ -518,6 +518,7 @@ export default function NavbarLanding() {
             <a href="#anunciar">Anunciar grátis</a>
             <a href="#marcas">Marcas</a>
             <a href="#atalhos">Atalhos</a>
+            <Link to="/profissionais">Profissionais</Link>
           </div>
 
           <div className="nl-actions">
@@ -603,6 +604,7 @@ export default function NavbarLanding() {
             <a href="#atalhos" onClick={() => setMenuMobileAberto(false)}>Atalhos</a>
             <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Drive</Link>
             <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Estate</Link>
+            <Link to="/profissionais" onClick={() => setMenuMobileAberto(false)}>Profissionais</Link>
             <Link className="nl-mobile-primary" to={publicarTo} state={publicarState} onClick={() => setMenuMobileAberto(false)}>Publicar anúncio</Link>
             {signed ? (
               <>
@@ -621,3 +623,4 @@ export default function NavbarLanding() {
     </>
   );
 }
+

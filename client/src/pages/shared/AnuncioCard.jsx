@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -54,6 +54,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const eMeuAnuncio = !forceSellerIdentity && signed && ((idDono && idLogado && String(idDono) === String(idLogado)) || !!onAnuncioEliminado);
   const isPremium   = anuncio?.destacado === true;
   const isVerificado = anuncio?.utilizador?.tipo === 'admin' || anuncio?.utilizador?.premiumAtivo === true;
+  const isProfissional = anuncio?.utilizador?.tipoConta === 'profissional' || anuncio?.utilizador?.premiumAtivo === true;
   const isCarro = anuncio?.tipo === 'carro';
   const precoAnalise = anuncio?.precoAnalise;
   const scoreQualidade = Number(anuncio?.scoreQualidade || 0);
@@ -77,16 +78,22 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   };
 
   const destaques = (isCarro ? [
-    { label: 'Quilometros', value: anuncio?.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null },
-    { label: 'Combustivel', value: formatarCombustivel(anuncio?.carro?.combustivel) },
-    { label: 'Cilindrada', value: anuncio?.carro?.cilindrada ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.cilindrada)} cc` : null },
+    { label: 'Ano', value: anuncio?.carro?.ano || null },
+    { label: 'Km', value: anuncio?.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null },
+    { label: 'Combustível', value: formatarCombustivel(anuncio?.carro?.combustivel) },
+    { label: 'Caixa', value: anuncio?.carro?.transmissao || null },
   ] : [
     { label: 'Tipo', value: anuncio?.imovel?.tipologia || anuncio?.imovel?.tipoImovel },
-    { label: 'Area', value: anuncio?.imovel?.area ? `${anuncio.imovel.area} m2` : null },
+    { label: 'Área', value: anuncio?.imovel?.area ? `${anuncio.imovel.area} m2` : null },
     { label: 'Quartos', value: anuncio?.imovel?.quartos != null ? `${anuncio.imovel.quartos}` : null },
-    { label: 'Zona', value: anuncio?.localizacao?.cidade },
+    { label: 'Garagem', value: anuncio?.imovel?.garagem ? 'Sim' : null },
   ]).filter(item => item.value).slice(0, 3);
 
+  const trustBadges = [
+    anuncio?.garantia && { label: 'Garantia' },
+    anuncio?.aceitaRetoma && { label: 'Retoma' },
+    isProfissional && { label: 'Profissional' },
+  ].filter(Boolean).slice(0, 3);
   const handleAbrirModal = e => { e.preventDefault(); e.stopPropagation(); setMostrarModal(true); };
   const handleFecharModal = e => { e?.preventDefault(); e?.stopPropagation(); setMostrarModal(false); };
 
@@ -320,6 +327,25 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           overflow: hidden;
         }
 
+        .nxc-trust-strip {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 5px;
+          margin-top: 2px;
+        }
+        .nxc-trust-pill {
+          display: inline-flex;
+          align-items: center;
+          min-height: 22px;
+          padding: 0 7px;
+          border-radius: 999px;
+          border: 1px solid #c7f3ea;
+          background: #ecfdf8;
+          color: #047857;
+          font-size: 10px;
+          font-weight: 850;
+          white-space: nowrap;
+        }
         .nxc-quality {
           display: flex;
           align-items: center;
@@ -591,6 +617,11 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
             )}
           </div>
           <div className="nxc-title">{anuncio?.titulo}</div>
+          {trustBadges.length > 0 && (
+            <div className="nxc-trust-strip" aria-label="Sinais de confiança">
+              {trustBadges.map((badge) => <span key={badge.label} className="nxc-trust-pill">{badge.label}</span>)}
+            </div>
+          )}
           {scoreQualidade > 0 && (
             <div className="nxc-quality" title={`Força do anúncio: ${scoreQualidade}/10`}>
               <span className="nxc-quality-label">{scoreQualidade}/10</span>
@@ -667,3 +698,4 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
     </>
   );
 }
+

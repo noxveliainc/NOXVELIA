@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -296,6 +296,10 @@ export default function NavbarCarro() {
             <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /><path d="M9 12h12" /><path d="M3 5v14" /></svg>
             Menu
           </button>
+          <Link to="/profissionais" className="ncr-btn-menu">
+            <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
+            Profissionais
+          </Link>
           {signed ? (
             <>
               <Link to="/publicar" className="ncr-btn-publish">
@@ -397,6 +401,10 @@ export default function NavbarCarro() {
                 <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /><path d="M9 12h12" /><path d="M3 5v14" /></svg>
                 Voltar ao menu
               </button>
+              <Link to="/profissionais" className="ncr-drawer-link" onClick={() => setMenuMobileAberto(false)}>
+                <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
+                Profissionais
+              </Link>
               {signed ? (
                 <>
                   <Link to="/publicar" className="ncr-drawer-link publish" onClick={() => setMenuMobileAberto(false)}>
@@ -479,3 +487,4 @@ export default function NavbarCarro() {
     </>
   );
 }
+

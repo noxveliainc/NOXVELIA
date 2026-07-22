@@ -19,6 +19,7 @@ export default function Registo() {
     telefone: '',
     mostrarTelefonePublico: true,
     localidade: '',
+    aceitouTermos: false,
     tipoConta: 'particular'
   });
   const [mostrarPassword, setMostrarPassword] = useState(false); 
@@ -69,6 +70,11 @@ export default function Registo() {
 
     if (!formData.localidade) {
       setErro('Por favor, seleciona um distrito válido.');
+      return;
+    }
+
+    if (!formData.aceitouTermos) {
+      setErro('Tens de aceitar os Termos e Condições para criar a conta.');
       return;
     }
 
@@ -301,6 +307,39 @@ export default function Registo() {
           font-weight: 600;
         }
 
+        .auth-terms-accept {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 14px;
+          border: 1px solid #dbe5e2;
+          border-radius: 12px;
+          background: #f8fafc;
+          margin: 0 0 20px;
+        }
+        .auth-terms-accept input {
+          width: 18px;
+          height: 18px;
+          margin-top: 2px;
+          accent-color: #2ac1b4;
+          cursor: pointer;
+          flex: 0 0 auto;
+        }
+        .auth-terms-accept span {
+          display: block;
+          font-size: 13px;
+          line-height: 1.5;
+          color: #475569;
+          font-weight: 600;
+        }
+        .auth-terms-accept a {
+          color: #0f172a;
+          font-weight: 800;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
+        .auth-terms-accept a:hover { color: #2a7f78; }
+
         /* Modal Styles */
         .modal-overlay {
           position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); 
@@ -464,6 +503,24 @@ export default function Registo() {
                   <option key={distrito} value={distrito}>{distrito}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="auth-terms-accept">
+              <input
+                id="aceitar-termos"
+                type="checkbox"
+                aria-label="Aceito os Termos e Condições"
+                checked={formData.aceitouTermos}
+                onChange={e => setFormData({ ...formData, aceitouTermos: e.target.checked })}
+                required
+              />
+              <span>
+                Declaro que li e aceito os{' '}
+                <Link to="/privacidade" target="_blank" rel="noopener noreferrer">
+                  Termos e Condições
+                </Link>
+                .
+              </span>
             </div>
 
             <button className="auth-btn" type="submit" disabled={loading}>
