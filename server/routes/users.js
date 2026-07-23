@@ -106,6 +106,7 @@ router.put('/me', verificarToken, async (req, res) => {
       bio,
       localidade,
       mostrarTelefonePublico,
+      mostrarMapaPerfil,
       tipoConta,
       nif
     } = req.body;
@@ -130,6 +131,9 @@ router.put('/me', verificarToken, async (req, res) => {
     if (avatarUrl !== undefined) camposParaAtualizar.avatarUrl = avatarUrl || null;
     if (capaUrl !== undefined) camposParaAtualizar.capaUrl = capaUrl || null;
     if (localidade !== undefined) camposParaAtualizar.localidade = String(localidade).trim() || null;
+    if (mostrarMapaPerfil !== undefined) {
+      camposParaAtualizar.mostrarMapaPerfil = mostrarMapaPerfil === true || mostrarMapaPerfil === 'true';
+    }
     if (nif !== undefined) camposParaAtualizar.nif = String(nif).trim() || null;
 
     if (bio !== undefined) {
@@ -371,7 +375,7 @@ router.get('/profissionais', async (req, res) => {
 router.get('/vendedor/:id', async (req, res) => {
   try {
     const vendedor = await User.findById(req.params.id).select(
-      'nome email telefone mostrarTelefonePublico localidade avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo rating totalAvaliacoes createdAt'
+      'nome email telefone mostrarTelefonePublico mostrarMapaPerfil localidade avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo rating totalAvaliacoes createdAt'
     ).lean();
     if (!vendedor) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
     if (vendedor.tipo === 'admin') {

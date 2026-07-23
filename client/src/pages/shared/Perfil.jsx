@@ -105,6 +105,7 @@ export default function Perfil() {
     website: '',
     localidade: '',
     mostrarTelefonePublico: true,
+    mostrarMapaPerfil: false,
     linksPerfil: [criarLinkPerfilVazio()]
   });
 
@@ -216,6 +217,7 @@ export default function Perfil() {
       website: utilizador?.website || '',
       localidade: utilizador?.localidade || '',
       mostrarTelefonePublico: utilizador?.mostrarTelefonePublico !== false,
+      mostrarMapaPerfil: utilizador?.mostrarMapaPerfil === true,
       linksPerfil: prepararLinksParaEdicao(utilizador?.linksPerfil, utilizador?.website)
     });
     setMostrarModalEditar(true);
@@ -259,6 +261,7 @@ export default function Perfil() {
         bio: dadosEditar.bio,
         localidade: dadosEditar.localidade,
         mostrarTelefonePublico: dadosEditar.mostrarTelefonePublico,
+        mostrarMapaPerfil: dadosEditar.mostrarMapaPerfil,
         website: websitePrincipal,
         linksPerfil
       });
@@ -525,7 +528,7 @@ export default function Perfil() {
             </button>
             <h2 className="modal-title"><Icon path={mdiPencil} size={1.2} color="#3b82f6" /> Editar Perfil</h2>
             <p className="modal-desc">
-              Personaliza a tua presença na plataforma. Adiciona uma biografia para que os compradores saibam quem és.
+              Personaliza a tua presença na plataforma. Adiciona uma biografia, links e a localização que queres mostrar aos compradores.
             </p>
 
             <form onSubmit={salvarPerfil}>
@@ -540,6 +543,36 @@ export default function Perfil() {
                 />
               </div>
 
+              <div className="modal-form-group">
+                <label>Localidade pública</label>
+                <input
+                  className="modal-input"
+                  type="text"
+                  placeholder="Ex: Porto, Lisboa, Lousada"
+                  value={dadosEditar.localidade}
+                  onChange={e => {
+                    const valor = e.target.value;
+                    setDadosEditar(prev => ({ ...prev, localidade: valor, mostrarMapaPerfil: valor.trim() ? prev.mostrarMapaPerfil : false }));
+                  }}
+                />
+              </div>
+
+              <div className="modal-form-group">
+                <label className="privacy-toggle">
+                  <input
+                    type="checkbox"
+                    checked={dadosEditar.mostrarMapaPerfil}
+                    disabled={!dadosEditar.localidade.trim()}
+                    onChange={e => setDadosEditar({ ...dadosEditar, mostrarMapaPerfil: e.target.checked })}
+                  />
+                  <span>
+                    <span className="privacy-toggle-title">Mostrar mapa no perfil público</span>
+                    <span className="privacy-toggle-text">
+                      O mapa mostra uma zona aproximada com base na localidade indicada, sem publicar uma morada exata.
+                    </span>
+                  </span>
+                </label>
+              </div>
               <div className="modal-form-group">
                 <div className="links-editor-header">
                   <label>Links do Perfil</label>

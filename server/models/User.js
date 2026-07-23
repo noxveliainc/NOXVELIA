@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   telefone:  { type: String, required: true, unique: true, match: [/^\d{9}$/, 'O telemóvel deve ter exatamente 9 dígitos.'] },
   mostrarTelefonePublico: { type: Boolean, default: true },
   localidade: { type: String, trim: true },
+  mostrarMapaPerfil: { type: Boolean, default: false },
   tipo:       { type: String, default: 'cliente', enum: ['cliente', 'profissional', 'admin'] },
   tipoConta:  { type: String, enum: ['particular', 'profissional'], default: 'particular' },
   nif:        { type: String, trim: true, default: null },

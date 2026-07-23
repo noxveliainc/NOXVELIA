@@ -99,7 +99,23 @@ const validarCamposCarro = (form) => {
   return '';
 };
 
+const validarContactosAnuncio = (form, ehAdmin) => {
+  const telefone = String(form.telefone || '').trim();
+  const email = String(form.email || '').trim();
 
+  if (ehAdmin) {
+    if (!telefone && !email) {
+      return { erro: 'Indica pelo menos um contacto autorizado: telemóvel ou email.' };
+    }
+    return { telefone, email };
+  }
+
+  if (!telefone || !email) {
+    return { erro: 'Indica o telemóvel e o email de contacto.' };
+  }
+
+  return { telefone, email };
+};
 export default function Publicar() {
   const navigate = useNavigate();
   const { user, signed, loading: authLoading } = useAuth();
@@ -297,6 +313,13 @@ export default function Publicar() {
       return;
     }
 
+    const contacto = validarContactosAnuncio(form, ehAdmin);
+    if (contacto.erro) {
+      setErro(contacto.erro);
+      setLoading(false);
+      return;
+    }
+
     try {
       const equipamentosNormalizados = normalizarExtras(equipamento);
       const semTipologia = TIPOS_SEM_TIPOLOGIA.includes(form.tipoImovel);
@@ -306,8 +329,8 @@ export default function Publicar() {
         titulo: form.titulo,
         descricao: form.descricao,
         preco: Number(form.preco),
-        telefone: form.telefone,
-        email: form.email,
+        telefone: contacto.telefone,
+        email: contacto.email,
         fotos,
         equipamento: equipamentosNormalizados,
         videoUrl: form.videoUrl.trim(),
@@ -701,19 +724,19 @@ export default function Publicar() {
                   <div className="pub-admin-contact-note">
                     <Icon path={mdiShieldCheckOutline} size={0.82} />
                     <span>
-                      <strong>Publicação em nome de terceiros:</strong> o teu email e telemóvel não são preenchidos aqui. Escreve apenas os contactos autorizados da pessoa dona do anúncio.
+                      <strong>Publicação em nome de terceiros:</strong> podes preencher só telemóvel ou só email, desde que seja um contacto autorizado da pessoa dona do anúncio.
                     </span>
                   </div>
                 )}
 
                 <div className="pub-grid-2">
                   <div>
-                    <label className="pub-label" style={{ color: accentColorVar }}>{ehAdmin ? 'Telemóvel da pessoa *' : 'Telemóvel de Contacto *'}</label>
-                    <input className="pub-input" name="telefone" type="tel" value={form.telefone} onChange={handle} required placeholder={ehAdmin ? 'Contacto autorizado' : '9XX XXX XXX'} autoComplete="off" style={{ borderColor: `rgba(${accentRgb}, 0.4)` }} />
+                    <label className="pub-label" style={{ color: accentColorVar }}>{ehAdmin ? 'Telemóvel da pessoa' : 'Telemóvel de Contacto *'}</label>
+                    <input className="pub-input" name="telefone" type="tel" value={form.telefone} onChange={handle} required={!ehAdmin} placeholder={ehAdmin ? 'Contacto autorizado' : '9XX XXX XXX'} autoComplete="off" style={{ borderColor: `rgba(${accentRgb}, 0.4)` }} />
                   </div>
                   <div>
-                    <label className="pub-label">{ehAdmin ? 'Email da pessoa *' : 'Email de Contacto *'}</label>
-                    <input className="pub-input" name="email" type="email" value={form.email} onChange={handle} required placeholder={ehAdmin ? 'email autorizado' : 'exemplo@email.com'} autoComplete="off" />
+                    <label className="pub-label">{ehAdmin ? 'Email da pessoa' : 'Email de Contacto *'}</label>
+                    <input className="pub-input" name="email" type="email" value={form.email} onChange={handle} required={!ehAdmin} placeholder={ehAdmin ? 'email autorizado' : 'exemplo@email.com'} autoComplete="off" />
                   </div>
                 </div>
 

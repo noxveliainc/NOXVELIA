@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Icon } from '@mdi/react';
 import {
   mdiCheckDecagram, mdiCrown, mdiDomain, mdiPencil, mdiShareVariantOutline,
   mdiStar, mdiWeb, mdiInstagram, mdiFacebook, mdiLinkedin, mdiYoutube,
   mdiMusicNote, mdiWhatsapp, mdiEarth, mdiEmailOutline, mdiPhone, mdiMapMarker
 } from '@mdi/js';
+
+const MapaPerfil = lazy(() => import('../../components/MapaPerfil'));
 
 const TIPOS_LINK_PERFIL = [
   { value: 'website', label: 'Site', icon: mdiWeb },
@@ -89,6 +91,7 @@ export default function ProfileView({
   const emailPodeAparecer = isOwner || !isAdmin;
   const telefonePodeAparecer = !isAdmin && user?.mostrarTelefonePublico !== false;
   const telefoneLimpo = telefonePodeAparecer ? user?.telefone?.replace(/\D/g, '') : '';
+  const mostrarMapaPerfil = user?.mostrarMapaPerfil === true && user?.localidade;
 
   return (
     <>
@@ -303,6 +306,8 @@ export default function ProfileView({
           text-decoration: none;
         }
         .profile-btn-solid { background: #0f172a; color: #ffffff; border: none; }
+        .profile-map-panel { padding: 0 36px 36px; }
+        .profile-map-loading { min-height: 230px; display: grid; place-items: center; border: 1px solid #e2e8f0; border-radius: 16px; background: #f8fafc; color: #64748b; font-size: 13px; font-weight: 800; }
         .profile-btn-primary { background: rgba(217,196,156,0.1); color: #0d9488; border: 1px solid rgba(217,196,156,0.2); }
         .profile-btn-outline { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; }
         .profile-btn-outline.danger:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
@@ -358,8 +363,10 @@ export default function ProfileView({
         .dark .profile-stat-divider {
           background: #334155;
         }
+        .dark .profile-map-loading { background: #0f172a; border-color: #334155; color: #cbd5e1; }
         @media (max-width: 768px) {
           .profile-body { padding: 0 22px 28px; }
+          .profile-map-panel { padding: 0 22px 28px; }
           .profile-actions { width: 100%; padding-top: 0; }
           .profile-name { font-size: 24px; }
         }
@@ -486,6 +493,14 @@ export default function ProfileView({
             )}
           </div>
         </div>
+
+        {mostrarMapaPerfil && (
+          <div className="profile-map-panel">
+            <Suspense fallback={<div className="profile-map-loading">A carregar mapa...</div>}>
+              <MapaPerfil localidade={user.localidade} nome={nomeExibicao} />
+            </Suspense>
+          </div>
+        )}
       </div>
     </>
   );

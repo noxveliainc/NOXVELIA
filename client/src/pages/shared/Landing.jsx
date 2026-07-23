@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
 import api from '../../services/api';
@@ -13,6 +13,7 @@ import { useAuth } from '../../context/AuthContext';
 import { publishIntentState } from '../../utils/navigationState';
 import { trackFunnelEvent } from '../../utils/funnelAnalytics';
 import { COOKIE_CONSENT_CHANGED_EVENT, readCookieConsent } from '../../utils/cookieConsent';
+import { ArrowRight, BadgeCheck, Handshake, MapPin, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 
@@ -71,7 +72,6 @@ export default function Landing() {
   const location = useLocation();
   const { signed } = useAuth();
   const landingViewTrackedRef = useRef(false);
-  const heroRef = useRef(null);
   const brandRailRef = useRef(null);
   const publicarTo = signed ? '/publicar' : '/login';
   const publicarState = signed ? undefined : publishIntentState(location, '/');
@@ -113,28 +113,6 @@ export default function Landing() {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const hero = heroRef.current;
-    if (!hero || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
-
-    let frame = 0;
-    const atualizarSpotlight = (event) => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const rect = hero.getBoundingClientRect();
-        const x = ((event.clientX - rect.left) / rect.width) * 100;
-        const y = ((event.clientY - rect.top) / rect.height) * 100;
-        hero.style.setProperty('--lp-pointer-x', x + '%');
-        hero.style.setProperty('--lp-pointer-y', y + '%');
-      });
-    };
-
-    hero.addEventListener('pointermove', atualizarSpotlight);
-    return () => {
-      cancelAnimationFrame(frame);
-      hero.removeEventListener('pointermove', atualizarSpotlight);
-    };
-  }, []);
 
   useEffect(() => {
     const trackLandingViewOnce = () => {
@@ -307,26 +285,19 @@ export default function Landing() {
         }
         .lp-root a, .lp-root button, .lp-root input, .lp-root select { font: inherit; }
         .lp-root a:focus-visible, .lp-root button:focus-visible, .lp-root select:focus-visible { outline: 3px solid rgba(217, 196, 156, 0.5); outline-offset: 3px; }
-        .lp-reveal { opacity: 0; transform: translateY(18px) scale(.985); transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }
-        .lp-reveal[data-visible="true"] { opacity: 1; transform: translateY(0) scale(1); }
+        .lp-reveal { opacity: 0; transform: translateY(12px); transition: opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1); }
+        .lp-reveal[data-visible="true"] { opacity: 1; transform: translateY(0); }
         .lp-reveal-delay-1 { transition-delay: .12s; }
         .lp-reveal-delay-2 { transition-delay: .22s; }
-        @keyframes lp-orbit { 0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: .55; } 50% { transform: translate3d(18px,-16px,0) scale(1.08); opacity: .9; } }
-        @keyframes lp-sheen { 0% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
-        @keyframes lp-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-        @keyframes lp-pulse-border { 0%, 100% { box-shadow: 0 32px 90px -62px rgba(0,0,0,.9), 0 0 0 1px rgba(217,196,156,.28); } 50% { box-shadow: 0 38px 100px -56px rgba(0,0,0,.95), 0 0 0 1px rgba(217,196,156,.52), 0 0 38px rgba(217,196,156,.18); } }
-        @keyframes lp-row-slide { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(-3px); opacity: .82; } }
-        @keyframes lp-scan { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
-        @keyframes lp-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes lp-marquee { from { transform: translate3d(0,0,0); } to { transform: translate3d(-50%,0,0); } }
         .lp-shell { width: min(1220px, calc(100% - 48px)); margin: 0 auto; }
         .lp-hero { --lp-pointer-x: 72%; --lp-pointer-y: 34%; position: relative; isolation: isolate; min-height: clamp(620px, calc(100vh - 74px), 760px); display: flex; align-items: stretch; overflow: hidden; background: var(--lp-navy); }
-        .lp-hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 62% center; z-index: -2; }
-                .lp-hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle at var(--lp-pointer-x) var(--lp-pointer-y), rgba(240,223,187,.32), rgba(240,223,187,.08) 22%, transparent 44%); opacity: .9; transition: opacity .25s ease; }
+        .lp-hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 62% center; z-index: -2; }        .lp-hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle at 74% 28%, rgba(240,223,187,.28), rgba(240,223,187,.08) 24%, transparent 48%); opacity: .86; }
         .lp-hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(7,19,38,.95) 0%, rgba(7,19,38,.82) 42%, rgba(7,19,38,.36) 72%, rgba(7,19,38,.18) 100%), linear-gradient(0deg, rgba(7,19,38,.78) 0%, rgba(7,19,38,.12) 58%); }
         .lp-hero-orbits { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-        .lp-hero-orbits span { position: absolute; width: 220px; height: 220px; border: 1px solid rgba(240,223,187,.26); border-radius: 999px; background: radial-gradient(circle, rgba(240,223,187,.14), transparent 62%); filter: blur(.2px); animation: lp-orbit 8s ease-in-out infinite; }
+        .lp-hero-orbits span { position: absolute; width: 220px; height: 220px; border: 1px solid rgba(240,223,187,.22); border-radius: 999px; background: radial-gradient(circle, rgba(240,223,187,.12), transparent 62%); opacity: .7; }
         .lp-hero-orbits span:nth-child(1) { right: 9%; top: 16%; }
-        .lp-hero-orbits span:nth-child(2) { right: 26%; bottom: 10%; width: 150px; height: 150px; animation-delay: -2.2s; }
+        .lp-hero-orbits span:nth-child(2) { right: 26%; bottom: 10%; width: 150px; height: 150px; opacity: .46; }
         .lp-hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 470px); gap: clamp(28px, 5vw, 70px); align-items: center; padding: clamp(64px, 8vw, 112px) 0 54px; }
         .lp-hero-copyblock { max-width: 690px; color: #fffaf0; }
         .lp-eyebrow { display: inline-flex; width: fit-content; margin: 0 0 14px; padding: 7px 10px; color: var(--lp-gold-soft); border: 1px solid rgba(240,223,187,.3); border-radius: 8px; background: rgba(240,223,187,.1); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
@@ -344,8 +315,8 @@ export default function Landing() {
         .lp-btn-primary, .lp-search-submit { color: var(--lp-navy); background: var(--lp-gold); border-color: var(--lp-gold); }
         .lp-text-link { color: #fffaf0; border-color: rgba(240,223,187,.35); background: rgba(255,250,240,.08); }
         .lp-btn:hover, .lp-text-link:hover, .lp-search-submit:hover, .lp-link-button:hover { transform: translateY(-1px) !important; }
-                .lp-search-panel { position: relative; align-self: center; padding: 20px; border: 1px solid rgba(240,223,187,.34); border-radius: 18px; background: rgba(255,250,240,.97); box-shadow: 0 32px 90px -62px rgba(0,0,0,.9); overflow: hidden; animation: lp-pulse-border 6s ease-in-out infinite; }
-        .lp-search-panel::before { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,.72) 42%, transparent 58%); transform: translateX(-130%); animation: lp-sheen 7s ease-in-out infinite; pointer-events: none; }
+        .lp-search-panel { position: relative; align-self: center; padding: 20px; border: 1px solid rgba(240,223,187,.34); border-radius: 18px; background: rgba(255,250,240,.97); box-shadow: 0 30px 74px -56px rgba(0,0,0,.82); overflow: hidden; contain: paint; }
+        .lp-search-panel::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,.58), transparent 42%); opacity: .7; pointer-events: none; }
         .lp-search-panel > * { position: relative; z-index: 1; }
         .lp-search-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
         .lp-command-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -2px 0 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(7,19,38,.11); }
@@ -366,14 +337,14 @@ export default function Landing() {
         .lp-field select:disabled { color: #8793a0; background: #f4f2eb; }
         .lp-search-submit { grid-column: 1 / -1; width: 100%; margin-top: 2px; }
         .lp-command-preview { display: grid; gap: 8px; margin-top: 14px; padding: 12px; border: 1px solid rgba(7,19,38,.1); border-radius: 12px; background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(246,242,233,.9)); }
-        .lp-command-row { min-height: 40px; display: flex; align-items: center; padding: 0 12px; color: var(--lp-navy); border: 1px solid rgba(7,19,38,.08); border-radius: 10px; background: #fff; animation: lp-row-slide 5.4s ease-in-out infinite; }
+        .lp-command-row { min-height: 40px; display: flex; align-items: center; padding: 0 12px; color: var(--lp-navy); border: 1px solid rgba(7,19,38,.08); border-radius: 10px; background: #fff; }
         .lp-command-row:nth-child(2) { animation-delay: -1.8s; }
         .lp-command-row:nth-child(3) { animation-delay: -3.6s; }
         .lp-command-icon { display: none; }
         .lp-command-row strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
         .lp-command-row span:last-child { display: none; }
         .lp-market-ticker { overflow: hidden; background: #fffaf0; border-bottom: 1px solid var(--lp-line); }
-        .lp-market-track { display: flex; width: max-content; animation: lp-marquee 26s linear infinite; }
+        .lp-market-track { display: flex; width: max-content; animation: lp-marquee 48s linear infinite; will-change: transform; }
         .lp-market-track:hover { animation-play-state: paused; }
         .lp-market-item { min-height: 58px; display: inline-flex; align-items: center; gap: 10px; padding: 0 24px; color: var(--lp-blue); border-right: 1px solid var(--lp-line); font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
         .lp-market-item::before { content: ''; width: 8px; height: 8px; border-radius: 999px; background: var(--lp-gold); box-shadow: none; }
@@ -390,32 +361,45 @@ export default function Landing() {
         .lp-copy { margin: 14px 0 0; color: var(--lp-muted); font-size: 15px; line-height: 1.65; }
         .lp-section .lp-eyebrow, .lp-showcase-band .lp-eyebrow { color: var(--lp-blue); border-color: rgba(16,47,80,.16); background: rgba(255,255,255,.72); }
         .lp-search-eyebrow { color: var(--lp-navy); border-color: rgba(217,196,156,.58); background: rgba(217,196,156,.22); }
-        .lp-showcase-band { position: relative; overflow: hidden; padding: 64px 0; background: linear-gradient(180deg, #fffaf0 0%, #f5efe3 100%); border-bottom: 1px solid var(--lp-line); }
-        .lp-showcase-band::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 78% 18%, rgba(217,196,156,.22), transparent 34%), radial-gradient(circle at 12% 82%, rgba(16,47,80,.07), transparent 30%); pointer-events: none; }
-        .lp-showcase-grid { position: relative; display: grid; grid-template-columns: minmax(0, .88fr) minmax(0, 1.12fr); gap: clamp(24px, 5vw, 62px); align-items: center; }
+        .lp-showcase-band { position: relative; overflow: hidden; padding: 76px 0; background: linear-gradient(180deg, #fffaf0 0%, #f5efe3 100%); border-bottom: 1px solid var(--lp-line); }
+        .lp-showcase-band::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(217,196,156,.16), transparent 32%, rgba(16,47,80,.07)); pointer-events: none; }
+        .lp-showcase-grid { position: relative; display: grid; grid-template-columns: minmax(320px, .82fr) minmax(0, 1.18fr); gap: clamp(28px, 5vw, 68px); align-items: center; }
         .lp-showcase-copy { max-width: 520px; }
-        .lp-showcase-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 24px; }
-        .lp-showcase-kpi { padding: 14px; border: 1px solid var(--lp-line); border-radius: 10px; background: rgba(255,255,255,.78); }
-        .lp-showcase-kpi strong { display: block; color: var(--lp-navy); font-size: 20px; line-height: 1; }
-        .lp-showcase-kpi span { display: block; margin-top: 7px; color: var(--lp-muted); font-size: 11px; font-weight: 850; text-transform: uppercase; }
-        .lp-bento-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
-        .lp-bento-card { position: relative; min-height: 172px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 16px; padding: 18px; color: inherit; border: 1px solid rgba(16,47,80,.12); border-radius: 12px; background: rgba(255,255,255,.88); text-decoration: none; box-shadow: 0 18px 50px -38px rgba(7,19,38,.55); transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease !important; }
-        .lp-bento-card::before { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 10%, rgba(217,196,156,.16) 48%, transparent 86%); transform: translateX(-120%); animation: lp-scan 8s ease-in-out infinite; pointer-events: none; }
-        .lp-bento-card:hover { transform: translateY(-4px) !important; border-color: rgba(217,196,156,.7); box-shadow: 0 26px 70px -42px rgba(7,19,38,.7); }
-        .lp-bento-main { grid-column: span 4; min-height: 230px; background: linear-gradient(135deg, #fff, #f6f1e7 58%, rgba(217,196,156,.22)); }
-        .lp-bento-side { grid-column: span 2; }
-        .lp-bento-wide { grid-column: span 3; }
-        .lp-bento-kicker { width: fit-content; padding: 6px 9px; color: var(--lp-blue); border: 1px solid rgba(16,47,80,.13); border-radius: 7px; background: #fff; font-size: 10px; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
-        .lp-bento-card strong { position: relative; color: var(--lp-navy); font-size: clamp(20px, 2.4vw, 30px); line-height: 1.08; }
-        .lp-bento-card p { position: relative; margin: 0; color: var(--lp-muted); font-size: 13px; line-height: 1.55; }
-        .lp-bento-stat { position: relative; display: flex; justify-content: space-between; gap: 12px; color: var(--lp-blue); font-size: 12px; font-weight: 900; }
-        .lp-sparkline { position: relative; height: 46px; display: flex; align-items: end; gap: 6px; margin-top: 10px; }
-        .lp-sparkline span { flex: 1; min-width: 10px; border-radius: 999px 999px 4px 4px; background: linear-gradient(180deg, var(--lp-gold), rgba(217,196,156,.2)); animation: lp-float 4.8s ease-in-out infinite; }
-        .lp-sparkline span:nth-child(1) { height: 42%; }
-        .lp-sparkline span:nth-child(2) { height: 72%; animation-delay: -.7s; }
-        .lp-sparkline span:nth-child(3) { height: 54%; animation-delay: -1.1s; }
-        .lp-sparkline span:nth-child(4) { height: 86%; animation-delay: -1.6s; }
-        .lp-sparkline span:nth-child(5) { height: 64%; animation-delay: -2.1s; }
+        .lp-showcase-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+        .lp-inline-action { min-height: 42px; display: inline-flex; align-items: center; gap: 8px; padding: 0 13px; color: var(--lp-navy); border: 1px solid rgba(16,47,80,.16); border-radius: 8px; background: rgba(255,255,255,.72); text-decoration: none; font-size: 13px; font-weight: 850; transition: transform .18s ease, border-color .18s ease, background-color .18s ease !important; }
+        .lp-inline-action:hover { transform: translateY(-1px) !important; border-color: rgba(217,196,156,.72); background: #fff; }
+        .lp-showcase-checks { display: grid; gap: 10px; margin-top: 22px; }
+        .lp-showcase-checks span { display: flex; align-items: center; gap: 10px; color: #344b5f; font-size: 14px; line-height: 1.35; }
+        .lp-showcase-checks svg { color: var(--lp-blue); flex: 0 0 auto; }
+        .lp-platform-card { position: relative; overflow: hidden; padding: 16px; border: 1px solid rgba(217,196,156,.28); border-radius: 14px; background: #071326; color: #fffaf0; box-shadow: 0 32px 90px -54px rgba(7,19,38,.9); contain: paint; }
+        .lp-platform-card::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 86% 10%, rgba(217,196,156,.18), transparent 34%); pointer-events: none; }
+        .lp-platform-card > * { position: relative; }
+        .lp-platform-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 2px 2px 14px; border-bottom: 1px solid rgba(240,223,187,.12); }
+        .lp-platform-brand { display: inline-flex; align-items: center; gap: 8px; color: var(--lp-gold-soft); font-size: 11px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+        .lp-platform-status { color: rgba(255,250,240,.64); font-size: 12px; font-weight: 760; }
+        .lp-platform-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+        .lp-platform-tab { min-height: 42px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 10px; border: 1px solid rgba(240,223,187,.14); border-radius: 8px; background: rgba(255,250,240,.06); color: rgba(255,250,240,.78); font-size: 12px; font-weight: 850; }
+        .lp-platform-tab.active { background: var(--lp-gold); border-color: var(--lp-gold); color: var(--lp-navy); }
+        .lp-platform-search { min-height: 54px; display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 0 14px; border: 1px solid rgba(240,223,187,.14); border-radius: 8px; background: rgba(255,250,240,.08); color: #fffaf0; }
+        .lp-platform-search span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 780; }
+        .lp-platform-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .62fr); gap: 14px; margin-top: 14px; }
+        .lp-result-stack { display: grid; border: 1px solid rgba(240,223,187,.12); border-radius: 10px; overflow: hidden; background: rgba(255,250,240,.05); }
+        .lp-result-row { min-width: 0; display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px; color: #fffaf0; border-bottom: 1px solid rgba(240,223,187,.1); text-decoration: none; transition: background-color .18s ease, transform .18s ease !important; }
+        .lp-result-row:last-child { border-bottom: 0; }
+        .lp-result-row:hover { background: rgba(255,250,240,.08); transform: translateX(2px) !important; }
+        .lp-result-thumb { width: 52px; height: 42px; border-radius: 7px; background: linear-gradient(135deg, rgba(217,196,156,.92), rgba(16,47,80,.84)); }
+        .lp-result-thumb.estate { background: linear-gradient(135deg, rgba(240,223,187,.92), rgba(115,143,168,.84)); }
+        .lp-result-copy { min-width: 0; display: grid; gap: 4px; }
+        .lp-result-copy strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fffaf0; font-size: 14px; }
+        .lp-result-copy span { color: rgba(255,250,240,.62); font-size: 12px; }
+        .lp-result-price { color: var(--lp-gold-soft); font-size: 13px; font-weight: 900; white-space: nowrap; }
+        .lp-decision-panel { display: flex; flex-direction: column; justify-content: space-between; gap: 16px; padding: 16px; border: 1px solid rgba(240,223,187,.14); border-radius: 10px; background: rgba(255,250,240,.08); }
+        .lp-decision-panel strong { color: #fffaf0; font-size: 20px; line-height: 1.12; }
+        .lp-decision-panel p { margin: 8px 0 0; color: rgba(255,250,240,.68); font-size: 13px; line-height: 1.55; }
+        .lp-decision-list { display: grid; gap: 9px; margin-top: 14px; }
+        .lp-decision-list span { display: flex; align-items: center; gap: 8px; color: rgba(255,250,240,.82); font-size: 12px; font-weight: 760; }
+        .lp-decision-list svg { color: var(--lp-gold-soft); flex: 0 0 auto; }
+        .lp-decision-cta { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: var(--lp-navy); background: var(--lp-gold); border-radius: 8px; padding: 0 12px; text-decoration: none; font-size: 13px; font-weight: 900; }
         .lp-promo-section { background: var(--lp-stone); }
         .lp-promo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
         .lp-promo-link { min-width: 0; overflow: hidden; display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); min-height: 300px; color: inherit; border: 1px solid var(--lp-line); border-radius: 12px; background: var(--lp-paper); text-decoration: none; transition: border-color .18s ease, transform .18s ease !important; }
@@ -473,18 +457,22 @@ export default function Landing() {
         .lp-example-state { min-height: 180px; grid-column: 1 / -1; display: grid; place-content: center; gap: 8px; padding: 24px; color: rgba(255,250,240,.78); text-align: center; border: 1px dashed rgba(240,223,187,.22); border-radius: 10px; }
         .lp-example-state strong { color: #fffaf0; }
         .lp-cv-section { background: var(--lp-paper); }
-        .lp-cv-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 420px); gap: 28px; align-items: center; padding: clamp(24px, 4vw, 42px); border: 1px solid var(--lp-line); border-radius: 12px; background: #fff; }
-        .lp-cv-points { margin: 18px 0 22px; padding-left: 18px; color: var(--lp-muted); line-height: 1.7; }
-        .lp-cv-panel { display: grid; place-items: center; gap: 18px; min-height: 260px; border-radius: 10px; background: var(--lp-stone); }
-        .lp-cv-panel span { color: var(--lp-muted); font-size: 12px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
-        .lp-cv-panel img { max-width: 220px; width: 70%; height: auto; }
-        .lp-cv-code { display: grid; gap: 4px; padding: 12px 16px; border: 1px solid var(--lp-line); border-radius: 8px; background: #fff; text-align: center; }
-        .lp-cv-code small { color: var(--lp-muted); font-size: 11px; text-transform: uppercase; }
-        .lp-cv-code strong { color: var(--lp-navy); }
+        .lp-cv-card { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 430px); gap: 28px; align-items: center; padding: clamp(24px, 4vw, 44px); border: 1px solid var(--lp-line); border-radius: 14px; background: linear-gradient(135deg, #fff 0%, #fffaf0 62%, rgba(217,196,156,.28) 100%); box-shadow: 0 24px 70px -52px rgba(7,19,38,.55); }
+        .lp-cv-card::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 88% 18%, rgba(16,47,80,.08), transparent 36%); pointer-events: none; }
+        .lp-cv-copy, .lp-cv-panel { position: relative; }
+        .lp-cv-points { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 22px; padding: 0; list-style: none; color: var(--lp-blue); }
+        .lp-cv-points li { min-height: 34px; display: inline-flex; align-items: center; padding: 0 11px; border: 1px solid rgba(16,47,80,.14); border-radius: 999px; background: rgba(255,255,255,.72); font-size: 12px; font-weight: 820; }
+        .lp-cv-panel { display: grid; gap: 18px; min-height: 280px; padding: 24px; border-radius: 12px; background: #071326; color: #fffaf0; }
+        .lp-cv-panel span { color: rgba(255,250,240,.68); font-size: 12px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+        .lp-cv-panel img { max-width: 220px; width: 70%; height: auto; align-self: center; justify-self: center; filter: drop-shadow(0 12px 26px rgba(0,0,0,.32)); }
+        .lp-cv-offer { display: grid; gap: 6px; padding: 16px; border: 1px solid rgba(240,223,187,.2); border-radius: 10px; background: rgba(255,250,240,.08); }
+        .lp-cv-offer small { color: var(--lp-gold-soft); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .lp-cv-offer strong { color: #fffaf0; font-size: clamp(34px, 5vw, 54px); line-height: .95; letter-spacing: 0; }
+        .lp-cv-offer em { color: rgba(255,250,240,.68); font-size: 13px; font-style: normal; line-height: 1.45; }
         .dark .lp-root { background: #071326; color: #fffaf0; }
         .dark .lp-metrics, .dark .lp-brands-section, .dark .lp-cv-section { background: #0d1d33; border-color: rgba(240,223,187,.14); }
-        .dark .lp-search-panel, .dark .lp-promo-link, .dark .lp-shortcut-group, .dark .lp-brand-card, .dark .lp-brand-arrow, .dark .lp-cv-card, .dark .lp-bento-card, .dark .lp-showcase-kpi { background: #102f50; border-color: rgba(240,223,187,.18); color: #fffaf0; }
-        .dark .lp-title, .dark .lp-search-head h2, .dark .lp-promo-title, .dark .lp-shortcut-group h3, .dark .lp-metric strong, .dark .lp-cv-code strong { color: #fffaf0; }
+        .dark .lp-search-panel, .dark .lp-promo-link, .dark .lp-shortcut-group, .dark .lp-brand-card, .dark .lp-brand-arrow, .dark .lp-cv-card, .dark .lp-showcase-kpi { background: #102f50; border-color: rgba(240,223,187,.18); color: #fffaf0; }
+        .dark .lp-title, .dark .lp-search-head h2, .dark .lp-promo-title, .dark .lp-shortcut-group h3, .dark .lp-metric strong { color: #fffaf0; }
         .dark .lp-copy, .dark .lp-search-head p, .dark .lp-promo-text, .dark .lp-brand-name, .dark .lp-field label { color: rgba(255,250,240,.72); }
         .dark .lp-field select { background: #071326; color: #fffaf0; border-color: rgba(240,223,187,.18); }
         .dark .lp-type-tabs, .dark .lp-cv-panel { background: #071326; }
@@ -492,28 +480,26 @@ export default function Landing() {
         .dark .lp-market-item { color: rgba(255,250,240,.86); border-color: rgba(240,223,187,.14); }
         .dark .lp-market-item::before { background: var(--lp-gold); }
         .dark .lp-showcase-band { background: linear-gradient(180deg, #071326 0%, #0d1d33 100%); border-color: rgba(240,223,187,.14); }
-        .dark .lp-showcase-band::before { background: radial-gradient(circle at 74% 18%, rgba(217,196,156,.14), transparent 34%), radial-gradient(circle at 10% 82%, rgba(255,250,240,.07), transparent 30%); }
+        .dark .lp-showcase-band::before { background: radial-gradient(circle at 74% 18%, rgba(217,196,156,.12), transparent 34%); }
         .dark .lp-showcase-band .lp-title,
-        .dark .lp-bento-card strong,
-        .dark .lp-showcase-kpi strong { color: #fffaf0; }
-        .dark .lp-showcase-band .lp-copy,
-        .dark .lp-bento-card p,
-        .dark .lp-showcase-kpi span { color: rgba(255,250,240,.72); }
-        .dark .lp-showcase-band .lp-eyebrow,
-        .dark .lp-bento-kicker { color: var(--lp-gold-soft); border-color: rgba(240,223,187,.28); background: rgba(255,250,240,.08); }
-        .dark .lp-bento-card { background: rgba(16,47,80,.96); box-shadow: 0 24px 70px -46px rgba(0,0,0,.85); }
-        .dark .lp-bento-main { background: linear-gradient(135deg, #102f50, #0d1d33 62%, rgba(217,196,156,.14)); }
-        .dark .lp-bento-card::before { background: linear-gradient(110deg, transparent 10%, rgba(240,223,187,.12) 48%, transparent 86%); }
-        .dark .lp-bento-stat { color: var(--lp-gold-soft); }
-        .dark .lp-sparkline span { background: linear-gradient(180deg, var(--lp-gold-soft), rgba(240,223,187,.16)); }
-        @media (max-width: 1040px) { .lp-hero { min-height: auto; } .lp-hero-inner, .lp-showcase-grid { grid-template-columns: 1fr; padding-top: 58px; } .lp-search-panel { max-width: 760px; } .lp-promo-grid, .lp-examples-grid, .lp-cv-card { grid-template-columns: 1fr; } }
-        @media (prefers-reduced-motion: reduce) { .lp-reveal { opacity: 1; transform: none; transition: none; } .lp-hero-orbits span, .lp-search-panel::before, .lp-market-track, .lp-search-panel, .lp-command-row, .lp-bento-card::before, .lp-sparkline span { animation: none; } .lp-btn, .lp-text-link, .lp-search-submit, .lp-link-button, .lp-promo-link, .lp-brand-card, .lp-bento-card { transition: none !important; } }
-        @media (max-width: 720px) { .lp-proof-row, .lp-showcase-kpis { grid-template-columns: 1fr; } .lp-shell { width: min(100% - 30px, 1220px); } .lp-hero-inner { padding: 42px 0 34px; gap: 24px; } .lp-hero h1 { font-size: clamp(36px, 12vw, 48px); } .lp-hero-copy { font-size: 15px; } .lp-search-panel { padding: 14px; border-radius: 10px; } .lp-command-top, .lp-search-head { display: grid; } .lp-type-tabs { width: 100%; } .lp-search-form { grid-template-columns: 1fr; } .lp-command-row span:last-child { display: none; } .lp-market-item { min-height: 48px; padding: 0 16px; font-size: 11px; } .lp-brand-carousel { grid-template-columns: 38px minmax(0, 1fr) 38px; gap: 8px; } .lp-brand-arrow { width: 38px; height: 38px; } .lp-brand-grid { grid-auto-columns: minmax(118px, 132px); grid-template-rows: repeat(2, 86px); } .lp-brand-card { min-height: 86px; } .lp-showcase-band { padding: 46px 0; } .lp-bento-grid { grid-template-columns: 1fr; } .lp-bento-main, .lp-bento-side, .lp-bento-wide { grid-column: auto; min-height: 180px; } .lp-section { padding: 54px 0; } .lp-section-head { display: grid; } .lp-promo-link { grid-template-columns: 1fr; } .lp-promo-media img { min-height: 220px; } .lp-pro-strip { grid-template-columns: 1fr; } .lp-shortcut-grid { grid-template-columns: 1fr; } .lp-shortcut-group.wide { grid-column: auto; } .lp-example-list { grid-template-columns: 1fr; } }
+        .dark .lp-showcase-checks span { color: #fffaf0; }
+        .dark .lp-inline-action { color: #fffaf0; border-color: rgba(240,223,187,.18); background: rgba(255,250,240,.08); }
+        .dark .lp-platform-card { background: #071326; box-shadow: 0 24px 70px -46px rgba(0,0,0,.85); }
+        .dark .lp-brand-card { background: linear-gradient(180deg, #fffaf0 0%, #f4ead8 100%); border-color: rgba(217,196,156,.42); color: #071326; box-shadow: inset 0 1px 0 rgba(255,255,255,.72); }
+        .dark .lp-brand-card:hover { border-color: rgba(217,196,156,.9); }
+        .dark .lp-brand-name { color: #17304a; }
+        .dark .lp-brand-mark { border-radius: 8px; background: rgba(255,255,255,.5); box-shadow: inset 0 0 0 1px rgba(16,47,80,.08); }
+        .dark .lp-brand-mark-clean::after { background: linear-gradient(180deg, rgba(255,250,240,0), #fffaf0 56%); }
+        .dark .lp-cv-card { background: linear-gradient(135deg, #102f50, #0d1d33 72%, rgba(217,196,156,.12)); }
+        .dark .lp-cv-points li { color: var(--lp-gold-soft); border-color: rgba(240,223,187,.18); background: rgba(255,250,240,.08); }
+        @media (max-width: 1040px) { .lp-hero { min-height: auto; } .lp-hero-inner, .lp-showcase-grid { grid-template-columns: 1fr; padding-top: 58px; } .lp-search-panel { max-width: 760px; } .lp-promo-grid, .lp-examples-grid, .lp-cv-card { grid-template-columns: 1fr; } .lp-platform-layout { grid-template-columns: 1fr; } }
+        @media (prefers-reduced-motion: reduce) { .lp-reveal { opacity: 1; transform: none; transition: none; } .lp-market-track { animation: none; } .lp-btn, .lp-text-link, .lp-search-submit, .lp-link-button, .lp-promo-link, .lp-brand-card, .lp-inline-action, .lp-result-row { transition: none !important; } }
+        @media (max-width: 720px) { .lp-proof-row { grid-template-columns: 1fr; } .lp-shell { width: min(100% - 30px, 1220px); } .lp-hero-inner { padding: 42px 0 34px; gap: 24px; } .lp-hero h1 { font-size: clamp(36px, 12vw, 48px); } .lp-hero-copy { font-size: 15px; } .lp-search-panel { padding: 14px; border-radius: 10px; } .lp-command-top, .lp-search-head { display: grid; } .lp-type-tabs { width: 100%; } .lp-search-form { grid-template-columns: 1fr; } .lp-command-row span:last-child { display: none; } .lp-market-item { min-height: 48px; padding: 0 16px; font-size: 11px; } .lp-brand-carousel { grid-template-columns: 38px minmax(0, 1fr) 38px; gap: 8px; } .lp-brand-arrow { width: 38px; height: 38px; } .lp-brand-grid { grid-auto-columns: minmax(118px, 132px); grid-template-rows: repeat(2, 86px); } .lp-brand-card { min-height: 86px; } .lp-showcase-band { padding: 54px 0; } .lp-platform-tabs { grid-template-columns: 1fr; } .lp-platform-layout { grid-template-columns: 1fr; } .lp-result-row { grid-template-columns: 44px minmax(0, 1fr); } .lp-result-price { grid-column: 2; } .lp-section { padding: 54px 0; } .lp-section-head { display: grid; } .lp-promo-link { grid-template-columns: 1fr; } .lp-promo-media img { min-height: 220px; } .lp-pro-strip { grid-template-columns: 1fr; } .lp-shortcut-grid { grid-template-columns: 1fr; } .lp-shortcut-group.wide { grid-column: auto; } .lp-example-list { grid-template-columns: 1fr; } }
       `}</style>
 
       <NavbarLanding />
 
-      <section ref={heroRef} className="lp-hero" aria-labelledby="lp-hero-title">
+      <section className="lp-hero" aria-labelledby="lp-hero-title">
         <img className="lp-hero-bg" src="/noxvelia-hero-coast.webp" alt="Automóvel junto a uma casa contemporânea na costa portuguesa" fetchPriority="high" decoding="async" onError={(event) => { event.currentTarget.src = '/social/noxvelia-estate-photo-premium.webp'; }} />
         <div className="lp-hero-orbits" aria-hidden="true"><span></span><span></span></div>
         <div className="lp-shell lp-hero-inner">
@@ -597,40 +583,62 @@ export default function Landing() {
       <section className="lp-showcase-band" aria-labelledby="lp-showcase-title">
         <div className="lp-shell lp-showcase-grid">
           <div className="lp-showcase-copy lp-reveal">
-            <span className="lp-eyebrow">Novo ritmo</span>
-            <h2 className="lp-title" id="lp-showcase-title">Encontra carros e imóveis com menos passos.</h2>
-            <p className="lp-copy">Descobre anúncios reais, compara os detalhes importantes e avança para contacto sem percursos complicados.</p>
-            <div className="lp-showcase-kpis" aria-label="Benefícios principais">
-              <div className="lp-showcase-kpi"><strong>Rápido</strong><span>Pesquisa direta</span></div>
-              <div className="lp-showcase-kpi"><strong>Claro</strong><span>Anúncios organizados</span></div>
-              <div className="lp-showcase-kpi"><strong>Direto</strong><span>Contacto simples</span></div>
+            <span className="lp-eyebrow">Pesquisa em Portugal</span>
+            <h2 className="lp-title" id="lp-showcase-title">Decidir fica mais simples quando a informação aparece primeiro.</h2>
+            <p className="lp-copy">A Noxvelia organiza carros, imóveis e contactos numa experiência curta, clara e preparada para quem quer comparar antes de avançar.</p>
+            <div className="lp-showcase-actions">
+              <Link className="lp-inline-action" to="/carros"><Search size={16} strokeWidth={2.2} aria-hidden="true" /> Ver carros <ArrowRight size={15} strokeWidth={2.2} aria-hidden="true" /></Link>
+              <Link className="lp-inline-action" to="/imoveis"><MapPin size={16} strokeWidth={2.2} aria-hidden="true" /> Ver imóveis <ArrowRight size={15} strokeWidth={2.2} aria-hidden="true" /></Link>
+            </div>
+            <div className="lp-showcase-checks" aria-label="Vantagens principais">
+              <span><BadgeCheck size={18} strokeWidth={2.2} aria-hidden="true" /> Fotografias, preço e localização tratados como informação principal.</span>
+              <span><BadgeCheck size={18} strokeWidth={2.2} aria-hidden="true" /> Pesquisa com marca, distrito, tipologia e orçamento desde o início.</span>
+              <span><BadgeCheck size={18} strokeWidth={2.2} aria-hidden="true" /> Contacto direto para reduzir conversas desnecessárias.</span>
             </div>
           </div>
-          <div className="lp-bento-grid" aria-label="Funcionalidades da Noxvelia">
-            <Link className="lp-bento-card lp-bento-main lp-reveal" to="/carros">
-              <span className="lp-bento-kicker">Pesquisa inteligente</span>
-              <strong>Procura por marca, distrito, preço ou tipologia.</strong>
-              <p>A primeira pesquisa já leva o visitante para resultados úteis, com filtros claros desde o início.</p>
-              <span className="lp-sparkline" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
-            </Link>
-            <Link className="lp-bento-card lp-bento-side lp-reveal lp-reveal-delay-1" to="/profissionais">
-              <span className="lp-bento-kicker">Perfis</span>
-              <strong>Perfis de vendedores completos.</strong>
-              <p>Bio, website e redes sociais ajudam o comprador a confiar antes do primeiro contacto.</p>
-              <span className="lp-bento-stat"><span>Redes sociais</span><span>Bio</span></span>
-            </Link>
-            <Link className="lp-bento-card lp-bento-wide lp-reveal" to="/imoveis">
-              <span className="lp-bento-kicker">Imóveis</span>
-              <strong>Imóveis com informação essencial à vista.</strong>
-              <p>Tipologia, localização e preço aparecem cedo para acelerar a escolha.</p>
-              <span className="lp-bento-stat"><span>T2</span><span>Lisboa</span><span>Garagem</span></span>
-            </Link>
-            <Link className="lp-bento-card lp-bento-wide lp-reveal lp-reveal-delay-1" to={publicarTo} state={publicarState}>
-              <span className="lp-bento-kicker">Publicar</span>
-              <strong>Publicar fica simples e direto.</strong>
-              <p>O vendedor entra no fluxo de anúncio sem distrações e com um caminho claro.</p>
-              <span className="lp-bento-stat"><span>Grátis</span><span>Direto</span></span>
-            </Link>
+
+          <div className="lp-platform-card lp-reveal lp-reveal-delay-1" aria-label="Exemplo de pesquisa Noxvelia">
+            <div className="lp-platform-topbar">
+              <span className="lp-platform-brand"><SlidersHorizontal size={15} strokeWidth={2.3} aria-hidden="true" /> Noxvelia</span>
+              <span className="lp-platform-status">Pesquisa preparada</span>
+            </div>
+            <div className="lp-platform-tabs" aria-hidden="true">
+              <span className="lp-platform-tab active"><Search size={15} strokeWidth={2.2} /> Comprar</span>
+              <span className="lp-platform-tab"><ShieldCheck size={15} strokeWidth={2.2} /> Comparar</span>
+              <span className="lp-platform-tab"><Handshake size={15} strokeWidth={2.2} /> Contactar</span>
+            </div>
+            <div className="lp-platform-search" aria-hidden="true"><Search size={17} strokeWidth={2.2} /><span>BMW em Lisboa · até 20.000 € · anúncios recentes</span></div>
+            <div className="lp-platform-layout">
+              <div className="lp-result-stack">
+                <Link className="lp-result-row" to="/carros?marca=BMW&distrito=Lisboa&precoMax=20000">
+                  <span className="lp-result-thumb"></span>
+                  <span className="lp-result-copy"><strong>BMW em Lisboa</strong><span>Preço visível · distrito definido</span></span>
+                  <span className="lp-result-price">Até 20.000 €</span>
+                </Link>
+                <Link className="lp-result-row" to="/imoveis?tipologia=T2&distrito=Porto">
+                  <span className="lp-result-thumb estate"></span>
+                  <span className="lp-result-copy"><strong>T2 no Porto</strong><span>Tipologia · localização · fotografias</span></span>
+                  <span className="lp-result-price">Ver imóveis</span>
+                </Link>
+                <Link className="lp-result-row" to={publicarTo} state={publicarState}>
+                  <span className="lp-result-thumb"></span>
+                  <span className="lp-result-copy"><strong>Publicar anúncio</strong><span>Fluxo curto para carros e imóveis</span></span>
+                  <span className="lp-result-price">Grátis</span>
+                </Link>
+              </div>
+              <div className="lp-decision-panel">
+                <div>
+                  <strong>Menos passos entre pesquisar e contactar.</strong>
+                  <p>O visitante chega rapidamente a resultados úteis e o anunciante recebe contactos com mais contexto.</p>
+                  <div className="lp-decision-list">
+                    <span><ShieldCheck size={15} strokeWidth={2.2} aria-hidden="true" /> Informação organizada</span>
+                    <span><MapPin size={15} strokeWidth={2.2} aria-hidden="true" /> Localização clara</span>
+                    <span><Handshake size={15} strokeWidth={2.2} aria-hidden="true" /> Contacto direto</span>
+                  </div>
+                </div>
+                <Link className="lp-decision-cta" to={publicarTo} state={publicarState}>Publicar grátis <ArrowRight size={15} strokeWidth={2.2} aria-hidden="true" /></Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -730,15 +738,15 @@ export default function Landing() {
           <div className="lp-cv-card lp-reveal">
             <div className="lp-cv-copy">
               <span className="lp-eyebrow">Parceiro de histórico automóvel</span>
-              <h2 className="lp-title" id="lp-cv-title">Conhece o carro antes da visita.</h2>
-              <p className="lp-copy">Consulta histórico, quilometragem e registos disponíveis.</p>
-              <ul className="lp-cv-points"><li>Histórico antes do contacto</li><li>Mais segurança na compra</li></ul>
+              <h2 className="lp-title" id="lp-cv-title">Verifica o histórico com 20% de desconto.</h2>
+              <p className="lp-copy">Antes de visitar ou fechar negócio, consulta dados disponíveis sobre histórico, quilometragem e registos do veículo através da carVertical.</p>
+              <ul className="lp-cv-points"><li>20% de desconto</li><li>Histórico antes do contacto</li><li>Mais segurança na compra</li></ul>
               <a className="lp-btn lp-btn-primary" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer">Verificar um veículo</a>
             </div>
             <div className="lp-cv-panel">
               <span>Histórico automóvel com</span>
               <img src="/carvertical-logo.png" alt="carVertical" loading="lazy" />
-              <div className="lp-cv-code"><small>Código</small><strong>NOXVELIA</strong></div>
+              <div className="lp-cv-offer"><small>Oferta Noxvelia</small><strong>20%</strong><em>de desconto na verificação através do nosso link.</em></div>
             </div>
           </div>
         </div>

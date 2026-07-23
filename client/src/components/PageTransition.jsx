@@ -17,36 +17,34 @@ export default function PageTransition() {
     const ctx = gsap.context(() => {
       if (main) {
         gsap.fromTo(main, {
-          opacity: 0.975,
-          y: 10,
-          filter: 'blur(4px)',
+          opacity: 0.98,
+          y: 6,
         }, {
           opacity: 1,
           y: 0,
-          filter: 'blur(0px)',
-          duration: 0.42,
+          duration: 0.28,
           ease: 'power2.out',
-          clearProps: 'opacity,transform,filter',
+          clearProps: 'opacity,transform',
         });
       }
 
       gsap.fromTo(
-        '[data-nx-page-reveal], .pesquisa-command, .pesquisa-sidebar, .pesquisa-topbar, .nxc-wrap, .auth-card, .pub-form, .pl-card, .pro-card, .perfil-moldura, .legal-container, .pp-user-section, .title-block, .gallery-wrap, .price-panel',
-        { opacity: 0, y: 14 },
-        { opacity: 1, y: 0, duration: 0.48, stagger: 0.026, ease: 'power2.out', clearProps: 'opacity,transform' },
+        '[data-nx-page-reveal], .pesquisa-search-row, .pesquisa-sidebar, .pesquisa-topbar, .nxc-wrap, .auth-card, .pub-form, .pl-card, .pro-card, .perfil-moldura, .legal-container, .pp-user-section, .title-block, .gallery-wrap, .price-panel',
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.32, stagger: 0.018, ease: 'power2.out', clearProps: 'opacity,transform' },
       );
     });
 
     const barAnimation = barRef.current ? animate(barRef.current, {
       scaleX: [0, 1, 1, 0],
       opacity: [0, 1, 1, 0],
-      duration: 760,
+      duration: 560,
       ease: 'outCubic',
     }) : null;
 
     const veilAnimation = veilRef.current ? animate(veilRef.current, {
-      opacity: [0, 0.18, 0],
-      duration: 620,
+      opacity: [0, 0.1, 0],
+      duration: 420,
       ease: 'outQuad',
     }) : null;
 

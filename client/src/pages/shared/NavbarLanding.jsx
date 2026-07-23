@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../../components/ThemeToggle';
@@ -67,9 +67,8 @@ export default function NavbarLanding() {
         }
 
         .nl-root {
-          position: sticky;
-          top: 0;
-          z-index: 9990;
+          position: relative;
+          z-index: 50;
           width: 100%;
           isolation: isolate;
           height: 74px;

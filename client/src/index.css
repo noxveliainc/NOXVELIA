@@ -901,7 +901,7 @@ h1, h2, h3, h4 {
   box-shadow: 0 0 0 3px rgba(217, 196, 156, 0.2) !important;
 }
 
-:where(.nxc-wrap, .pesquisa-command, .pesquisa-sidebar, .auth-card, .pub-form, .pl-card, .pro-card, .perfil-moldura, .legal-container, .profile-card, .pp-user-section) {
+:where(.nxc-wrap, .pesquisa-sidebar, .auth-card, .pub-form, .pl-card, .pro-card, .perfil-moldura, .legal-container, .profile-card, .pp-user-section) {
   transition: border-color .18s ease, background-color .18s ease, opacity .18s ease !important;
 }
 

@@ -5,10 +5,11 @@ import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
 import useDebounce from '../../hooks/useDebounce';
+import Fuse from 'fuse.js';
 import { Icon } from '@mdi/react';
 import {
   mdiMap, mdiViewGrid, mdiMagnify, mdiLoading, mdiFilterVariant, mdiChevronLeft,
-  mdiChevronRight, mdiChartTimelineVariant, mdiShieldCheckOutline, mdiCloseCircleOutline
+  mdiChevronRight, mdiShieldCheckOutline, mdiCloseCircleOutline
 } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
@@ -45,6 +46,8 @@ const dividirParamLista = (valor) => String(valor || '')
   .map((item) => item.trim())
   .filter(Boolean);
 const formatarNumero = (valor) => Number(valor).toLocaleString('pt-PT');
+const normalizarModeloPesquisa = (modelo) => (typeof modelo === 'object' ? modelo.modelo || modelo.nome || '' : modelo);
+
 
 export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [searchParams] = useSearchParams();
@@ -97,6 +100,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [totalResultados, setTotalResultados] = useState(0);
   const [sort, setSort] = useState('relevancia');
   const [searchQuery, setSearchQuery] = useState(queryInicial);
+  const [searchFocused, setSearchFocused] = useState(false);
   const [temMais, setTemMais] = useState(false);
 
   const [sidebarMobileAberta, setSidebarMobileAberta] = useState(false);
@@ -408,6 +412,107 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     paginaRef.current = 1;
     setTimeout(() => { puxarDadosServidor(1, false, tipoSeguro); }, 50);
   };
+
+
+  const pesquisaPlaceholder = tipoSeguro === 'carro'
+    ? 'Marca, modelo, distrito ou palavra-chave...'
+    : 'Tipologia, cidade, característica ou palavra-chave...';
+
+  const opcoesPesquisa = useMemo(() => {
+    const opcoes = [];
+
+    if (tipoSeguro === 'carro') {
+      MARCAS.forEach((marca) => {
+        opcoes.push({ label: marca, detail: 'Marca automóvel', patch: { marca, modelo: '' } });
+        getModelosPorMarca(marca).forEach((modeloOriginal) => {
+          const modelo = normalizarModeloPesquisa(modeloOriginal);
+          if (!modelo) return;
+          opcoes.push({ label: `${marca} ${modelo}`, detail: 'Modelo automóvel', patch: { marca, modelo } });
+        });
+      });
+    } else {
+      TIPOS_IMOVEL.forEach((tipo) => opcoes.push({ label: tipo.label, detail: 'Tipo de imóvel', patch: { tiposImovel: [tipo.value] } }));
+      TIPOLOGIAS.forEach((tipologia) => opcoes.push({ label: tipologia, detail: 'Tipologia', patch: { tipologias: [tipologia] } }));
+    }
+
+    DISTRITOS.forEach((distrito) => {
+      opcoes.push({ label: distrito, detail: 'Distrito', patch: { distrito, cidade: '' } });
+      (DISTRITOS_CIDADES_PT[distrito] || []).forEach((cidade) => {
+        opcoes.push({ label: cidade, detail: `${distrito} · cidade`, patch: { distrito, cidade } });
+      });
+    });
+
+    return opcoes;
+  }, [tipoSeguro]);
+
+  const fusePesquisa = useMemo(() => new Fuse(opcoesPesquisa, {
+    keys: ['label', 'detail'],
+    threshold: 0.3,
+    ignoreLocation: true,
+    minMatchCharLength: 2,
+  }), [opcoesPesquisa]);
+
+  const sugestoesPesquisa = useMemo(() => {
+    const termo = searchQuery.trim();
+    if (termo.length < 2) return [];
+    return fusePesquisa.search(termo).slice(0, 7).map((resultado) => resultado.item);
+  }, [fusePesquisa, searchQuery]);
+
+  const aplicarFiltrosInstantaneos = useCallback((patch, novaBusca = '') => {
+    const proximosFiltros = { ...filtrosRef.current, ...patch, tipo: tipoSeguro };
+    filtrosRef.current = proximosFiltros;
+    buscaRef.current = novaBusca;
+    setFiltros(proximosFiltros);
+    setSearchQuery(novaBusca);
+    setSearchFocused(false);
+    setTemMais(false);
+    setResultados([]);
+    paginaRef.current = 1;
+    setTimeout(() => { puxarDadosServidor(1, false, tipoSeguro); }, 50);
+  }, [puxarDadosServidor, tipoSeguro]);
+
+  const limparFiltroAtivo = useCallback((filtro) => {
+    const patch = {};
+    let novaBusca = searchQuery;
+
+    if (filtro === `"${searchQuery.trim()}"`) novaBusca = '';
+    if (filtro === (filtros.precoMin && `Desde ${formatarNumero(filtros.precoMin)} EUR`)) patch.precoMin = '';
+    if (filtro === (filtros.precoMax && `Até ${formatarNumero(filtros.precoMax)} EUR`)) patch.precoMax = '';
+    if (filtro === filtros.distrito) { patch.distrito = 'Todos'; patch.cidade = ''; }
+    if (filtro === filtros.cidade) patch.cidade = '';
+    if (filtro === filtros.marca) { patch.marca = ''; patch.modelo = ''; }
+    if (filtro === filtros.modelo) patch.modelo = '';
+    if ((filtros.tiposImovel || []).map(tipo => TIPOS_IMOVEL.find(item => item.value === tipo)?.label || tipo).includes(filtro)) {
+      patch.tiposImovel = (filtros.tiposImovel || []).filter((tipo) => (TIPOS_IMOVEL.find(item => item.value === tipo)?.label || tipo) !== filtro);
+    }
+    if (filtros.tipologias.includes(filtro)) patch.tipologias = filtros.tipologias.filter((item) => item !== filtro);
+    if (filtros.combustiveis.includes(filtro)) patch.combustiveis = filtros.combustiveis.filter((item) => item !== filtro);
+    if (filtros.transmissao.includes(filtro)) patch.transmissao = filtros.transmissao.filter((item) => item !== filtro);
+    if ((filtros.tipoVeiculo || []).map(tipo => TIPOS_VEICULO.find(item => item.value === tipo)?.label || tipo).includes(filtro)) {
+      patch.tipoVeiculo = (filtros.tipoVeiculo || []).filter((tipo) => (TIPOS_VEICULO.find(item => item.value === tipo)?.label || tipo) !== filtro);
+    }
+    if (filtro === (filtros.anoMin && `Ano desde ${filtros.anoMin}`)) patch.anoMin = '';
+    if (filtro === (filtros.anoMax && `Ano até ${filtros.anoMax}`)) patch.anoMax = '';
+    if (filtro === (filtros.kmMax && `Até ${formatarNumero(filtros.kmMax)} km`)) patch.kmMax = '';
+    if (filtro === (filtros.potenciaMin && `Desde ${filtros.potenciaMin} cv`)) patch.potenciaMin = '';
+    if (filtro === (filtros.potenciaMax && `Até ${filtros.potenciaMax} cv`)) patch.potenciaMax = '';
+    if (filtro === (filtros.areaMin && `Desde ${formatarNumero(filtros.areaMin)} m²`)) patch.areaMin = '';
+    if (filtro === (filtros.quartosMin && `${filtros.quartosMin}+ quartos`)) patch.quartosMin = '';
+    if (filtro === 'Com garantia') patch.garantia = false;
+    if (filtro === 'Aceita retoma') patch.aceitaRetoma = false;
+    if (filtro === 'Com garagem') patch.garagem = false;
+    if (filtro === 'Profissional' || filtro === 'Particular') patch.tipoAnunciante = '';
+
+    aplicarFiltrosInstantaneos(patch, novaBusca);
+  }, [aplicarFiltrosInstantaneos, filtros, searchQuery]);
+
+  const aplicarSugestaoPesquisa = useCallback((sugestao) => {
+    aplicarFiltrosInstantaneos(sugestao.patch || {}, '');
+  }, [aplicarFiltrosInstantaneos]);
+
+
+  const mostrarSugestoesPesquisa = searchFocused && sugestoesPesquisa.length > 0;
+
   return (
     <>
       {!seoParams && <Seo
@@ -449,52 +554,43 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .pesquisa-tag:hover { background: var(--nx-border); color: var(--nx-text); }
         .pesquisa-tag.active { background: ${accent}; color: #071326; border-color: ${accent}; }
 
-        .pesquisa-apply-btn { width: 100%; padding: 14px; background: var(--nx-text); color: var(--nx-bg); border: none; border-radius: var(--nx-radius-sm); font-family: var(--nx-font-body); font-weight: 800; font-size: 13px; cursor: pointer; transition: opacity 0.2s ease; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 8px; }
+        .pesquisa-apply-btn { width: 100%; padding: 14px; background: ${accent}; color: #071326; border: none; border-radius: var(--nx-radius-sm); font-family: var(--nx-font-body); font-weight: 900; font-size: 13px; cursor: pointer; transition: opacity 0.2s ease, transform 0.2s ease; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 8px; }
         .pesquisa-apply-btn:hover { opacity: 0.85; }
 
         .pesquisa-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-
-        .pesquisa-command {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 22px;
-          padding: 22px 24px;
-          margin-bottom: 18px;
-          box-shadow: 0 18px 40px -30px rgba(15,23,42,0.35);
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          gap: 20px;
-          align-items: center;
-          position: relative;
-          overflow: hidden;
-        }
-        .pesquisa-command::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: ${accent}; }
-        .pesquisa-command-kicker { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
-        .pesquisa-command h1 { margin: 0; font-size: clamp(24px, 3vw, 34px); line-height: 1.08; letter-spacing: -0.02em; color: #0f172a; }
-        .pesquisa-command p { margin: 8px 0 0; color: #64748b; font-size: 14px; line-height: 1.6; max-width: 640px; }
-        .pesquisa-command-metrics { display: grid; grid-template-columns: repeat(2, 118px); gap: 10px; }
-        .pesquisa-command-metric { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; }
-        .pesquisa-command-metric strong { display: block; font-family: var(--nx-font-display); font-size: 22px; line-height: 1; color: #0f172a; }
-        .pesquisa-command-metric span { display: block; margin-top: 6px; color: #64748b; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; }
-
         .pesquisa-search-row { display: flex; gap: 12px; align-items: stretch; margin-bottom: 24px; }
-        .pesquisa-search-row .pesquisa-omnibar-wrapper { margin-bottom: 0; flex: 1; }
+        .pesquisa-search-row .pesquisa-search-composer { margin-bottom: 0; flex: 1; }
+        .pesquisa-search-composer { position: relative; min-width: 0; }
 
         .pesquisa-omnibar-wrapper { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: var(--nx-radius-md); display: flex; align-items: center; padding: 10px 20px; box-shadow: 0 10px 26px -24px rgba(15,23,42,0.45); }
         .pesquisa-omnibar-wrapper:focus-within { border-color: ${accent}; box-shadow: 0 0 0 3px rgba(217,196,156,0.18); }
         .pesquisa-omnibar-wrapper input { flex: 1; border: none; padding: 8px; font-size: 15px; color: var(--nx-text); outline: none; background: transparent; }
+        .pesquisa-input-clear { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 999px; background: transparent; color: #94a3b8; cursor: pointer; }
+        .pesquisa-input-clear:hover { background: rgba(15,23,42,.06); color: #0f172a; }
+        .pesquisa-suggestions { position: absolute; z-index: 30; top: calc(100% + 8px); left: 0; right: 0; display: grid; gap: 6px; padding: 8px; border: 1px solid #e2e8f0; border-radius: 16px; background: #ffffff; box-shadow: 0 24px 54px -34px rgba(15,23,42,.45); }
+        .pesquisa-suggestion { width: 100%; min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px; border: 0; border-radius: 11px; background: transparent; color: #0f172a; cursor: pointer; text-align: left; }
+        .pesquisa-suggestion:hover { background: #f8fafc; }
+        .pesquisa-suggestion span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 850; }
+        .pesquisa-suggestion em { flex-shrink: 0; color: #64748b; font-size: 11px; font-style: normal; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
 
         .pesquisa-mobile-filter-btn { display: none; align-items: center; gap: 6px; padding: 0 18px; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: var(--nx-radius-md); color: var(--nx-text); font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
         .pesquisa-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .pesquisa-results-count { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 900; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 999px; padding: 8px 11px; text-transform: uppercase; letter-spacing: .06em; }
+        .pesquisa-results-count { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 900; color: #102f50; background: rgba(217,196,156,.14); border: 1px solid rgba(217,196,156,.42); border-radius: 999px; padding: 8px 11px; text-transform: uppercase; letter-spacing: .06em; }
         .pesquisa-sort { border: 1px solid #e2e8f0; background: #ffffff; border-radius: 12px; padding: 10px 34px 10px 12px; font-family: var(--nx-font-body); font-size: 13px; font-weight: 800; color: var(--nx-text); cursor: pointer; outline: none; }
+        .pesquisa-sort option { background: var(--nx-bg-2); color: var(--nx-text); }
         .pesquisa-active-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: -8px 0 22px; min-height: 34px; }
-        .pesquisa-active-chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #dbeafe; background: #eff6ff; color: #2563eb; border-radius: 999px; padding: 8px 11px; font-size: 12px; font-weight: 800; }
+        .pesquisa-active-chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(217,196,156,.45); background: rgba(217,196,156,.16); color: #102f50; border-radius: 999px; padding: 8px 11px; font-size: 12px; font-weight: 800; }
+        .pesquisa-active-chip.is-removable { cursor: pointer; font-family: inherit; transition: border-color .18s ease, background .18s ease, color .18s ease; }
+        .pesquisa-active-chip.is-removable:hover { border-color: rgba(16,47,80,.36); background: rgba(16,47,80,.08); color: #071326; }
+        .pesquisa-active-chip span { min-width: 0; max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .pesquisa-clear-btn { display: inline-flex; align-items: center; gap: 6px; background: #ffffff; color: #64748b; border: 1px solid #e2e8f0; border-radius: 999px; padding: 8px 11px; font-size: 12px; font-weight: 800; cursor: pointer; }
         .pesquisa-clear-btn:hover { border-color: #cbd5e1; color: #0f172a; }
 
         .pesquisa-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 24px; }
+        .pesquisa-skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 24px; }
+        .pesquisa-skeleton-card { min-height: 360px; border: 1px solid #e2e8f0; border-radius: 18px; background: linear-gradient(110deg, #ffffff 0%, #f8fafc 42%, #ffffff 74%); background-size: 220% 100%; animation: pesquisaSkeleton 1.3s ease-in-out infinite; box-shadow: 0 18px 42px -36px rgba(15,23,42,.36); }
+        @keyframes pesquisaSkeleton { from { background-position: 180% 0; } to { background-position: -40% 0; } }
 
         .pesquisa-root { background: var(--nx-bg); }
         .pesquisa-layout {
@@ -513,23 +609,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           border-color: rgba(226,232,240,0.92);
           box-shadow: 0 16px 34px -30px rgba(15,23,42,0.6);
         }
-        .pesquisa-command {
-          background: #ffffff;
-          border-color: #e2e8f0;
-          color: #0f172a;
-          border-radius: 18px;
-          box-shadow: 0 22px 54px -44px rgba(15,23,42,0.45);
-        }
-        .pesquisa-command::before { width: 4px; }
-        .pesquisa-command-kicker { color: #64748b; }
-        .pesquisa-command h1 { color: #0f172a; }
-        .pesquisa-command p { color: #64748b; }
-        .pesquisa-command-metric {
-          background: #f8fafc;
-          border-color: #e2e8f0;
-        }
-        .pesquisa-command-metric strong { color: #0f172a; }
-        .pesquisa-command-metric span { color: #64748b; }
         .pesquisa-search-row {
           background: rgba(255,255,255,0.94);
           border: 1px solid #e2e8f0;
@@ -587,35 +666,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           color: #020617;
           box-shadow: 0 8px 18px -14px ${accent};
         }
-        .pesquisa-alert-btn {
-          min-height: 44px;
-          border: 1px solid rgba(217,196,156,.24);
-          border-radius: 14px;
-          padding: 0 14px;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          background: #ffffff;
-          color: #0f172a;
-          font-size: 12px;
-          font-weight: 900;
-          cursor: pointer;
-          box-shadow: 0 12px 24px -22px rgba(15,23,42,.5);
-          transition: transform .2s ease, border-color .2s ease, background .2s ease;
-        }
-        .pesquisa-alert-btn:hover:not(:disabled) { transform: translateY(-1px); border-color: ${accent}; background: rgba(217,196,156,.06); }
-        .pesquisa-alert-btn:disabled { opacity: .65; cursor: wait; }
-        .pesquisa-alert-feedback {
-          display: inline-flex;
-          align-items: center;
-          border: 1px solid rgba(16,185,129,.18);
-          background: rgba(16,185,129,.08);
-          color: #806040;
-          border-radius: 999px;
-          padding: 8px 11px;
-          font-size: 12px;
-          font-weight: 800;
-        }
         .pesquisa-map-shell {
           position: relative;
           height: min(720px, calc(100vh - 260px));
@@ -651,57 +701,71 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           font-size: 13px;
           font-weight: 800;
         }
-
-        .dark .pesquisa-root { background: #020617; }
+        .dark .pesquisa-root { background: #071326; color: #fffaf0; }
         .dark .pesquisa-sidebar,
         .dark .pesquisa-sidebar-toggle,
+        .dark .pesquisa-mobile-filter-btn,
         .dark .pesquisa-search-row,
         .dark .pesquisa-topbar {
-          background: rgba(15, 23, 42, 0.94) !important;
-          border-color: rgba(71, 85, 105, 0.8) !important;
-          box-shadow: 0 24px 64px -48px rgba(0,0,0,0.95) !important;
+          background: #0d1d33 !important;
+          border-color: rgba(217,196,156,.22) !important;
+          box-shadow: 0 24px 64px -48px rgba(0,0,0,.95) !important;
         }
+        .dark .pesquisa-sidebar-header { background: #0d1d33; border-color: rgba(217,196,156,.18); }
+        .dark .pesquisa-sidebar-close { background: #071326; border-color: rgba(217,196,156,.22); color: #fffaf0; }
         .dark .pesquisa-omnibar-wrapper,
+        .dark .pesquisa-suggestions,
         .dark .pesquisa-filter-stat,
         .dark .pesquisa-view-switch,
         .dark .pesquisa-results-count,
         .dark .pesquisa-sort,
         .dark .pesquisa-clear-btn,
-        .dark .pesquisa-active-chip,
-        .dark .pesquisa-alert-btn {
-          background: rgba(30, 41, 59, 0.92) !important;
-          border-color: rgba(71, 85, 105, 0.9) !important;
-          color: #e2e8f0 !important;
+        .dark .pesquisa-active-chip {
+          background: #071326 !important;
+          border-color: rgba(217,196,156,.22) !important;
+          color: #fffaf0 !important;
         }
-        .dark .pesquisa-filter-stat strong,
-        .dark .pesquisa-command h1,
-        .dark .pesquisa-command-metric strong {
-          color: #f8fafc !important;
+        .dark .pesquisa-filter-input {
+          background: #071326 !important;
+          border-color: rgba(217,196,156,.22) !important;
+          color: #fffaf0 !important;
         }
+        .dark .pesquisa-filter-input:disabled { color: rgba(255,250,240,.42) !important; background: rgba(7,19,38,.68) !important; }
+        .dark .pesquisa-filter-input::placeholder,
+        .dark .pesquisa-omnibar-wrapper input::placeholder { color: rgba(255,250,240,.5); }
+        .dark .pesquisa-filter-stat strong { color: #fffaf0 !important; }
         .dark .pesquisa-filter-stat span,
-        .dark .pesquisa-command-kicker,
-        .dark .pesquisa-command p,
-        .dark .pesquisa-command-metric span {
-          color: #94a3b8 !important;
-        }
-        .dark .pesquisa-view-switch button,
         .dark .pesquisa-filter-title,
+        .dark .pesquisa-results-count,
+        .dark .pesquisa-suggestion em { color: rgba(255,250,240,.66) !important; }
+        .dark .pesquisa-active-chip { background: rgba(217,196,156,.12) !important; color: #fffaf0 !important; }
+        .dark .pesquisa-active-chip.is-removable:hover { background: rgba(217,196,156,.2) !important; color: #fffaf0 !important; }
         .dark .pesquisa-tag {
-          color: #cbd5e1 !important;
+          background: rgba(255,250,240,.06) !important;
+          border-color: rgba(217,196,156,.18) !important;
+          color: rgba(255,250,240,.78) !important;
         }
+        .dark .pesquisa-tag:hover,
         .dark .pesquisa-view-switch button:hover,
-        .dark .pesquisa-clear-btn:hover {
-          color: #ffffff !important;
-        }
+        .dark .pesquisa-clear-btn:hover { color: #fffaf0 !important; border-color: rgba(217,196,156,.36) !important; }
+        .dark .pesquisa-view-switch button { color: rgba(255,250,240,.72) !important; }
         .dark .pesquisa-view-switch button.active,
         .dark .pesquisa-tag.active {
-          color: #020617 !important;
+          background: #d9c49c !important;
+          border-color: #d9c49c !important;
+          color: #071326 !important;
         }
+        .dark .pesquisa-apply-btn { background: #d9c49c !important; color: #071326 !important; box-shadow: 0 14px 30px -22px rgba(217,196,156,.9); }
         .dark .pesquisa-map-shell {
-          background: #0f172a;
-          border-color: #334155;
-          box-shadow: 0 28px 70px -48px rgba(0,0,0,0.95);
+          background: #071326;
+          border-color: rgba(217,196,156,.22);
+          box-shadow: 0 28px 70px -48px rgba(0,0,0,.95);
         }
+        .dark .pesquisa-suggestion { color: #fffaf0; }
+        .dark .pesquisa-suggestion:hover { background: rgba(217,196,156,.1); }
+        .dark .pesquisa-input-clear { color: rgba(255,250,240,.58); }
+        .dark .pesquisa-input-clear:hover { background: rgba(217,196,156,.1); color: #fffaf0; }
+        .dark .pesquisa-skeleton-card { border-color: rgba(217,196,156,.18); background: linear-gradient(110deg, #071326 0%, #0d1d33 42%, #071326 74%); background-size: 220% 100%; }
 
         .sidebar-mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.48); z-index: 9998; backdrop-filter: none; }
 
@@ -716,8 +780,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           .pesquisa-sidebar-toggle { display: none; }
           .pesquisa-mobile-filter-btn { display: inline-flex; }
           .pesquisa-main-content { width: 100%; }
-          .pesquisa-command { grid-template-columns: 1fr; }
-          .pesquisa-command-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
 
         @media (max-width: 640px) {
@@ -733,7 +795,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           .pesquisa-view-tools { width: 100%; display: grid; grid-template-columns: 1fr; }
           .pesquisa-view-switch { width: 100%; box-sizing: border-box; }
           .pesquisa-view-switch button { flex: 1; justify-content: center; }
-          .pesquisa-alert-btn, .pesquisa-sort { width: 100%; justify-content: center; min-height: 44px; box-sizing: border-box; }
+          .pesquisa-sort { width: 100%; justify-content: center; min-height: 44px; box-sizing: border-box; }
           .pesquisa-grid { gap: 16px; }
           .pesquisa-map-shell { height: calc(100vh - 220px); min-height: 420px; border-radius: 14px; }
         }
@@ -761,6 +823,10 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               <button type="button" className="pesquisa-sidebar-close" onClick={() => setSidebarMobileAberta(false)} aria-label="Fechar filtros">
                 <Icon path={mdiCloseCircleOutline} size={0.85} /> Fechar
               </button>
+            </div>
+            <div className="pesquisa-filter-status" aria-label="Resumo dos filtros">
+              <div className="pesquisa-filter-stat"><strong>{filtrosAtivos.length}</strong><span>ativos</span></div>
+              <div className="pesquisa-filter-stat"><strong>{loading && resultados.length === 0 ? '...' : totalResultados}</strong><span>registos</span></div>
             </div>
             <div className="pesquisa-filter-group">
               <div className="pesquisa-filter-title">Orçamento (€)</div>
@@ -900,38 +966,70 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           </button>
 
           <main className="pesquisa-main-content">
+
             <div className="pesquisa-search-row">
               <button type="button" className="pesquisa-mobile-filter-btn" onClick={() => setSidebarMobileAberta(true)}>
                 <Icon path={mdiFilterVariant} size={0.8} />
                 Filtros
               </button>
 
-              <div className="pesquisa-omnibar-wrapper">
-                <Icon path={mdiMagnify} size={0.9} color="var(--nx-text-sub)" style={{ marginRight: '12px' }} />
-                <input type="text" placeholder={tipoSeguro === 'carro' ? 'Pesquisar por marca, modelo, versão...' : 'Pesquisar por título, características...'} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                {loading && <Icon path={mdiLoading} size={0.9} color={accent} className="animate-spin" />}
+              <div className="pesquisa-search-composer">
+                <div className="pesquisa-omnibar-wrapper">
+                  <Icon path={mdiMagnify} size={0.9} color="var(--nx-text-sub)" style={{ marginRight: '12px' }} />
+                  <input
+                    type="text"
+                    placeholder={pesquisaPlaceholder}
+                    value={searchQuery}
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => setTimeout(() => setSearchFocused(false), 140)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        aplicarFiltrosInstantaneos({}, event.currentTarget.value);
+                      }
+                    }}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && !loading && (
+                    <button type="button" className="pesquisa-input-clear" onMouseDown={(event) => event.preventDefault()} onClick={() => aplicarFiltrosInstantaneos({}, '')} aria-label="Limpar pesquisa">
+                      <Icon path={mdiCloseCircleOutline} size={0.7} />
+                    </button>
+                  )}
+                  {loading && <Icon path={mdiLoading} size={0.9} color={accent} className="animate-spin" />}
+                </div>
+
+                {mostrarSugestoesPesquisa && (
+                  <div className="pesquisa-suggestions" role="listbox" aria-label="Sugestões de pesquisa">
+                    {sugestoesPesquisa.map((sugestao) => (
+                      <button
+                        type="button"
+                        className="pesquisa-suggestion"
+                        key={`${sugestao.detail}-${sugestao.label}`}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => aplicarSugestaoPesquisa(sugestao)}
+                      >
+                        <span>{sugestao.label}</span>
+                        <em>{sugestao.detail}</em>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="pesquisa-active-row">
-              {filtrosAtivos.length > 0 ? (
-                <>
-                  {filtrosAtivos.slice(0, 7).map((filtro) => (
-                    <span className="pesquisa-active-chip" key={filtro}>
-                      <Icon path={mdiShieldCheckOutline} size={0.55} /> {filtro}
-                    </span>
-                  ))}
-                  {filtrosAtivos.length > 7 && <span className="pesquisa-active-chip">+{filtrosAtivos.length - 7}</span>}
-                  <button type="button" className="pesquisa-clear-btn" onClick={limparFiltros}>
-                    <Icon path={mdiCloseCircleOutline} size={0.6} /> Limpar
+
+            {filtrosAtivos.length > 0 && (
+              <div className="pesquisa-active-row">
+                {filtrosAtivos.slice(0, 7).map((filtro) => (
+                  <button type="button" className="pesquisa-active-chip is-removable" key={filtro} onClick={() => limparFiltroAtivo(filtro)} title={`Remover ${filtro}`}>
+                    <Icon path={mdiShieldCheckOutline} size={0.55} /> <span>{filtro}</span><Icon path={mdiCloseCircleOutline} size={0.56} />
                   </button>
-                </>
-              ) : (
-                <span className="pesquisa-active-chip" style={{ background: '#f8fafc', color: '#64748b', borderColor: '#e2e8f0' }}>
-                  <Icon path={mdiChartTimelineVariant} size={0.6} /> Exploração livre
-                </span>
-              )}
-            </div>
+                ))}
+                {filtrosAtivos.length > 7 && <span className="pesquisa-active-chip">+{filtrosAtivos.length - 7}</span>}
+                <button type="button" className="pesquisa-clear-btn" onClick={limparFiltros}>
+                  <Icon path={mdiCloseCircleOutline} size={0.6} /> Limpar
+                </button>
+              </div>
+            )}
 
             {error && <div style={{ color: '#92400e', padding: '16px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '8px', fontSize: '14px', fontWeight: 600, border: '1px solid rgba(245, 158, 11, 0.22)', marginBottom: '24px' }}>{error}</div>}
 
@@ -974,15 +1072,19 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                   </div>
                 )}
               </div>
+            ) : loading && resultados.length === 0 ? (
+              <div className="pesquisa-skeleton-grid" aria-label="A carregar anúncios">
+                {Array.from({ length: 6 }).map((_, index) => <div className="pesquisa-skeleton-card" key={index} />)}
+              </div>
             ) : (
-            <div className="pesquisa-grid">
-              {resultados.map(anuncio => <AnuncioCard key={anuncio._id} anuncio={anuncio} showStatus={false} />)}
-              {temMais && !loading && resultados.length > 0 && (
-                <div ref={sentinelaRef} className="infinite-spinner-container">
-                  <div className="infinite-dot-pulse"></div><div className="infinite-dot-pulse"></div><div className="infinite-dot-pulse"></div>
-                </div>
-              )}
-            </div>
+              <div className="pesquisa-grid">
+                {resultados.map(anuncio => <AnuncioCard key={anuncio._id} anuncio={anuncio} showStatus={false} />)}
+                {temMais && !loading && resultados.length > 0 && (
+                  <div ref={sentinelaRef} className="infinite-spinner-container">
+                    <div className="infinite-dot-pulse"></div><div className="infinite-dot-pulse"></div><div className="infinite-dot-pulse"></div>
+                  </div>
+                )}
+              </div>
             )}
 
             {vistaAtiva === 'grelha' && loadingMais && (

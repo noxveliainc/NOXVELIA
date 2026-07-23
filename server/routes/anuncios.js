@@ -40,6 +40,28 @@ const dividirTipoImovelFiltro = (valor) => {
 
 const filtroBooleanoAtivo = (valor) => ['true', '1', 'sim', 'yes'].includes(normalizarFiltroTexto(valor));
 
+const normalizarContactosAnuncio = ({ telefone, email }, { ehAdmin }) => {
+  const telefoneLimpo = String(telefone || '').trim();
+  const emailLimpo = String(email || '').trim().toLowerCase();
+
+  if (ehAdmin) {
+    if (!telefoneLimpo && !emailLimpo) {
+      const erro = new Error('Indica pelo menos um contacto autorizado: telemóvel ou email.');
+      erro.status = 400;
+      throw erro;
+    }
+    return { telefone: telefoneLimpo, email: emailLimpo };
+  }
+
+  if (!telefoneLimpo || !emailLimpo) {
+    const erro = new Error('Indica o telemóvel e o email de contacto.');
+    erro.status = 400;
+    throw erro;
+  }
+
+  return { telefone: telefoneLimpo, email: emailLimpo };
+};
+
 const aplicarIntervaloNumerico = (query, campo, { min, max }) => {
   const minimo = min !== undefined && min !== '' ? Number(min) : null;
   const maximo = max !== undefined && max !== '' ? Number(max) : null;
@@ -538,6 +560,7 @@ router.post('/', verificarToken, async (req, res) => {
 
     const bodyNormalizado = {
       ...bodyLimpo,
+      ...normalizarContactosAnuncio(bodyLimpo, { ehAdmin }),
       equipamento: normalizarEquipamento(bodyLimpo.equipamento),
       ...(bodyLimpo.tipo === 'imovel' ? { imovel: normalizarImovel(bodyLimpo.imovel) } : {}),
       ...(bodyLimpo.tipo === 'carro' ? { carro: normalizarCarro(bodyLimpo.carro, { obrigatorio: true }) } : {}),
@@ -611,6 +634,12 @@ router.put('/:id', verificarToken, async (req, res) => {
     // Atualizar com os novos campos de confiança
     const tipoAtual = bodyLimpo.tipo || anuncio.tipo;
     const bodyNormalizado = { ...bodyLimpo };
+    if (Object.prototype.hasOwnProperty.call(bodyLimpo, 'telefone') || Object.prototype.hasOwnProperty.call(bodyLimpo, 'email')) {
+      Object.assign(bodyNormalizado, normalizarContactosAnuncio({
+        telefone: Object.prototype.hasOwnProperty.call(bodyLimpo, 'telefone') ? bodyLimpo.telefone : anuncio.telefone,
+        email: Object.prototype.hasOwnProperty.call(bodyLimpo, 'email') ? bodyLimpo.email : anuncio.email,
+      }, { ehAdmin: req.user.tipo === 'admin' }));
+    }
     if (Object.prototype.hasOwnProperty.call(bodyLimpo, 'equipamento')) {
       bodyNormalizado.equipamento = normalizarEquipamento(bodyLimpo.equipamento);
     }

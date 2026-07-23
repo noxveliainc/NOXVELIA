@@ -92,7 +92,23 @@ const validarCamposCarro = (form) => {
   return '';
 };
 
+const validarContactosAnuncio = (form, ehAdmin) => {
+  const telefone = String(form.telefone || '').trim();
+  const email = String(form.email || '').trim();
 
+  if (ehAdmin) {
+    if (!telefone && !email) {
+      return { erro: 'Indica pelo menos um contacto autorizado: telemóvel ou email.' };
+    }
+    return { telefone, email };
+  }
+
+  if (!telefone || !email) {
+    return { erro: 'Indica o telemóvel e o email de contacto.' };
+  }
+
+  return { telefone, email };
+};
 export default function Editar() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -152,6 +168,7 @@ export default function Editar() {
     seccao: 'usado',
     tipoVeiculo: '',
   });
+  const ehAdmin = user?.tipo === 'admin';
 
   useEffect(() => {
     if (!authLoading && !signed) {
@@ -322,12 +339,17 @@ export default function Editar() {
       setErro('Utiliza um link válido do YouTube ou de um tour Matterport.');
       setLoading(false); return;
     }
+    const contacto = validarContactosAnuncio(form, ehAdmin);
+    if (contacto.erro) {
+      setErro(contacto.erro);
+      setLoading(false); return;
+    }
     try {
       const equipamentosNormalizados = normalizarExtras(equipamento);
       const semTipologia = TIPOS_SEM_TIPOLOGIA.includes(form.tipoImovel);
       const payload = {
         titulo: form.titulo, descricao: form.descricao, preco: Number(form.preco),
-        telefone: form.telefone, email: form.email, fotos,
+        telefone: contacto.telefone, email: contacto.email, fotos,
         videoUrl: form.videoUrl.trim(),
         equipamento: equipamentosNormalizados,
         localizacao: { cidade: form.cidade, distrito: form.distrito },
@@ -600,12 +622,12 @@ export default function Editar() {
 
                 <div className="pub-grid-2">
                   <div>
-                    <label className="pub-label" style={{ color: accentColorVar }}>Telemóvel de Contacto *</label>
-                    <input className="pub-input" name="telefone" type="tel" value={form.telefone} onChange={handle} required style={{ borderColor: `rgba(${accentRgb}, 0.4)` }} />
+                    <label className="pub-label" style={{ color: accentColorVar }}>{ehAdmin ? 'Telemóvel de Contacto' : 'Telemóvel de Contacto *'}</label>
+                    <input className="pub-input" name="telefone" type="tel" value={form.telefone} onChange={handle} required={!ehAdmin} style={{ borderColor: `rgba(${accentRgb}, 0.4)` }} />
                   </div>
                   <div>
-                    <label className="pub-label">Email de Contacto *</label>
-                    <input className="pub-input" name="email" type="email" value={form.email} onChange={handle} required />
+                    <label className="pub-label">{ehAdmin ? 'Email de Contacto' : 'Email de Contacto *'}</label>
+                    <input className="pub-input" name="email" type="email" value={form.email} onChange={handle} required={!ehAdmin} />
                   </div>
                 </div>
 
