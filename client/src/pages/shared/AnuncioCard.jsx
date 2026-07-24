@@ -53,6 +53,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const idLogado = user?._id || user?.id;
   const eMeuAnuncio = !forceSellerIdentity && signed && ((idDono && idLogado && String(idDono) === String(idLogado)) || !!onAnuncioEliminado);
   const isPremium   = anuncio?.destacado === true;
+  const isSellerPremium = anuncio?.utilizador?.premiumAtivo === true;
   const isVerificado = anuncio?.utilizador?.tipo === 'admin' || anuncio?.utilizador?.premiumAtivo === true;
   const isProfissional = anuncio?.utilizador?.tipoConta === 'profissional' || anuncio?.utilizador?.premiumAtivo === true;
   const isCarro = anuncio?.tipo === 'carro';
@@ -90,9 +91,10 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   ]).filter(item => item.value).slice(0, 3);
 
   const trustBadges = [
-    anuncio?.garantia && { label: 'Garantia' },
-    anuncio?.aceitaRetoma && { label: 'Retoma' },
-    isProfissional && { label: 'Profissional' },
+    isSellerPremium && { label: 'Premium', tone: 'premium' },
+    anuncio?.garantia && { label: 'Garantia', tone: 'trust' },
+    anuncio?.aceitaRetoma && { label: 'Retoma', tone: 'trust' },
+    isProfissional && !isSellerPremium && { label: 'Profissional', tone: 'business' },
   ].filter(Boolean).slice(0, 3);
   const handleAbrirModal = e => { e.preventDefault(); e.stopPropagation(); setMostrarModal(true); };
   const handleFecharModal = e => { e?.preventDefault(); e?.stopPropagation(); setMostrarModal(false); };
@@ -346,6 +348,16 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           font-weight: 850;
           white-space: nowrap;
         }
+        .nxc-trust-pill.premium {
+          background: #102f50;
+          border-color: #102f50;
+          color: #fffaf0;
+        }
+        .nxc-trust-pill.business {
+          background: rgba(16,47,80,.08);
+          border-color: rgba(16,47,80,.18);
+          color: #102f50;
+        }
         .nxc-quality {
           display: flex;
           align-items: center;
@@ -543,6 +555,16 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         }
         .dark .nxc-quality-label { color: #94a3b8; }
         .dark .nxc-insight-label { color: #94a3b8; }
+        .dark .nxc-trust-pill {
+          background: rgba(217,196,156,.12);
+          border-color: rgba(217,196,156,.28);
+          color: #f8fafc;
+        }
+        .dark .nxc-trust-pill.premium {
+          background: #d9c49c;
+          border-color: #d9c49c;
+          color: #071326;
+        }
         .dark .nxc-avatar {
           background: #111c30;
           border-color: #475569;
@@ -619,7 +641,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           <div className="nxc-title">{anuncio?.titulo}</div>
           {trustBadges.length > 0 && (
             <div className="nxc-trust-strip" aria-label="Sinais de confiança">
-              {trustBadges.map((badge) => <span key={badge.label} className="nxc-trust-pill">{badge.label}</span>)}
+              {trustBadges.map((badge) => <span key={badge.label} className={`nxc-trust-pill ${badge.tone || ''}`.trim()}>{badge.label}</span>)}
             </div>
           )}
           {scoreQualidade > 0 && (

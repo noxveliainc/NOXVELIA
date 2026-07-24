@@ -10,7 +10,8 @@
     "test": "node --test tests/*.test.js",
     "check": "node --check index.js",
     "images:migrate": "node scripts/migrateCloudinaryImages.js",
-    "images:cleanup": "node scripts/cleanupImages.js"
+    "images:cleanup": "node scripts/cleanupImages.js",
+    "demo:seed": "node scripts/seedDemoListings.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.99.0",

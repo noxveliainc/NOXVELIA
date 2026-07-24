@@ -303,6 +303,24 @@ export default function Perfil() {
   const totalImoveis = anuncios.filter(a => a.tipo === 'imovel').length;
   const totalCarros = anuncios.filter(a => a.tipo === 'carro').length;
   const linksPerfilVisiveis = obterLinksVisiveisPerfil(utilizador);
+  const anunciosAtivosPerfil = anuncios.filter(a => a.estado !== 'apagado');
+  const totalDestacadosPerfil = anunciosAtivosPerfil.filter(a => a.destacado).length;
+  const totalVisitasPerfil = anunciosAtivosPerfil.reduce((total, anuncio) => total + Number(anuncio.visitas || 0), 0);
+  const totalGuardadosPerfil = anunciosAtivosPerfil.reduce((total, anuncio) => total + Number(anuncio.guardados || 0), 0);
+  const totalContactosPerfil = anunciosAtivosPerfil.reduce((total, anuncio) => total + Number(anuncio.contactos || 0), 0);
+  const anunciosComScorePerfil = anunciosAtivosPerfil.filter(a => Number(a.scoreQualidade || 0) > 0);
+  const mediaQualidadePerfil = anunciosComScorePerfil.length
+    ? Math.round((anunciosComScorePerfil.reduce((total, anuncio) => total + Number(anuncio.scoreQualidade || 0), 0) / anunciosComScorePerfil.length) * 10) / 10
+    : 0;
+  const premiumAtivoPerfil = utilizador?.premiumAtivo === true || utilizador?.tipo === 'admin';
+  const formatarMetricaPerfil = (valor) => new Intl.NumberFormat('pt-PT').format(Number(valor || 0));
+  const recomendacoesPremium = [
+    !utilizador?.bio && 'Adiciona uma bio curta para aumentar confiança antes do primeiro contacto.',
+    linksPerfilVisiveis.length === 0 && 'Liga website, WhatsApp ou redes sociais à tua montra pública.',
+    totalDestacadosPerfil === 0 && anunciosAtivosPerfil.length > 0 && 'Destaca pelo menos um anúncio para abrir a montra com mais força.',
+    mediaQualidadePerfil > 0 && mediaQualidadePerfil < 7 && 'Completa fotos, localização e detalhes técnicos nos anúncios com score baixo.',
+    anunciosAtivosPerfil.length === 0 && 'Publica anúncios ativos para a montra aparecer no diretório profissional.',
+  ].filter(Boolean).slice(0, 3);
 
   if (loading) return <LoadingScreen label="A carregar perfil" detail="Estamos a preparar a tua área NOXVELIA." minHeight="100vh" tone="light" />;
 
@@ -420,6 +438,39 @@ export default function Perfil() {
         .chart-bar { width: 8px; background: #d9c49c; border-radius: 2px 2px 0 0; }
         .chart-day { font-size: 8px; font-weight: 700; color: #64748b; }
         
+        .perfil-premium-panel {
+          margin: 0 0 32px;
+          border: 1px solid rgba(217,196,156,.38);
+          border-radius: 20px;
+          padding: 22px;
+          background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(217,196,156,.1));
+          box-shadow: 0 18px 44px -38px rgba(15,23,42,.55);
+        }
+        .perfil-premium-head { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 18px; }
+        .perfil-premium-kicker { display: inline-flex; align-items: center; gap: 7px; color: #806040; font-size: 11px; font-weight: 950; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 7px; }
+        .perfil-premium-title { margin: 0; color: #102f50; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; line-height: 1.1; font-weight: 900; }
+        .perfil-premium-copy { margin: 8px 0 0; color: #475569; font-size: 13px; line-height: 1.55; max-width: 660px; font-weight: 650; }
+        .perfil-premium-state { flex-shrink: 0; min-height: 34px; display: inline-flex; align-items: center; gap: 7px; padding: 0 12px; border-radius: 999px; background: #102f50; color: #fffaf0; font-size: 11px; font-weight: 950; text-transform: uppercase; letter-spacing: .06em; }
+        .perfil-premium-panel.is-locked .perfil-premium-state { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+        .perfil-premium-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+        .perfil-premium-metric { min-height: 82px; display: grid; align-content: center; gap: 6px; padding: 14px; border: 1px solid rgba(226,232,240,.95); border-radius: 14px; background: rgba(255,255,255,.82); }
+        .perfil-premium-metric strong { color: #0f172a; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; line-height: 1; }
+        .perfil-premium-metric span { color: #64748b; font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .perfil-premium-bottom { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: end; margin-top: 18px; }
+        .perfil-premium-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+        .perfil-premium-list li { color: #334155; font-size: 12.5px; line-height: 1.45; font-weight: 700; }
+        .perfil-premium-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+        .perfil-premium-btn { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 13px; border-radius: 10px; border: 1px solid #d9c49c; background: #d9c49c; color: #071326; font-size: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: .04em; }
+        .perfil-premium-btn.secondary { background: #ffffff; color: #102f50; border-color: rgba(16,47,80,.18); }
+        .perfil-premium-btn:hover { filter: brightness(.98); }
+        .dark .perfil-premium-panel { background: linear-gradient(135deg, #0d1d33, rgba(217,196,156,.08)); border-color: rgba(217,196,156,.24); box-shadow: 0 28px 70px -50px rgba(0,0,0,.95); }
+        .dark .perfil-premium-title, .dark .perfil-premium-metric strong { color: #fffaf0; }
+        .dark .perfil-premium-copy, .dark .perfil-premium-list li { color: rgba(255,250,240,.76); }
+        .dark .perfil-premium-kicker, .dark .perfil-premium-metric span { color: rgba(217,196,156,.88); }
+        .dark .perfil-premium-metric { background: #071326; border-color: rgba(217,196,156,.2); }
+        .dark .perfil-premium-btn.secondary { background: #071326; color: #fffaf0; border-color: rgba(217,196,156,.24); }
+        @media (max-width: 900px) { .perfil-premium-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .perfil-premium-bottom { grid-template-columns: 1fr; } .perfil-premium-actions { justify-content: flex-start; } }
+        @media (max-width: 560px) { .perfil-premium-head { flex-direction: column; } .perfil-premium-grid { grid-template-columns: 1fr; } .perfil-premium-panel { padding: 18px; } }
         .perfil-loading-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; border-radius: 32px; }
 
         /* MODAIS PADRÃO */
@@ -687,6 +738,40 @@ export default function Perfil() {
             uploadingCapa={uploadingCapa}
             linkCopiado={linkCopiado}
           />
+          <section className={`perfil-premium-panel ${premiumAtivoPerfil ? 'is-active' : 'is-locked'}`} aria-label="Centro Premium">
+            <div className="perfil-premium-head">
+              <div>
+                <span className="perfil-premium-kicker"><Icon path={mdiCrown} size={0.62} /> Centro Premium</span>
+                <h2 className="perfil-premium-title">Visibilidade, carteira e próximos passos num só lugar.</h2>
+                <p className="perfil-premium-copy">
+                  Acompanha o desempenho dos anúncios, reforça a tua montra e publica com prioridade quando o plano profissional está ativo.
+                </p>
+              </div>
+              <span className="perfil-premium-state">{premiumAtivoPerfil ? 'Premium ativo' : 'Prévia premium'}</span>
+            </div>
+
+            <div className="perfil-premium-grid">
+              <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(anunciosAtivosPerfil.length)}</strong><span>ativos</span></div>
+              <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(totalDestacadosPerfil)}</strong><span>destaques</span></div>
+              <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(totalVisitasPerfil)}</strong><span>visitas</span></div>
+              <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(totalContactosPerfil)}</strong><span>contactos</span></div>
+              <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(totalGuardadosPerfil)}</strong><span>guardados</span></div>
+              <div className="perfil-premium-metric"><strong>{mediaQualidadePerfil ? `${mediaQualidadePerfil}/10` : '-'}</strong><span>qualidade média</span></div>
+            </div>
+
+            <div className="perfil-premium-bottom">
+              <ul className="perfil-premium-list">
+                {(recomendacoesPremium.length ? recomendacoesPremium : ['A tua montra está bem preparada. Mantém os anúncios atualizados e responde rápido aos contactos.']).map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <div className="perfil-premium-actions">
+                <button type="button" className="perfil-premium-btn" onClick={() => navigate('/publicar')}><Icon path={mdiPlus} size={0.65} /> Publicar</button>
+                <button type="button" className="perfil-premium-btn secondary" onClick={() => navigate('/planos')}><Icon path={mdiChartBar} size={0.65} /> Plano</button>
+                <button type="button" className="perfil-premium-btn secondary" onClick={copiarLinkMontra}><Icon path={mdiShareVariantOutline} size={0.65} /> Montra</button>
+              </div>
+            </div>
+          </section>
 
           {/* NOVO CABEÇALHO DO PERFIL COM CAPA E BIO */}
           {false && (

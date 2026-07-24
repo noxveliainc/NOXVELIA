@@ -82,9 +82,17 @@ export default function Planos() {
 
   const featuresProfissional = [
     'Anúncios ilimitados em carros e imóveis',
-    'Selo de Vendedor Verificado',
-    'Destaque prioritário nos resultados de pesquisa',
-    'Perfil público com contactos e links',
+    'Destaque automático nos anúncios publicados',
+    'Prioridade nos resultados de pesquisa',
+    'Montra pública com contactos, links e mapa opcional',
+    'Painel Premium com métricas da tua carteira',
+    'Selo Premium nos anúncios e no perfil público',
+  ];
+
+  const premiumHighlights = [
+    { title: 'Mais visibilidade', text: 'Os anúncios premium aparecem com prioridade e sinalização própria.' },
+    { title: 'Montra completa', text: 'Perfil público preparado para stands, mediadores e vendedores ativos.' },
+    { title: 'Leitura rápida', text: 'Métricas simples para perceber visitas, contactos e qualidade dos anúncios.' },
   ];
 
   return (
@@ -140,6 +148,34 @@ export default function Planos() {
           grid-template-columns: 1fr 1fr;
           gap: 24px;
           align-items: stretch;
+        }
+        .pl-premium-strip {
+          max-width: 780px;
+          margin: 0 auto 24px;
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+        }
+        .pl-premium-note {
+          min-height: 118px;
+          border: 1px solid rgba(217, 196, 156, 0.42);
+          border-radius: 16px;
+          padding: 18px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(217,196,156,0.08));
+        }
+        .pl-premium-note strong {
+          display: block;
+          color: #102f50;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 15px;
+          margin-bottom: 8px;
+        }
+        .pl-premium-note span {
+          display: block;
+          color: #64748b;
+          font-size: 12.5px;
+          line-height: 1.5;
+          font-weight: 650;
         }
 
         .pl-card {
@@ -300,6 +336,7 @@ export default function Planos() {
 
         @media (max-width: 720px) {
           .pl-grid { grid-template-columns: 1fr; max-width: 380px; }
+          .pl-premium-strip { grid-template-columns: 1fr; max-width: 380px; }
         }
       `}</style>
 
@@ -313,6 +350,14 @@ export default function Planos() {
         {aSincronizar && (
           <p className="pl-sync">A confirmar o teu pagamento...</p>
         )}
+        <div className="pl-premium-strip">
+          {premiumHighlights.map((item) => (
+            <div className="pl-premium-note" key={item.title}>
+              <strong>{item.title}</strong>
+              <span>{item.text}</span>
+            </div>
+          ))}
+        </div>
 
         <div className="pl-grid">
           {/* PLANO GRATUITO */}
