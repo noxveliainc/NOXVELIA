@@ -104,6 +104,9 @@ export default function Perfil() {
     bio: '',
     website: '',
     localidade: '',
+    standNome: '',
+    standMorada: '',
+    standCodigoPostal: '',
     mostrarTelefonePublico: true,
     mostrarMapaPerfil: false,
     linksPerfil: [criarLinkPerfilVazio()]
@@ -216,6 +219,9 @@ export default function Perfil() {
       bio: utilizador?.bio || '',
       website: utilizador?.website || '',
       localidade: utilizador?.localidade || '',
+      standNome: utilizador?.standNome || '',
+      standMorada: utilizador?.standMorada || '',
+      standCodigoPostal: utilizador?.standCodigoPostal || '',
       mostrarTelefonePublico: utilizador?.mostrarTelefonePublico !== false,
       mostrarMapaPerfil: utilizador?.mostrarMapaPerfil === true,
       linksPerfil: prepararLinksParaEdicao(utilizador?.linksPerfil, utilizador?.website)
@@ -260,6 +266,9 @@ export default function Perfil() {
       const res = await api.put('/users/me', {
         bio: dadosEditar.bio,
         localidade: dadosEditar.localidade,
+        standNome: dadosEditar.standNome,
+        standMorada: dadosEditar.standMorada,
+        standCodigoPostal: dadosEditar.standCodigoPostal,
         mostrarTelefonePublico: dadosEditar.mostrarTelefonePublico,
         mostrarMapaPerfil: dadosEditar.mostrarMapaPerfil,
         website: websitePrincipal,
@@ -603,8 +612,62 @@ export default function Perfil() {
                   value={dadosEditar.localidade}
                   onChange={e => {
                     const valor = e.target.value;
-                    setDadosEditar(prev => ({ ...prev, localidade: valor, mostrarMapaPerfil: valor.trim() ? prev.mostrarMapaPerfil : false }));
+                    setDadosEditar(prev => ({
+                      ...prev,
+                      localidade: valor,
+                      mostrarMapaPerfil: [valor, prev.standMorada, prev.standCodigoPostal].some(item => String(item || '').trim()) ? prev.mostrarMapaPerfil : false
+                    }));
                   }}
+                />
+              </div>
+
+              <div className="modal-form-group">
+                <label>Nome do stand ou agência</label>
+                <input
+                  className="modal-input"
+                  type="text"
+                  placeholder="Ex: Noxvelia Porto"
+                  value={dadosEditar.standNome}
+                  onChange={e => setDadosEditar({ ...dadosEditar, standNome: e.target.value })}
+                  maxLength={120}
+                />
+              </div>
+
+              <div className="modal-form-group">
+                <label>Morada do stand</label>
+                <input
+                  className="modal-input"
+                  type="text"
+                  placeholder="Ex: Rua, número, zona"
+                  value={dadosEditar.standMorada}
+                  onChange={e => {
+                    const valor = e.target.value;
+                    setDadosEditar(prev => ({
+                      ...prev,
+                      standMorada: valor,
+                      mostrarMapaPerfil: [prev.localidade, valor, prev.standCodigoPostal].some(item => String(item || '').trim()) ? prev.mostrarMapaPerfil : false
+                    }));
+                  }}
+                  maxLength={240}
+                />
+              </div>
+
+              <div className="modal-form-group">
+                <label>Código postal</label>
+                <input
+                  className="modal-input"
+                  type="text"
+                  placeholder="Ex: 4000-000"
+                  value={dadosEditar.standCodigoPostal}
+                  onChange={e => {
+                    const valor = e.target.value;
+                    setDadosEditar(prev => ({
+                      ...prev,
+                      standCodigoPostal: valor,
+                      mostrarMapaPerfil: [prev.localidade, prev.standMorada, valor].some(item => String(item || '').trim()) ? prev.mostrarMapaPerfil : false
+                    }));
+                  }}
+                  maxLength={20}
                 />
               </div>
 
@@ -613,13 +676,13 @@ export default function Perfil() {
                   <input
                     type="checkbox"
                     checked={dadosEditar.mostrarMapaPerfil}
-                    disabled={!dadosEditar.localidade.trim()}
+                    disabled={!`${dadosEditar.localidade || ''}${dadosEditar.standMorada || ''}${dadosEditar.standCodigoPostal || ''}`.trim()}
                     onChange={e => setDadosEditar({ ...dadosEditar, mostrarMapaPerfil: e.target.checked })}
                   />
                   <span>
                     <span className="privacy-toggle-title">Mostrar mapa no perfil público</span>
                     <span className="privacy-toggle-text">
-                      O mapa mostra uma zona aproximada com base na localidade indicada, sem publicar uma morada exata.
+                      O mapa aparece no perfil público com base na morada do stand ou na localidade indicada.
                     </span>
                   </span>
                 </label>

@@ -91,7 +91,11 @@ export default function ProfileView({
   const emailPodeAparecer = isOwner || !isAdmin;
   const telefonePodeAparecer = !isAdmin && user?.mostrarTelefonePublico !== false;
   const telefoneLimpo = telefonePodeAparecer ? user?.telefone?.replace(/\D/g, '') : '';
-  const mostrarMapaPerfil = user?.mostrarMapaPerfil === true && user?.localidade;
+  const localizacaoMapaPerfil = [user?.standMorada, user?.standCodigoPostal, user?.localidade].filter(Boolean).join(', ');
+  const localizacaoContacto = localizacaoMapaPerfil
+    ? (user?.standNome ? `${user.standNome} · ${localizacaoMapaPerfil}` : localizacaoMapaPerfil)
+    : '';
+  const mostrarMapaPerfil = user?.mostrarMapaPerfil === true && Boolean(localizacaoMapaPerfil || user?.localidade);
 
   return (
     <>
@@ -430,7 +434,7 @@ export default function ProfileView({
             <div className="profile-contact-line">
               {emailPodeAparecer && user?.email && <span><Icon path={mdiEmailOutline} size={0.62} /> {user.email}</span>}
               {!isOwner && telefoneLimpo && <a href={`tel:+351${telefoneLimpo}`}><Icon path={mdiPhone} size={0.62} /> {user.telefone}</a>}
-              {user?.localidade && <span><Icon path={mdiMapMarker} size={0.62} /> {user.localidade}</span>}
+              {localizacaoContacto && <span><Icon path={mdiMapMarker} size={0.62} /> {localizacaoContacto}</span>}
             </div>
 
             {user?.bio && <p className="profile-bio">{user.bio}</p>}
@@ -497,7 +501,13 @@ export default function ProfileView({
         {mostrarMapaPerfil && (
           <div className="profile-map-panel">
             <Suspense fallback={<div className="profile-map-loading">A carregar mapa...</div>}>
-              <MapaPerfil localidade={user.localidade} nome={nomeExibicao} />
+              <MapaPerfil
+                localidade={user.localidade}
+                nome={nomeExibicao}
+                standNome={user.standNome}
+                morada={user.standMorada}
+                codigoPostal={user.standCodigoPostal}
+              />
             </Suspense>
           </div>
         )}

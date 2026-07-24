@@ -300,6 +300,7 @@ export default function Anuncio() {
   const donoDoAnuncio = anuncio.utilizador || anuncio.user;
   const isDono = signed && (user?.id === donoDoAnuncio?._id || user?._id === donoDoAnuncio?._id);
   const isCarro = anuncio.tipo === 'carro';
+  const isDestacado = anuncio?.destacado === true;
   const videoEmbed = getVideoEmbedData(anuncio.videoUrl || anuncio.visitaVirtualUrl);
 
   const precoValor = anuncio.preco || 0;
@@ -454,12 +455,17 @@ export default function Anuncio() {
         @media (max-width: 960px) { .ano-grid { grid-template-columns: 1fr; } }
 
         .gallery-wrap { border-radius: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; margin-bottom: 18px; box-shadow: 0 28px 70px -52px rgba(15,23,42,0.55); }
+        .ano-page.is-featured .gallery-wrap { border-color: rgba(217,196,156,.78) !important; box-shadow: 0 28px 70px -50px rgba(16,47,80,.62), 0 0 0 1px rgba(217,196,156,.2) !important; }
+        .ano-page.is-featured .title-block,
+        .ano-page.is-featured .price-panel { border-color: rgba(217,196,156,.68) !important; }
         .gallery-main { position: relative; aspect-ratio: 16/9; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; }
         .gallery-main img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease, opacity .3s; }
         .gallery-main:hover img { transform: scale(1.025); }
         .gallery-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,.6) 0%, transparent 45%); pointer-events: none; }
         .gallery-placeholder { color: #cbd5e1; opacity: 0.5; }
         .gallery-badge { position: absolute; top: 14px; left: 14px; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,.05); border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: ${accent}; display: flex; align-items: center; gap: 5px; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .gallery-badge.below-featured { top: 54px; }
+        .gallery-featured-badge { position: absolute; top: 14px; left: 14px; z-index: 6; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 13px; border-radius: 999px; background: linear-gradient(135deg, #102f50 0%, #d9c49c 100%); color: #fffaf0; border: 1px solid rgba(255,250,240,.32); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 18px 34px -20px rgba(2,6,23,.78); }
         .gallery-counter { position: absolute; top: 14px; right: 14px; background: rgba(15,23,42,.65); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 5; }
         .gallery-zoom-hint { position: absolute; bottom: 16px; right: 14px; background: rgba(15,23,42,.55); backdrop-filter: blur(8px); border-radius: 20px; padding: 6px 11px; font-size: 11px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 5; opacity: 0; transition: opacity .2s; }
         .gallery-main:hover .gallery-zoom-hint { opacity: 1; }
@@ -486,6 +492,10 @@ export default function Anuncio() {
         .estado-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
         .estado-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
         .meta-dot { color: #cbd5e1; font-size: 10px; }
+        .featured-title-strip { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; padding: 12px 14px; border: 1px solid #e7d3a8; border-radius: 12px; background: linear-gradient(135deg, #fff8e7 0%, #ffffff 100%); color: #102f50; }
+        .featured-title-strip span { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+        .featured-title-strip small { color: #64748b; font-size: 12px; font-weight: 700; text-align: right; }
+        .nx-badge-item.destaque { background: #102f50; border-color: #102f50; color: #fffaf0; }
 
         .decision-strip {
           display: grid;
@@ -665,6 +675,11 @@ export default function Anuncio() {
         @media (max-width: 900px) { .decision-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media (max-width: 960px) { .sidebar-sticky { position: static; max-height: none; overflow: visible; padding-right: 0; } }
         @media (max-width: 520px) { .decision-strip { grid-template-columns: 1fr; } }
+        @media (max-width: 620px) { .featured-title-strip { align-items: flex-start; flex-direction: column; } .featured-title-strip small { text-align: left; } .gallery-badge.below-featured { top: 52px; } }
+        .dark .gallery-featured-badge { background: linear-gradient(135deg, #d9c49c 0%, #102f50 100%); color: #fffaf0; border-color: rgba(255,250,240,.28); }
+        .dark .featured-title-strip { background: rgba(217,196,156,.12); border-color: rgba(217,196,156,.36); color: #fffaf0; }
+        .dark .featured-title-strip small { color: #cbd5e1; }
+        .dark .nx-badge-item.destaque { background: #d9c49c; border-color: #d9c49c; color: #071326; }
 
         .mobile-cta-bar { display: none; }
         @media (max-width: 720px) {
@@ -723,7 +738,7 @@ export default function Anuncio() {
         </div>
       )}
 
-      <div className="ano-page">
+      <div className={`ano-page${isDestacado ? ' is-featured' : ''}`}>
         <div className="ano-container">
 
           <div className="ano-breadcrumb">
@@ -770,7 +785,10 @@ export default function Anuncio() {
                     <div className="gallery-placeholder"><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={3} /></div>
                   )}
                   <div className="gallery-overlay" />
-                  <div className="gallery-badge"><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={0.7} />{isCarro ? 'Automóvel' : 'Imóvel'}</div>
+                  {isDestacado && (
+                    <div className="gallery-featured-badge"><Icon path={mdiStar} size={0.68} />Destaque Noxvelia</div>
+                  )}
+                  <div className={`gallery-badge${isDestacado ? ' below-featured' : ''}`}><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={0.7} />{isCarro ? 'Automóvel' : 'Imóvel'}</div>
                   {fotos.length > 1 && (<div className="gallery-counter"><Icon path={mdiCamera} size={0.65} />{fotoActiva + 1} / {fotos.length}</div>)}
                   {fotoActivaLargeUrl && <div className="gallery-zoom-hint"><Icon path={mdiMagnifyPlusOutline} size={0.65} />Ampliar</div>}
                   <div className="gallery-bottom">
@@ -795,7 +813,13 @@ export default function Anuncio() {
                 )}
               </div>
 
-              <div className="title-block">
+              <div className={`title-block${isDestacado ? ' is-featured' : ''}`}>
+                {isDestacado && (
+                  <div className="featured-title-strip">
+                    <span><Icon path={mdiStar} size={0.68} />Destaque Noxvelia</span>
+                    <small>Aparece com prioridade nos resultados de pesquisa.</small>
+                  </div>
+                )}
                 <div className="listing-price">{preco}</div>
                 <div className="listing-subtitle">{anuncio.titulo}</div>
                 <div className="meta-row">
@@ -888,11 +912,14 @@ export default function Anuncio() {
 
             <div>
               <div className="sidebar-sticky">
-                <div className="price-panel">
+                <div className={`price-panel${isDestacado ? ' is-featured' : ''}`}>
                   <div className="panel-price">{preco}</div>
                   {precoPorM2 && <div className="panel-price-m2">{precoPorM2}</div>}
 
                   <div className="nx-price-badges">
+                    {isDestacado && (
+                      <div className="nx-badge-item destaque"><Icon path={mdiStar} size={0.7} /> Destaque</div>
+                    )}
                     {(garantia || vendedorVerificado) && (
                       <div className="nx-badge-item garantia"><Icon path={mdiShieldCheckOutline} size={0.7} /> {garantia || 'Garantia Incluída'}</div>
                     )}

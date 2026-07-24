@@ -105,6 +105,9 @@ router.put('/me', verificarToken, async (req, res) => {
       linksPerfil,
       bio,
       localidade,
+      standNome,
+      standMorada,
+      standCodigoPostal,
       mostrarTelefonePublico,
       mostrarMapaPerfil,
       tipoConta,
@@ -131,6 +134,9 @@ router.put('/me', verificarToken, async (req, res) => {
     if (avatarUrl !== undefined) camposParaAtualizar.avatarUrl = avatarUrl || null;
     if (capaUrl !== undefined) camposParaAtualizar.capaUrl = capaUrl || null;
     if (localidade !== undefined) camposParaAtualizar.localidade = String(localidade).trim() || null;
+    if (standNome !== undefined) camposParaAtualizar.standNome = String(standNome).trim() || null;
+    if (standMorada !== undefined) camposParaAtualizar.standMorada = String(standMorada).trim() || null;
+    if (standCodigoPostal !== undefined) camposParaAtualizar.standCodigoPostal = String(standCodigoPostal).trim() || null;
     if (mostrarMapaPerfil !== undefined) {
       camposParaAtualizar.mostrarMapaPerfil = mostrarMapaPerfil === true || mostrarMapaPerfil === 'true';
     }
@@ -375,7 +381,7 @@ router.get('/profissionais', async (req, res) => {
 router.get('/vendedor/:id', async (req, res) => {
   try {
     const vendedor = await User.findById(req.params.id).select(
-      'nome email telefone mostrarTelefonePublico mostrarMapaPerfil localidade avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo rating totalAvaliacoes createdAt'
+      'nome email telefone mostrarTelefonePublico mostrarMapaPerfil localidade standNome standMorada standCodigoPostal avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo rating totalAvaliacoes createdAt'
     ).lean();
     if (!vendedor) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
     if (vendedor.tipo === 'admin') {

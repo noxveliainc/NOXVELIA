@@ -128,7 +128,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           border: 1px solid #e2e8f0;
           border-radius: 10px;
           overflow: hidden;
-          transition: border-color .16s ease, background-color .16s ease;
+          transition: border-color .16s ease, background-color .16s ease, box-shadow .16s ease, transform .16s ease;
           color: #0f172a;
           position: relative;
           box-shadow: none;
@@ -141,13 +141,30 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           border-color: #b8c5c1;
         }
         .nxc-wrap.premium {
-          border-color: #c6a86a;
-          box-shadow: none;
+          border-color: #d9c49c;
+          border-width: 2px;
+          background: linear-gradient(180deg, #fffdfa 0%, #ffffff 46%, #ffffff 100%);
+          box-shadow: 0 18px 40px -32px rgba(16, 47, 80, 0.5), 0 0 0 1px rgba(217, 196, 156, 0.14) !important;
+        }
+        .nxc-wrap.premium::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #102f50 0%, #d9c49c 50%, #102f50 100%);
+          z-index: 8;
         }
         .nxc-wrap.premium:hover {
-          border-color: #9d7b3f;
-          box-shadow: none;
+          border-color: #b9944e;
+          background: #fffdfa;
+          box-shadow: 0 22px 46px -34px rgba(16, 47, 80, 0.62), 0 0 0 1px rgba(217, 196, 156, 0.22) !important;
+          transform: translateY(-1px) !important;
         }
+        .nxc-wrap.premium .nxc-img { border-bottom: 1px solid rgba(217, 196, 156, 0.42); }
+        .nxc-wrap.premium .nxc-img img { filter: saturate(1.05) contrast(1.02); }
+        .nxc-wrap.premium .nxc-price { color: #102f50; }
 
         /* ── IMAGEM ── */
         .nxc-img {
@@ -186,19 +203,20 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           position: absolute;
           top: 12px;
           left: 12px;
-          background: #9d7b3f;
-          color: #fff;
-          font-size: 9px;
+          background: linear-gradient(135deg, #102f50 0%, #d9c49c 100%);
+          color: #fffaf0;
+          font-size: 10px;
           font-weight: 900;
-          padding: 4px 9px;
-          border-radius: 6px;
+          padding: 6px 10px;
+          border-radius: 999px;
           text-transform: uppercase;
-          letter-spacing: .1em;
+          letter-spacing: .08em;
           display: flex;
           align-items: center;
           gap: 4px;
-          z-index: 5;
-          box-shadow: none;
+          z-index: 9;
+          border: 1px solid rgba(255, 250, 240, 0.3);
+          box-shadow: 0 10px 22px -14px rgba(2, 6, 23, 0.72);
         }
         
         .nxc-badge-status {
@@ -527,7 +545,19 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           background: #142037;
           box-shadow: none;
         }
-        .dark .nxc-img,
+        .dark .nxc-wrap.premium {
+          background: linear-gradient(180deg, #17243b 0%, #111c30 52%, #111c30 100%);
+          border-color: rgba(217, 196, 156, 0.78);
+          box-shadow: 0 20px 44px -34px rgba(217, 196, 156, 0.42), 0 0 0 1px rgba(217, 196, 156, 0.16) !important;
+        }
+        .dark .nxc-wrap.premium:hover {
+          border-color: #d9c49c;
+          background: #16243b;
+          box-shadow: 0 22px 46px -34px rgba(217, 196, 156, 0.52), 0 0 0 1px rgba(217, 196, 156, 0.22) !important;
+        }
+        .dark .nxc-wrap.premium .nxc-price {
+          color: #fffaf0;
+        }        .dark .nxc-img,
         .dark .nxc-placeholder {
           background: #0f172a;
           color: #64748b;
@@ -565,7 +595,11 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           border-color: #d9c49c;
           color: #071326;
         }
-        .dark .nxc-avatar {
+        .dark .nxc-featured-note {
+          background: rgba(217, 196, 156, 0.16);
+          border-color: rgba(217, 196, 156, 0.42);
+          color: #fffaf0;
+        }        .dark .nxc-avatar {
           background: #111c30;
           border-color: #475569;
           color: #cbd5e1;
@@ -639,6 +673,11 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
             )}
           </div>
           <div className="nxc-title">{anuncio?.titulo}</div>
+          {isPremium && (
+            <div className="nxc-featured-note">
+              <CardIcon name="star" size={12} /> Anúncio em destaque
+            </div>
+          )}
           {trustBadges.length > 0 && (
             <div className="nxc-trust-strip" aria-label="Sinais de confiança">
               {trustBadges.map((badge) => <span key={badge.label} className={`nxc-trust-pill ${badge.tone || ''}`.trim()}>{badge.label}</span>)}

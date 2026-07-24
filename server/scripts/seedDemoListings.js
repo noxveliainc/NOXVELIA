@@ -41,6 +41,9 @@ const obterVendedorDemo = async () => {
       telefone: await telefoneLivre(),
       mostrarTelefonePublico: true,
       localidade: 'Porto',
+      standNome: 'Noxvelia Porto',
+      standMorada: 'Avenida dos Aliados',
+      standCodigoPostal: '4000-064',
       mostrarMapaPerfil: true,
       tipo: 'cliente',
       tipoConta: 'profissional',
@@ -66,6 +69,9 @@ const obterVendedorDemo = async () => {
   vendedor.avatarUrl = vendedor.avatarUrl || LOGO_IMAGE;
   vendedor.capaUrl = vendedor.capaUrl || '/noxvelia-hero-coast.webp';
   vendedor.localidade = vendedor.localidade || 'Porto';
+  vendedor.standNome = vendedor.standNome || 'Noxvelia Porto';
+  vendedor.standMorada = vendedor.standMorada || 'Avenida dos Aliados';
+  vendedor.standCodigoPostal = vendedor.standCodigoPostal || '4000-064';
   vendedor.mostrarMapaPerfil = true;
   vendedor.website = vendedor.website || 'https://www.noxvelia.com';
   vendedor.bio = vendedor.bio || 'Perfil de demonstração NOXVELIA para apresentar anúncios automóveis e imóveis com e sem destaque.';
