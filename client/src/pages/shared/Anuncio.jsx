@@ -549,7 +549,7 @@ export default function Anuncio() {
         .tabs-wrap::-webkit-scrollbar { display: none; }
         .tab-btn { padding: 10px 18px; background: transparent; border: none; border-radius: 11px; color: #64748b; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: all .2s; letter-spacing: .01em; }
         .tab-btn:hover { color: #0f172a; }
-        .tab-btn.active { color: #020617; background: ${accent}; }
+        .tab-btn.active { color: #fffaf0 !important; background: ${accent}; }
 
         .specs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
         .spec-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; transition: border-color .2s, transform .2s, box-shadow .2s; animation: nx-rise .35s ease backwards; }
@@ -680,6 +680,27 @@ export default function Anuncio() {
         .dark .featured-title-strip { background: rgba(217,196,156,.12); border-color: rgba(217,196,156,.36); color: #fffaf0; }
         .dark .featured-title-strip small { color: #cbd5e1; }
         .dark .nx-badge-item.destaque { background: #d9c49c; border-color: #d9c49c; color: #071326; }
+        .dark .nx-badge-item { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+        .dark .nx-badge-item.garantia { background: rgba(217,196,156,.14); border-color: rgba(217,196,156,.36); color: #fffaf0; }
+        .dark .nx-badge-item.retoma { background: rgba(59,130,246,.14); border-color: rgba(96,165,250,.36); color: #bfdbfe; }
+        .dark .contact-revealed { background: #0f172a; border-color: #334155; }
+        .dark .contact-revealed:hover { background: #142037; border-color: #475569; }
+        .dark .contact-label,
+        .dark .contact-email,
+        .dark .panel-price-m2,
+        .dark .seller-date,
+        .dark .seller-reviews,
+        .dark .slider-label-row,
+        .dark .fin-taeg,
+        .dark .fin-note { color: #cbd5e1; }
+        .dark .seller-panel,
+        .dark .finance-box { background: #111c30; border-color: #334155; }
+        .dark .seller-panel:hover { background: #142037; border-color: #475569; }
+        .dark .seller-name,
+        .dark .seller-rating,
+        .dark .fin-head { color: #f8fafc; }
+        .dark .seller-rating { background: rgba(217,196,156,.14); border-color: rgba(217,196,156,.36); }
+        .dark .seller-rating-empty { background: #0f172a; color: #cbd5e1; }
 
         .mobile-cta-bar { display: none; }
         @media (max-width: 720px) {

@@ -53,13 +53,9 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const idLogado = user?._id || user?.id;
   const eMeuAnuncio = !forceSellerIdentity && signed && ((idDono && idLogado && String(idDono) === String(idLogado)) || !!onAnuncioEliminado);
   const isPremium   = anuncio?.destacado === true;
-  const isSellerPremium = anuncio?.utilizador?.premiumAtivo === true;
   const isVerificado = anuncio?.utilizador?.tipo === 'admin' || anuncio?.utilizador?.premiumAtivo === true;
-  const isProfissional = anuncio?.utilizador?.tipoConta === 'profissional' || anuncio?.utilizador?.premiumAtivo === true;
+  const isProfissional = anuncio?.utilizador?.tipoConta === 'profissional' || anuncio?.utilizador?.tipo === 'admin';
   const isCarro = anuncio?.tipo === 'carro';
-  const precoAnalise = anuncio?.precoAnalise;
-  const scoreQualidade = Number(anuncio?.scoreQualidade || 0);
-  const qualidadePercentagem = Math.max(0, Math.min(100, Math.round((scoreQualidade / 10) * 100)));
   const imagemPrincipal = anuncio?.fotos?.[0] || anuncio?.imagens?.[0] || anuncio?.imagem;
   const imagemPrincipalUrl = getImageUrl(imagemPrincipal, 'medium');
   const imagemPrincipalSrcSet = getImageSrcSet(imagemPrincipal);
@@ -91,10 +87,9 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   ]).filter(item => item.value).slice(0, 3);
 
   const trustBadges = [
-    isSellerPremium && { label: 'Premium', tone: 'premium' },
     anuncio?.garantia && { label: 'Garantia', tone: 'trust' },
     anuncio?.aceitaRetoma && { label: 'Retoma', tone: 'trust' },
-    isProfissional && !isSellerPremium && { label: 'Profissional', tone: 'business' },
+    isProfissional && { label: 'Profissional', tone: 'business' },
   ].filter(Boolean).slice(0, 3);
   const handleAbrirModal = e => { e.preventDefault(); e.stopPropagation(); setMostrarModal(true); };
   const handleFecharModal = e => { e?.preventDefault(); e?.stopPropagation(); setMostrarModal(false); };
@@ -315,26 +310,6 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           letter-spacing: -.02em;
           line-height: 1;
         }
-        .nxc-price-signal {
-          flex-shrink: 0;
-          max-width: 122px;
-          border-radius: 999px;
-          padding: 4px 8px;
-          font-size: 9px;
-          font-weight: 900;
-          line-height: 1;
-          text-transform: uppercase;
-          letter-spacing: .06em;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          border: 1px solid #e2e8f0;
-          background: #f8fafc;
-          color: #475569;
-        }
-        .nxc-price-signal.baixo { background: #fff7e6; border-color: #d9c49c; color: #806040; }
-        .nxc-price-signal.justo { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
-        .nxc-price-signal.alto { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
 
         .nxc-title {
           font-size: 14px;
@@ -366,42 +341,10 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           font-weight: 850;
           white-space: nowrap;
         }
-        .nxc-trust-pill.premium {
-          background: #102f50;
-          border-color: #102f50;
-          color: #fffaf0;
-        }
         .nxc-trust-pill.business {
           background: rgba(16,47,80,.08);
           border-color: rgba(16,47,80,.18);
           color: #102f50;
-        }
-        .nxc-quality {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-top: 2px;
-        }
-        .nxc-quality-label {
-          flex-shrink: 0;
-          font-size: 10px;
-          font-weight: 900;
-          color: #64748b;
-          white-space: nowrap;
-        }
-        .nxc-quality-track {
-          height: 5px;
-          flex: 1;
-          min-width: 44px;
-          border-radius: 999px;
-          background: #e2e8f0;
-          overflow: hidden;
-        }
-        .nxc-quality-fill {
-          height: 100%;
-          width: ${qualidadePercentagem}%;
-          border-radius: inherit;
-          background: linear-gradient(90deg, #102f50, #d9c49c);
         }
 
         .nxc-insights {
@@ -557,7 +500,8 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         }
         .dark .nxc-wrap.premium .nxc-price {
           color: #fffaf0;
-        }        .dark .nxc-img,
+        }
+        .dark .nxc-img,
         .dark .nxc-placeholder {
           background: #0f172a;
           color: #64748b;
@@ -577,29 +521,22 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .dark .nxc-insight,
         .dark .nxc-tag,
         .dark .nxc-footer,
-        .dark .nxc-modal-box,
-        .dark .nxc-price-signal,
-        .dark .nxc-quality-track {
+        .dark .nxc-modal-box {
           background: #0f172a;
           border-color: #334155;
         }
-        .dark .nxc-quality-label { color: #94a3b8; }
         .dark .nxc-insight-label { color: #94a3b8; }
         .dark .nxc-trust-pill {
           background: rgba(217,196,156,.12);
           border-color: rgba(217,196,156,.28);
           color: #f8fafc;
         }
-        .dark .nxc-trust-pill.premium {
-          background: #d9c49c;
-          border-color: #d9c49c;
-          color: #071326;
-        }
         .dark .nxc-featured-note {
           background: rgba(217, 196, 156, 0.16);
           border-color: rgba(217, 196, 156, 0.42);
           color: #fffaf0;
-        }        .dark .nxc-avatar {
+        }
+        .dark .nxc-avatar {
           background: #111c30;
           border-color: #475569;
           color: #cbd5e1;
@@ -666,11 +603,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         <div className="nxc-body">
           <div className="nxc-price-row">
             <div className="nxc-price">{preco}</div>
-            {precoAnalise && (
-              <span className={`nxc-price-signal ${precoAnalise.estado}`} title={precoAnalise.detalhe}>
-                {precoAnalise.label}
-              </span>
-            )}
+
           </div>
           <div className="nxc-title">{anuncio?.titulo}</div>
           {isPremium && (
@@ -683,14 +616,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
               {trustBadges.map((badge) => <span key={badge.label} className={`nxc-trust-pill ${badge.tone || ''}`.trim()}>{badge.label}</span>)}
             </div>
           )}
-          {scoreQualidade > 0 && (
-            <div className="nxc-quality" title={`Força do anúncio: ${scoreQualidade}/10`}>
-              <span className="nxc-quality-label">{scoreQualidade}/10</span>
-              <span className="nxc-quality-track">
-                <span className="nxc-quality-fill" />
-              </span>
-            </div>
-          )}
+
           {destaques.length > 0 && (
             <div className="nxc-insights">
               {destaques.map((item) => (
