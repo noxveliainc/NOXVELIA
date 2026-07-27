@@ -24,7 +24,7 @@ export default function Seo({
       <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
       <link rel="canonical" href={canonical} />
       <meta property="og:locale" content="pt_PT" />
-      <meta property="og:site_name" content="Noxvelia" />
+      <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:type" content={type} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
