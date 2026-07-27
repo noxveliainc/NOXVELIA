@@ -51,6 +51,50 @@ router.post('/events', eventLimiter, async (req, res) => {
   }
 });
 
+// Cache simples em memória — evita bater na base de dados a cada visita da landing.
+// Reinicia quando o processo reinicia; suficiente para um endpoint público de baixo custo.
+let siteVisitsCache = { data: null, expiresAt: 0 };
+const SITE_VISITS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
+router.get('/site-visitas', async (_req, res) => {
+  try {
+    const agora = Date.now();
+    if (siteVisitsCache.data && siteVisitsCache.expiresAt > agora) {
+      res.set('Cache-Control', 'public, max-age=300');
+      return res.json(siteVisitsCache.data);
+    }
+
+    const desde = new Date(agora - 30 * 24 * 60 * 60 * 1000);
+
+    const [totalRows, diarioRows] = await Promise.all([
+      FunnelEvent.aggregate([
+        { $match: { event: 'landing_view', occurredAt: { $gte: desde } } },
+        { $group: { _id: null, sessions: { $addToSet: '$sessionId' } } },
+        { $project: { _id: 0, total: { $size: '$sessions' } } },
+      ]),
+      FunnelEvent.aggregate([
+        { $match: { event: 'landing_view', occurredAt: { $gte: desde } } },
+        { $group: { _id: '$dayKey', sessions: { $addToSet: '$sessionId' } } },
+        { $project: { _id: 0, dia: '$_id', visitas: { $size: '$sessions' } } },
+        { $sort: { dia: 1 } },
+      ]),
+    ]);
+
+    const payload = {
+      totalVisitas30Dias: totalRows[0]?.total || 0,
+      diario: diarioRows,
+      atualizadoEm: new Date().toISOString(),
+    };
+
+    siteVisitsCache = { data: payload, expiresAt: agora + SITE_VISITS_CACHE_TTL_MS };
+    res.set('Cache-Control', 'public, max-age=300');
+    res.json(payload);
+  } catch (erro) {
+    console.warn('[ANALYTICS] Falha ao compilar visitas públicas:', erro.message);
+    res.status(500).json({ erro: 'Erro ao carregar estatísticas do site.' });
+  }
+});
+
 router.get('/anuncio/:id', verificarToken, async (req, res) => {
   try {
     const anuncio = await Anuncio.findOne({ _id: req.params.id, utilizador: req.user.id });
@@ -62,7 +106,7 @@ router.get('/anuncio/:id', verificarToken, async (req, res) => {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dataStr = d.toISOString().split('T')[0]; // YYYY-MM-DD
-      
+
       const registoOriginal = anuncio.historicoVisitas.find(h => h.data === dataStr);
       ultimos7Dias.push({
         dataLabel: d.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric' }),

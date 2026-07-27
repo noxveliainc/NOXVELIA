@@ -42,6 +42,49 @@
 .lp-search-grid select:disabled { color: #8793a0; background: #f0ede6; }
 .lp-search-grid button[type="submit"] { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--navy); border-radius: 8px; background: var(--navy); color: var(--paper); font-size: 14px; font-weight: 900; cursor: pointer; }
 
+/* Barra de visitas do site — dados reais do funil, atualizados periodicamente. */
+.lp-visits-bar {
+  padding: 14px 0;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+.lp-visits-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.lp-visits-headline {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 700;
+}
+.lp-visits-headline strong {
+  color: var(--navy);
+  font-size: 15px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.lp-visits-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 28px;
+  width: 160px;
+}
+.lp-visits-bar-col {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--gold);
+  opacity: .8;
+  transition: height .4s ease;
+}
+
 
 .lp-section { padding: 48px 0; }
 .lp-section[id] { scroll-margin-top: 92px; }
@@ -140,6 +183,7 @@
   .lp-category-card { min-height: 280px; }
   .lp-brand-grid { grid-auto-columns: minmax(118px, 132px); grid-template-rows: repeat(2, 86px); }
   .lp-listing-card { grid-template-columns: 92px minmax(0, 1fr); }
+  .lp-visits-spark { width: 110px; }
 }
 /* Ajustes finais: portal de classificados, sem visual promocional pesado. */
 .lp-listing-section {
@@ -235,6 +279,13 @@
 .dark .lp-brand-card strong { color: rgba(255,250,240,.72) !important; }
 .dark .lp-search-grid label,
 .dark .lp-kicker { color: #f0dfbb !important; }
+
+.dark .lp-visits-bar {
+  background: #071326 !important;
+  border-color: rgba(255,250,240,.14) !important;
+}
+.dark .lp-visits-headline { color: #f0dfbb !important; }
+.dark .lp-visits-headline strong { color: #fffaf0 !important; }
 
 @media (max-width: 720px) {
   .lp-hero-copy h1 { font-size: clamp(32px, 10vw, 42px); }

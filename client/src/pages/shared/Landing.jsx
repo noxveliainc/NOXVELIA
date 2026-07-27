@@ -1,6 +1,6 @@
-import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+﻿import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, Building2, Car, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Building2, Car, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck, TrendingUp } from 'lucide-react';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
@@ -22,14 +22,43 @@ const TIPOLOGIAS_POPULARES = ['T1', 'T2', 'T3', 'T4', 'T5+'];
 const PRECOS_CARROS = [{ label: 'Até 10.000 €', value: '10000' }, { label: 'Até 20.000 €', value: '20000' }, { label: 'Até 30.000 €', value: '30000' }];
 const PRECOS_IMOVEIS = [{ label: 'Até 150.000 €', value: '150000' }, { label: 'Até 250.000 €', value: '250000' }, { label: 'Até 400.000 €', value: '400000' }];
 const LOGOS_COM_TEXTO_EMBUTIDO = new Set(['aiways', 'aston-martin', 'bentley']);
+const SITE_VISITS_REFRESH_MS = 3 * 60 * 1000;
 const LandingListingsCarousel = lazy(() => import('./LandingListingsCarousel'));
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const formatarMoeda = (valor) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
+const formatarNumero = (valor) => new Intl.NumberFormat('pt-PT').format(valor || 0);
 const formatarDataCurta = (valor) => { const data = valor ? new Date(valor) : null; return data && !Number.isNaN(data.getTime()) ? new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: 'short' }).format(data) : ''; };
 const slugMarca = (marca) => marca.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const logoMarca = (marca) => `/marcas/${slugMarca(marca)}.${marca === 'Jaecoo' ? 'svg' : 'png'}`;
 const iniciaisMarca = (marca) => marca.split(/[\s&-]+/).filter(Boolean).slice(0, 2).map((parte) => parte[0]).join('').toUpperCase();
+
+function ContadorAnimado({ valor }) {
+  const [mostrado, setMostrado] = useState(0);
+  const frameRef = useRef(null);
+  const anteriorRef = useRef(0);
+
+  useEffect(() => {
+    if (valor == null) return undefined;
+    if (prefersReducedMotion()) { setMostrado(valor); anteriorRef.current = valor; return undefined; }
+    const inicio = anteriorRef.current;
+    const diferenca = valor - inicio;
+    if (diferenca === 0) return undefined;
+    const duracao = 900;
+    const t0 = performance.now();
+    const passo = (agora) => {
+      const progresso = Math.min(1, (agora - t0) / duracao);
+      const facilitado = 1 - (1 - progresso) ** 3;
+      setMostrado(Math.round(inicio + diferenca * facilitado));
+      if (progresso < 1) frameRef.current = requestAnimationFrame(passo);
+      else anteriorRef.current = valor;
+    };
+    frameRef.current = requestAnimationFrame(passo);
+    return () => frameRef.current && cancelAnimationFrame(frameRef.current);
+  }, [valor]);
+
+  return <>{formatarNumero(mostrado)}</>;
+}
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -47,6 +76,7 @@ export default function Landing() {
   const [loadingExemplos, setLoadingExemplos] = useState(true);
   const [erroExemplos, setErroExemplos] = useState(false);
   const [noticiasMercado, setNoticiasMercado] = useState([]);
+  const [visitasSite, setVisitasSite] = useState(null);
   const [pesquisa, setPesquisa] = useState({ tipo: 'carro', marca: '', modelo: '', combustivel: '', tipologia: '', distrito: '', precoMax: '' });
 
   const criarLinkPesquisa = (tipo, filtros = {}) => {
@@ -157,6 +187,18 @@ export default function Landing() {
 
   useEffect(() => {
     let ativo = true;
+    const buscarVisitasSite = () => {
+      api.get('/analytics/site-visitas')
+        .then(({ data }) => { if (ativo) setVisitasSite(data || null); })
+        .catch(() => {});
+    };
+    buscarVisitasSite();
+    const intervalo = window.setInterval(buscarVisitasSite, SITE_VISITS_REFRESH_MS);
+    return () => { ativo = false; window.clearInterval(intervalo); };
+  }, []);
+
+  useEffect(() => {
+    let ativo = true;
     const carregarExemplos = async () => {
       try {
         const { data } = await api.get('/anuncios/em-alta/semana');
@@ -211,6 +253,8 @@ export default function Landing() {
   );
 
   const mostrarDestaques = loadingExemplos || exemplos.carro.length > 0 || exemplos.imovel.length > 0;
+  const graficoVisitas = visitasSite?.diario?.length > 1 ? visitasSite.diario.slice(-30) : null;
+  const picoVisitasDiarias = graficoVisitas ? Math.max(...graficoVisitas.map((dia) => dia.visitas), 1) : 1;
 
   return (
     <div className="lp-root">
@@ -236,6 +280,24 @@ export default function Landing() {
             </form>
           </div>
         </section>
+
+        {visitasSite && (
+          <section className="lp-visits-bar" aria-label="Estatísticas de visitas ao site">
+            <div className="lp-shell lp-visits-inner">
+              <div className="lp-visits-headline">
+                <TrendingUp size={18} strokeWidth={2.4} aria-hidden="true" />
+                <span><strong><ContadorAnimado valor={visitasSite.totalVisitas30Dias} /></strong> visitas nos últimos 30 dias</span>
+              </div>
+              {graficoVisitas && (
+                <div className="lp-visits-spark" role="img" aria-label="Tendência de visitas nos últimos 30 dias">
+                  {graficoVisitas.map((dia) => (
+                    <span key={dia.dia} className="lp-visits-bar-col" style={{ height: `${Math.max(6, (dia.visitas / picoVisitasDiarias) * 100)}%` }} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
 <section className="lp-section lp-category-section" aria-labelledby="lp-categories" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Pesquisar</span><h2 id="lp-categories">Escolhe a categoria</h2></div></div><div className="lp-category-grid"><Link className="lp-category-card" to="/carros"><img src="/social/noxvelia-drive-photo-premium.webp" alt="Automóvel anunciado na Noxvelia" /><span><small>Automóveis</small><strong>Ver automóveis</strong><em>Marca, modelo, km, combustível e preço.</em></span></Link><Link className="lp-category-card" to="/imoveis"><img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia" /><span><small>Imóveis</small><strong>Ver imóveis</strong><em>Tipologia, localização, área e valor.</em></span></Link></div></div></section>
 
