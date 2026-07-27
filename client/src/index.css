@@ -292,41 +292,39 @@ h1, h2, h3, h4 {
 }
 
 .dark .lp-root {
-  --lp-ink: #082126 !important;
-  --lp-ink-soft: #cbd5e1 !important;
-  --lp-stone: #071317 !important;
-  --lp-cream: #0f1f24 !important;
-  background: #071317 !important;
+  --lp-ink: #fffaf0 !important;
+  --lp-ink-soft: #d7e0ea !important;
+  --lp-stone: #071326 !important;
+  --lp-cream: #0d1d33 !important;
+  background: #071326 !important;
 }
 
 .dark .lp-title {
-  color: #ecfdfb !important;
+  color: #fffaf0 !important;
 }
 
 .dark .lp-hero {
-  background: #071317 !important;
+  background: #071326 !important;
 }
 
 .dark .lp-quick-section,
 .dark .lp-promo-section,
-.dark .lp-shortcuts-section,
 .dark .lp-guides-section,
 .dark .lp-brands-section,
 .dark .lp-popular-section,
 .dark .lp-cv-section {
-  background: #071317 !important;
+  background: #071326 !important;
   border-color: rgba(148, 163, 184, 0.16) !important;
 }
 
 .dark .lp-quick-section,
 .dark .lp-promo-section {
-  background: #071317 !important;
+  background: #071326 !important;
 }
 
-.dark .lp-shortcuts-section,
 .dark .lp-popular-section,
 .dark .lp-guides-section {
-  background: #0b1b20 !important;
+  background: #0d1d33 !important;
 }
 
 .dark .lp-brand-card,
@@ -335,7 +333,6 @@ h1, h2, h3, h4 {
 .dark .lp-quick-card,
 .dark .lp-type-tabs,
 .dark .lp-promo-link,
-.dark .lp-shortcut-group,
 .dark .lp-guide-card,
 .dark .lp-favorites-strip,
 .dark .lp-example-column,
@@ -357,7 +354,7 @@ h1, h2, h3, h4 {
 .dark .lp-hero-photo-label {
   background: rgba(15, 31, 36, 0.88) !important;
   border-color: rgba(226, 232, 240, 0.2) !important;
-  color: #ecfdfb !important;
+  color: #fffaf0 !important;
 }
 
 .dark .lp-brand-name,
@@ -371,7 +368,7 @@ h1, h2, h3, h4 {
 .dark .lp-example-state,
 .dark .lp-cv-panel > span,
 .dark .lp-cv-code small {
-  color: #b7c7cb !important;
+  color: #d7e0ea !important;
 }
 
 .dark .lp-eyebrow,
@@ -381,7 +378,6 @@ h1, h2, h3, h4 {
 }
 
 .dark .lp-quick-title,
-.dark .lp-shortcut-group h3,
 .dark .lp-guide-card h3,
 .dark .lp-favorites-strip h3,
 .dark .lp-column-title,
@@ -389,29 +385,27 @@ h1, h2, h3, h4 {
 .dark .lp-example-title,
 .dark .lp-example-state strong,
 .dark .lp-cv-code strong {
-  color: #ecfdfb !important;
+  color: #fffaf0 !important;
 }
 
-.dark .lp-chip,
 .dark .lp-field select,
 .dark .lp-field input,
 .dark .lp-type-tab {
   background: rgba(2, 6, 23, 0.48) !important;
   border-color: rgba(148, 163, 184, 0.24) !important;
-  color: #dbeafe !important;
+  color: #fffaf0 !important;
 }
 
-.dark .lp-chip:hover,
 .dark .lp-brand-card:hover,
 .dark .lp-round-btn:hover {
   background: rgba(15, 31, 36, 0.96) !important;
   border-color: rgba(217, 196, 156, 0.55) !important;
-  color: #ecfdfb !important;
+  color: #fffaf0 !important;
 }
 
 .dark .lp-type-tab.active {
   background: rgba(217, 196, 156, 0.95) !important;
-  color: #042326 !important;
+  color: #071326 !important;
 }
 
 .dark .lp-field select:disabled {
@@ -853,7 +847,7 @@ h1, h2, h3, h4 {
   }
 }
 
-/* ========================================================================== 
+/* ==========================================================================
    NOXVELIA · GLOBAL PREMIUM PASS
    Aplicado em todo o site: paleta do logo, foco mais limpo e motion discreto.
    ========================================================================== */
@@ -913,4 +907,164 @@ h1, h2, h3, h4 {
   background: var(--nx-logo-gold) !important;
   border-color: var(--nx-logo-gold) !important;
   color: var(--nx-logo-navy) !important;
+}
+/* ==========================================================================
+   NOXVELIA · THEME, NAV AND FOOTER POLISH
+   ========================================================================== */
+
+.nx-theme-toggle {
+  position: relative;
+  width: 64px;
+  height: 36px;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 3px;
+  border: 1px solid rgba(16, 47, 80, 0.18);
+  border-radius: 999px;
+  background: #fffaf0;
+  color: #102f50;
+  cursor: pointer;
+  isolation: isolate;
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease;
+}
+
+.nx-theme-toggle::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: -1;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: #102f50;
+  transition: transform .18s ease, background-color .18s ease;
+}
+
+.nx-theme-toggle[data-mode="dark"]::before {
+  transform: translateX(28px);
+  background: #d9c49c;
+}
+
+.nx-theme-toggle-icon {
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  color: #66788a;
+}
+
+.nx-theme-toggle-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.nx-theme-toggle[data-mode="light"] .sun,
+.nx-theme-toggle[data-mode="dark"] .moon {
+  color: #fffaf0;
+}
+
+.nx-theme-toggle[data-mode="dark"] .moon {
+  color: #071326;
+}
+
+.nx-theme-toggle:hover {
+  border-color: rgba(217, 196, 156, 0.72);
+}
+
+.dark .nx-theme-toggle {
+  background: #071326;
+  border-color: rgba(217, 196, 156, 0.26);
+  color: #f0dfbb;
+}
+
+:where(.ncr-btn-home, .nim-btn-home) {
+  background: #fffaf0 !important;
+  border-color: rgba(217, 196, 156, 0.62) !important;
+  color: #102f50 !important;
+  font-weight: 850 !important;
+}
+
+:where(.ncr-btn-home, .nim-btn-home):hover {
+  background: #f0dfbb !important;
+  border-color: #d9c49c !important;
+}
+
+.dark :where(.ncr-btn-home, .nim-btn-home) {
+  background: rgba(217, 196, 156, 0.12) !important;
+  border-color: rgba(217, 196, 156, 0.32) !important;
+  color: #f0dfbb !important;
+}
+
+:where(.ncr-drawer-title, .nim-drawer-title) {
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+:where(.ncr-drawer-theme-row, .nim-drawer-theme-row) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(16, 47, 80, 0.12);
+  border-radius: 10px;
+  background: #fffaf0;
+}
+
+:where(.ncr-drawer-theme-label, .nim-drawer-theme-label) {
+  color: #102f50;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+:where(.ncr-drawer-link-home, .nim-drawer-link-home) {
+  background: rgba(217, 196, 156, 0.18) !important;
+  border: 1px solid rgba(217, 196, 156, 0.42) !important;
+  color: #102f50 !important;
+}
+
+.dark :where(.ncr-drawer-title, .nim-drawer-title) {
+  color: #fffaf0 !important;
+}
+
+.dark :where(.ncr-drawer-theme-row, .nim-drawer-theme-row) {
+  background: rgba(7, 19, 38, 0.9) !important;
+  border-color: rgba(217, 196, 156, 0.24) !important;
+}
+
+.dark :where(.ncr-drawer-theme-label, .nim-drawer-theme-label) {
+  color: #f0dfbb !important;
+}
+
+.dark :where(.ncr-drawer-link-home, .nim-drawer-link-home) {
+  background: rgba(217, 196, 156, 0.12) !important;
+  border-color: rgba(217, 196, 156, 0.3) !important;
+  color: #f0dfbb !important;
+}
+
+.dark .nx-footer {
+  background: #040b16 !important;
+  border-top-color: rgba(217, 196, 156, 0.2) !important;
+}
+
+.dark .nx-footer-col h4,
+.dark .nx-footer-copy {
+  color: #fffaf0 !important;
+}
+
+.dark .nx-footer-brand p,
+.dark .nx-footer-col a,
+.dark .nx-footer-col button {
+  color: #cbd5e1 !important;
+}
+
+.dark .nx-footer-col a:hover,
+.dark .nx-footer-col button:hover,
+.dark .nx-social-btn:hover {
+  color: #f0dfbb !important;
 }

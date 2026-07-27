@@ -292,9 +292,9 @@ export default function NavbarCarro() {
         {/* 🌟 DESKTOP ACTIONS */}
         <div className="ncr-actions">
           <ThemeToggle />
-          <button type="button" onClick={handleIrParaHome} className="ncr-btn-menu" aria-label="Voltar ao menu principal">
-            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /><path d="M9 12h12" /><path d="M3 5v14" /></svg>
-            Menu
+          <button type="button" onClick={handleIrParaHome} className="ncr-btn-menu ncr-btn-home" aria-label="Voltar à página inicial">
+            <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10.5V20h13v-9.5" /><path d="M9.5 20v-5h5v5" /></svg>
+            Início
           </button>
           <Link to="/profissionais" className="ncr-btn-menu">
             <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
@@ -382,10 +382,10 @@ export default function NavbarCarro() {
               {signed ? (
                 <div className="ncr-drawer-user">
                   <div className="ncr-avatar">{avatarImg ? <img src={avatarImg} alt="Perfil" /> : <span className="ncr-avatar-initial">{inicial}</span>}</div>
-                  <span style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>Olá, {primeiroNome}!</span>
+                  <span className="ncr-drawer-title">Olá, {primeiroNome}!</span>
                 </div>
               ) : (
-                <span style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>Menu</span>
+                <span className="ncr-drawer-title">Menu</span>
               )}
               <button type="button" className="ncr-drawer-close" onClick={() => setMenuMobileAberto(false)} aria-label="Fechar menu">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -393,13 +393,13 @@ export default function NavbarCarro() {
             </div>
 
             <div className="ncr-drawer-menu">
-              <div className="mb-2 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
-                <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">Aspeto da plataforma</span>
-                <div className="flex items-center gap-2"><ThemeToggle /></div>
+              <div className="ncr-drawer-theme-row">
+                <span className="ncr-drawer-theme-label">Aspeto</span>
+                <ThemeToggle />
               </div>
-              <button type="button" className="ncr-drawer-link" onClick={handleIrParaHome}>
-                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /><path d="M9 12h12" /><path d="M3 5v14" /></svg>
-                Voltar ao menu
+              <button type="button" className="ncr-drawer-link ncr-drawer-link-home" onClick={handleIrParaHome}>
+                <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10.5V20h13v-9.5" /><path d="M9.5 20v-5h5v5" /></svg>
+                Página inicial
               </button>
               <Link to="/profissionais" className="ncr-drawer-link" onClick={() => setMenuMobileAberto(false)}>
                 <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
