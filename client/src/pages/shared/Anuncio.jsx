@@ -648,9 +648,6 @@ export default function Anuncio() {
         }
 
         @media (max-width: 720px) {
-          .mobile-cta-bar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; width: 100%; z-index: 500; background: rgba(255,255,255,0.92); border-top: 1px solid #e2e8f0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); align-items: center; gap: 16px; backdrop-filter: blur(16px); box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05); box-sizing: border-box; }
-          .mobile-cta-price { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 18px; color: ${accent}; line-height: 1.1; white-space: nowrap; }
-          .mobile-cta-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; background: ${accent}; color: #fff; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; cursor: pointer; box-shadow: 0 4px 12px ${accentShadow}; }
           .lightbox-img-wrap { padding: 70px 16px; }
           .arrow-btn { width: 34px; height: 34px; }
           .gallery-wrap { border-radius: 16px; }
@@ -1056,15 +1053,6 @@ export default function Anuncio() {
 
         </div>
       </div>
-
-      {!isDono && (
-        <div className="mobile-cta-bar">
-          <div className="mobile-cta-price">{preco}</div>
-          <button type="button" className="mobile-cta-btn" onClick={() => setMostrarTelefone(true)}>
-            Contactar
-          </button>
-        </div>
-      )}
     </>
   );
 }

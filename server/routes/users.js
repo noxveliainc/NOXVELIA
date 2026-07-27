@@ -257,6 +257,15 @@ router.get('/me/guardados', verificarToken, async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────
+// LISTAR ANUNCIANTES COM ANÚNCIOS ATIVOS ("Profissionais")
+//    🌟 CORREÇÃO: antes só entravam utilizadores com
+//    tipoConta === 'profissional' OU premiumAtivo === true, o que
+//    deixava de fora contas particulares sem premium mesmo tendo
+//    anúncios ativos. Agora entra qualquer utilizador (particular
+//    ou profissional) com pelo menos um anúncio ativo — só os
+//    admins continuam excluídos, porque têm montra tratada à parte.
+// ─────────────────────────────────────────────────────────────
 router.get('/profissionais', async (req, res) => {
   try {
     const page = Math.max(1, Number(req.query.page) || 1);
@@ -267,7 +276,6 @@ router.get('/profissionais', async (req, res) => {
 
     const profissionalConditions = [
       { 'profissional.tipo': { $ne: 'admin' } },
-      { $or: [{ 'profissional.tipoConta': 'profissional' }, { 'profissional.premiumAtivo': true }] },
     ];
 
     if (distrito && distrito !== 'Todos') {
