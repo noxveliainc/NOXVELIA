@@ -609,8 +609,20 @@ router.put('/:id', verificarToken, async (req, res) => {
   try {
     const anuncio = await Anuncio.findById(req.params.id);
     if (!anuncio) return res.status(404).json({ erro: 'Anúncio não encontrado.' });
-    if (String(anuncio.utilizador) !== req.user.id && req.user.tipo !== 'admin')
+    const utilizadorAtual = await User.findById(req.user.id).select('tipo premiumAtivo');
+    if (!utilizadorAtual) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
+
+    const ehAdmin = utilizadorAtual.tipo === 'admin' || req.user.tipo === 'admin';
+    const ehDono = String(anuncio.utilizador) === req.user.id;
+    if (!ehDono && !ehAdmin)
       return res.status(403).json({ erro: 'Acesso negado.' });
+
+    if (anuncio.estado === 'ativo' && !ehAdmin && utilizadorAtual.premiumAtivo !== true) {
+      return res.status(403).json({
+        erro: 'EDICAO_ATIVA_PREMIUM',
+        mensagem: 'Editar anúncios ativos é uma funcionalidade Premium. Podes marcar como vendido ou aderir ao Premium para atualizar dados publicados.'
+      });
+    }
 
     // Sanitizar campos protegidos
     const {
@@ -638,7 +650,7 @@ router.put('/:id', verificarToken, async (req, res) => {
       Object.assign(bodyNormalizado, normalizarContactosAnuncio({
         telefone: Object.prototype.hasOwnProperty.call(bodyLimpo, 'telefone') ? bodyLimpo.telefone : anuncio.telefone,
         email: Object.prototype.hasOwnProperty.call(bodyLimpo, 'email') ? bodyLimpo.email : anuncio.email,
-      }, { ehAdmin: req.user.tipo === 'admin' }));
+      }, { ehAdmin }));
     }
     if (Object.prototype.hasOwnProperty.call(bodyLimpo, 'equipamento')) {
       bodyNormalizado.equipamento = normalizarEquipamento(bodyLimpo.equipamento);

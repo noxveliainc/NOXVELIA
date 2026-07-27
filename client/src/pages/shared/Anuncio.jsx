@@ -301,6 +301,7 @@ export default function Anuncio() {
   const isDono = signed && (user?.id === donoDoAnuncio?._id || user?._id === donoDoAnuncio?._id);
   const isCarro = anuncio.tipo === 'carro';
   const isDestacado = anuncio?.destacado === true;
+  const podeEditarAnuncioAtivo = isDono && (anuncio.estado !== 'ativo' || user?.premiumAtivo === true || user?.tipo === 'admin' || donoDoAnuncio?.premiumAtivo === true || donoDoAnuncio?.tipo === 'admin');
   const videoEmbed = getVideoEmbedData(anuncio.videoUrl || anuncio.visitaVirtualUrl);
 
   const precoValor = anuncio.preco || 0;
@@ -646,6 +647,9 @@ export default function Anuncio() {
         .owner-btns { display: flex; gap: 10px; }
         .btn-owner-edit { flex: 1; padding: 11px; text-align: center; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; transition: all .2s; }
         .btn-owner-edit:hover { border-color: #94a3b8; background: #f8fafc; }
+        .btn-owner-edit.is-locked { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+        .btn-owner-edit.is-locked:hover { background: #ffedd5; border-color: #fdba74; }
+        .owner-note { margin-top: 10px; color: #475569; font-size: 11.5px; line-height: 1.5; }
         .btn-owner-sold { flex: 1; padding: 11px; border: none; background: #10b981; color: #fff; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: opacity .2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-owner-sold:hover { opacity: .85; }
 
@@ -954,11 +958,18 @@ export default function Anuncio() {
                     <div className="owner-box">
                       <div className="owner-label">Gestão do Anúncio</div>
                       <div className="owner-btns">
-                        <Link to={`/editar/${id}`} className="btn-owner-edit">Editar Dados</Link>
+                        {podeEditarAnuncioAtivo ? (
+                          <Link to={`/editar/${id}`} className="btn-owner-edit">Editar Dados</Link>
+                        ) : (
+                          <Link to="/planos" className="btn-owner-edit is-locked">Premium para editar</Link>
+                        )}
                         <button type="button" className="btn-owner-sold" onClick={() => setMostrarModalVendido(true)}>
                           <Icon path={mdiCheck} size={0.7} style={{marginRight: 4}} /> Vendido
                         </button>
                       </div>
+                      {!podeEditarAnuncioAtivo && (
+                        <div className="owner-note">Anúncios ativos só podem ser editados com Premium. Podes marcar como vendido a qualquer momento.</div>
+                      )}
                     </div>
                   ) : (
                     <>

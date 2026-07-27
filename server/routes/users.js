@@ -5,6 +5,7 @@ import Anuncio from '../models/Anuncio.js';
 import Avaliacao from '../models/Avaliacao.js';
 import { verificarToken } from '../middleware/auth.js';
 import { attachImagesToOwnerByUrls, deleteImagesByUrls } from '../services/imageService.js';
+import { desativarPremiumUtilizador } from '../services/premiumService.js';
 
 const router = express.Router();
 
@@ -66,22 +67,20 @@ const normalizarLinksPerfil = (links = []) => {
 // ─────────────────────────────────────────────────────────────
 router.get('/me', verificarToken, async (req, res) => {
   try {
-    // 🌟 CORREÇÃO: Selecionar explicitamente premiumAtivo e premiumExpira
-    // para garantir que chegam ao Frontend mesmo que o schema os tenha como select:false
-    const utilizador = await User.findById(req.user.id).select(
-      '+premiumAtivo +premiumExpira'
-    );
+    const utilizador = await User.findById(req.user.id).select('+premiumAtivo +dataExpiracaoPremium');
     if (!utilizador) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
 
-    // 🌟 EXTRA: Verificar se a subscrição Premium expirou sem renovação
-    // (útil como fallback caso o Webhook do Stripe falhe)
+    // Fallback para acessos Premium atribuídos manualmente com data de expiração.
+    // As subscrições Stripe são sincronizadas por webhook.
     if (
       utilizador.premiumAtivo &&
-      utilizador.premiumExpira &&
-      new Date(utilizador.premiumExpira) < new Date()
+      utilizador.dataExpiracaoPremium &&
+      new Date(utilizador.dataExpiracaoPremium) < new Date()
     ) {
+      await desativarPremiumUtilizador(utilizador._id, {
+        dataExpiracaoPremium: utilizador.dataExpiracaoPremium,
+      });
       utilizador.premiumAtivo = false;
-      await utilizador.save();
     }
 
     res.json(utilizador);
@@ -172,7 +171,7 @@ router.put('/me', verificarToken, async (req, res) => {
       req.user.id,
       { $set: camposParaAtualizar },
       { new: true, runValidators: true }
-    ).select('+premiumAtivo +premiumExpira');
+    ).select('+premiumAtivo +dataExpiracaoPremium');
 
     if (avatarUrl !== undefined) {
       if (avatarUrl) {

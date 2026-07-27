@@ -807,7 +807,7 @@ export default function Perfil() {
                 <span className="perfil-premium-kicker"><Icon path={mdiCrown} size={0.62} /> Centro Premium</span>
                 <h2 className="perfil-premium-title">Visibilidade, carteira e próximos passos num só lugar.</h2>
                 <p className="perfil-premium-copy">
-                  Acompanha o desempenho dos anúncios, reforça a tua montra e publica com prioridade quando o plano profissional está ativo.
+                  Acompanha o desempenho, edita anúncios ativos e reforça a tua montra quando o Premium está ativo.
                 </p>
               </div>
               <span className="perfil-premium-state">{premiumAtivoPerfil ? 'Premium ativo' : 'Prévia premium'}</span>

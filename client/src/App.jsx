@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, lazy, Suspense } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext'; 
 import { HelmetProvider } from 'react-helmet-async'; 
@@ -32,6 +32,7 @@ const PerfilPublico  = lazy(() => import('./pages/shared/PerfilPublico'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const SucessoUpsell  = lazy(() => import('./pages/shared/SucessoUpsell'));
 const Planos         = lazy(() => import('./pages/shared/Planos'));
+const PremiumConfirmar = lazy(() => import('./pages/shared/PremiumConfirmar'));
 const SeoPesquisa    = lazy(() => import('./pages/shared/SeoPesquisa'));
 const Profissionais  = lazy(() => import('./pages/shared/Profissionais'));
 
@@ -105,6 +106,7 @@ function AppShell() {
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/sucesso/:id" element={<ProtectedRoute><SucessoUpsell /></ProtectedRoute>} />
             <Route path="/planos" element={<ProtectedRoute><Planos /></ProtectedRoute>} />
+            <Route path="/premium-confirmar" element={<ProtectedRoute><PremiumConfirmar /></ProtectedRoute>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

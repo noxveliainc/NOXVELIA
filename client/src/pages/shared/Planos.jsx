@@ -48,17 +48,8 @@ export default function Planos() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?._id, user?.id]);
 
-  const iniciarAssinatura = async () => {
-    setLoadingStripe(true);
-    try {
-      const res = await api.post('/stripe/criar-checkout-premium');
-      if (res.data && res.data.url) {
-        window.location.href = res.data.url;
-      }
-    } catch {
-      alert('Erro ao iniciar pagamento. Tenta novamente.');
-      setLoadingStripe(false);
-    }
+  const iniciarAssinatura = () => {
+    navigate('/premium-confirmar');
   };
 
   // Abre o Billing Portal da Stripe para quem já é Premium gerir a subscrição
@@ -86,13 +77,15 @@ export default function Planos() {
     'Prioridade nos resultados de pesquisa',
     'Montra pública com contactos, links e mapa opcional',
     'Painel Premium com métricas da tua carteira',
-    'Selo Premium nos anúncios e no perfil público',
+    'Edição de anúncios ativos depois de publicados',
+    'Regras claras: se cancelares, os anúncios ativos continuam online',
   ];
 
   const premiumHighlights = [
     { title: 'Mais visibilidade', text: 'Os anúncios premium aparecem com prioridade e sinalização própria.' },
     { title: 'Montra completa', text: 'Perfil público preparado para stands, mediadores e vendedores ativos.' },
     { title: 'Leitura rápida', text: 'Métricas simples para perceber visitas, contactos e qualidade dos anúncios.' },
+    { title: 'Sem surpresas', text: 'Antes do pagamento mostramos exatamente o que acontece se cancelares.' },
   ];
 
   return (
@@ -153,7 +146,7 @@ export default function Planos() {
           max-width: 780px;
           margin: 0 auto 24px;
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 12px;
         }
         .pl-premium-note {
@@ -405,7 +398,7 @@ export default function Planos() {
               </button>
             ) : (
               <button className="pl-btn pl-btn--dark" onClick={iniciarAssinatura} disabled={loadingStripe}>
-                {loadingStripe ? <SpinnerIcon /> : 'Aderir ao plano'}
+                Ver detalhes e aderir
               </button>
             )}
           </div>

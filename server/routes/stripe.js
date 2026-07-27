@@ -5,6 +5,7 @@ import { verificarToken } from '../middleware/auth.js';
 import Anuncio from '../models/Anuncio.js';
 import User from '../models/User.js';
 import Pagamento from '../models/Pagamento.js';
+import { ativarPremiumUtilizador, desativarPremiumUtilizador } from '../services/premiumService.js';
 
 dotenv.config();
 
@@ -113,7 +114,7 @@ router.post('/criar-checkout-premium', verificarToken, async (req, res) => {
       }],
       mode: 'subscription',
       success_url: `${process.env.FRONTEND_URL}/planos?premium=sucesso`,
-      cancel_url:  `${process.env.FRONTEND_URL}/planos?premium=cancelado`,
+      cancel_url:  `${process.env.FRONTEND_URL}/premium-confirmar?premium=cancelado`,
       metadata: {
         userId: String(user._id),
         tipoPagamento: 'premium',
@@ -183,8 +184,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       const subscriptionId = session.subscription;
 
       try {
-        await User.findByIdAndUpdate(userId, {
-          premiumAtivo:         true,
+        await ativarPremiumUtilizador(userId, {
           stripeSubscriptionId: subscriptionId,
           dataExpiracaoPremium: null,
         });
@@ -260,8 +260,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     const userId = subscription.metadata?.userId;
 
     if (userId) {
-      await User.findByIdAndUpdate(userId, {
-        premiumAtivo:         false,
+      await desativarPremiumUtilizador(userId, {
         stripeSubscriptionId: null,
         dataExpiracaoPremium: new Date(),
       });
@@ -275,7 +274,17 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     const ativo  = subscription.status === 'active' || subscription.status === 'trialing';
 
     if (userId) {
-      await User.findByIdAndUpdate(userId, { premiumAtivo: ativo });
+      if (ativo) {
+        await ativarPremiumUtilizador(userId, {
+          stripeSubscriptionId: subscription.id,
+          dataExpiracaoPremium: null,
+        });
+      } else {
+        await desativarPremiumUtilizador(userId, {
+          stripeSubscriptionId: subscription.id,
+          dataExpiracaoPremium: new Date(),
+        });
+      }
       console.log(`🔄 Premium sincronizado para user ${userId}: ${ativo ? 'ATIVO' : 'INATIVO'}`);
     }
   }
@@ -286,7 +295,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
     const user = await User.findOne({ stripeCustomerId: customerId });
     if (user) {
-      await User.findByIdAndUpdate(user._id, { premiumAtivo: false });
+      await desativarPremiumUtilizador(user._id, { dataExpiracaoPremium: new Date() });
       console.log(`⚠️ Pagamento falhado — Premium suspenso para user ${user._id}.`);
     }
   }

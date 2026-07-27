@@ -121,6 +121,7 @@ export default function Editar() {
   const [fotos, setFotos] = useState([]);
   const [equipamento, setEquipamento] = useState([]);
   const [novoExtra, setNovoExtra] = useState('');
+  const [anuncioEstadoPublicacao, setAnuncioEstadoPublicacao] = useState('');
 
   const [form, setForm] = useState({
     tipo: 'carro', 
@@ -169,6 +170,7 @@ export default function Editar() {
     tipoVeiculo: '',
   });
   const ehAdmin = user?.tipo === 'admin';
+  const anuncioAtivoBloqueado = anuncioEstadoPublicacao === 'ativo' && !ehAdmin && user?.premiumAtivo !== true;
 
   useEffect(() => {
     if (!authLoading && !signed) {
@@ -231,6 +233,7 @@ export default function Editar() {
         });
         setFotos(data.fotos || []);
         setEquipamento(normalizarExtras(data.equipamento || []));
+        setAnuncioEstadoPublicacao(data.estado || '');
         setFetchingData(false);
       } catch {
         setErro('Não foi possível carregar os dados do anúncio para edição.');
@@ -321,6 +324,12 @@ export default function Editar() {
     e.preventDefault();
     setLoading(true);
     setErro('');
+
+    if (anuncioAtivoBloqueado) {
+      setErro('Editar anúncios ativos é uma funcionalidade Premium. Podes voltar ao anúncio ou aderir ao Premium para atualizar os dados publicados.');
+      setLoading(false);
+      return;
+    }
 
     if (fotos.length === 0) {
       setErro('É obrigatório manter pelo menos 1 fotografia no anúncio.');
@@ -417,6 +426,27 @@ export default function Editar() {
     );
   }
 
+  if (anuncioAtivoBloqueado) {
+    return (
+      <div style={{ minHeight: 'calc(100vh - 72px)', background: 'var(--nx-bg)', color: 'var(--nx-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 20px', fontFamily: 'var(--nx-font-body)' }}>
+        <div style={{ width: '100%', maxWidth: 560, background: 'var(--nx-card-bg)', border: '1px solid var(--nx-card-border)', borderRadius: 22, padding: 32, boxShadow: 'var(--nx-shadow-card)' }}>
+          <Icon path={mdiAlertCircleOutline} size={1.4} color="var(--nx-accent-blue)" style={{ marginBottom: 14 }} />
+          <h1 style={{ margin: '0 0 10px', fontFamily: 'var(--nx-font-display)', fontSize: 28, lineHeight: 1.08 }}>Edição disponível no Premium</h1>
+          <p style={{ margin: '0 0 22px', color: 'var(--nx-text-sub)', lineHeight: 1.65 }}>
+            Este anúncio já está ativo. Para proteger a qualidade dos anúncios publicados, a alteração de dados em anúncios ativos fica reservada a contas Premium.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+            <button type="button" onClick={() => navigate('/planos')} style={{ minHeight: 44, padding: '0 18px', borderRadius: 12, border: '1px solid var(--nx-accent-gold)', background: 'var(--nx-accent-gold)', color: '#071326', fontWeight: 850, cursor: 'pointer' }}>
+              Ver Premium
+            </button>
+            <button type="button" onClick={() => navigate(`/anuncio/${id}`)} style={{ minHeight: 44, padding: '0 18px', borderRadius: 12, border: '1px solid var(--nx-card-border)', background: 'var(--nx-card-bg)', color: 'var(--nx-text)', fontWeight: 800, cursor: 'pointer' }}>
+              Voltar ao anúncio
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <>
       <style>{`
