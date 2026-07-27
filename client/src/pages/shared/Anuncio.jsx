@@ -255,26 +255,19 @@ export default function Anuncio() {
         <style>{`
           @keyframes nx-shimmer { 0% { background-position: -300px 0; } 100% { background-position: 300px 0; } }
           .skl { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%); background-size: 600px 100%; animation: nx-shimmer 1.6s ease-in-out infinite; border-radius: 10px; }
-          .skl-page { max-width: 1240px; margin: 0 auto; }
-          .skl-grid { display: grid; grid-template-columns: 1fr 380px; gap: 32px; margin-top: 22px; }
+          .skl-page { max-width: 1240px; margin: 0 auto; width: 100%; overflow: hidden; }
+          .skl-grid { display: grid; grid-template-columns: 1fr 380px; gap: 32px; margin-top: 22px; width: 100%; }
           @media (max-width: 960px) { .skl-grid { grid-template-columns: 1fr; } }
-          @media (prefers-reduced-motion: reduce) { .skl { animation: none; } }
         `}</style>
         <div className="skl-page">
           <div className="skl" style={{ width: 160, height: 14, marginBottom: 24 }} />
           <div className="skl-grid">
-            <div>
+            <div style={{ width: '100%' }}>
               <div className="skl" style={{ width: '100%', aspectRatio: '16/9', borderRadius: 18 }} />
               <div className="skl" style={{ width: '40%', height: 32, marginTop: 22 }} />
-              <div className="skl" style={{ width: '65%', height: 18, marginTop: 12 }} />
-              <div className="skl" style={{ width: '100%', height: 1, marginTop: 20, marginBottom: 20, opacity: .4 }} />
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: 12 }}>
-                {Array.from({ length: 6 }).map((_, i) => <div key={i} className="skl" style={{ height: 70 }} />)}
-              </div>
             </div>
-            <div>
+            <div style={{ width: '100%' }}>
               <div className="skl" style={{ height: 280, borderRadius: 20 }} />
-              <div className="skl" style={{ height: 90, borderRadius: 16, marginTop: 14 }} />
             </div>
           </div>
         </div>
@@ -289,7 +282,6 @@ export default function Anuncio() {
       <p style={{ color: '#64748b', marginBottom: '24px', maxWidth: 360, lineHeight: 1.6 }}>{erro}</p>
       <div style={{ display: 'flex', gap: 10 }}>
         <button onClick={() => navigate(-1)} className="nx-btn-primary" style={{ padding: '12px 24px', borderRadius: '12px', background: '#0f172a', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Voltar Atrás</button>
-        <Link to="/" className="nx-btn-primary" style={{ padding: '12px 24px', borderRadius: '12px', background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 700, textDecoration: 'none' }}>Página Inicial</Link>
       </div>
     </div>
   );
@@ -391,6 +383,7 @@ export default function Anuncio() {
   const dataPublicacao = anuncio.createdAt
     ? new Date(anuncio.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
     : null;
+  
   const resumoDecisao = [
     { label: 'Localização', value: localizacaoString, icon: mdiMapMarkerOutline },
     { label: isCarro ? 'Marca' : 'Preço / m²', value: isCarro ? (anuncio.carro?.marca || 'Viatura') : (precoPorM2 || 'A confirmar'), icon: isCarro ? mdiCar : mdiRulerSquare },
@@ -427,7 +420,7 @@ export default function Anuncio() {
   };
 
   return (
-    <>
+    <div className="nx-anuncio-view">
       <Seo
         title={`${anuncio.titulo} | Noxvelia`}
         description={(anuncio.descricao || `${anuncio.titulo} em ${anuncio.localizacao?.cidade || 'Portugal'}`).slice(0, 160)}
@@ -438,265 +431,175 @@ export default function Anuncio() {
       />
 
       <style>{`
-        /* RESETS FUNDAMENTAIS MÓVEIS */
-        *, *::before, *::after { box-sizing: border-box; }
-        img { max-width: 100%; height: auto; display: block; }
-        .ano-page { background: linear-gradient(180deg, #ffffff 0%, #f8fafc 34%, #ffffff 100%); color: #0f172a; min-height: calc(100vh - 72px); padding: 28px 20px 72px; font-family: 'Inter', sans-serif; overflow-x: hidden; width: 100%; max-width: 100%; }
-        .ano-container { width: 100%; max-width: 1280px; margin: 0 auto; min-width: 0; }
+        /* ── JAULA GLOBAL ANTI-OVERFLOW (RESOLVE O SCROLL HORIZONTAL) ── */
+        html, body {
+          overflow-x: hidden !important;
+          width: 100% !important;
+          margin: 0;
+          padding: 0;
+        }
+
+        .nx-anuncio-view {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          width: 100%;
+          overflow-x: hidden !important;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fafc 34%, #ffffff 100%);
+          color: #0f172a;
+          min-height: calc(100vh - 72px);
+          padding: 16px 12px 100px;
+          font-family: 'Inter', sans-serif;
+          box-sizing: border-box;
+          position: relative;
+        }
+
+        .nx-anuncio-view *, .nx-anuncio-view *::before, .nx-anuncio-view *::after {
+          box-sizing: border-box !important;
+          max-width: 100%; /* Força que nenhum elemento ultrapasse o container pai */
+        }
         
-        .ano-breadcrumb { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        @media (min-width: 768px) { .nx-anuncio-view { padding: 24px 20px 80px; } }
+
+        .ano-container { width: 100%; max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; }
+        
+        .ano-breadcrumb { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; width: 100%; }
         .ano-back { display: inline-flex; align-items: center; gap: 6px; color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; text-decoration: none; transition: color .2s; }
         .ano-back:hover, .ano-back:focus-visible { color: #0f172a; }
-        .ano-actions { display: flex; gap: 10px; }
+        .ano-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        
         .btn-icon { width: 38px; height: 38px; border-radius: 10px; background: #ffffff; border: 1px solid #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .2s; position: relative; flex-shrink: 0; }
-        .btn-icon:hover { background: #f1f5f9; border-color: #cbd5e1; color: #0f172a; transform: translateY(-1px); }
-        .btn-icon:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid ${accent}; outline-offset: 2px; }
         .btn-icon.saved { color: #ef4444; background: rgba(239,68,68,.05); border-color: rgba(239,68,68,.2); }
-        .toast-copy { position: absolute; top: 110%; right: 0; background: #0f172a; color: #ffffff; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 6px; white-space: nowrap; pointer-events: none; animation: nx-fade-in .2s; z-index: 20; display: flex; align-items: center; gap: 4px; }
+        .toast-copy { position: absolute; top: 110%; right: 0; background: #0f172a; color: #ffffff; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 6px; white-space: nowrap; animation: nx-fade-in .2s; z-index: 20; display: flex; align-items: center; gap: 4px; }
 
-        .ano-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 390px); gap: 32px; align-items: start; width: 100%; }
-        .ano-grid > div { min-width: 0; min-height: 0; }
-        @media (max-width: 960px) { .ano-grid { grid-template-columns: minmax(0, 1fr); } }
+        /* GRID PRINCIPAL */
+        .ano-grid { display: grid; grid-template-columns: 1fr; gap: 24px; width: 100%; align-items: start; }
+        @media (min-width: 1024px) { .ano-grid { grid-template-columns: 1fr 380px; gap: 32px; } }
 
-        .gallery-wrap { border-radius: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; margin-bottom: 18px; box-shadow: 0 28px 70px -52px rgba(15,23,42,0.55); width: 100%; max-width: 100%; min-width: 0; }
-        .ano-page.is-featured .gallery-wrap { border-color: rgba(217,196,156,.78) !important; box-shadow: 0 28px 70px -50px rgba(16,47,80,.62), 0 0 0 1px rgba(217,196,156,.2) !important; }
-        .ano-page.is-featured .title-block,
-        .ano-page.is-featured .price-panel { border-color: rgba(217,196,156,.68) !important; }
+        /* GALERIA E IMAGENS */
+        .gallery-wrap { width: 100%; border-radius: 16px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; margin-bottom: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); position: relative; }
+        .nx-anuncio-view.is-featured .gallery-wrap { border-color: rgba(217,196,156,.78); box-shadow: 0 10px 25px -5px rgba(217,196,156,.3); }
+        .gallery-main { position: relative; width: 100%; aspect-ratio: 16/9; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; }
+        .gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .gallery-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,.65) 0%, transparent 45%); pointer-events: none; }
         
-        .gallery-main { position: relative; width: 100%; aspect-ratio: 16/9; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; min-width: 0; }
-        .gallery-main img { width: 100%; height: 100%; max-width: 100%; object-fit: cover; transition: transform .5s ease, opacity .3s; }
-        .gallery-main:hover img { transform: scale(1.025); }
-        .gallery-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,.6) 0%, transparent 45%); pointer-events: none; }
-        .gallery-placeholder { color: #cbd5e1; opacity: 0.5; }
-        .gallery-badge { position: absolute; top: 14px; left: 14px; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,.05); border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: ${accent}; display: flex; align-items: center; gap: 5px; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .gallery-badge.below-featured { top: 54px; }
-        .gallery-featured-badge { position: absolute; top: 14px; left: 14px; z-index: 6; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 13px; border-radius: 999px; background: linear-gradient(135deg, #102f50 0%, #d9c49c 100%); color: #fffaf0; border: 1px solid rgba(255,250,240,.32); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 18px 34px -20px rgba(2,6,23,.78); }
-        .gallery-counter { position: absolute; top: 14px; right: 14px; background: rgba(15,23,42,.65); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 5; }
-        .gallery-zoom-hint { position: absolute; bottom: 16px; right: 14px; background: rgba(15,23,42,.55); backdrop-filter: blur(8px); border-radius: 20px; padding: 6px 11px; font-size: 11px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 5; opacity: 0; transition: opacity .2s; }
-        .gallery-main:hover .gallery-zoom-hint { opacity: 1; }
+        .gallery-badge { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,.05); border-radius: 8px; padding: 5px 10px; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: ${accent}; display: flex; align-items: center; gap: 5px; z-index: 5; }
+        .gallery-badge.below-featured { top: 52px; }
+        .gallery-featured-badge { position: absolute; top: 12px; left: 12px; z-index: 6; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: linear-gradient(135deg, #102f50 0%, #d9c49c 100%); color: #fffaf0; border: 1px solid rgba(255,250,240,.32); font-size: 10.5px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 8px 16px rgba(0,0,0,.3); }
+        .gallery-counter { position: absolute; top: 12px; right: 12px; background: rgba(15,23,42,.65); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 5; }
+        
         .gallery-bottom { position: absolute; bottom: 16px; left: 16px; right: 16px; z-index: 5; pointer-events: none; }
-        .gallery-title-overlay { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(16px, 4.5vw, 26px); font-weight: 800; color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,.6); letter-spacing: -.02em; line-height: 1.25; margin-bottom: 6px; word-break: break-word; overflow-wrap: anywhere; white-space: normal; }
-        .gallery-loc { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,.9); font-size: 13px; font-weight: 600; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+        .gallery-title-overlay { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(18px, 4vw, 24px); font-weight: 800; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.8); line-height: 1.25; margin-bottom: 6px; word-break: break-word; }
+        .gallery-loc { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,.9); font-size: 12px; font-weight: 600; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
         
-        .arrow-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.9); border: 1px solid rgba(0,0,0,.05); color: #0f172a; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; transition: all .2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .arrow-btn:hover { background: #ffffff; transform: translateY(-50%) scale(1.05); }
-        .arrow-left { left: 14px; } .arrow-right { right: 14px; }
-        
-        .thumbs-row { display: flex; gap: 8px; padding: 12px; overflow-x: auto; scrollbar-width: none; background: #ffffff; border-top: 1px solid #e2e8f0; width: 100%; max-width: 100%; }
+        .thumbs-row { display: flex; gap: 8px; padding: 12px; overflow-x: auto; scrollbar-width: none; background: #ffffff; border-top: 1px solid #e2e8f0; width: 100%; }
         .thumbs-row::-webkit-scrollbar { display: none; }
-        .thumb { width: 76px; height: 50px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid transparent; opacity: .6; transition: all .2s; flex-shrink: 0; padding: 0; background: #f1f5f9; }
-        .thumb:hover { opacity: .9; }
+        .thumb { width: 70px; height: 46px; border-radius: 6px; overflow: hidden; cursor: pointer; border: 2px solid transparent; opacity: .6; flex-shrink: 0; padding: 0; background: #f1f5f9; }
         .thumb.active { border-color: ${accent}; opacity: 1; }
         .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-        .title-block { margin-bottom: 18px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 22px; box-shadow: 0 20px 50px -42px rgba(15,23,42,0.5); width: 100%; max-width: 100%; min-width: 0; }
-        .listing-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 4vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 5px; }
-        .listing-subtitle { font-size: clamp(18px, 2vw, 24px); color: #0f172a; font-weight: 800; margin-bottom: 14px; line-height: 1.25; letter-spacing: -0.01em; word-break: break-word; overflow-wrap: anywhere; }
-        .meta-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; width: 100%; }
-        .meta-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; }
-        .meta-ref { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
-        .meta-ref:hover { color: #0f172a; }
-        .estado-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(217,196,156,.18); color: #102f50; border: 1px solid rgba(217,196,156,.38); }
+        /* TÍTULO E DECISÕES */
+        .title-block { width: 100%; margin-bottom: 16px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+        .nx-anuncio-view.is-featured .title-block { border-color: rgba(217,196,156,.68); }
+        .featured-title-strip { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding: 12px; border: 1px solid #e7d3a8; border-radius: 10px; background: linear-gradient(135deg, #fff8e7 0%, #ffffff 100%); color: #102f50; width: 100%; }
+        .featured-title-strip span { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 900; text-transform: uppercase; }
+        .featured-title-strip small { color: #64748b; font-size: 11px; font-weight: 700; width: 100%; }
+        @media (min-width: 640px) { .featured-title-strip small { width: auto; } }
+
+        .listing-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(26px, 5vw, 36px); font-weight: 800; color: ${accent}; margin-bottom: 6px; word-break: break-word; }
+        .listing-subtitle { font-size: clamp(16px, 3vw, 22px); color: #0f172a; font-weight: 800; margin-bottom: 14px; line-height: 1.3; word-break: break-word; }
+        
+        .meta-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; width: 100%; }
+        .meta-item { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: #64748b; font-weight: 600; white-space: normal; }
+        .estado-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; background: rgba(217,196,156,.18); color: #102f50; border: 1px solid rgba(217,196,156,.38); }
         .estado-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-        .meta-dot { color: #cbd5e1; font-size: 10px; }
-        .featured-title-strip { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; padding: 12px 14px; border: 1px solid #e7d3a8; border-radius: 12px; background: linear-gradient(135deg, #fff8e7 0%, #ffffff 100%); color: #102f50; }
-        .featured-title-strip span { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
-        .featured-title-strip small { color: #64748b; font-size: 12px; font-weight: 700; text-align: right; }
-        .nx-badge-item.destaque { background: #102f50; border-color: #102f50; color: #fffaf0; }
+        
+        .decision-strip { width: 100%; display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
+        @media (min-width: 520px) { .decision-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (min-width: 900px) { .decision-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
-        .decision-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0 0 22px; width: 100%; }
-        .decision-item { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 13px 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 26px -24px rgba(15,23,42,0.45); min-width: 0; }
-        .decision-icon { width: 34px; height: 34px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: ${accent}; flex-shrink: 0; }
-        .decision-label { display: block; font-size: 9.5px; color: #94a3b8; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; line-height: 1; margin-bottom: 5px; }
-        .decision-value { display: block; color: #0f172a; font-size: 13px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .decision-item { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); min-width: 0; width: 100%; }
+        .decision-icon { width: 32px; height: 32px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: ${accent}; flex-shrink: 0; }
+        .decision-label { display: block; font-size: 9px; color: #94a3b8; font-weight: 900; text-transform: uppercase; margin-bottom: 4px; }
+        .decision-value { display: block; color: #0f172a; font-size: 12px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .tabs-wrap { display: flex; gap: 4px; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 16px; padding: 5px; margin-bottom: 22px; overflow-x: auto; scrollbar-width: none; box-shadow: 0 16px 34px -30px rgba(15,23,42,0.5); width: 100%; max-width: 100%; }
+        /* SEPARADORES E DETALHES */
+        .tabs-wrap { display: flex; gap: 4px; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 12px; padding: 5px; margin-bottom: 20px; overflow-x: auto; scrollbar-width: none; width: 100%; }
         .tabs-wrap::-webkit-scrollbar { display: none; }
-        .tab-btn { padding: 10px 18px; background: transparent; border: none; border-radius: 11px; color: #64748b; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: all .2s; letter-spacing: .01em; flex-shrink: 0; }
-        .tab-btn:hover { color: #0f172a; }
-        .tab-btn.active { color: #fffaf0 !important; background: ${accent}; }
+        .tab-btn { padding: 10px 16px; background: transparent; border: none; border-radius: 8px; color: #64748b; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: all .2s; }
+        .tab-btn.active { color: #fffaf0; background: ${accent}; }
 
-        .specs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 155px), 1fr)); gap: 12px; width: 100%; }
-        .spec-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; transition: border-color .2s, transform .2s, box-shadow .2s; animation: nx-rise .35s ease backwards; min-width: 0; }
-        .spec-card:hover { border-color: #cbd5e1; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
-        .spec-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-        .spec-value { font-size: 15px; font-weight: 700; color: #0f172a; text-transform: capitalize; word-break: break-word; overflow-wrap: anywhere; }
+        .specs-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 145px), 1fr)); gap: 10px; }
+        .spec-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.01); width: 100%; }
+        .spec-label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+        .spec-value { font-size: 14px; font-weight: 700; color: #0f172a; word-break: break-word; }
+
+        .desc-box { width: 100%; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
+        .desc-text { font-size: 13.5px; line-height: 1.7; color: #334155; white-space: pre-wrap; word-break: break-word; }
 
         .extras-panel { display: flex; flex-direction: column; gap: 22px; width: 100%; }
-        .extras-group { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+        .extras-group { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         .extras-group-title { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: #475569; }
         .extras-group-title::before { content: ''; width: 8px; height: 8px; border-radius: 999px; background: ${accent}; box-shadow: 0 0 0 4px rgba(217,196,156,.16); }
-        .extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 10px; align-items: stretch; }
-        .extra-item { min-width: 0; min-height: 58px; display: flex; align-items: flex-start; gap: 11px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 13px 14px; font-size: 13px; font-weight: 750; color: #334155; line-height: 1.42; animation: nx-rise .35s ease backwards; box-shadow: 0 12px 28px -24px rgba(15,23,42,0.35); }
+        .extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 10px; width: 100%; }
+        .extra-item { min-width: 0; min-height: 58px; display: flex; align-items: flex-start; gap: 11px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 13px 14px; font-size: 13px; font-weight: 750; color: #334155; line-height: 1.42; }
         .extra-check { width: 24px; height: 24px; border-radius: 8px; background: rgba(217,196,156,0.1); color: ${accent}; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; margin-top: -1px; }
-        .extra-text { min-width: 0; overflow-wrap: anywhere; word-break: normal; white-space: normal; }
 
-        .desc-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; margin-top: 4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); width: 100%; max-width: 100%; min-width: 0; }
-        .desc-head { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 16px; display: flex; align-items: center; gap: 7px; }
-        .desc-text { font-size: 14px; line-height: 1.8; color: #334155; white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; }
-
-        .tour-card { margin-top: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 20px 48px -42px rgba(15,23,42,.55); width: 100%; min-width: 0; }
-        .tour-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; }
+        .tour-card { margin-top: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; width: 100%; }
+        .tour-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #e2e8f0; }
         .tour-title { display: flex; align-items: center; gap: 8px; color: #0f172a; font-size: 15px; font-weight: 850; }
-        .tour-provider { padding: 4px 9px; border-radius: 999px; color: ${accent}; background: rgba(217,196,156,.08); border: 1px solid rgba(217,196,156,.18); font-size: 10px; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; }
-        .tour-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #020617; }
+        .tour-provider { padding: 4px 9px; border-radius: 999px; color: ${accent}; background: rgba(217,196,156,.08); border: 1px solid rgba(217,196,156,.18); font-size: 10px; font-weight: 850; text-transform: uppercase; }
+        .tour-frame { position: relative; width: 100%; max-width: 100%; overflow: hidden; aspect-ratio: 16 / 9; background: #020617; }
         .tour-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
-        .tab-panel { animation: nx-fade-in .35s ease; }
-
-        .sidebar-sticky { position: sticky; top: 88px; display: flex; flex-direction: column; gap: 16px; max-height: calc(100vh - 104px); overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; scrollbar-width: thin; width: 100%; min-width: 0; }
-        .price-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 22px; padding: 26px; box-shadow: 0 28px 70px -52px rgba(15,23,42,0.7); width: 100%; min-width: 0; }
-        .panel-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 3.5vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 4px; }
-        .panel-price-m2 { font-size: 13px; color: #64748b; font-weight: 600; margin-bottom: 16px; }
-
-        .nx-price-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0; }
-        .nx-badge-item { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; }
-        .nx-badge-item.garantia { background: rgba(217, 196, 156, 0.08); border-color: rgba(217, 196, 156, 0.28); color: #102f50; }
-        .nx-badge-item.retoma { background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.2); color: #2563eb; }
-
-        .btn-contact { width: 100%; box-sizing: border-box; padding: 16px; background: ${accent}; color: #fff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px ${accentShadow}; margin-bottom: 12px; }
-        .btn-contact:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: 0 10px 28px ${accentShadow}; }
-
-        .btn-whatsapp { width: 100%; box-sizing: border-box; padding: 16px; background: #102f50; color: #fff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px rgba(16, 47, 80, 0.2); text-decoration: none; margin-bottom: 12px; }
-        .btn-whatsapp:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(16, 47, 80, 0.28); color: #fff; }
-
-        .contact-revealed { width: 100%; box-sizing: border-box; padding: 18px 16px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; transition: all .2s; margin-bottom: 12px; overflow: hidden; min-width: 0; }
-        .contact-revealed:hover { background: #f1f5f9; border-color: #94a3b8; }
-        .contact-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; }
-        .contact-phone { font-size: clamp(16px, 4vw, 22px); font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 7px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-        .contact-email { font-size: 13px; color: #475569; font-weight: 600; margin-top: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
-
-        .cv-banner { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 20px; padding: 24px; text-decoration: none; display: flex; flex-direction: column; transition: all .2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); box-sizing: border-box; width: 100%; margin-top: 16px; min-width: 0; }
-        .cv-banner:hover { border-color: #7dd3fc; background: #e0f2fe; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.1); }
-        .cv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; width: 100%; box-sizing: border-box; flex-wrap: wrap; gap: 8px; }
-        .cv-discount { background: #1B4DFF; color: #fff; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .cv-desc { font-size: 14px; color: #0c4a6e; line-height: 1.5; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
-        .cv-code-wrap { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px dashed #7dd3fc; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; cursor: pointer; transition: all 0.2s; width: 100%; box-sizing: border-box; flex-wrap: wrap; gap: 8px; }
-        .cv-code-wrap:hover { background: #f8fafc; border-color: #38bdf8; }
-        .cv-code { display: flex; align-items: center; background: #f0f9ff; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 800; color: #1B4DFF; letter-spacing: 0.05em; }
-        .cv-btn { width: 100%; padding: 16px; background: #1B4DFF; color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; transition: background .2s, transform .2s; box-sizing: border-box; }
-        .cv-banner:hover .cv-btn { background: #143bc4; }
-
-        .finance-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); width: 100%; min-width: 0; }
-        .finance-box .fin-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 14px; }
-        .fin-result-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #cbd5e1; flex-wrap: wrap; gap: 8px; }
-        .fin-prestacao { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 800; color: ${accent}; letter-spacing: -.02em; }
-        .fin-mes { font-size: 12px; color: #64748b; font-weight: 600; margin-left: 3px; }
-        .fin-taeg { font-size: 11px; color: #64748b; font-weight: 700; }
-        .slider-group { margin-bottom: 12px; width: 100%; min-width: 0; }
-        .slider-label-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px; width: 100%; }
-        .slider-val { color: ${accent}; }
-        .fin-slider { width: 100%; height: 4px; border-radius: 2px; accent-color: ${accent}; cursor: pointer; -webkit-appearance: none; background: #e2e8f0; outline: none; display: block; }
-        .fin-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${accent}; cursor: pointer; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .fin-note { font-size: 10.5px; color: #94a3b8; margin-top: 12px; line-height: 1.5; }
-
-        .trust-strip { display: flex; gap: 18px; padding: 16px 4px 0; margin-top: 4px; border-top: 1px solid #e2e8f0; justify-content: center; flex-wrap: wrap; }
-        .trust-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #64748b; }
-
-        .seller-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; transition: all .2s; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); width: 100%; min-width: 0; }
-        .seller-panel:hover { border-color: #cbd5e1; background: #f8fafc; transform: translateY(-2px); box-shadow: 0 14px 20px -5px rgba(0,0,0,0.08); }
-        .seller-avatar { width: 48px; height: 48px; border-radius: 50%; background: #f1f5f9; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 800; color: #0f172a; flex-shrink: 0; overflow: hidden; }
-        .seller-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .seller-info { flex: 1; min-width: 0; text-align: left; }
-        .seller-name { font-size: 15px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 5px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        .seller-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .seller-rating { display: flex; align-items: center; gap: 2px; font-size: 13px; font-weight: 800; color: #0f172a; background: #fffbeb; padding: 2px 8px 2px 6px; border-radius: 6px; border: 1px solid #fef3c7; }
-        .seller-reviews { font-weight: 600; color: #64748b; font-size: 11.5px; margin-left: 2px; }
-        .seller-rating-empty { font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .seller-date { font-size: 12px; font-weight: 600; color: #64748b; }
-
-        .owner-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 14px; padding: 18px; margin-top: 4px; width: 100%; min-width: 0; }
-        .owner-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #2563eb; margin-bottom: 12px; }
-        .owner-btns { display: flex; gap: 10px; width: 100%; flex-wrap: wrap; }
-        .btn-owner-edit { flex: 1; min-width: 120px; padding: 11px; text-align: center; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; transition: all .2s; }
-        .btn-owner-edit:hover { border-color: #94a3b8; background: #f8fafc; }
-        .btn-owner-edit.is-locked { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
-        .btn-owner-edit.is-locked:hover { background: #ffedd5; border-color: #fdba74; }
-        .owner-note { margin-top: 10px; color: #475569; font-size: 11.5px; line-height: 1.5; }
-        .btn-owner-sold { flex: 1; min-width: 120px; padding: 11px; border: none; background: #102f50; color: #fff; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: opacity .2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-owner-sold:hover { opacity: .85; }
-
-        .nx-modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; animation: nx-fade-in .2s; width: 100%; height: 100%; }
-        .nx-modal-box { width: 100%; max-width: 440px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 36px 28px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-        .nx-modal-icon { margin-bottom: 16px; display: flex; justify-content: center; }
-        .nx-modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 10px; letter-spacing: -.02em; }
-        .nx-modal-text { font-size: 14px; color: #64748b; line-height: 1.7; margin-bottom: 28px; }
-        .nx-modal-footer { display: flex; gap: 12px; flex-wrap: wrap; }
-        .nx-btn-cancel { flex: 1; min-width: 120px; padding: 13px; background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; }
-        .nx-btn-cancel:hover { border-color: #94a3b8; color: #0f172a; background: #f8fafc; }
-        .nx-btn-danger { flex: 1; min-width: 120px; padding: 13px; background: #ef4444; border: none; color: #fff; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; transition: opacity .2s; }
-        .nx-btn-danger:hover { opacity: .85; }
-        .nx-btn-danger:disabled { opacity: .5; cursor: not-allowed; }
-
-        .sugeridos-section { margin-top: 64px; padding-top: 40px; border-top: 1px solid #e2e8f0; width: 100%; min-width: 0; }
-        .sugeridos-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 24px; letter-spacing: -0.02em; }
-        .sugeridos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 24px; width: 100%; }
-
-        .lightbox-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.98); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: nx-fade-in .2s; width: 100%; height: 100%; }
-        .lightbox-close { position: absolute; top: 18px; right: 18px; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; }
-        .lightbox-close:hover { background: rgba(255,255,255,.2); }
-        .lightbox-counter { position: absolute; top: 24px; left: 24px; color: rgba(255,255,255,.8); font-size: 13px; font-weight: 700; z-index: 5; }
-        .lightbox-img-wrap { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 70px 90px; min-width: 0; }
-        .lightbox-img-wrap img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 6px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        /* PAINEL LATERAL (PREÇO, CONTACTOS, VENDEDOR) */
+        .sidebar-sticky { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+        @media (min-width: 1024px) { .sidebar-sticky { position: sticky; top: 88px; max-height: calc(100vh - 104px); overflow-y: auto; padding-right: 4px; } }
         
-        /* ── CORREÇÕES AGRESSIVAS PARA MOBILE E OVERFLOW ── */
-        @media (max-width: 900px) {
-          .decision-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-          .ano-page { padding: 16px 12px 100px; }
-          .desc-box { padding: 20px; }
-        }
+        .price-panel { width: 100%; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+        .panel-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 4vw, 36px); font-weight: 800; color: ${accent}; margin-bottom: 4px; word-break: break-word; }
+        
+        .nx-price-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; width: 100%; }
+        .nx-badge-item { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 700; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; }
 
-        @media (max-width: 720px) {
-          .mobile-cta-bar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; width: 100%; z-index: 500; background: rgba(255,255,255,0.92); border-top: 1px solid #e2e8f0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); align-items: center; gap: 16px; backdrop-filter: blur(16px); box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05); box-sizing: border-box; }
-          .mobile-cta-price { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 18px; color: ${accent}; line-height: 1.1; white-space: nowrap; }
-          .mobile-cta-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; background: ${accent}; color: #fff; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; cursor: pointer; box-shadow: 0 4px 12px ${accentShadow}; }
-          .lightbox-img-wrap { padding: 70px 16px; }
-          .arrow-btn { width: 34px; height: 34px; }
-          .gallery-wrap { border-radius: 16px; }
-        }
+        .btn-contact { width: 100%; padding: 16px; background: ${accent}; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 12px; }
+        .btn-whatsapp { width: 100%; padding: 16px; background: #102f50; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; text-transform: uppercase; text-decoration: none; margin-bottom: 12px; }
+        
+        .contact-revealed { width: 100%; padding: 18px 16px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; margin-bottom: 12px; overflow: hidden; }
+        .contact-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; }
+        .contact-phone { font-size: clamp(18px, 2vw, 22px); font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 7px; white-space: normal; word-break: break-all; text-align: center; }
 
-        @media (max-width: 520px) {
-          .decision-strip { grid-template-columns: 1fr; }
-          .title-block { padding: 16px; }
-          .price-panel { padding: 18px; }
-          .gallery-title-overlay { font-size: 18px; }
-        }
+        .seller-panel { width: 100%; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 12px; text-decoration: none; transition: background .2s; }
+        .seller-panel:hover { background: #f8fafc; border-color: #cbd5e1; }
+        .seller-avatar { width: 44px; height: 44px; border-radius: 50%; background: #f1f5f9; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #0f172a; flex-shrink: 0; overflow: hidden; }
+        .seller-info { flex: 1; min-width: 0; }
+        .seller-name { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
 
-        @media (max-width: 620px) {
-          .featured-title-strip { align-items: flex-start; flex-direction: column; }
-          .featured-title-strip small { text-align: left; }
-          .gallery-badge.below-featured { top: 52px; }
-        }
-
-        @keyframes nx-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        @media (prefers-reduced-motion: reduce) {
-          .spec-card, .extra-item, .gallery-main img, .btn-contact, .btn-whatsapp { animation: none !important; transition: none !important; }
-        }
+        /* BARRA MOBILE FIXA */
+        .mobile-cta-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; width: auto; z-index: 500; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-top: 1px solid #e2e8f0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); align-items: center; gap: 12px; }
+        @media (min-width: 1024px) { .mobile-cta-bar { display: none; } }
+        .mobile-cta-price { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 18px; color: ${accent}; white-space: nowrap; flex-shrink: 0; }
+        .mobile-cta-btn { flex: 1; min-width: 0; padding: 14px; border-radius: 10px; border: none; background: ${accent}; color: #fff; font-size: 13px; font-weight: 800; text-transform: uppercase; cursor: pointer; text-align: center; }
+        
+        .lightbox-overlay { position: fixed; inset: 0; width: 100%; height: 100%; background: rgba(15,23,42,.98); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+        .lightbox-img-wrap { width: 100%; height: 100%; padding: 60px 16px; display: flex; align-items: center; justify-content: center; }
+        .lightbox-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
       `}</style>
 
       {lightboxAberto && (
-        <div className="lightbox-overlay" onClick={() => setLightboxAberto(false)} role="dialog" aria-modal="true" aria-label="Visualização ampliada das fotos">
-          <button type="button" className="lightbox-close" onClick={(e) => { e.stopPropagation(); setLightboxAberto(false); }} aria-label="Fechar">
+        <div className="lightbox-overlay" onClick={() => setLightboxAberto(false)} role="dialog" aria-modal="true" aria-label="Visualização ampliada">
+          <button type="button" className="btn-icon" style={{ position: 'absolute', top: 16, right: 16, zIndex: 10, background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none' }} onClick={(e) => { e.stopPropagation(); setLightboxAberto(false); }}>
             <Icon path={mdiClose} size={1} />
           </button>
-          {fotos.length > 1 && <div className="lightbox-counter">{fotoActiva + 1} / {fotos.length}</div>}
           <div className="lightbox-img-wrap" onClick={(e) => e.stopPropagation()} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
             {fotoActivaOriginalUrl ? (
-              <img
-                src={fotoActivaOriginalUrl}
-                width={fotoActivaDims.width}
-                height={fotoActivaDims.height}
-                alt={`${anuncio.titulo} — foto ${fotoActiva + 1}`}
-              />
-            ) : (
-              <div className="gallery-placeholder"><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={3} /></div>
-            )}
+              <img src={fotoActivaOriginalUrl} width={fotoActivaDims.width} height={fotoActivaDims.height} alt="" />
+            ) : null}
           </div>
           {fotos.length > 1 && (
             <>
-              <button type="button" className="arrow-btn arrow-left" onClick={(e) => { e.stopPropagation(); fotoAnterior(); }} aria-label="Foto anterior"><Icon path={mdiChevronLeft} size={1.1} /></button>
-              <button type="button" className="arrow-btn arrow-right" onClick={(e) => { e.stopPropagation(); fotoSeguinte(); }} aria-label="Foto seguinte"><Icon path={mdiChevronRight} size={1.1} /></button>
+              <button type="button" className="btn-icon" style={{ position: 'absolute', top: '50%', left: 16, transform: 'translateY(-50%)', zIndex: 10 }} onClick={(e) => { e.stopPropagation(); fotoAnterior(); }}><Icon path={mdiChevronLeft} size={1} /></button>
+              <button type="button" className="btn-icon" style={{ position: 'absolute', top: '50%', right: 16, transform: 'translateY(-50%)', zIndex: 10 }} onClick={(e) => { e.stopPropagation(); fotoSeguinte(); }}><Icon path={mdiChevronRight} size={1} /></button>
             </>
           )}
         </div>
@@ -704,367 +607,220 @@ export default function Anuncio() {
 
       {mostrarModalVendido && (
         <div className="nx-modal-overlay" onClick={() => setMostrarModalVendido(false)}>
-          <div className="nx-modal-box" onClick={e => e.stopPropagation()}>
-            <div className="nx-modal-icon"><Icon path={mdiCheckCircleOutline} size={2.5} color="#102f50" /></div>
-            <h3 className="nx-modal-title">Venda Concluída</h3>
-            <p className="nx-modal-text">Pretendes eliminar este anúncio de forma permanente dado que o ativo já foi vendido?</p>
-            <div className="nx-modal-footer">
-              <button type="button" className="nx-btn-cancel" disabled={eliminandoVendido} onClick={() => setMostrarModalVendido(false)}>Cancelar</button>
-              <button type="button" className="nx-btn-danger" disabled={eliminandoVendido} onClick={handleConfirmarVendido}>
-                {eliminandoVendido ? 'A eliminar...' : 'Sim, Eliminar'}
-              </button>
+          <div className="nx-modal-box" onClick={e => e.stopPropagation()} style={{ background: '#fff', padding: 24, borderRadius: 16, maxWidth: 400, width: '100%', textAlign: 'center' }}>
+            <h3 style={{ fontSize: 20, marginBottom: 12 }}>Venda Concluída</h3>
+            <p style={{ fontSize: 14, color: '#64748b', marginBottom: 24 }}>Pretendes eliminar este anúncio permanentemente?</p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button className="nx-btn-cancel" onClick={() => setMostrarModalVendido(false)}>Cancelar</button>
+              <button className="nx-btn-danger" onClick={handleConfirmarVendido} style={{ background: '#ef4444', color: '#fff' }}>Eliminar</button>
             </div>
           </div>
         </div>
       )}
 
-      <div className={`ano-page${isDestacado ? ' is-featured' : ''}`}>
-        <div className="ano-container">
-
-          <div className="ano-breadcrumb">
-            <Link to={isCarro ? '/carros' : '/imoveis'} className="ano-back">
-              <Icon path={mdiChevronLeft} size={0.75} /> Voltar à Pesquisa
-            </Link>
-            <div className="ano-actions">
-              <button className="btn-icon" onClick={handlePartilhar} title="Partilhar" aria-label="Partilhar anúncio">
-                <Icon path={mdiShareVariantOutline} size={0.85} />
-                {copiado && <div className="toast-copy"><Icon path={mdiCheck} size={0.55} /> Copiado</div>}
+      <div className="ano-container">
+        <div className="ano-breadcrumb">
+          <Link to={isCarro ? '/carros' : '/imoveis'} className="ano-back">
+            <Icon path={mdiChevronLeft} size={0.75} /> Voltar à Pesquisa
+          </Link>
+          <div className="ano-actions">
+            <button className="btn-icon" onClick={handlePartilhar} aria-label="Partilhar">
+              <Icon path={mdiShareVariantOutline} size={0.8} />
+              {copiado && <div className="toast-copy"><Icon path={mdiCheck} size={0.5} /> Copiado</div>}
+            </button>
+            {!isDono && (
+              <button className={`btn-icon ${guardado ? 'saved' : ''}`} onClick={toggleGuardado} aria-label="Guardar">
+                <Icon path={guardado ? mdiHeart : mdiHeartOutline} size={0.8} />
               </button>
-              {!isDono && (
-                <button className={`btn-icon ${guardado ? 'saved' : ''}`} onClick={toggleGuardado} title="Guardar" aria-pressed={guardado} aria-label={guardado ? 'Remover dos guardados' : 'Guardar anúncio'}>
-                  <Icon path={guardado ? mdiHeart : mdiHeartOutline} size={0.85} />
-                </button>
+            )}
+          </div>
+        </div>
+
+        <div className="ano-grid">
+          <div>
+            <div className="gallery-wrap">
+              <div className="gallery-main" onClick={() => setLightboxAberto(true)} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+                {fotoActivaLargeUrl ? (
+                  <img src={fotoActivaLargeUrl} srcSet={fotoActivaSrcSet || undefined} sizes="(max-width: 960px) 100vw, 820px" alt={anuncio.titulo} loading="eager" />
+                ) : (
+                  <Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={3} color="#cbd5e1" />
+                )}
+                <div className="gallery-overlay" />
+                {isDestacado && (
+                  <div className="gallery-featured-badge"><Icon path={mdiStar} size={0.68} />Destaque Noxvelia</div>
+                )}
+                <div className={`gallery-badge${isDestacado ? ' below-featured' : ''}`}>
+                  <Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={0.65} />{isCarro ? 'Automóvel' : 'Imóvel'}
+                </div>
+                {fotos.length > 1 && (<div className="gallery-counter">{fotoActiva + 1} / {fotos.length}</div>)}
+                <div className="gallery-bottom">
+                  <div className="gallery-title-overlay">{anuncio.titulo}</div>
+                  <div className="gallery-loc"><Icon path={mdiMapMarkerOutline} size={0.6} />{localizacaoString}</div>
+                </div>
+              </div>
+              {fotos.length > 1 && (
+                <div className="thumbs-row">
+                  {fotos.map((f, i) => (
+                    <div key={i} className={`thumb ${fotoActiva === i ? 'active' : ''}`} onClick={() => setFotoActiva(i)}>
+                      {getImageUrl(f, 'thumbnail') ? <img src={getImageUrl(f, 'thumbnail')} alt="" loading="lazy" /> : null}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
-          </div>
 
-          <div className="ano-grid">
-            <div>
-              <div className="gallery-wrap">
-                <div
-                  className="gallery-main"
-                  onClick={() => setLightboxAberto(true)}
-                  onTouchStart={onTouchStart}
-                  onTouchEnd={onTouchEnd}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Abrir galeria em ecrã completo"
-                  onKeyDown={(e) => { if (e.key === 'Enter') setLightboxAberto(true); }}
-                >
-                  {fotoActivaLargeUrl ? (
-                    <img
-                      src={fotoActivaLargeUrl}
-                      srcSet={fotoActivaSrcSet || undefined}
-                      sizes="(max-width: 960px) 100vw, 820px"
-                      width={fotoActivaDims.width}
-                      height={fotoActivaDims.height}
-                      alt={anuncio.titulo}
-                      loading="eager"
-                    />
-                  ) : (
-                    <div className="gallery-placeholder"><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={3} /></div>
-                  )}
-                  <div className="gallery-overlay" />
-                  {isDestacado && (
-                    <div className="gallery-featured-badge"><Icon path={mdiStar} size={0.68} />Destaque Noxvelia</div>
-                  )}
-                  <div className={`gallery-badge${isDestacado ? ' below-featured' : ''}`}><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={0.7} />{isCarro ? 'Automóvel' : 'Imóvel'}</div>
-                  {fotos.length > 1 && (<div className="gallery-counter"><Icon path={mdiCamera} size={0.65} />{fotoActiva + 1} / {fotos.length}</div>)}
-                  {fotoActivaLargeUrl && <div className="gallery-zoom-hint"><Icon path={mdiMagnifyPlusOutline} size={0.65} />Ampliar</div>}
-                  <div className="gallery-bottom">
-                    <div className="gallery-title-overlay">{anuncio.titulo}</div>
-                    <div className="gallery-loc"><Icon path={mdiMapMarkerOutline} size={0.65} />{localizacaoString}</div>
-                  </div>
-                  {fotos.length > 1 && (
-                    <>
-                      <button type="button" className="arrow-btn arrow-left" onClick={(e) => { e.stopPropagation(); fotoAnterior(); }} aria-label="Foto anterior"><Icon path={mdiChevronLeft} size={1.1} /></button>
-                      <button type="button" className="arrow-btn arrow-right" onClick={(e) => { e.stopPropagation(); fotoSeguinte(); }} aria-label="Foto seguinte"><Icon path={mdiChevronRight} size={1.1} /></button>
-                    </>
-                  )}
+            <div className="title-block">
+              {isDestacado && (
+                <div className="featured-title-strip">
+                  <span><Icon path={mdiStar} size={0.68} />Destaque Noxvelia</span>
+                  <small>Aparece com prioridade nos resultados.</small>
                 </div>
-                {fotos.length > 1 && (
-                  <div className="thumbs-row">
-                    {fotos.map((f, i) => (
-                      <button type="button" key={i} className={`thumb ${fotoActiva === i ? 'active' : ''}`} onClick={() => setFotoActiva(i)} aria-label={`Ver foto ${i + 1}`}>
-                        {getImageUrl(f, 'thumbnail') ? <img src={getImageUrl(f, 'thumbnail')} width="400" height="300" alt="" loading="lazy" /> : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#cbd5e1' }}><Icon path={mdiCamera} size={1} /></div>}
-                      </button>
-                    ))}
-                  </div>
-                )}
+              )}
+              <div className="listing-price">{preco}</div>
+              <div className="listing-subtitle">{anuncio.titulo}</div>
+              <div className="meta-row">
+                {dataPublicacao && <span className="meta-item"><Icon path={mdiClockOutline} size={0.6} /> {dataPublicacao}</span>}
+                <span className="estado-badge"><span className="estado-dot" />{anuncio.estado || 'Disponível'}</span>
+                <button type="button" className="meta-ref" onClick={copiarReferencia}>
+                  <Icon path={refCopiado ? mdiCheck : mdiContentCopy} size={0.6} /> Ref: #{referencia}
+                </button>
               </div>
+            </div>
 
-              <div className={`title-block${isDestacado ? ' is-featured' : ''}`}>
-                {isDestacado && (
-                  <div className="featured-title-strip">
-                    <span><Icon path={mdiStar} size={0.68} />Destaque Noxvelia</span>
-                    <small>Aparece com prioridade nos resultados de pesquisa.</small>
-                  </div>
-                )}
-                <div className="listing-price">{preco}</div>
-                <div className="listing-subtitle">{anuncio.titulo}</div>
-                <div className="meta-row">
-                  {dataPublicacao && <span className="meta-item"><Icon path={mdiClockOutline} size={0.65} /> Publicado em {dataPublicacao}</span>}
-                  <span className="estado-badge"><span className="estado-dot" />{anuncio.estado || 'Disponível'}</span>
-                  <span className="meta-item"><Icon path={mdiEyeOutline} size={0.65} /> {anuncio.visitas || 0} visualizações</span>
-                  <span className="meta-dot">·</span>
-                  <button type="button" className="meta-ref" onClick={copiarReferencia} title="Copiar referência">
-                    <Icon path={refCopiado ? mdiCheck : mdiContentCopy} size={0.6} /> Ref: #{referencia}
-                  </button>
+            <div className="decision-strip">
+              {resumoDecisao.map((item) => (
+                <div className="decision-item" key={item.label}>
+                  <span className="decision-icon"><Icon path={item.icon} size={0.7} /></span>
+                  <span style={{ minWidth: 0 }}>
+                    <span className="decision-label">{item.label}</span>
+                    <span className="decision-value">{item.value}</span>
+                  </span>
                 </div>
-              </div>
+              ))}
+            </div>
 
-              <div className="decision-strip">
-                {resumoDecisao.map((item) => (
-                  <div className="decision-item" key={item.label}>
-                    <span className="decision-icon"><Icon path={item.icon} size={0.78} /></span>
-                    <span style={{ minWidth: 0 }}>
-                      <span className="decision-label">{item.label}</span>
-                      <span className="decision-value">{item.value}</span>
-                    </span>
+            <div className="tabs-wrap" role="tablist">
+              <button type="button" role="tab" aria-selected={abaAtiva === 'especificacoes'} className={`tab-btn ${abaAtiva === 'especificacoes' ? 'active' : ''}`} onClick={() => setAbaAtiva('especificacoes')}>Ficha Técnica</button>
+              {extrasOpcionais.length > 0 && (<button type="button" role="tab" className={`tab-btn ${abaAtiva === 'equipamento' ? 'active' : ''}`} onClick={() => setAbaAtiva('equipamento')}>{isCarro ? 'Equipamento' : 'Detalhes'}</button>)}
+              <button type="button" role="tab" className={`tab-btn ${abaAtiva === 'descricao' ? 'active' : ''}`} onClick={() => setAbaAtiva('descricao')}>Descrição</button>
+            </div>
+
+            {abaAtiva === 'especificacoes' && (
+              <div className="specs-grid tab-panel">
+                {especificacoesVisiveis.map((s, i) => (
+                  <div key={i} className="spec-card">
+                    <div className="spec-label"><Icon path={s.icon} size={0.65} />{s.label}</div>
+                    <div className="spec-value">{s.value}</div>
                   </div>
                 ))}
               </div>
+            )}
 
-              <div className="tabs-wrap" role="tablist">
-                <button type="button" role="tab" aria-selected={abaAtiva === 'especificacoes'} className={`tab-btn ${abaAtiva === 'especificacoes' ? 'active' : ''}`} onClick={() => setAbaAtiva('especificacoes')}>Ficha Técnica</button>
-                {extrasOpcionais.length > 0 && (<button type="button" role="tab" aria-selected={abaAtiva === 'equipamento'} className={`tab-btn ${abaAtiva === 'equipamento' ? 'active' : ''}`} onClick={() => setAbaAtiva('equipamento')}>{isCarro ? 'Equipamento' : 'Detalhes'}</button>)}
-                <button type="button" role="tab" aria-selected={abaAtiva === 'descricao'} className={`tab-btn ${abaAtiva === 'descricao' ? 'active' : ''}`} onClick={() => setAbaAtiva('descricao')}>Descrição</button>
+            {abaAtiva === 'equipamento' && extrasOpcionais.length > 0 && (
+              <div className="extras-panel tab-panel">
+                {gruposExtras.map((grupo) => (
+                  <section key={grupo.titulo} className="extras-group">
+                    <div className="extras-group-title">{grupo.titulo}</div>
+                    <div className="extras-grid">
+                      {grupo.items.map((extra, i) => (
+                        <div key={i} className="extra-item">
+                          <span className="extra-check"><Icon path={mdiCheckCircleOutline} size={0.6} /></span>
+                          <span className="extra-text">{extra}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            )}
+
+            {abaAtiva === 'descricao' && (
+              <div className="desc-box tab-panel">
+                <div className="desc-head"><Icon path={mdiFileDocumentOutline} size={0.7} />Descrição</div>
+                <div className="desc-text">{anuncio.descricao || 'O vendedor ainda não adicionou uma descrição detalhada.'}</div>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <div className="sidebar-sticky">
+              <div className="price-panel">
+                <div className="panel-price">{preco}</div>
+                {precoPorM2 && <div className="panel-price-m2" style={{ color: '#64748b', fontSize: 13, marginBottom: 16 }}>{precoPorM2}</div>}
+
+                <div className="nx-price-badges">
+                  {isDestacado && <div className="nx-badge-item"><Icon path={mdiStar} size={0.6} /> Destaque</div>}
+                  {(garantia || vendedorVerificado) && <div className="nx-badge-item"><Icon path={mdiShieldCheckOutline} size={0.6} /> {garantia || 'Garantia'}</div>}
+                  {aceitaRetoma && <div className="nx-badge-item"><Icon path={mdiSwapHorizontal} size={0.6} /> Aceita Retoma</div>}
+                </div>
+
+                {isDono ? (
+                  <div className="owner-box" style={{ background: '#eff6ff', padding: 16, borderRadius: 12, border: '1px solid #bfdbfe', width: '100%' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: '#2563eb', marginBottom: 12, textTransform: 'uppercase' }}>Gestão</div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {podeEditarAnuncioAtivo ? (
+                        <Link to={`/editar/${id}`} style={{ flex: 1, padding: 10, textAlign: 'center', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 12, fontWeight: 700, textDecoration: 'none', color: '#0f172a' }}>Editar</Link>
+                      ) : (
+                        <Link to="/planos" style={{ flex: 1, padding: 10, textAlign: 'center', background: '#fff7ed', border: '1px solid #fed7aa', color: '#9a3412', borderRadius: 8, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>Premium</Link>
+                      )}
+                      <button onClick={() => setMostrarModalVendido(true)} style={{ flex: 1, padding: 10, background: '#102f50', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Vendido</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {mostrarTelefone ? (
+                      <a href={temTelefoneContacto ? `tel:${telefoneContacto}` : `mailto:${emailContacto}`} className="contact-revealed" style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '2px dashed #cbd5e1', textAlign: 'center', textDecoration: 'none', display: 'block', marginBottom: 12 }}>
+                        <div style={{ fontSize: 10, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Contactar via</div>
+                        <div style={{ fontSize: 18, color: '#0f172a', fontWeight: 800, wordBreak: 'break-all' }}>{temTelefoneContacto ? telefoneContacto : 'Email'}</div>
+                      </a>
+                    ) : (
+                      <button className="btn-contact" onClick={() => setMostrarTelefone(true)}>
+                        <Icon path={temTelefoneContacto ? mdiPhone : mdiEmailOutline} size={0.8} /> Contactar
+                      </button>
+                    )}
+                  </>
+                )}
               </div>
 
-              {abaAtiva === 'especificacoes' && (
-                <div className="specs-grid tab-panel">
-                  {especificacoesVisiveis.map((s, i) => (
-                    <div key={i} className="spec-card" style={{ animationDelay: `${i * 35}ms` }}>
-                      <div className="spec-label"><Icon path={s.icon} size={0.75} />{s.label}</div>
-                      <div className="spec-value">{s.value}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {abaAtiva === 'equipamento' && extrasOpcionais.length > 0 && (
-                <div className="extras-panel tab-panel">
-                  {gruposExtras.map((grupo, grupoIndex) => (
-                    <section key={grupo.titulo} className="extras-group">
-                      <div className="extras-group-title">{grupo.titulo}</div>
-                      <div className="extras-grid">
-                        {grupo.items.map((extra, i) => (
-                          <div key={grupo.titulo + '-' + extra + '-' + i} className="extra-item" style={{ animationDelay: String((grupoIndex + i) * 30) + 'ms' }}>
-                            <span className="extra-check"><Icon path={mdiCheckCircleOutline} size={0.7} /></span>
-                            <span className="extra-text">{extra}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-                  ))}
-                </div>
-              )}
-
-              {abaAtiva === 'descricao' && (
-                <div className="desc-box tab-panel">
-                  <div className="desc-head"><Icon path={mdiFileDocumentOutline} size={0.8} />Descrição do Anunciante</div>
-                  <div className="desc-text">{anuncio.descricao || 'O vendedor ainda não adicionou uma descrição detalhada.'}</div>
-                </div>
-              )}
-
-              {videoEmbed && (
-                <section className="tour-card" aria-labelledby="tour-virtual-title">
-                  <div className="tour-head">
-                    <div className="tour-title" id="tour-virtual-title">
-                      <Icon path={mdiCamera} size={0.82} />
-                      Tour Virtual / Vídeo
-                    </div>
-                    <span className="tour-provider">{videoEmbed.provider}</span>
-                  </div>
-                  <div className="tour-frame">
-                    <iframe
-                      src={videoEmbed.embedUrl}
-                      title={videoEmbed.title}
-                      loading="lazy"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      allowFullScreen
-                    />
-                  </div>
-                </section>
-              )}
-            </div>
-
-            <div>
-              <div className="sidebar-sticky">
-                <div className={`price-panel${isDestacado ? ' is-featured' : ''}`}>
-                  <div className="panel-price">{preco}</div>
-                  {precoPorM2 && <div className="panel-price-m2">{precoPorM2}</div>}
-
-                  <div className="nx-price-badges">
-                    {isDestacado && (
-                      <div className="nx-badge-item destaque"><Icon path={mdiStar} size={0.7} /> Destaque</div>
+              <Link to={`/vendedor/${donoDoAnuncio?._id}`} className="seller-panel">
+                <div className="seller-avatar">{donoDoAnuncio?.avatarUrl ? <img src={donoDoAnuncio.avatarUrl} alt="" /> : inicial}</div>
+                <div className="seller-info">
+                  <div className="seller-name">{donoDoAnuncio?.nome || 'Utilizador'} {vendedorVerificado && <Icon path={mdiCheckDecagram} size={0.7} color="#3b82f6" />}</div>
+                  <div className="seller-meta">
+                    {rating > 0 ? (
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#f59e0b', display: 'flex', alignItems: 'center', gap: 2 }}><Icon path={mdiStar} size={0.5} /> {rating.toFixed(1)}</span>
+                    ) : (
+                      <span style={{ fontSize: 11, color: '#64748b' }}>Novo Vendedor</span>
                     )}
-                    {(garantia || vendedorVerificado) && (
-                      <div className="nx-badge-item garantia"><Icon path={mdiShieldCheckOutline} size={0.7} /> {garantia || 'Garantia Incluída'}</div>
-                    )}
-                    {aceitaRetoma && (
-                      <div className="nx-badge-item retoma"><Icon path={mdiSwapHorizontal} size={0.7} /> Aceita Retoma</div>
-                    )}
-                    <div className="nx-badge-item"><Icon path={mdiLightningBolt} size={0.7} color="#f59e0b" /> Financiamento</div>
                   </div>
-
-                  {isDono ? (
-                    <div className="owner-box">
-                      <div className="owner-label">Gestão do Anúncio</div>
-                      <div className="owner-btns">
-                        {podeEditarAnuncioAtivo ? (
-                          <Link to={`/editar/${id}`} className="btn-owner-edit">Editar Dados</Link>
-                        ) : (
-                          <Link to="/planos" className="btn-owner-edit is-locked">Premium para editar</Link>
-                        )}
-                        <button type="button" className="btn-owner-sold" onClick={() => setMostrarModalVendido(true)}>
-                          <Icon path={mdiCheck} size={0.7} style={{marginRight: 4}} /> Vendido
-                        </button>
-                      </div>
-                      {!podeEditarAnuncioAtivo && (
-                        <div className="owner-note">Anúncios ativos só podem ser editados com Premium. Podes marcar como vendido a qualquer momento.</div>
-                      )}
-                    </div>
-                  ) : (
-                    <>
-                      {mostrarTelefone ? (
-                        <>
-                          <a href={temTelefoneContacto ? `tel:${telefoneContacto}` : `mailto:${emailContacto}`} className="contact-revealed">
-                            <span className="contact-label">Contactar via</span>
-                            <div className="contact-phone">
-                              <Icon path={temTelefoneContacto ? mdiPhone : mdiEmailOutline} size={0.9} color={accent} />
-                              {temTelefoneContacto ? telefoneContacto : 'Email'}
-                            </div>
-                            <div className="contact-email"><Icon path={mdiEmailOutline} size={0.6} />{emailContacto}</div>
-                          </a>
-                          {whatsappNumero && (
-                            <a
-                              href={`https://wa.me/${whatsappNumero}?text=${encodeURIComponent(`Olá, estou interessado/a no anúncio "${anuncio.titulo}" na Noxvelia.`)}`}
-                              onClick={() => trackFunnelEvent('whatsapp_click', { listingId: anuncio._id, vertical: anuncio.tipo })}
-                              target="_blank" rel="noopener noreferrer" className="btn-whatsapp"
-                            >
-                              <Icon path={mdiWhatsapp} size={0.85} /> Enviar mensagem
-                            </a>
-                          )}
-                        </>
-                      ) : (
-                        <button type="button" className="btn-contact" onClick={() => setMostrarTelefone(true)}>
-                          <Icon path={temTelefoneContacto ? mdiPhone : mdiEmailOutline} size={0.85} />
-                          {temTelefoneContacto ? 'Revelar Contactos' : 'Mostrar Email'}
-                        </button>
-                      )}
-                      
-                      <div className="trust-strip">
-                        <span className="trust-item"><Icon path={mdiShieldCheckOutline} size={0.6} />Contacto direto</span>
-                        <span className="trust-item"><Icon path={mdiClockOutline} size={0.6} />Sem comissão</span>
-                      </div>
-                    </>
-                  )}
-
-                  {isCarro && !isDono && (
-                    <a href={carVerticalLink} target="_blank" rel="noopener noreferrer" className="cv-banner">
-                      <div className="cv-head">
-                        <img src="/carvertical-logo.png" alt="carVertical" style={{ height: '22px', width: 'auto', objectFit: 'contain' }} />
-                        <span className="cv-discount">-20%</span>
-                      </div>
-                      <p className="cv-desc">Verifica o histórico de acidentes, roubos e anomalias de quilometragem deste veículo.</p>
-                      <div className="cv-code-wrap" onClick={(e) => { e.preventDefault(); navigator.clipboard.writeText("NOXVELIA"); alert("Código copiado com sucesso!"); }}>
-                        <span style={{ fontSize: '12px', color: '#0c4a6e', fontWeight: 600 }}>CÓDIGO DE DESCONTO:</span>
-                        <span className="cv-code">
-                          NOXVELIA <Icon path={mdiContentCopy} size={0.5} style={{marginLeft: '6px'}}/>
-                        </span>
-                      </div>
-                      <div className="cv-btn">Verificar Histórico</div>
-                    </a>
-                  )}
-
-                  {isCarro && !isDono && (
-                    <div className="finance-box">
-                      <div className="fin-head">Simulação de Crédito</div>
-                      <div className="fin-result-row">
-                        <div>
-                          <span className="fin-prestacao">{prestacaoMensal.toLocaleString('pt-PT')}€</span>
-                          <span className="fin-mes">/mês</span>
-                        </div>
-                        <div className="fin-taeg">TAEG 7.9%</div>
-                      </div>
-                      <div className="slider-group">
-                        <div className="slider-label-row">
-                          <span>Entrada inicial</span>
-                          <span className="slider-val">{Number(entrada).toLocaleString('pt-PT')}€</span>
-                        </div>
-                        <input type="range" className="fin-slider" min="0" max={Math.round(precoValor * 0.7)} step="250" value={entrada} onChange={e => setEntrada(Number(e.target.value))} aria-label="Entrada inicial" />
-                      </div>
-                      <div className="slider-group" style={{ marginBottom: 0 }}>
-                        <div className="slider-label-row">
-                          <span>Prazo</span>
-                          <span className="slider-val">{meses} meses</span>
-                        </div>
-                        <input type="range" className="fin-slider" min="24" max="120" step="12" value={meses} onChange={e => setMeses(Number(e.target.value))} aria-label="Prazo em meses" />
-                      </div>
-                      <div className="fin-note">Simulação meramente indicativa. Os valores reais dependem da aprovação de crédito junto da instituição financeira parceira.</div>
-                    </div>
-                  )}
                 </div>
-
-                <Link to={`/vendedor/${donoDoAnuncio?._id}`} className="seller-panel">
-                  <div className="seller-avatar">{donoDoAnuncio?.avatarUrl ? <img src={donoDoAnuncio.avatarUrl} alt="" /> : inicial}</div>
-                  <div className="seller-info">
-                    <div className="seller-name">
-                      {vendedorVerificado
-                        ? (donoDoAnuncio.nome?.toUpperCase().includes('NOXVELIA') ? donoDoAnuncio.nome : `NOXVELIA ${donoDoAnuncio?.nome}`)
-                        : (donoDoAnuncio?.nome || 'Utilizador Particular')
-                      }
-                      {vendedorVerificado && <Icon path={mdiCheckDecagram} size={0.8} color="#3b82f6" />}
-                    </div>
-
-                    <div className="seller-meta">
-                      {rating > 0 ? (
-                        <div className="seller-rating">
-                          <span className="seller-rating-icon">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Icon key={i} path={mdiStar} size={0.5} color={i < Math.round(rating) ? '#f59e0b' : '#fde68a'} />
-                            ))}
-                          </span>
-                          {rating.toFixed(1)}
-                          <span className="seller-reviews">({totalAvaliacoes})</span>
-                        </div>
-                      ) : (
-                        <div className="seller-rating-empty">Novo Vendedor</div>
-                      )}
-                      <span className="meta-dot">·</span>
-                      <div className="seller-date">Desde {anoRegistoUser}</div>
-                    </div>
-                  </div>
-                  <Icon path={mdiChevronRight} size={1} color="#94a3b8" />
-                </Link>
+                <Icon path={mdiChevronRight} size={1} color="#94a3b8" />
+              </Link>
+              
+              {/* O GoogleAdSlot precisa de limite máximo de largura, para não quebrar a página! */}
+              <div style={{ width: '100%', maxWidth: '100%', overflow: 'hidden', marginTop: '24px' }}>
+                <GoogleAdSlot placement="listing_before_suggestions" className="!px-0" minHeight={120} />
               </div>
             </div>
           </div>
-
-          <GoogleAdSlot placement="listing_before_suggestions" className="!px-0" minHeight={120} />
-
-          {sugeridos.length > 0 && (
-            <div className="sugeridos-section">
-              <h3 className="sugeridos-title">Poderá gostar destes anúncios</h3>
-              <div className="sugeridos-grid">
-                {sugeridos.map(sug => <AnuncioCard key={sug._id} anuncio={sug} />)}
-              </div>
-            </div>
-          )}
-
         </div>
+
+        {sugeridos.length > 0 && (
+          <div className="sugeridos-section" style={{ marginTop: 40, paddingTop: 32, borderTop: '1px solid #e2e8f0', width: '100%' }}>
+            <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', marginBottom: 20 }}>Poderá gostar destes anúncios</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))', gap: 16, width: '100%' }}>
+              {sugeridos.map(sug => <AnuncioCard key={sug._id} anuncio={sug} />)}
+            </div>
+          </div>
+        )}
       </div>
 
       {!isDono && (
         <div className="mobile-cta-bar">
           <div className="mobile-cta-price">{preco}</div>
-          <button type="button" className="mobile-cta-btn" onClick={() => setMostrarTelefone(true)}>
-            Contactar
-          </button>
+          <button type="button" className="mobile-cta-btn" onClick={() => setMostrarTelefone(true)}>Contactar</button>
         </div>
       )}
-    </>
+    </div>
   );
 }
