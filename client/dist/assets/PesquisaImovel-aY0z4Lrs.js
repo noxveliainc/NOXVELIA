@@ -1,0 +1,1 @@
+import"./rolldown-runtime-QTnfLwEv.js";import{M as e,S as t}from"./index-K-flNKTY.js";import{t as n}from"./Pesquisa-DS60GCAN.js";e();var r=t();function i(){return(0,r.jsx)(n,{tipoPadrao:`imovel`})}export{i as default};

@@ -175,6 +175,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           width: 100%;
           height: 100%;
           object-fit: cover;
+          object-position: center center;
           display: block;
         }
 
@@ -806,4 +807,3 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
     </>
   );
 }
-

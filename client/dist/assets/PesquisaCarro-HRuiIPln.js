@@ -1,0 +1,1 @@
+import{g as e,t}from"./jsx-runtime-On9Szgki.js";import{t as n}from"./Pesquisa-uS2bNA0b.js";e();var r=t();function i(){return(0,r.jsx)(n,{tipoPadrao:`carro`})}export{i as default};

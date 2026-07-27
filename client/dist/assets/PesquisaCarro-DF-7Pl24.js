@@ -1,0 +1,1 @@
+import{S as e,j as t}from"./index-BaRRPRGv.js";import{t as n}from"./Pesquisa-BK6q-kvE.js";t();var r=e();function i(){return(0,r.jsx)(n,{tipoPadrao:`carro`})}export{i as default};

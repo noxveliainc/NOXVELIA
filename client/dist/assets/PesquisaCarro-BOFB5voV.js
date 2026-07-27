@@ -1,0 +1,1 @@
+import{S as e,j as t}from"./index-DzHvEX8W.js";import{t as n}from"./Pesquisa-rgsrtqTr.js";t();var r=e();function i(){return(0,r.jsx)(n,{tipoPadrao:`carro`})}export{i as default};

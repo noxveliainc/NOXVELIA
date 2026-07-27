@@ -1,0 +1,1 @@
+import"./rolldown-runtime-QTnfLwEv.js";import{M as e,S as t}from"./index-CQlT-MfZ.js";e(),t();var n=!1;function r({text:e=`continue_with`,disabled:t=!1,onCredential:n,onError:r}){return null}export{n,r as t};

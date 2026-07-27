@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Noxvelia | Preview landing</title>
+  <style>
+    :root{--navy:#07152d;--navy2:#102f50;--blue:#173f64;--gold:#d9c49c;--gold2:#f0dfbb;--bronze:#806040;--paper:#fffaf0;--stone:#f4efe5;--ink:#071326;--muted:#63717c;--line:rgba(7,19,38,.14);--r:8px}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:var(--stone);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}.shell{width:min(1240px,calc(100% - 48px));margin:0 auto}.topbar{position:sticky;top:0;z-index:30;background:rgba(255,250,240,.94);border-bottom:1px solid rgba(7,19,38,.10);backdrop-filter:blur(18px)}.topbar-inner{min-height:82px;display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{display:inline-flex;align-items:center;gap:13px;font-size:15px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}.brand img{width:42px;height:42px;object-fit:contain}.nav{display:flex;align-items:center;gap:24px;color:#2d4051;font-size:14px;font-weight:820}.nav a:hover{color:var(--navy)}.publish{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 18px;border-radius:var(--r);color:var(--navy);background:var(--gold);box-shadow:0 16px 32px rgba(128,96,64,.16)}.hero{position:relative;overflow:hidden;background:var(--navy);color:#fff}.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,21,45,.96) 0%,rgba(7,21,45,.86) 43%,rgba(7,21,45,.34) 100%),url('/noxvelia-hero-coast.webp') center/cover no-repeat}.hero-inner{position:relative;min-height:640px;display:grid;grid-template-columns:minmax(0,.96fr) minmax(390px,.56fr);align-items:center;gap:58px;padding:84px 0 92px}.kicker{display:inline-flex;align-items:center;width:fit-content;min-height:34px;padding:0 12px;border:1px solid rgba(217,196,156,.34);border-radius:var(--r);color:var(--gold2);background:rgba(217,196,156,.10);font-size:12px;font-weight:900;letter-spacing:.10em;text-transform:uppercase}h1{max-width:830px;margin:26px 0 0;font-size:clamp(46px,6vw,82px);line-height:.98;font-weight:940;letter-spacing:0;text-wrap:balance}.lead{max-width:630px;margin:25px 0 0;color:rgba(255,255,255,.78);font-size:18px;line-height:1.65}.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}.btn{min-height:52px;display:inline-flex;align-items:center;justify-content:center;padding:0 22px;border-radius:var(--r);border:1px solid rgba(255,255,255,.28);font-weight:880}.btn.primary{color:var(--navy);background:var(--gold);border-color:transparent}.btn.secondary{color:#fff;background:rgba(255,255,255,.08)}.search-panel{padding:18px;background:rgba(255,250,240,.96);border:1px solid rgba(255,255,255,.36);border-radius:var(--r);box-shadow:0 30px 80px rgba(0,0,0,.32);color:var(--ink)}.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:4px 4px 16px;border-bottom:1px solid var(--line)}.panel-head strong{display:block;font-size:23px;line-height:1.08;font-weight:920}.panel-head span{display:block;margin-top:7px;color:var(--muted);font-size:14px;line-height:1.45}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:#e9dfce;border:1px solid rgba(7,19,38,.12);border-radius:var(--r)}.tabs button{min-height:40px;padding:0 14px;border:0;border-radius:6px;background:transparent;color:#445462;font-size:14px;font-weight:880}.tabs button[aria-pressed=true]{color:var(--navy);background:var(--gold)}.search-form{display:grid;gap:12px;margin-top:16px}.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:7px}.field label{color:#344756;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.field input,.field select{width:100%;min-height:48px;padding:0 13px;border:1px solid rgba(7,19,38,.18);border-radius:var(--r);background:#fff;color:var(--ink);outline:none}.field input:focus,.field select:focus{border-color:var(--bronze);box-shadow:0 0 0 3px rgba(217,196,156,.34)}.panel-submit{min-height:52px;border:0;border-radius:var(--r);background:var(--navy2);color:#fff;font-weight:900}.car-fields,.home-fields{display:grid;gap:12px}.is-imovel .car-fields{display:none}.is-carro .home-fields{display:none}.section{padding:76px 0}.brand-band{background:var(--paper);border-bottom:1px solid var(--line)}.section-head{display:flex;align-items:end;justify-content:space-between;gap:28px;margin-bottom:24px}.section-head h2{margin:0;font-size:clamp(30px,4vw,48px);line-height:1.05;font-weight:930;letter-spacing:0}.section-head p{max-width:480px;margin:0;color:var(--muted);line-height:1.55}.brand-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}.brand-card{min-height:74px;display:flex;align-items:center;justify-content:center;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:#fff;color:var(--navy);font-weight:900}.brand-card:hover{border-color:rgba(128,96,64,.42);background:#fffaf0}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.feature-card{min-height:330px;position:relative;overflow:hidden;border-radius:var(--r);border:1px solid rgba(255,255,255,.16);background:var(--navy);color:#fff;isolation:isolate}.feature-card img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover}.feature-card:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,21,45,.10),rgba(7,21,45,.88))}.feature-content{min-height:330px;display:flex;flex-direction:column;justify-content:flex-end;padding:20px}.tag{width:fit-content;min-height:30px;display:inline-flex;align-items:center;padding:0 10px;border-radius:var(--r);background:var(--gold);color:var(--navy);font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.feature-card h3{margin:15px 0 0;font-size:27px;line-height:1.06}.feature-card p{margin:11px 0 0;color:rgba(255,255,255,.76);line-height:1.5}.feature-link{margin-top:18px;color:var(--gold2);font-weight:900}.footer{padding:48px 0 30px;background:var(--navy);color:#c8d4dc}.footer-top{display:flex;justify-content:space-between;gap:36px;flex-wrap:wrap}.footer-brand img{width:150px}.footer-brand p{max-width:330px;margin:16px 0 0;line-height:1.6;color:#b7c9cd}.footer-links{display:flex;gap:64px;flex-wrap:wrap}.footer-col h4{margin:0 0 18px;color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.08em}.footer-col a{display:block;margin-bottom:11px;color:#b7c9cd}.footer-col a:hover{color:var(--gold2)}.footer-bottom{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:34px;padding-top:24px;border-top:1px solid rgba(217,196,156,.18);color:#8fa3a7;font-size:13px}@media(max-width:980px){.hero-inner{grid-template-columns:1fr;min-height:auto;padding:56px 0 72px}.search-panel{max-width:640px}.brand-grid{grid-template-columns:repeat(3,1fr)}.cards{grid-template-columns:1fr}.section-head{display:grid}.nav a:not(.publish){display:none}}@media(max-width:620px){.shell{width:min(100% - 28px,1240px)}.topbar-inner{min-height:74px}.brand span{display:none}h1{font-size:clamp(38px,12vw,54px)}.lead{font-size:16px}.hero-actions,.grid-2,.brand-grid{grid-template-columns:1fr}.hero-actions{display:grid}.btn{width:100%}.panel-head{display:grid}.tabs{width:100%}.footer-links{display:grid;gap:24px}.footer-bottom{display:grid}}
+  </style>
+</head><body class="is-carro">
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="/" aria-label="Noxvelia"><img src="/logo-noxvelia.png" alt="" /><span>Noxvelia</span></a>
+      <nav class="nav" aria-label="Principal"><a href="#pesquisa">Pesquisar</a><a href="#marcas">Marcas</a><a href="/profissionais">Profissionais</a><a class="publish" href="/publicar">Anunciar gr&aacute;tis</a></nav>
+    </div>
+  </header>
+  <main>
+    <section class="hero" id="pesquisa">
+      <div class="shell hero-inner">
+        <div>
+          <span class="kicker">Pesquisa em Portugal</span>
+          <h1>Carros e im&oacute;veis em Portugal, apresentados com clareza.</h1>
+          <p class="lead">Pesquisa por marca, modelo, localiza&ccedil;&atilde;o e pre&ccedil;o. Compara fotografias, caracter&iacute;sticas e contactos antes de visitar ou ligar.</p>
+          <div class="hero-actions"><a class="btn primary" href="/carros">Pesquisar carros</a><a class="btn secondary" href="/imoveis">Pesquisar im&oacute;veis</a></div>
+        </div>
+        <aside class="search-panel" aria-label="Pesquisa r&aacute;pida">
+          <div class="panel-head">
+            <div><strong id="panel-title">Pesquisa de carros</strong><span id="panel-copy">Filtra por marca, modelo, combust&iacute;vel, distrito e pre&ccedil;o.</span></div>
+            <div class="tabs" role="group" aria-label="Tipo de pesquisa"><button type="button" data-kind="carro" aria-pressed="true">Carros</button><button type="button" data-kind="imovel" aria-pressed="false">Im&oacute;veis</button></div>
+          </div>
+          <form class="search-form" action="/carros">
+            <div class="car-fields">
+              <div class="grid-2">
+                <div class="field"><label for="marca">Marca</label><select id="marca" name="marca"><option value="">Todas as marcas</option><option>BMW</option><option>Mercedes-Benz</option><option>Audi</option><option>Volkswagen</option><option>Porsche</option><option>Tesla</option><option>Peugeot</option><option>Renault</option><option>Toyota</option></select></div>
+                <div class="field"><label for="modelo">Modelo</label><select id="modelo" name="modelo" disabled><option value="">Escolhe a marca</option></select></div>
+              </div>
+              <div class="grid-2">
+                <div class="field"><label for="combustivel">Combust&iacute;vel</label><select id="combustivel" name="combustivel"><option value="">Todos</option><option>Gasolina</option><option>Diesel</option><option>H&iacute;brido</option><option>El&eacute;trico</option></select></div>
+                <div class="field"><label for="preco-carro">Pre&ccedil;o m&aacute;ximo</label><select id="preco-carro" name="precoMax"><option value="">Qualquer pre&ccedil;o</option><option value="15000">At&eacute; 15.000</option><option value="30000">At&eacute; 30.000</option><option value="60000">At&eacute; 60.000</option></select></div>
+              </div>
+            </div>
+            <div class="home-fields">
+              <div class="grid-2">
+                <div class="field"><label for="tipologia">Tipologia</label><select id="tipologia" name="tipologia"><option value="">Todas</option><option>T0</option><option>T1</option><option>T2</option><option>T3</option><option>Moradia</option><option>Terreno</option></select></div>
+                <div class="field"><label for="preco-imovel">Pre&ccedil;o m&aacute;ximo</label><select id="preco-imovel" name="precoMax"><option value="">Qualquer pre&ccedil;o</option><option value="150000">At&eacute; 150.000</option><option value="300000">At&eacute; 300.000</option><option value="500000">At&eacute; 500.000</option></select></div>
+              </div>
+            </div>
+            <div class="field"><label for="distrito">Distrito</label><select id="distrito" name="distrito"><option value="">Portugal inteiro</option><option>Porto</option><option>Lisboa</option><option>Braga</option><option>Coimbra</option><option>Faro</option><option>Set&uacute;bal</option></select></div>
+            <button class="panel-submit" type="submit" id="submit-label">Ver carros</button>
+          </form>
+        </aside>
+      </div>
+    </section>
+    <section class="section brand-band" id="marcas">
+      <div class="shell">
+        <div class="section-head"><h2>Pesquisa por marca.</h2><p>Atalhos diretos para algumas das marcas mais procuradas na Noxvelia.</p></div>
+        <div class="brand-grid"><a class="brand-card" href="/carros?marca=BMW">BMW</a><a class="brand-card" href="/carros?marca=Mercedes-Benz">Mercedes-Benz</a><a class="brand-card" href="/carros?marca=Audi">Audi</a><a class="brand-card" href="/carros?marca=Volkswagen">Volkswagen</a><a class="brand-card" href="/carros?marca=Porsche">Porsche</a><a class="brand-card" href="/carros?marca=Tesla">Tesla</a></div>
+      </div>
+    </section>
+    <section class="section">
+      <div class="shell">
+        <div class="section-head"><h2>O essencial antes do contacto.</h2><p>Carros, im&oacute;veis e profissionais organizados para comparar melhor e decidir com mais confian&ccedil;a.</p></div>
+        <div class="cards">
+          <a class="feature-card" href="/carros"><img src="/social/noxvelia-drive-photo-premium.webp" alt="Autom&oacute;vel em destaque" /><span class="feature-content"><span class="tag">Carros</span><h3>Marca, modelo e pre&ccedil;o vis&iacute;veis.</h3><p>Filtra por dados importantes e abre apenas os an&uacute;ncios que fazem sentido.</p><span class="feature-link">Pesquisar carros</span></span></a>
+          <a class="feature-card" href="/imoveis"><img src="/social/noxvelia-estate-photo-premium.webp" alt="Im&oacute;vel em destaque" /><span class="feature-content"><span class="tag">Im&oacute;veis</span><h3>Fotografias e caracter&iacute;sticas claras.</h3><p>Compara tipologia, zona, &aacute;reas e pre&ccedil;o antes de marcar visita.</p><span class="feature-link">Pesquisar im&oacute;veis</span></span></a>
+          <a class="feature-card" href="/profissionais"><img src="/noxvelia-hero-coast.webp" alt="Casa contempor&acirc;nea na costa portuguesa" /><span class="feature-content"><span class="tag">Profissionais</span><h3>Anunciantes com an&uacute;ncios ativos.</h3><p>Consulta stands, mediadores e vendedores com presen&ccedil;a p&uacute;blica na plataforma.</p><span class="feature-link">Ver profissionais</span></span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="shell">
+      <div class="footer-top">
+        <div class="footer-brand"><img src="/logo-noxvelia.png" alt="Noxvelia" /><p>Plataforma portuguesa para pesquisar e publicar an&uacute;ncios de carros e im&oacute;veis.</p></div>
+        <div class="footer-links"><div class="footer-col"><h4>Pesquisar</h4><a href="/carros">Carros</a><a href="/imoveis">Im&oacute;veis</a><a href="/profissionais">Profissionais</a></div><div class="footer-col"><h4>Noxvelia</h4><a href="/sobre-nos">Sobre n&oacute;s</a><a href="/planos">Planos</a><a href="/politica-privacidade">Privacidade</a></div></div>
+      </div>
+      <div class="footer-bottom"><span>&copy; 2026 Noxvelia. Todos os direitos reservados.</span><span>Pesquisa simples, contacto direto e an&uacute;ncios bem apresentados.</span></div>
+    </div>
+  </footer>  <script>
+    const body=document.body;
+    const buttons=[...document.querySelectorAll('[data-kind]')];
+    const form=document.querySelector('.search-form');
+    const panelTitle=document.getElementById('panel-title');
+    const panelCopy=document.getElementById('panel-copy');
+    const submit=document.getElementById('submit-label');
+    const marca=document.getElementById('marca');
+    const modelo=document.getElementById('modelo');
+    const modelos={
+      'BMW':['Serie 1','Serie 3','Serie 5','X1','X3','X5'],
+      'Mercedes-Benz':['Classe A','Classe C','Classe E','GLA','GLC','GLE'],
+      'Audi':['A3','A4','A6','Q3','Q5','Q7'],
+      'Volkswagen':['Golf','Polo','Passat','T-Roc','Tiguan'],
+      'Porsche':['911','Cayenne','Macan','Panamera','Taycan'],
+      'Tesla':['Model 3','Model Y','Model S','Model X'],
+      'Peugeot':['208','308','3008','5008'],
+      'Renault':['Clio','Megane','Captur','Austral'],
+      'Toyota':['Yaris','Corolla','C-HR','RAV4']
+    };
+    function setKind(kind){
+      const isCar=kind==='carro';
+      body.classList.toggle('is-carro',isCar);
+      body.classList.toggle('is-imovel',!isCar);
+      buttons.forEach((button)=>button.setAttribute('aria-pressed',String(button.dataset.kind===kind)));
+      form.action=isCar?'/carros':'/imoveis';
+      panelTitle.innerHTML=isCar?'Pesquisa de carros':'Pesquisa de im&oacute;veis';
+      panelCopy.innerHTML=isCar?'Filtra por marca, modelo, combust&iacute;vel, distrito e pre&ccedil;o.':'Filtra por tipologia, distrito e pre&ccedil;o.';
+      submit.innerHTML=isCar?'Ver carros':'Ver im&oacute;veis';
+    }
+    buttons.forEach((button)=>button.addEventListener('click',()=>setKind(button.dataset.kind)));
+    marca.addEventListener('change',()=>{
+      const lista=modelos[marca.value]||[];
+      modelo.innerHTML='';
+      const first=document.createElement('option');
+      first.value='';
+      first.textContent=lista.length?'Todos os modelos':'Escolhe a marca';
+      modelo.appendChild(first);
+      lista.forEach((nome)=>{const option=document.createElement('option');option.value=nome;option.textContent=nome;modelo.appendChild(option);});
+      modelo.disabled=!lista.length;
+    });
+  </script>
+</body>
+</html>
