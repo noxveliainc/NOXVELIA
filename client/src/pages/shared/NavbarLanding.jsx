@@ -569,7 +569,6 @@ export default function NavbarLanding() {
             <a href="#pesquisa">Pesquisar</a>
             <a href="#anunciar">Anunciar grátis</a>
             <a href="#marcas">Marcas</a>
-            <a href="#atalhos">Atalhos</a>
             <Link to="/profissionais">Profissionais</Link>
           </div>
 
@@ -644,14 +643,13 @@ export default function NavbarLanding() {
               <img src="/logo-noxvelia.png" alt="" />
               <div>
                 <strong>Noxvelia</strong>
-                <span>Carros e imóveis em Portugal</span>
+                <span>Automóveis e imóveis em Portugal</span>
               </div>
             </div>
             <a href="#pesquisa" onClick={() => setMenuMobileAberto(false)}>Pesquisar</a>
             <a href="#anunciar" onClick={() => setMenuMobileAberto(false)}>Anunciar grátis</a>
             <a href="#marcas" onClick={() => setMenuMobileAberto(false)}>Marcas</a>
-            <a href="#atalhos" onClick={() => setMenuMobileAberto(false)}>Atalhos</a>
-            <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Carros</Link>
+            <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Automóveis</Link>
             <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Imóveis</Link>
             <Link to="/profissionais" onClick={() => setMenuMobileAberto(false)}>Profissionais</Link>
             <Link className="nl-mobile-primary" to={publicarTo} state={publicarState} onClick={() => setMenuMobileAberto(false)}>Publicar anúncio</Link>
