@@ -826,7 +826,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
             </div>
             <div className="pesquisa-filter-status" aria-label="Resumo dos filtros">
               <div className="pesquisa-filter-stat"><strong>{filtrosAtivos.length}</strong><span>ativos</span></div>
-              <div className="pesquisa-filter-stat"><strong>{loading && resultados.length === 0 ? '...' : totalResultados}</strong><span>registos</span></div>
+              <div className="pesquisa-filter-stat"><strong>{loading && resultados.length === 0 ? '...' : totalResultados}</strong><span>anúncios</span></div>
             </div>
             <div className="pesquisa-filter-group">
               <div className="pesquisa-filter-title">Orçamento (€)</div>
@@ -839,7 +839,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
             <div className="pesquisa-filter-group">
               <div className="pesquisa-filter-title">Distrito / Região</div>
               <select className="pesquisa-filter-input" value={filtros.distrito} onChange={(e) => setFiltros(f => ({ ...f, distrito: e.target.value, cidade: '' }))}>
-                <option value="Todos">Portugal (Todos)</option>
+                <option value="Todos">Portugal inteiro</option>
                 {DISTRITOS.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
@@ -847,7 +847,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
             <div className="pesquisa-filter-group">
               <div className="pesquisa-filter-title">Cidade / Concelho</div>
               <select className="pesquisa-filter-input" value={filtros.cidade} onChange={(e) => setFiltros(f => ({ ...f, cidade: e.target.value }))} disabled={!filtros.distrito || filtros.distrito === 'Todos'}>
-                <option value="">{filtros.distrito && filtros.distrito !== 'Todos' ? 'Todas as Cidades' : 'Escolhe o Distrito Primeiro'}</option>
+                <option value="">{filtros.distrito && filtros.distrito !== 'Todos' ? 'Todas as cidades' : 'Escolhe primeiro o distrito'}</option>
                 {cidadesDisponiveis.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
@@ -1036,7 +1036,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
             {/* ── BANNER CTA ── */}
             {/* Remove esta linha e substitui por {!user && <BannerCTA tipo={tipoSeguro} origem={location.pathname} />} se tiveres contexto de autenticação */}
             <div className="pesquisa-topbar">
-              <div className="pesquisa-results-count">{loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} registos`}</div>
+              <div className="pesquisa-results-count">{loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} anúncios`}</div>
               <div className="pesquisa-view-tools">
                 <div className="pesquisa-view-switch" aria-label="Alternar vista">
                   <button type="button" className={vistaAtiva === 'grelha' ? 'active' : ''} onClick={() => setVistaAtiva('grelha')}>
@@ -1068,7 +1068,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                 </Suspense>
                 {dadosMapa.length === 0 && !loading && (
                   <div className="pesquisa-map-empty">
-                    Sem resultados com coordenadas para mostrar no mapa.
+                    Os anúncios encontrados ainda não têm localização suficiente para aparecer no mapa.
                   </div>
                 )}
               </div>
@@ -1096,8 +1096,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
             {vistaAtiva === 'grelha' && !loading && resultados.length === 0 && (
               <div className="pesquisa-empty">
                 <div style={{ fontSize: '32px', color: 'var(--nx-text-muted)', marginBottom: '16px' }}>&empty;</div>
-                <h3 style={{ fontFamily: 'var(--nx-font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--nx-text)', margin: '0 0 8px 0' }}>{error ? 'Pesquisa temporariamente indisponível' : (tipoSeguro === 'carro' ? 'Ainda não há carros publicados' : 'Ainda não há imóveis publicados')}</h3>
-                <p style={{ fontSize: '14px', margin: 0 }}>{error ? 'Tenta novamente daqui a instantes.' : (filtrosAtivos.length > 0 ? 'Tenta limpar alguns filtros.' : 'Assim que entrarem anúncios, aparecem aqui.')}</p>
+                <h3 style={{ fontFamily: 'var(--nx-font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--nx-text)', margin: '0 0 8px 0' }}>{error ? 'Pesquisa temporariamente indisponível' : (tipoSeguro === 'carro' ? 'Não encontrámos carros com estes filtros' : 'Não encontrámos imóveis com estes filtros')}</h3>
+                <p style={{ fontSize: '14px', margin: 0 }}>{error ? 'Tenta novamente daqui a instantes.' : (filtrosAtivos.length > 0 ? 'Ajusta a marca, localização ou preço para veres mais opções.' : 'Podes voltar mais tarde ou publicar uma oferta nesta categoria.')}</p>
                 {error ? (
                   <button type="button" className="pesquisa-empty-action" onClick={() => puxarDadosServidor(1, false, tipoSeguro)}>Tentar novamente</button>
                 ) : (

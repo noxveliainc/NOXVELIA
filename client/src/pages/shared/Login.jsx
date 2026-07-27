@@ -237,13 +237,13 @@ export default function Login() {
         }
 
         .auth-info-banner {
-          color: #0f766e;
+          color: #102f50;
           font-size: 13.5px;
           font-weight: 500;
           margin-bottom: 24px;
-          background: #f0fdfa;
+          background: #fffaf0;
           padding: 14px;
-          border: 1px solid #ccfbf1;
+          border: 1px solid rgba(217, 196, 156, 0.42);
           border-radius: 12px;
           line-height: 1.5;
         }

@@ -395,7 +395,7 @@ export default function Anuncio() {
     : null;
   const resumoDecisao = [
     { label: 'Localização', value: localizacaoString, icon: mdiMapMarkerOutline },
-    { label: isCarro ? 'Marca' : 'Preço / m²', value: isCarro ? (anuncio.carro?.marca || 'Viatura') : (precoPorM2 || 'Sem dados'), icon: isCarro ? mdiCar : mdiRulerSquare },
+    { label: isCarro ? 'Marca' : 'Preço / m²', value: isCarro ? (anuncio.carro?.marca || 'Viatura') : (precoPorM2 || 'A confirmar'), icon: isCarro ? mdiCar : mdiRulerSquare },
     { label: 'Vendedor', value: vendedorVerificado ? 'Verificado' : (rating > 0 ? `${rating.toFixed(1)} estrelas` : 'Novo vendedor'), icon: mdiShieldCheckOutline },
     { label: 'Contacto', value: temTelefoneContacto ? 'Telefone' : (temEmailContacto ? 'Email' : 'Por mensagem'), icon: temTelefoneContacto ? mdiPhone : mdiEmailOutline },
   ];
@@ -490,7 +490,7 @@ export default function Anuncio() {
         .meta-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; }
         .meta-ref { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
         .meta-ref:hover { color: #0f172a; }
-        .estado-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
+        .estado-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(217,196,156,.18); color: #102f50; border: 1px solid rgba(217,196,156,.38); }
         .estado-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
         .meta-dot { color: #cbd5e1; font-size: 10px; }
         .featured-title-strip { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; padding: 12px 14px; border: 1px solid #e7d3a8; border-radius: 12px; background: linear-gradient(135deg, #fff8e7 0%, #ffffff 100%); color: #102f50; }
@@ -587,14 +587,14 @@ export default function Anuncio() {
 
         .nx-price-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0; }
         .nx-badge-item { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; }
-        .nx-badge-item.garantia { background: rgba(217, 196, 156, 0.05); border-color: rgba(217, 196, 156, 0.2); color: #0d9488; }
+        .nx-badge-item.garantia { background: rgba(217, 196, 156, 0.08); border-color: rgba(217, 196, 156, 0.28); color: #102f50; }
         .nx-badge-item.retoma { background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.2); color: #2563eb; }
 
         .btn-contact { width: 100%; box-sizing: border-box; padding: 16px; background: ${accent}; color: #fff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px ${accentShadow}; margin-bottom: 12px; }
         .btn-contact:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: 0 10px 28px ${accentShadow}; }
 
-        .btn-whatsapp { width: 100%; box-sizing: border-box; padding: 16px; background: #10b981; color: #fff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.2); text-decoration: none; margin-bottom: 12px; }
-        .btn-whatsapp:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(16, 185, 129, 0.3); color: #fff; }
+        .btn-whatsapp { width: 100%; box-sizing: border-box; padding: 16px; background: #102f50; color: #fff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px rgba(16, 47, 80, 0.2); text-decoration: none; margin-bottom: 12px; }
+        .btn-whatsapp:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(16, 47, 80, 0.28); color: #fff; }
 
         .contact-revealed { width: 100%; box-sizing: border-box; padding: 18px 16px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; transition: all .2s; margin-bottom: 12px; overflow: hidden; }
         .contact-revealed:hover { background: #f1f5f9; border-color: #94a3b8; }
@@ -650,7 +650,7 @@ export default function Anuncio() {
         .btn-owner-edit.is-locked { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
         .btn-owner-edit.is-locked:hover { background: #ffedd5; border-color: #fdba74; }
         .owner-note { margin-top: 10px; color: #475569; font-size: 11.5px; line-height: 1.5; }
-        .btn-owner-sold { flex: 1; padding: 11px; border: none; background: #10b981; color: #fff; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: opacity .2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-owner-sold { flex: 1; padding: 11px; border: none; background: #102f50; color: #fff; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: opacity .2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-owner-sold:hover { opacity: .85; }
 
         .nx-modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; animation: nx-fade-in .2s; }
@@ -750,7 +750,7 @@ export default function Anuncio() {
       {mostrarModalVendido && (
         <div className="nx-modal-overlay" onClick={() => setMostrarModalVendido(false)}>
           <div className="nx-modal-box" onClick={e => e.stopPropagation()}>
-            <div className="nx-modal-icon"><Icon path={mdiCheckCircleOutline} size={2.5} color="#10b981" /></div>
+            <div className="nx-modal-icon"><Icon path={mdiCheckCircleOutline} size={2.5} color="#102f50" /></div>
             <h3 className="nx-modal-title">Venda Concluída</h3>
             <p className="nx-modal-text">Pretendes eliminar este anúncio de forma permanente dado que o ativo já foi vendido?</p>
             <div className="nx-modal-footer">
@@ -908,7 +908,7 @@ export default function Anuncio() {
               {abaAtiva === 'descricao' && (
                 <div className="desc-box tab-panel">
                   <div className="desc-head"><Icon path={mdiFileDocumentOutline} size={0.8} />Descrição do Anunciante</div>
-                  <div className="desc-text">{anuncio.descricao || 'Nenhuma descrição detalhada providenciada.'}</div>
+                  <div className="desc-text">{anuncio.descricao || 'O vendedor ainda não adicionou uma descrição detalhada.'}</div>
                 </div>
               )}
 
@@ -1007,7 +1007,6 @@ export default function Anuncio() {
                     </>
                   )}
 
-                  {/* 🌟 Banner carVertical 100% Simétrico e Clicável */}
                   {isCarro && !isDono && (
                     <a href={carVerticalLink} target="_blank" rel="noopener noreferrer" className="cv-banner">
                       <div className="cv-head">

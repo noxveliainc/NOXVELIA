@@ -1,17 +1,17 @@
-// server/iaWorker.js
-// Este ficheiro corre num núcleo separado do teu processador (Thread Isolada!)
+// server/workerProcessamento.js
+// Este ficheiro corre num núcleo separado do teu processador (thread isolada)
 
-export default async function processarDadosPesadosIA({ tipoTarefa, payload }) {
-  console.log(`🧵 Thread Secundária ativa para processar tarefa: [${tipoTarefa}]`);
+export default async function processarDadosPesados({ tipoTarefa, payload }) {
+  console.log(`🧵 Thread secundária ativa para processar tarefa: [${tipoTarefa}]`);
   
   if (tipoTarefa === 'PARSAR_LIGUAGEM_NATURAL') {
-    // Aqui vai correr a lógica pesada de higienização de strings textuais da IA
+    // Tratamento de texto livre antes de aplicar os filtros da plataforma.
     const textoLimpo = payload.trim().toLowerCase();
     return { processado: true, resultado: textoLimpo };
   }
   
   if (tipoTarefa === 'CALCULAR_SCORE_QUALIDADE') {
-    // Algoritmo matemático complexo de scoring de anúncios
+    // Cálculo objetivo de qualidade do anúncio.
     let score = 5;
     if (payload.temFotos) score += 2;
     if (payload.descricaoLonga) score += 3;

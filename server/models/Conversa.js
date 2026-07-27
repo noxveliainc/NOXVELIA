@@ -29,7 +29,7 @@ const conversaSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // 🚀 O SEGREDO DA PERFORMANCE: 
-// Isto diz à base de dados para otimizar as pesquisas por participantes e organizar por data.
+// Índice para otimizar pesquisas por participantes e ordenar por data.
 conversaSchema.index({ participantes: 1, dataAtualizacao: -1 });
 
 export default mongoose.model('Conversa', conversaSchema);

@@ -30,7 +30,7 @@ export default function PremiumConfirmar() {
     setErro('');
 
     try {
-      const res = await api.post('/stripe/criar-checkout-premium');
+      const res = await api.post('/stripe/criar-checkout-premium', { aceitouTermosPremium: true });
       if (res.data?.url) {
         window.location.href = res.data.url;
         return;

@@ -96,6 +96,7 @@ export default function ProfileView({
     ? (user?.standNome ? `${user.standNome} · ${localizacaoMapaPerfil}` : localizacaoMapaPerfil)
     : '';
   const mostrarMapaPerfil = user?.mostrarMapaPerfil === true && Boolean(localizacaoMapaPerfil || user?.localidade);
+  const temResumoAnuncios = Number(totalImoveis || 0) + Number(totalCarros || 0) > 0;
 
   return (
     <>
@@ -165,8 +166,8 @@ export default function ProfileView({
           box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         .profile-avatar-wrap.is-premium .profile-avatar {
-          border-color: #fef08a;
-          box-shadow: 0 0 0 4px rgba(234,179,8,0.2);
+          border-color: #d9c49c;
+          box-shadow: 0 0 0 4px rgba(217,196,156,0.22);
         }
         .profile-avatar-wrap.is-editable:hover .profile-avatar { filter: brightness(.95); }
         .profile-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -209,12 +210,12 @@ export default function ProfileView({
           background: #f1f5f9;
           color: #475569;
         }
-        .profile-badge.profissional { background: rgba(217,196,156,0.1); color: #0d9488; border-color: rgba(217,196,156,0.2); }
-        .profile-badge.premium { background: rgba(234,179,8,0.1); color: #d97706; border-color: rgba(234,179,8,0.3); }
+        .profile-badge.profissional { background: rgba(217,196,156,0.14); color: #102f50; border-color: rgba(217,196,156,0.34); }
+        .profile-badge.premium { background: rgba(217,196,156,0.16); color: #7a612e; border-color: rgba(217,196,156,0.42); }
         .profile-upgrade {
           background: transparent;
-          color: #2563eb;
-          border: 1px dashed rgba(59,130,246,0.4);
+          color: #102f50;
+          border: 1px dashed rgba(217,196,156,0.6);
           border-radius: 6px;
           font-size: 10px;
           font-weight: 900;
@@ -271,15 +272,15 @@ export default function ProfileView({
           gap: 6px;
           font-size: 13px;
           font-weight: 800;
-          color: #2563eb;
+          color: #102f50;
           text-decoration: none;
-          border: 1px solid #dbeafe;
-          background: #eff6ff;
+          border: 1px solid rgba(217,196,156,0.36);
+          background: #fffaf0;
           border-radius: 999px;
           padding: 8px 12px;
           max-width: 240px;
         }
-        .profile-link.whatsapp { color: #15803d; border-color: #bbf7d0; background: #f0fdf4; }
+        .profile-link.whatsapp { color: #102f50; border-color: rgba(217,196,156,0.48); background: #fff7df; }
         .profile-link span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .profile-stars { display: flex; align-items: center; gap: 4px; color: #f59e0b; margin-bottom: 24px; }
         .profile-stars-text { font-size: 13px; font-weight: 800; color: #0f172a; margin-left: 4px; }
@@ -312,7 +313,7 @@ export default function ProfileView({
         .profile-btn-solid { background: #0f172a; color: #ffffff; border: none; }
         .profile-map-panel { padding: 0 36px 36px; }
         .profile-map-loading { min-height: 230px; display: grid; place-items: center; border: 1px solid #e2e8f0; border-radius: 16px; background: #f8fafc; color: #64748b; font-size: 13px; font-weight: 800; }
-        .profile-btn-primary { background: rgba(217,196,156,0.1); color: #0d9488; border: 1px solid rgba(217,196,156,0.2); }
+        .profile-btn-primary { background: rgba(217,196,156,0.14); color: #102f50; border: 1px solid rgba(217,196,156,0.34); }
         .profile-btn-outline { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; }
         .profile-btn-outline.danger:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
         .dark .profile-card {
@@ -353,12 +354,12 @@ export default function ProfileView({
         .dark .profile-btn-primary {
           background: rgba(217,196,156,0.14);
           border-color: rgba(217,196,156,0.32);
-          color: #5eead4;
+          color: #f0dfbb;
         }
         .dark .profile-badge.premium {
-          background: rgba(234,179,8,0.16);
-          border-color: rgba(234,179,8,0.34);
-          color: #facc15;
+          background: rgba(217,196,156,0.18);
+          border-color: rgba(217,196,156,0.38);
+          color: #f0dfbb;
         }
         .dark .profile-btn-solid {
           background: #f8fafc;
@@ -414,10 +415,11 @@ export default function ProfileView({
               <div className={`profile-badge ${isProfissional ? 'profissional' : ''}`}>
                 {isProfissional ? 'Conta Empresa' : 'Conta Particular'}
               </div>
-              <div className={`profile-badge ${isPremium ? 'premium' : ''}`}>
-                {isPremium ? <Icon path={mdiStar} size={0.45} /> : null}
-                {isPremium ? 'Premium' : 'Não Premium'}
-              </div>
+              {isPremium && (
+                <div className="profile-badge premium">
+                  <Icon path={mdiStar} size={0.45} /> Plano Premium
+                </div>
+              )}
               {isOwner && !isProfissional && user?.tipo !== 'admin' && onUpgrade && (
                 <button type="button" className="profile-upgrade" onClick={onUpgrade}>
                   <Icon path={mdiDomain} size={0.5} /> Evoluir
@@ -427,8 +429,8 @@ export default function ProfileView({
 
             <h1 className="profile-name">
               {nomeExibicao}
-              {isAdmin && <Icon path={mdiCheckDecagram} size={1} color="#3b82f6" />}
-              {!isAdmin && isPremium && <Icon path={mdiCrown} size={1} color="#eab308" title="Membro Premium" />}
+              {isAdmin && <Icon path={mdiCheckDecagram} size={1} color="#d9c49c" />}
+              {!isAdmin && isPremium && <Icon path={mdiCrown} size={1} color="#d9c49c" title="Plano Premium" />}
             </h1>
 
             <div className="profile-contact-line">
@@ -473,11 +475,13 @@ export default function ProfileView({
               )}
             </div>
 
-            <div className="profile-stats">
-              <div><div className="profile-stat-val">{totalImoveis}</div><div className="profile-stat-label">Imóveis</div></div>
-              <div className="profile-stat-divider" />
-              <div><div className="profile-stat-val">{totalCarros}</div><div className="profile-stat-label">Automóveis</div></div>
-            </div>
+            {temResumoAnuncios && (
+              <div className="profile-stats">
+                <div><div className="profile-stat-val">{totalImoveis}</div><div className="profile-stat-label">Imóveis</div></div>
+                <div className="profile-stat-divider" />
+                <div><div className="profile-stat-val">{totalCarros}</div><div className="profile-stat-label">Automóveis</div></div>
+              </div>
+            )}
           </div>
 
           <div className="profile-actions">
@@ -493,7 +497,7 @@ export default function ProfileView({
               </button>
             )}
             {isOwner && onLogout && (
-              <button className="profile-btn-outline danger" onClick={onLogout}>Terminar Sessao</button>
+              <button className="profile-btn-outline danger" onClick={onLogout}>Terminar sessão</button>
             )}
           </div>
         </div>

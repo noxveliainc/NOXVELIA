@@ -160,7 +160,7 @@ export default function NavbarImovel() {
         .nim-section-links { display: flex; align-items: center; gap: 3px; margin-left: 2px; padding: 3px; border: 1px solid rgba(148, 163, 184, 0.24); border-radius: 999px; background: rgba(255, 255, 255, 0.06); box-shadow: none; }
         .nim-section-link { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 999px; color: #94a3b8; text-decoration: none; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; }
         .nim-section-link:hover { background: rgba(148, 163, 184, 0.14); color: #0f172a; transform: translateY(-1px); }
-        .nim-section-link.active.carros { background: rgba(217, 196, 156, 0.18); color: #0f9d92; }
+        .nim-section-link.active.carros { background: rgba(217, 196, 156, 0.18); color: #102f50; }
         .nim-section-link.active.imoveis { background: rgba(16, 47, 80, 0.18); color: #102f50; }
         .nim-section-link svg { width: 20px; height: 20px; stroke-width: 2.2; }
         .nim-btn-menu { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; background: #ffffff; color: #0f172a; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; }
@@ -172,8 +172,8 @@ export default function NavbarImovel() {
         .nim-icon-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: transparent; border: none; cursor: pointer; color: #475569; text-decoration: none; transition: all 0.2s ease; }
         .nim-icon-btn:hover { background: #f8fafc; color: #0f172a; }
         .nim-icon-btn svg { width: 20px; height: 20px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
-        .nim-icon-btn.admin { color: #6366f1; }
-        .nim-icon-btn.admin:hover { background: rgba(99, 102, 241, 0.1); color: #4f46e5; }
+        .nim-icon-btn.admin { color: #102f50; }
+        .nim-icon-btn.admin:hover { background: rgba(217, 196, 156, 0.16); color: #102f50; }
         .nim-badge { position: absolute; top: -2px; right: -2px; min-width: 16px; height: 16px; background: #ef4444; color: #ffffff; font-size: 9px; font-weight: 800; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #ffffff; line-height: 1; padding: 0 4px; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); }
         .nim-btn-premium { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: transparent; border: none; cursor: pointer; color: #eab308; text-decoration: none; transition: all 0.2s ease; }
         .nim-btn-premium:hover { background: rgba(234, 179, 8, 0.1); color: #ca8a04; }
@@ -204,9 +204,9 @@ export default function NavbarImovel() {
         .nim-ud-item svg { width: 16px; height: 16px; flex-shrink: 0; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
         .nim-ud-divider { height: 1px; background: #e2e8f0; margin: 6px 0; }
         .nim-ud-item.logout:hover { background: #fff1f2; color: #be123c; }
-        /* CORREÇÃO DO MENU AQUI */
+        /* Menu do utilizador */
         .nim-ud-pro { margin-left: 6px; padding: 2px 7px; background: linear-gradient(135deg, #102f50, #d9c49c); color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
-        .nim-ud-admin-badge { margin-left: 6px; padding: 2px 7px; background: linear-gradient(135deg, #818cf8, #6366f1); color: #ffffff; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
+        .nim-ud-admin-badge { margin-left: 6px; padding: 2px 7px; background: #102f50; color: #fffaf0; border: 1px solid rgba(217,196,156,.36); font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
         .nim-btn-login { display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; color: #0f172a; font-size: 13px; font-weight: 600; padding: 9px 20px; text-decoration: none; }
 
         .nim-burger-btn { display: none; margin-left: auto; background: none; border: none; color: #475569; cursor: pointer; padding: 6px; align-items: center; justify-content: center; }
@@ -336,12 +336,12 @@ export default function NavbarImovel() {
               <div ref={userMenuRef} style={{ position: 'relative' }}>
                 <button className={`nim-user-trigger ${userMenuAberto ? 'active' : ''}`} onClick={() => setUserMenuAberto(!userMenuAberto)}>
                   <div className="nim-avatar">{avatarImg ? <img src={avatarImg} alt="Perfil" /> : <span className="nim-avatar-initial">{inicial}</span>}</div>
-                  {primeiroNome && <span className="nim-username">{primeiroNome} {isPremium && <span className="nim-pro-badge">PRO</span>}</span>}
+                  {primeiroNome && <span className="nim-username">{primeiroNome} {isPremium && <span className="nim-pro-badge">Premium</span>}</span>}
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
                 </button>
                 {userMenuAberto && (
                   <div className="nim-user-dropdown" onClick={(e) => e.stopPropagation()}>
-                    <Link to="/perfil" onClick={() => setUserMenuAberto(false)} className="nim-ud-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>O Meu Perfil {isPremium && <span className="nim-ud-pro">PRO</span>}</Link>
+                    <Link to="/perfil" onClick={() => setUserMenuAberto(false)} className="nim-ud-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>O Meu Perfil {isPremium && <span className="nim-ud-pro">Premium</span>}</Link>
                     {isAdmin && (
                       <Link to="/admin" onClick={() => setUserMenuAberto(false)} className="nim-ud-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>Painel Admin <span className="nim-ud-admin-badge">ADMIN</span></Link>
                     )}
@@ -418,11 +418,11 @@ export default function NavbarImovel() {
                   )}
                   <Link to="/perfil" className="nim-drawer-link" onClick={() => setMenuMobileAberto(false)}>
                     <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    O Meu Perfil {isPremium && <span className="nim-ud-pro">PRO</span>}
+                    O Meu Perfil {isPremium && <span className="nim-ud-pro">Premium</span>}
                   </Link>
                   <button type="button" className="nim-drawer-link" onClick={handlePremium}>
                     <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" /></svg>
-                    Plano profissional {isPremium && <span className="nim-ud-pro">PRO</span>}
+                    Plano Premium {isPremium && <span className="nim-ud-pro">Premium</span>}
                   </button>
                   <Link to="/favoritos" className="nim-drawer-link" onClick={() => setMenuMobileAberto(false)}>
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>

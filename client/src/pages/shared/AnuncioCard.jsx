@@ -37,12 +37,12 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
   const preco = anuncio?.preco
     ? new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(anuncio.preco)
-    : 'Sob Consulta';
+    : 'Sob consulta';
 
   const inicial = anuncio?.utilizador?.nome?.charAt(0).toUpperCase() || '?';
 
   const statusConfig = {
-    ativo:    { bg: 'rgba(16,185,129,.12)',  color: '#10b981', border: 'rgba(16,185,129,.2)', label: 'Activo' },
+    ativo:    { bg: 'rgba(217,196,156,.18)', color: '#102f50', border: 'rgba(217,196,156,.38)', label: 'Ativo' },
     pausado:  { bg: 'rgba(239,68,68,.12)',   color: '#ef4444', border: 'rgba(239,68,68,.2)',  label: 'Pausado' },
     expirado: { bg: 'rgba(245,158,11,.12)',  color: '#f59e0b', border: 'rgba(245,158,11,.2)', label: 'A expirar' },
     pendente: { bg: 'rgba(59,130,246,.12)',  color: '#3b82f6', border: 'rgba(59,130,246,.2)', label: 'Pendente' },
@@ -61,7 +61,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const imagemPrincipalSrcSet = getImageSrcSet(imagemPrincipal);
   const imagemPrincipalDims = getImageDimensions(imagemPrincipal, { width: 800, height: 600 });
 
-  // 🌟 Tratamento da Tag Ano/Mês
+  // Tratamento dos dados principais do anúncio
   const formatarCombustivel = (valor) => {
     if (!valor) return null;
     const mapa = {
@@ -567,7 +567,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         <div className="nxc-img">
           {imagemPrincipalUrl
             ? <img src={imagemPrincipalUrl} srcSet={imagemPrincipalSrcSet || undefined} sizes="(max-width: 720px) 100vw, 360px" width={imagemPrincipalDims.width} height={imagemPrincipalDims.height} alt={anuncio.titulo} loading="lazy" decoding="async" />
-            : <div className="nxc-placeholder">{isCarro ? '🚗' : '🏠'}</div>
+            : <div className="nxc-placeholder"><img src="/logo-noxvelia.png" alt="" loading="lazy" /></div>
           }
           <div className="nxc-img-overlay" />
 

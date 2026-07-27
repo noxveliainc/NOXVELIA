@@ -82,7 +82,7 @@ export default function Planos() {
   ];
 
   const premiumHighlights = [
-    { title: 'Mais visibilidade', text: 'Os anúncios premium aparecem com prioridade e sinalização própria.' },
+    { title: 'Mais visibilidade', text: 'Os anúncios do plano Premium aparecem com prioridade e sinalização própria.' },
     { title: 'Montra completa', text: 'Perfil público preparado para stands, mediadores e vendedores ativos.' },
     { title: 'Leitura rápida', text: 'Métricas simples para perceber visitas, contactos e qualidade dos anúncios.' },
     { title: 'Sem surpresas', text: 'Antes do pagamento mostramos exatamente o que acontece se cancelares.' },
@@ -202,17 +202,17 @@ export default function Planos() {
           letter-spacing: 0.06em;
           text-transform: uppercase;
           color: #0f172a;
-          background: #f0fdf9;
-          border: 1px solid #ccf3e6;
+          background: #fffaf0;
+          border: 1px solid rgba(217,196,156,.38);
           padding: 4px 10px;
           border-radius: 100px;
           margin-bottom: 14px;
           width: fit-content;
         }
         .pl-badge--active {
-          background: #f0fdf4;
-          border-color: #bbf7d0;
-          color: #15803d;
+          background: rgba(217, 196, 156, 0.18);
+          border-color: rgba(217, 196, 156, 0.48);
+          color: #102f50;
         }
 
         .pl-plan-name {
@@ -303,9 +303,9 @@ export default function Planos() {
         .pl-btn--outline-pro {
           background: transparent;
           border-color: #d9c49c;
-          color: #0f766e;
+          color: #102f50;
         }
-        .pl-btn--outline-pro:hover { background: #f0fdfa; }
+        .pl-btn--outline-pro:hover { background: #fffaf0; }
 
         .pl-spinner {
           width: 16px; height: 16px;
@@ -374,7 +374,7 @@ export default function Planos() {
             <span className={`pl-badge ${user?.premiumAtivo ? 'pl-badge--active' : ''}`}>
               {user?.premiumAtivo ? 'O teu plano atual' : 'Mais escolhido'}
             </span>
-            <div className="pl-plan-name">Profissional</div>
+            <div className="pl-plan-name">Premium</div>
             <p className="pl-plan-desc">Para stands e imobiliárias que operam nos dois mundos NOXVELIA.</p>
             <div className="pl-price">10.99€ <span>/mês</span></div>
             <ul className="pl-features">
@@ -386,7 +386,7 @@ export default function Planos() {
             {temAcessoProfissionalManual ? (
               <>
                 <button className="pl-btn pl-btn--outline-pro pl-btn--manual" disabled>
-                  Plano profissional ativo
+                  Plano Premium ativo
                 </button>
                 <p className="pl-manual-note">
                   Este acesso foi atribuído pela administração e não tem portal de faturação Stripe.

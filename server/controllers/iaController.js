@@ -1,23 +1,23 @@
 import { Piscina } from 'piscina';
 import path from 'path';
 
-// Inicializa a piscina de workers apontando para o nosso ficheiro isolado
+// Inicializa workers para tarefas de processamento em paralelo.
 const piscina = new Piscina({
   filename: path.resolve('./iaWorker.js')
 });
 
-export const processarRequisicaoIA = async (req, res) => {
+export const processarRequisicaoAssistida = async (req, res) => {
   try {
     const { query } = req.body;
 
-    // Dispara a computação pesada para outro núcleo da CPU! O teu servidor principal fica livre!
+    // Envia a tarefa para um worker para manter a API principal disponível.
     const resultadoThread = await piscina.run({ 
       tipoTarefa: 'PARSAR_LIGUAGEM_NATURAL', 
       payload: query 
     });
 
-    // ... Segue para a chamada da API da OpenAI/Gemini usando o dado higienizado ...
-    res.json({ mensagem: "Processado em paralelo!", resultadoThread });
+    // Segue com o texto normalizado para o serviço configurado.
+    res.json({ mensagem: 'Pedido processado com sucesso.', resultadoThread });
 
   } catch (error) {
     res.status(500).json({ erro: error.message });

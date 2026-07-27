@@ -1,62 +1,18 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { animate } from 'animejs';
-import { gsap } from 'gsap';
 
 export default function PageTransition() {
   const location = useLocation();
-  const barRef = useRef(null);
-  const veilRef = useRef(null);
+  const [transitionKey, setTransitionKey] = useState(0);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduceMotion) return undefined;
-
-    const main = document.querySelector('main');
-    const ctx = gsap.context(() => {
-      if (main) {
-        gsap.fromTo(main, {
-          opacity: 0.98,
-          y: 6,
-        }, {
-          opacity: 1,
-          y: 0,
-          duration: 0.28,
-          ease: 'power2.out',
-          clearProps: 'opacity,transform',
-        });
-      }
-
-      gsap.fromTo(
-        '[data-nx-page-reveal], .pesquisa-search-row, .pesquisa-sidebar, .pesquisa-topbar, .nxc-wrap, .auth-card, .pub-form, .pl-card, .pro-card, .perfil-moldura, .legal-container, .pp-user-section, .title-block, .gallery-wrap, .price-panel',
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.32, stagger: 0.018, ease: 'power2.out', clearProps: 'opacity,transform' },
-      );
-    });
-
-    const barAnimation = barRef.current ? animate(barRef.current, {
-      scaleX: [0, 1, 1, 0],
-      opacity: [0, 1, 1, 0],
-      duration: 560,
-      ease: 'outCubic',
-    }) : null;
-
-    const veilAnimation = veilRef.current ? animate(veilRef.current, {
-      opacity: [0, 0.1, 0],
-      duration: 420,
-      ease: 'outQuad',
-    }) : null;
-
-    return () => {
-      ctx.revert();
-      barAnimation?.pause?.();
-      veilAnimation?.pause?.();
-    };
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    setTransitionKey((current) => current + 1);
   }, [location.pathname, location.search]);
 
   return (
-    <div className="nx-page-transition" aria-hidden="true">
+    <div className="nx-page-transition" aria-hidden="true" key={transitionKey}>
       <style>{`
         .nx-page-transition {
           position: fixed;
@@ -75,14 +31,29 @@ export default function PageTransition() {
           transform-origin: left center;
           opacity: 0;
           background: linear-gradient(90deg, #d9c49c, #f0dfbb 45%, #102f50);
-          box-shadow: 0 0 24px rgba(217, 196, 156, 0.34);
+          box-shadow: 0 0 18px rgba(217, 196, 156, 0.26);
+          animation: nx-route-bar 480ms ease-out forwards;
         }
 
         .nx-route-veil {
           position: fixed;
           inset: 0;
           opacity: 0;
-          background: radial-gradient(circle at 18% 0%, rgba(217, 196, 156, 0.42), transparent 34%), rgba(7, 19, 38, 0.1);
+          background: rgba(7, 19, 38, 0.08);
+          animation: nx-route-veil 360ms ease-out forwards;
+        }
+
+        @keyframes nx-route-bar {
+          0% { transform: scaleX(0); opacity: 0; }
+          18% { opacity: 1; }
+          78% { transform: scaleX(1); opacity: 1; }
+          100% { transform: scaleX(1); opacity: 0; }
+        }
+
+        @keyframes nx-route-veil {
+          0% { opacity: 0; }
+          32% { opacity: .08; }
+          100% { opacity: 0; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -92,8 +63,8 @@ export default function PageTransition() {
           }
         }
       `}</style>
-      <span ref={veilRef} className="nx-route-veil" />
-      <span ref={barRef} className="nx-route-bar" />
+      <span className="nx-route-veil" />
+      <span className="nx-route-bar" />
     </div>
   );
 }

@@ -78,14 +78,14 @@ router.post('/checkout', verificarToken, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// ROTA 2 — SUBSCRIÇÃO PREMIUM PROFISSIONAL (10.99€/mês)
+// ROTA 2 — SUBSCRIÇÃO PREMIUM (10.99€/mês)
 // ─────────────────────────────────────────────────────────────
 router.post('/criar-checkout-premium', verificarToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
 
-    // Se já é premium, redirecionar para o portal
+    // Se já é Premium, redirecionar para o portal.
     if (user.premiumAtivo && user.stripeCustomerId) {
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: user.stripeCustomerId,
@@ -94,18 +94,21 @@ router.post('/criar-checkout-premium', verificarToken, async (req, res) => {
       return res.json({ url: portalSession.url });
     }
 
+    if (req.body?.aceitouTermosPremium !== true) {
+      return res.status(400).json({ erro: 'Confirma as regras do Premium antes de avançar para o pagamento.' });
+    }
+
     let customerId = user.stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
         name: user.nome,
-        metadata: { userId: String(user._id) },
+        metadata: { userId: String(user._id), aceitouTermosPremium: 'true' },
       });
       customerId = customer.id;
       await User.findByIdAndUpdate(user._id, { stripeCustomerId: customerId });
     }
 
-    // Chamada simplificada e corrigida
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [{
@@ -118,9 +121,10 @@ router.post('/criar-checkout-premium', verificarToken, async (req, res) => {
       metadata: {
         userId: String(user._id),
         tipoPagamento: 'premium',
+        aceitouTermosPremium: 'true',
       },
       subscription_data: {
-        metadata: { userId: String(user._id) },
+        metadata: { userId: String(user._id), aceitouTermosPremium: 'true' },
       },
     });
 

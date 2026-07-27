@@ -114,7 +114,7 @@ export default function PerfilPublico() {
         .pp-admin-note { display: inline-flex; align-items: center; gap: 8px; margin-left: 10px; color: #475569; font-size: 12px; font-weight: 700; }
         .pp-main { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
         .pp-section-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid #e2e8f0; }
-        .pp-section-kicker { display: block; margin-bottom: 6px; color: #0f766e; font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+        .pp-section-kicker { display: block; margin-bottom: 6px; color: #102f50; font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
         .pp-section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; margin: 0; color: #0f172a; }
         .pp-section-copy { margin: 7px 0 0; max-width: 620px; color: #64748b; font-size: 13px; line-height: 1.55; font-weight: 650; }
         .pp-count { flex-shrink: 0; font-size: 13px; color: #475569; font-weight: 800; background: #e2e8f0; padding: 7px 12px; border-radius: 20px; }
@@ -133,6 +133,7 @@ export default function PerfilPublico() {
         .pp-empty p { margin: 10px auto 20px; color: #64748b; font-size: 14px; line-height: 1.65; }
         .pp-empty-btn { min-height: 42px; padding: 0 16px; border: 0; border-radius: 10px; background: #0f172a; color: #ffffff; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; }
         .pp-empty-btn:hover { background: #1e293b; }
+        .pp-empty-standalone { margin-top: 4px; }
         .dark .pp-root { background: #020817; color: #e2e8f0; }
         .dark .pp-hero { background: #020817; border-color: #334155; }
         .dark .pp-back { color: #cbd5e1; }
@@ -147,7 +148,7 @@ export default function PerfilPublico() {
         .dark .pp-showcase-tab.active { background: #d9c49c; border-color: #d9c49c; color: #041016; }
         .dark .pp-empty { background: #0b1220; border-color: #334155; }
         .dark .pp-empty-btn { background: #d9c49c; color: #041016; }
-        .dark .pp-empty-btn:hover { background: #5eead4; }
+        .dark .pp-empty-btn:hover { background: #f0dfbb; }
         @media (max-width: 860px) {
           .pp-showcase-summary { grid-template-columns: 1fr; margin-top: 0; }
           .pp-section-header { align-items: flex-start; flex-direction: column; }
@@ -181,53 +182,63 @@ export default function PerfilPublico() {
         </div>
 
         <div className="pp-main">
-          <div className="pp-showcase-summary" aria-label="Resumo da montra">
-            <div className="pp-summary-item"><strong>{anuncios.length}</strong><span>anúncios ativos</span></div>
-            <div className="pp-summary-item"><strong>{totalCarros}</strong><span>automóveis</span></div>
-            <div className="pp-summary-item"><strong>{totalImoveis}</strong><span>imóveis</span></div>
-            <div className="pp-summary-item"><strong>{totalDestacados}</strong><span>destaques</span></div>
-          </div>
+          {anuncios.length > 0 ? (
+            <>
+              <div className="pp-showcase-summary" aria-label="Resumo da montra">
+                <div className="pp-summary-item"><strong>{anuncios.length}</strong><span>anúncios ativos</span></div>
+                <div className="pp-summary-item"><strong>{totalCarros}</strong><span>automóveis</span></div>
+                <div className="pp-summary-item"><strong>{totalImoveis}</strong><span>imóveis</span></div>
+                <div className="pp-summary-item"><strong>{totalDestacados}</strong><span>destaques</span></div>
+              </div>
 
-          <div className="pp-section-header">
-            <div>
-              <span className="pp-section-kicker">Montra pública</span>
-              <h2 className="pp-section-title">Anúncios ativos</h2>
-              <p className="pp-section-copy">Filtra a montra por categoria e encontra primeiro os anúncios mais relevantes deste vendedor.</p>
-            </div>
-            <div className="pp-count">{anunciosFiltrados.length} {categoriaLabel}</div>
-          </div>
+              <div className="pp-section-header">
+                <div>
+                  <span className="pp-section-kicker">Montra pública</span>
+                  <h2 className="pp-section-title">Anúncios ativos</h2>
+                  <p className="pp-section-copy">Filtra a montra por categoria e encontra primeiro os anúncios mais relevantes deste vendedor.</p>
+                </div>
+                <div className="pp-count">{anunciosFiltrados.length} {categoriaLabel}</div>
+              </div>
 
-          {anuncios.length > 0 && (
-            <div className="pp-showcase-tabs" aria-label="Filtrar anúncios da montra">
-              <button type="button" className={`pp-showcase-tab ${categoriaAtiva === 'todos' ? 'active' : ''}`} onClick={() => setCategoriaAtiva('todos')}>Todos <span>{anuncios.length}</span></button>
-              <button type="button" className={`pp-showcase-tab ${categoriaAtiva === 'carro' ? 'active' : ''}`} onClick={() => setCategoriaAtiva('carro')}>Automóveis <span>{totalCarros}</span></button>
-              <button type="button" className={`pp-showcase-tab ${categoriaAtiva === 'imovel' ? 'active' : ''}`} onClick={() => setCategoriaAtiva('imovel')}>Imóveis <span>{totalImoveis}</span></button>
-              <button type="button" className={`pp-showcase-tab ${categoriaAtiva === 'destacados' ? 'active' : ''}`} onClick={() => setCategoriaAtiva('destacados')}>Destaques <span>{totalDestacados}</span></button>
-            </div>
-          )}
+              <div className="pp-showcase-tabs" aria-label="Filtrar anúncios da montra">
+                <button type="button" className={`pp-showcase-tab ${categoriaAtiva === 'todos' ? 'active' : ''}`} onClick={() => setCategoriaAtiva('todos')}>Todos <span>{anuncios.length}</span></button>
+                <button type="button" className={`pp-showcase-tab ${categoriaAtiva === 'carro' ? 'active' : ''}`} onClick={() => setCategoriaAtiva('carro')}>Automóveis <span>{totalCarros}</span></button>
+                <button type="button" className={`pp-showcase-tab ${categoriaAtiva === 'imovel' ? 'active' : ''}`} onClick={() => setCategoriaAtiva('imovel')}>Imóveis <span>{totalImoveis}</span></button>
+                <button type="button" className={`pp-showcase-tab ${categoriaAtiva === 'destacados' ? 'active' : ''}`} onClick={() => setCategoriaAtiva('destacados')}>Destaques <span>{totalDestacados}</span></button>
+              </div>
 
-          {anunciosFiltrados.length > 0 ? (
-            <div className="pp-grid">
-              {anunciosFiltrados.map((anuncio) => {
-                const utilizadorPopulado = anuncio?.utilizador && typeof anuncio.utilizador === 'object'
-                  ? anuncio.utilizador
-                  : vendedor;
+              {anunciosFiltrados.length > 0 ? (
+                <div className="pp-grid">
+                  {anunciosFiltrados.map((anuncio) => {
+                    const utilizadorPopulado = anuncio?.utilizador && typeof anuncio.utilizador === 'object'
+                      ? anuncio.utilizador
+                      : vendedor;
 
-                return (
-                  <AnuncioCard
-                    key={anuncio._id}
-                    anuncio={{ ...anuncio, utilizador: utilizadorPopulado }}
-                    forceSellerIdentity
-                  />
-                );
-              })}
-            </div>
+                    return (
+                      <AnuncioCard
+                        key={anuncio._id}
+                        anuncio={{ ...anuncio, utilizador: utilizadorPopulado }}
+                        forceSellerIdentity
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="pp-empty">
+                  <div className="pp-empty-inner">
+                    <h3>Sem anúncios nesta categoria</h3>
+                    <p>Experimenta outra categoria da montra ou contacta o profissional através dos dados apresentados no perfil.</p>
+                    <button type="button" className="pp-empty-btn" onClick={() => setCategoriaAtiva('todos')}>Ver todos</button>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
-            <div className="pp-empty">
+            <div className="pp-empty pp-empty-standalone">
               <div className="pp-empty-inner">
-                <h3>Sem anúncios ativos</h3>
-                <p>Este vendedor ainda não tem anúncios nesta categoria. Podes ver outra categoria da montra ou voltar ao diretório de anunciantes ativos.</p>
-                <button type="button" className="pp-empty-btn" onClick={() => navigate('/profissionais')}>Ver anunciantes ativos</button>
+                <h3>Sem anúncios ativos de momento</h3>
+                <p>Este profissional ainda não tem anúncios ativos de momento. Pode contactar diretamente através dos dados fornecidos.</p>
+                <button type="button" className="pp-empty-btn" onClick={() => navigate('/profissionais')}>Ver outros anunciantes</button>
               </div>
             </div>
           )}

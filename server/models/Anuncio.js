@@ -120,7 +120,7 @@ const anuncioSchema = new mongoose.Schema({
 
   scoreQualidade: { type: Number, min: 0, max: 10, default: 0 },
   scoreDetalhes: { fotos: Number, descricao: Number, preco: Number, localizacao: Number, extras: Number, disponibilidade: Number },
-  scoreAnaliseIA: { pontosFuertes: [String], pontosMelhorar: [String], sentimento: String, qualidadeDescricao: String, recomendacao: String },
+  scoreAnaliseAssistida: { pontosFuertes: [String], pontosMelhorar: [String], sentimento: String, qualidadeDescricao: String, recomendacao: String },
   
   estado: { type: String, enum: ['ativo','pausado','expirado','pendente','apagado'], default: 'ativo' },
   apagadoEm: Date, 

@@ -493,8 +493,8 @@ router.get('/:id/check-guardado', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 // 6. CRIAR NOVO ANÚNCIO
 //    Regras:
-//    - Utilizador FREE  → máx 10 anúncios ativos
-//    - Utilizador PREMIUM → ilimitado + destacado: true automático
+//    - Conta gratuita  → máx 10 anúncios ativos
+//    - Conta Premium → ilimitado + destaque automático
 //    - Admin → ilimitado + destaque opcional pelo painel
 //
 //    Segurança:
@@ -551,7 +551,7 @@ router.post('/', verificarToken, async (req, res) => {
       historicoVisitas: _ignore8,
       scoreQualidade: _ignore9,
       scoreDetalhes: _ignore10,
-      scoreAnaliseIA: _ignore11,
+      scoreAnaliseAssistida: _ignore11,
       planoPublicacao: _ignore12,
       expiresAt: _ignore13,
       apagadoEm: _ignore14,
@@ -578,7 +578,7 @@ router.post('/', verificarToken, async (req, res) => {
         distrito,
         ...(coordenadas ? { coordenadas } : {}),
       },
-      // Destaque: premium normal destaca automaticamente; admin escolhe no painel.
+      // Destaque: Premium destaca automaticamente; admin escolhe no painel.
       ...((ehAdmin ? req.body.destacado === true : ehPremium)
         ? { destacado: true, dataExpiracaoDestaque: null }
         : { destacado: false }
@@ -636,7 +636,7 @@ router.put('/:id', verificarToken, async (req, res) => {
       historicoVisitas: _ig8,
       scoreQualidade: _ig9,
       scoreDetalhes: _ig10,
-      scoreAnaliseIA: _ig11,
+      scoreAnaliseAssistida: _ig11,
       planoPublicacao: _ig12,
       expiresAt: _ig13,
       apagadoEm: _ig14,

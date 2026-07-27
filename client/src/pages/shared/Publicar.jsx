@@ -570,10 +570,10 @@ export default function Publicar() {
             </div>
             <h2 className="premium-title">Limite atingido</h2>
             <p className="premium-desc">
-              O plano gratuito permite criar até <strong>10 anúncios</strong> em simultâneo. Para publicares mais anúncios, adere ao <strong>Plano Profissional</strong>.
+              O plano gratuito permite criar até <strong>10 anúncios</strong> em simultâneo. Para publicares mais anúncios, adere ao <strong>Premium</strong>.
             </p>
             <button className="premium-btn" onClick={() => navigate('/planos')}>
-              Aderir ao Plano Profissional
+              Aderir ao Premium
             </button>
             <button className="premium-close-btn" onClick={() => navigate('/perfil')}>
               Voltar ao meu Perfil
@@ -657,7 +657,7 @@ export default function Publicar() {
                 <div className="pub-pro-badge" style={{ marginBottom: '20px' }}>
                   <Icon path={mdiShieldCheckOutline} size={1.1} className="pub-pro-badge-icon" />
                   <p className="pub-pro-badge-text">
-                    <strong>Plano profissional ativo</strong> — Este anúncio terá{' '}
+                    <strong>Plano Premium ativo</strong> — Este anúncio terá{' '}
                     <strong>mais destaque</strong> e não conta para o limite gratuito.
                   </p>
                 </div>

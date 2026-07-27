@@ -91,7 +91,7 @@ export const parsePartnershipCsv = (csvText, existingEmails = new Set(), suppres
     }
     if (existingEmails.has(email)) {
       duplicatesDatabase += 1;
-      errors.push('Ja existe na base de dados');
+      errors.push('Este registo já existe');
     }
     if (suppressedEmails.has(email)) {
       suppressed += 1;

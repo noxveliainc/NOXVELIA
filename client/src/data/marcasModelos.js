@@ -1,6 +1,6 @@
 // src/data/marcasModelos.js  –  v2.0
 //
-// Base de dados de marcas e modelos de automóveis disponíveis na NOXVELIA.
+// Catálogo de marcas e modelos de automóveis disponíveis na NOXVELIA.
 //
 // Novidades v2:
 //   • Estrutura enriquecida por modelo (segmentos, combustíveis, gerações)
@@ -336,7 +336,7 @@ const ALIASES_MODELO = {
   'wrangler 4xe': 'Wrangler',
 };
 
-// ─── BASE DE DADOS PRINCIPAL ────────────────────────────────────────────────
+// ─── CATÁLOGO PRINCIPAL ─────────────────────────────────────────────────────
 // Estrutura:  MARCAS_CARROS[marca] = [ { modelo, segmentos, combustiveis, geracoes? }, … ]
 
 export const MARCAS_CARROS = {
@@ -1739,7 +1739,7 @@ export function todosOsEletricos() {
 }
 
 /**
- * Devolve todos os segmentos únicos presentes na base de dados.
+ * Devolve todos os segmentos únicos presentes no catálogo.
  */
 export function todosOsSegmentos() {
   const set = new Set();
@@ -1768,7 +1768,7 @@ export function todosOsCombustiveis() {
 // Para não partir código existente que usa a estrutura antiga { marca: ['Modelo1', ...] }
 
 /**
- * Versão flat da base de dados no formato v1 (string[]).
+ * Versão simples do catálogo no formato v1 (string[]).
  * Útil para validações legadas.
  */
 export const MARCAS_CARROS_FLAT = Object.fromEntries(

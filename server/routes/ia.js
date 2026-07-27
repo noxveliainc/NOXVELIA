@@ -1,17 +1,17 @@
 import express from 'express';
-import { ai } from '../services/gemini.js';
+import { CONTENT_PROCESSING_MODEL, motorProcessamento } from '../services/contentProcessor.js';
 import Anuncio from '../models/Anuncio.js';
 import { verificarToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-async function chamarGemini({ system, user }) {
-  if (!ai) {
-    throw new Error('Serviço de IA não configurado no servidor.');
+async function chamarProcessamento({ system, user }) {
+  if (!motorProcessamento) {
+    throw new Error('Serviço de processamento não configurado no servidor.');
   }
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+  const response = await motorProcessamento.models.generateContent({
+    model: CONTENT_PROCESSING_MODEL,
     contents: user,
     config: {
       systemInstruction: system,
@@ -32,7 +32,7 @@ router.post('/search', verificarToken, async (req, res, next) => {
       return res.status(400).json({ erro: 'Pesquisa demasiado curta. Escreve pelo menos 3 caracteres.' });
     }
 
-    const systemPrompt = `És um assistente especializado em imobiliário e automóveis em Portugal.
+    const systemPrompt = `Atuas como sistema de extração de filtros para imobiliário e automóveis em Portugal.
 A tua única função é extrair filtros de pesquisa de texto livre em português e devolvê-los em JSON.
 Respondes SEMPRE com JSON puro e válido, sem markdown, sem explicações.`;
 
@@ -81,7 +81,7 @@ Regras importantes:
 - Nomes de cidades e distritos devem estar em português de Portugal
 - Para carros elétricos: combustivel = "eletrico"`;
 
-    const textoJson = await chamarGemini({ system: systemPrompt, user: userPrompt });
+    const textoJson = await chamarProcessamento({ system: systemPrompt, user: userPrompt });
     const filtros = JSON.parse(textoJson);
 
     const mongoQuery = { estado: { $in: ['ativo', 'pendente'] }, apagadoEm: null };
@@ -154,7 +154,7 @@ Regras importantes:
   }
 });
 // ══════════════════════════════════════════════════════════════════════════════
-// 4. DESCODIFICAR MATRÍCULA INTELIGENTE — POST /api/ia/descodificar
+// 4. DESCODIFICAR MATRÍCULA — POST /descodificar
 // ══════════════════════════════════════════════════════════════════════════════
 router.post('/descodificar', verificarToken, async (req, res, next) => {
   try {
@@ -186,13 +186,13 @@ Gera dados técnicos realistas baseados no padrão de frotas de Portugal para es
   "equipamentoSugerido": [string]
 }`;
 
-    const textoJson = await chamarGemini({ system: systemPrompt, user: userPrompt });
+    const textoJson = await chamarProcessamento({ system: systemPrompt, user: userPrompt });
     const dadosDeduzidos = JSON.parse(textoJson);
 
     res.json({ sucesso: true, dados: dadosDeduzidos });
   } catch (erro) {
     console.error("Erro ao descodificar veículo:", erro);
-    res.status(500).json({ erro: 'O motor de IA falhou ao analisar os dados do veículo.' });
+    res.status(500).json({ erro: 'Não foi possível analisar os dados do veículo neste momento.' });
   }
 });
 // 2. SCORE DE QUALIDADE SOFISTICADO COM METADADOS ATUALIZADOS
@@ -238,7 +238,7 @@ router.post('/score/:id', verificarToken, async (req, res, next) => {
 
     const scoreTotal = Object.values(detalhes).reduce((a, b) => a + b, 0);
 
-    let analiseIA = null;
+    let analiseAssistida = null;
 
     if (palavras >= 10) {
       const systemPrompt = `És um especialista em avaliação de anúncios imobiliários e automóveis em Portugal.
@@ -264,16 +264,16 @@ Anúncio:
 - Extras: vídeo=${temVideo}, visita virtual=${temVisitaVR}`;
 
       try {
-        const textoIA = await chamarGemini({ system: systemPrompt, user: userPrompt });
-        analiseIA = JSON.parse(textoIA);
-      } catch (errIA) {
-        console.warn('Análise Gemini falhou:', errIA.message);
+        const textoAssistido = await chamarProcessamento({ system: systemPrompt, user: userPrompt });
+        analiseAssistida = JSON.parse(textoAssistido);
+      } catch (erroAnalise) {
+        console.warn('Análise assistida falhou:', erroAnalise.message);
       }
     }
 
     anuncio.scoreQualidade  = scoreTotal;
     anuncio.scoreDetalhes   = detalhes;
-    if (analiseIA) anuncio.scoreAnaliseIA = analiseIA;
+    if (analiseAssistida) anuncio.scoreAnaliseAssistida = analiseAssistida;
     await anuncio.save();
 
     res.json({
@@ -282,7 +282,7 @@ Anúncio:
       percentagem: Math.round((scoreTotal / 10) * 100),
       nivel: scoreTotal >= 8 ? 'excelente' : scoreTotal >= 5 ? 'bom' : scoreTotal >= 3 ? 'razoável' : 'fraco',
       detalhes,
-      analiseIA,
+      analiseAssistida,
     });
 
   } catch (erro) {
@@ -355,11 +355,11 @@ Devolve APENAS este JSON:
   "tagsSugeridas": ["3 a 5 tags relevantes para SEO, em minúsculas"]
 }`;
 
-    const textoJson = await chamarGemini({ system: systemPrompt, user: userPrompt });
+    const textoJson = await chamarProcessamento({ system: systemPrompt, user: userPrompt });
     const resultado = JSON.parse(textoJson);
 
     if (!resultado.titulo || !resultado.descricaoCompleta) {
-      throw new SyntaxError('Resposta da IA incompleta.');
+      throw new SyntaxError('Resposta automática incompleta.');
     }
 
     res.json(resultado);

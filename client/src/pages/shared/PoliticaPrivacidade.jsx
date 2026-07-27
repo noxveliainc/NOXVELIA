@@ -42,7 +42,7 @@ export default function PoliticaPrivacidade() {
         .legal-back:hover { color: #0f172a; }
         
         .legal-header { text-align: center; margin-bottom: 48px; padding-bottom: 40px; border-bottom: 1px solid #e2e8f0; }
-        .legal-icon-wrap { width: 64px; height: 64px; background: #f0fdfa; border: 1px solid #ccfbf1; color: #0d9488; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+        .legal-icon-wrap { width: 64px; height: 64px; background: #fffaf0; border: 1px solid rgba(217, 196, 156, 0.42); color: #102f50; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
         .legal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 4vw, 36px); font-weight: 800; color: #0f172a; letter-spacing: -0.02em; margin-bottom: 12px; }
         .legal-subtitle { font-size: 15px; color: #64748b; }
         
@@ -52,7 +52,7 @@ export default function PoliticaPrivacidade() {
         .legal-content ul { margin: 16px 0 24px 24px; color: #475569; font-size: 15px; }
         .legal-content li { margin-bottom: 10px; text-align: justify; line-height: 1.6; }
         .legal-content strong { color: #0f172a; font-weight: 700; }
-        .legal-content a { color: #0d7f77; font-weight: 700; text-underline-offset: 3px; }
+        .legal-content a { color: #102f50; font-weight: 700; text-underline-offset: 3px; }
         
         .legal-alert { background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; padding: 24px; border-radius: 8px; margin: 32px 0; font-size: 14.5px; color: #7f1d1d; text-align: justify; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.05); }
         .legal-alert strong { color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em; font-size: 13px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
@@ -136,7 +136,7 @@ export default function PoliticaPrivacidade() {
               <li><strong>Dados Técnicos e de Segurança:</strong> Endereço IP, data e hora, agente do navegador, pedidos efetuados e registos de erro ou segurança, quando disponíveis. Servem para proteger a plataforma, diagnosticar falhas e prevenir abuso ou fraude.</li>
               <li><strong>Mensagens e Suporte:</strong> Nome, e-mail e conteúdo enviado através dos formulários ou canais de suporte, necessários para responder ao pedido.</li>
               <li><strong>Pagamentos e Serviços Premium:</strong> Plano, referência da transação, estado do pagamento e identificadores técnicos Stripe. Os dados completos do cartão são tratados diretamente pelo prestador de pagamentos e não pela NOXVELIA.</li>
-              <li><strong>Funcionalidades de Inteligência Artificial:</strong> Pesquisa, matrícula, descrições, características e restante conteúdo submetido quando o Utilizador decide usar uma função de IA, com a finalidade exclusiva de produzir o resultado solicitado.</li>
+              <li><strong>Funcionalidades assistidas:</strong> Pesquisa, matrícula, descrições, características e restante conteúdo submetido quando o Utilizador decide usar uma ferramenta de apoio, com a finalidade exclusiva de produzir o resultado solicitado.</li>
             </ul>
 
             <h3>3.2. Partilha de Dados com Terceiros</h3>
@@ -147,7 +147,7 @@ export default function PoliticaPrivacidade() {
               <li><strong>Infraestrutura de imagens:</strong> Armazenamento, transformação e entrega das fotografias carregadas nos anúncios e perfis através da storage configurada pela NOXVELIA.</li>
               <li><strong>Resend:</strong> Envio de mensagens de verificação de e-mail e recuperação de palavra-passe, incluindo endereço do destinatário e conteúdo técnico da mensagem.</li>
               <li><strong>Formspree:</strong> Receção dos dados enviados voluntariamente através do formulário de suporte no rodapé.</li>
-              <li><strong>Google Gemini:</strong> Processamento do conteúdo enviado às funcionalidades de inteligência artificial, apenas quando essas funções são utilizadas.</li>
+              <li><strong>Fornecedor externo de processamento:</strong> Tratamento técnico do conteúdo enviado às ferramentas de apoio, apenas quando essas funções são utilizadas.</li>
               <li><strong>CARTO e OpenStreetMap/Nominatim:</strong> Apresentação dos mapas e geocodificação das localizações pesquisadas ou associadas a anúncios. Os pedidos de mosaicos podem incluir IP e informação técnica do navegador.</li>
               <li><strong>carVertical:</strong> Serviço externo acedido por ligação de afiliação. Quando existe VIN no anúncio, esse identificador pode ser incluído na ligação aberta pelo Utilizador.</li>
               <li><strong>Buy Me a Coffee:</strong> Widget de apoio carregado apenas após consentimento para serviços externos.</li>
@@ -179,10 +179,10 @@ export default function PoliticaPrivacidade() {
 
             <h3>3.5. Dados Obrigatórios e Decisões Automatizadas</h3>
             <p>
-              Os campos assinalados como obrigatórios são necessários para criar a conta, publicar o anúncio, responder a um pedido ou executar um pagamento. A falta desses dados pode impedir a prestação da função correspondente. Dados opcionais, como certas características adicionais, integrações ou funções de IA, podem ser omitidos sem impedir o acesso às funções principais.
+              Os campos assinalados como obrigatórios são necessários para criar a conta, publicar o anúncio, responder a um pedido ou executar um pagamento. A falta desses dados pode impedir a prestação da função correspondente. Dados opcionais, como certas características adicionais, integrações ou ferramentas de apoio, podem ser omitidos sem impedir o acesso às funções principais.
             </p>
             <p>
-              A NOXVELIA não toma decisões exclusivamente automatizadas que produzam efeitos jurídicos ou afetem significativamente o Utilizador. As funções de inteligência artificial fornecem sugestões ou resultados auxiliares, cabendo ao Utilizador confirmar a informação antes de a utilizar ou publicar.
+              A NOXVELIA não toma decisões exclusivamente automatizadas que produzam efeitos jurídicos ou afetem significativamente o Utilizador. As ferramentas de apoio fornecem sugestões ou resultados auxiliares, cabendo ao Utilizador confirmar a informação antes de a utilizar ou publicar.
             </p>
 
             <h2 id="cookies"><Icon path={mdiCookieOutline} size={1.1} color="#d9c49c" /> 4. Política de Cookies e Armazenamento Local</h2>
