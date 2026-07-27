@@ -26,7 +26,6 @@ const LandingListingsCarousel = lazy(() => import('./LandingListingsCarousel'));
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const formatarMoeda = (valor) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
-const formatarContagem = (valor) => (valor === null || valor === undefined ? '...' : new Intl.NumberFormat('pt-PT').format(valor));
 const formatarDataCurta = (valor) => { const data = valor ? new Date(valor) : null; return data && !Number.isNaN(data.getTime()) ? new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: 'short' }).format(data) : ''; };
 const slugMarca = (marca) => marca.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const logoMarca = (marca) => `/marcas/${slugMarca(marca)}.${marca === 'Jaecoo' ? 'svg' : 'png'}`;
@@ -62,12 +61,6 @@ export default function Landing() {
     : [];
 
   const temProfissionaisAtivos = Number(resumoPublico?.profissionais || 0) > 0;
-  const metricas = [
-    { label: 'Anúncios ativos', value: resumoPublico?.totalAnuncios },
-    { label: 'Automóveis', value: resumoPublico?.carros },
-    { label: 'Imóveis', value: resumoPublico?.imoveis },
-    temProfissionaisAtivos ? { label: 'Profissionais', value: resumoPublico?.profissionais } : null,
-  ].filter((metrica) => metrica && Number(metrica.value || 0) > 0);
 
   const atualizarPesquisa = (campo, valor) => {
     setPesquisa((atual) => {
@@ -117,7 +110,6 @@ export default function Landing() {
       .catch(() => {});
     return () => { ativo = false; };
   }, []);
-
   useEffect(() => {
     if (prefersReducedMotion() || !heroTitleRef.current) return undefined;
     let ativo = true;
@@ -132,7 +124,7 @@ export default function Landing() {
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => aosRef.current?.refresh());
     return () => window.cancelAnimationFrame(frame);
-  }, [loadingExemplos, noticiasMercado.length, metricas.length]);
+  }, [loadingExemplos, noticiasMercado.length]);
 
   useEffect(() => {
     const trackLandingViewOnce = () => {
@@ -232,7 +224,6 @@ export default function Landing() {
 <h1 id="lp-title" ref={heroTitleRef}>Automóveis e imóveis em Portugal</h1>
                 <p>Filtra por localização, preço e características. Contacto direto com o anunciante.</p>
               </div>
-              {metricas.length > 0 && <div className="lp-metrics">{metricas.map((metrica) => <div key={metrica.label}><strong>{formatarContagem(metrica.value)}</strong><span>{metrica.label}</span></div>)}</div>}
             </div>
 
             <form className="lp-search-box" id="pesquisa" onSubmit={submeterPesquisa}>

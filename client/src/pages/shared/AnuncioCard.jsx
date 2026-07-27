@@ -192,7 +192,13 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           font-size: 36px;
           color: #cbd5e1;
         }
-
+        .nxc-placeholder img {
+          width: min(92px, 44%);
+          height: auto;
+          max-height: 72%;
+          object-fit: contain;
+          opacity: .92;
+        }
         /* ── BADGES ── */
         .nxc-badge-premium {
           position: absolute;
@@ -322,6 +328,22 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           overflow: hidden;
         }
 
+        .nxc-featured-note {
+          width: max-content;
+          max-width: 100%;
+          min-height: 24px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 4px 8px;
+          border: 1px solid rgba(217, 196, 156, .45);
+          border-radius: 999px;
+          background: rgba(217, 196, 156, .16);
+          color: #102f50;
+          font-size: 12px;
+          font-weight: 850;
+          line-height: 1;
+        }
         .nxc-trust-strip {
           display: flex;
           flex-wrap: wrap;
@@ -476,6 +498,105 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-modal-delete { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #ef4444; color: #fff; font-weight: 800; cursor: pointer; transition: background-color .16s ease; }
         .nxc-modal-delete:hover { background: #dc2626; }
 
+        @media (max-width: 640px) {
+          .nxc-wrap {
+            border-radius: 9px;
+          }
+          .nxc-wrap.premium {
+            border-width: 1px;
+          }
+          .nxc-wrap.premium::before {
+            height: 3px;
+          }
+          .nxc-img {
+            aspect-ratio: auto;
+            height: clamp(136px, 39vw, 168px);
+          }
+          .nxc-placeholder img {
+            width: min(70px, 30%);
+            max-height: 58%;
+          }
+          .nxc-badge-premium,
+          .nxc-badge-status {
+            top: 8px;
+            left: 8px;
+            padding: 5px 8px;
+            font-size: 8.5px;
+          }
+          .nxc-badge-tipo {
+            bottom: 8px;
+            left: 8px;
+            padding: 3px 7px;
+            font-size: 8px;
+          }
+          .nxc-photo-count {
+            right: 8px;
+            bottom: 8px;
+            padding: 3px 7px;
+            font-size: 9px;
+          }
+          .nxc-body {
+            padding: 10px 12px 11px;
+            gap: 5px;
+          }
+          .nxc-price {
+            font-size: 18px;
+          }
+          .nxc-title {
+            font-size: 13px;
+            line-height: 1.35;
+            -webkit-line-clamp: 2;
+          }
+          .nxc-featured-note {
+            min-height: 20px;
+            padding: 3px 7px;
+            font-size: 10.5px;
+          }
+          .nxc-trust-strip {
+            gap: 4px;
+            margin-top: 1px;
+          }
+          .nxc-trust-pill {
+            min-height: 19px;
+            padding: 0 6px;
+            font-size: 9px;
+          }
+          .nxc-insights {
+            gap: 5px;
+            margin-top: 5px;
+          }
+          .nxc-insight {
+            border-radius: 8px;
+            padding: 6px;
+          }
+          .nxc-insight-label {
+            font-size: 7.5px;
+            margin-bottom: 3px;
+          }
+          .nxc-insight-value {
+            font-size: 10.5px;
+          }
+          .nxc-tags {
+            gap: 4px;
+            margin-top: 2px;
+          }
+          .nxc-tag {
+            padding: 3px 7px;
+            font-size: 9.5px;
+          }
+          .nxc-footer {
+            padding: 9px 12px;
+          }
+          .nxc-avatar {
+            width: 21px;
+            height: 21px;
+            font-size: 9px;
+          }
+          .nxc-username,
+          .nxc-loc {
+            font-size: 10.5px;
+          }
+        }
         .dark .nxc-wrap {
           background: #111c30;
           border-color: #334155;
