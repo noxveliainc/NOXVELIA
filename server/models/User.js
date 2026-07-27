@@ -4,7 +4,7 @@ import argon2 from 'argon2';
 const userSchema = new mongoose.Schema({
   nome:      { type: String, required: true, trim: true },
   email:     { type: String, required: true, unique: true, lowercase: true, trim: true },
-  password:  { type: String, required: true, select: false },
+  password:  { type: String, required: function requiredPassword() { return this.authProvider !== 'google'; }, select: false },
   telefone:  { type: String, required: true, unique: true, match: [/^\d{9}$/, 'O telemóvel deve ter exatamente 9 dígitos.'] },
   mostrarTelefonePublico: { type: Boolean, default: true },
   localidade: { type: String, trim: true },
@@ -17,6 +17,9 @@ const userSchema = new mongoose.Schema({
   nif:        { type: String, trim: true, default: null },
   website:    { type: String, trim: true, default: null },
   avatarUrl:  { type: String, default: null },
+  googleId:   { type: String, unique: true, sparse: true, trim: true, default: null },
+  authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
+  aceitouTermosEm: { type: Date, default: null },
   
   // 🌟 NOVO: CAPA E BIOGRAFIA DO PERFIL
   capaUrl:    { type: String, default: null },

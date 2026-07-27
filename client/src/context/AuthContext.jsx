@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { googleLogout } from '@react-oauth/google';
 import api from '../services/api';
 import { clearAuth, clearLegacyAuth, getAuthToken, getStoredUser, storeAuth, storeUser } from '../utils/authSession';
 
@@ -77,7 +78,22 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
+
+  const loginGoogle = async (payload) => {
+    const response = await api.post('/auth/google', payload);
+    const { token, user: userData, utilizador } = response.data;
+    const dadosUtilizador = userData || utilizador;
+
+    if (token && dadosUtilizador) {
+      storeAuth(token, dadosUtilizador);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(dadosUtilizador);
+    }
+
+    return response.data;
+  };
   const logout = () => {
+    try { googleLogout(); } catch { /* Google pode não estar carregado. */ }
     clearAuth();
     delete api.defaults.headers.common['Authorization'];
     const rotasPrivadas = ['/perfil', '/publicar', '/mensagens', '/favoritos', '/admin'];
@@ -97,6 +113,7 @@ export const AuthProvider = ({ children }) => {
       user,
       loading,
       login,
+      loginGoogle,
       logout,
       atualizarAvatar,
       atualizarUser,

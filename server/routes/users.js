@@ -212,6 +212,9 @@ router.put('/me/password', verificarToken, async (req, res) => {
 
     const user = await User.findById(req.user.id).select('+password');
     if (!user) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
+    if (!user.password) {
+      return res.status(400).json({ erro: 'Esta conta usa acesso Google e ainda não tem palavra-passe definida.' });
+    }
 
     const passwordValida = await argon2.verify(user.password, passwordAtual);
     if (!passwordValida) {

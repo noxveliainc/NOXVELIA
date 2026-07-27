@@ -44,7 +44,7 @@ const allowedOrigins = new Set([
   'https://www.noxvelia.com',
   'https://noxvelia.com',
   process.env.CLIENT_URL,
-  ...(!production ? ['http://localhost:5173', 'http://localhost:4173'] : []),
+  ...(!production ? ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:4173', 'http://127.0.0.1:4173'] : []),
 ].filter(Boolean));
 const corsOrigin = (origin, callback) => {
   if (!origin || allowedOrigins.has(origin)) return callback(null, true);
@@ -67,12 +67,12 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", 'https://js.stripe.com', 'https://www.google.com', 'https://www.gstatic.com', 'https://cdnjs.buymeacoffee.com', 'https://pagead2.googlesyndication.com', 'https://tpc.googlesyndication.com', 'https://googleads.g.doubleclick.net', 'https://www.googleadservices.com', 'https://adservice.google.com'],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://js.stripe.com', 'https://www.google.com', 'https://accounts.google.com', 'https://www.gstatic.com', 'https://cdnjs.buymeacoffee.com', 'https://pagead2.googlesyndication.com', 'https://tpc.googlesyndication.com', 'https://googleads.g.doubleclick.net', 'https://www.googleadservices.com', 'https://adservice.google.com'],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
       fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
-      connectSrc: ["'self'", 'https://noxvelia.onrender.com', 'wss://noxvelia.onrender.com', 'https://api.stripe.com', 'https://www.google.com', 'https://nominatim.openstreetmap.org', 'https://*.basemaps.cartocdn.com', 'https://pagead2.googlesyndication.com', 'https://googleads.g.doubleclick.net', 'https://www.googleadservices.com', 'https://adservice.google.com', 'https://ad.doubleclick.net'],
-      frameSrc: ["'self'", 'https://js.stripe.com', 'https://www.google.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://my.matterport.com', 'https://buymeacoffee.com', 'https://googleads.g.doubleclick.net', 'https://tpc.googlesyndication.com'],
+      connectSrc: ["'self'", 'https://noxvelia.onrender.com', 'wss://noxvelia.onrender.com', 'https://api.stripe.com', 'https://www.google.com', 'https://accounts.google.com', 'https://nominatim.openstreetmap.org', 'https://*.basemaps.cartocdn.com', 'https://pagead2.googlesyndication.com', 'https://googleads.g.doubleclick.net', 'https://www.googleadservices.com', 'https://adservice.google.com', 'https://ad.doubleclick.net'],
+      frameSrc: ["'self'", 'https://js.stripe.com', 'https://www.google.com', 'https://accounts.google.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://my.matterport.com', 'https://buymeacoffee.com', 'https://googleads.g.doubleclick.net', 'https://tpc.googlesyndication.com'],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'"],

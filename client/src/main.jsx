@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 import { ThemeProvider } from './context/ThemeContext.jsx';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const CHUNK_RELOAD_KEY = '@Noxvelia:chunk-reload';
 const CHUNK_RELOAD_WINDOW_MS = 30000;
@@ -47,10 +48,16 @@ window.addEventListener('vite:preloadError', (event) => {
 window.addEventListener('unhandledrejection', (event) => {
   reloadOnStaleChunk(event.reason);
 });
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const appTree = (
+  <ThemeProvider>
+    <App />
+  </ThemeProvider>
+);
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ThemeProvider>
-        <App />    
-    </ThemeProvider>
+    {googleClientId ? (
+      <GoogleOAuthProvider clientId={googleClientId}>{appTree}</GoogleOAuthProvider>
+    ) : appTree}
   </React.StrictMode>,
 )

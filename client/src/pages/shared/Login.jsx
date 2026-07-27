@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import GoogleAuthButton, { googleAuthAvailable } from '../../components/GoogleAuthButton';
 import { loginBackPath, loginDestinationPath } from '../../utils/navigationState';
 
 export default function Login() {
@@ -13,7 +14,7 @@ export default function Login() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { login: sincronizarContexto } = useAuth();
+  const { login: sincronizarContexto, loginGoogle } = useAuth();
 
   const mensagemRegisto = location.state?.mensagemRegisto;
 
@@ -21,6 +22,25 @@ export default function Login() {
     location.state,
     localStorage.getItem('@App:contexto_visual') === 'carro' ? '/carros' : '/imoveis'
   );
+
+  const concluirEntrada = () => {
+    setSucesso(true);
+
+    setTimeout(() => {
+      const userGuardado = JSON.parse(sessionStorage.getItem('@App:user') || '{}');
+
+      if (userGuardado?.tipo === 'admin') {
+        navigate('/admin', { replace: true });
+        return;
+      }
+
+      const contextoSalvo = localStorage.getItem('@App:contexto_visual');
+      const fallbackUniverso = contextoSalvo === 'carro' ? '/carros' : '/imoveis';
+      const destino = loginDestinationPath(location.state, fallbackUniverso);
+
+      navigate(destino, { replace: true });
+    }, 700);
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -31,26 +51,35 @@ export default function Login() {
       if (sincronizarContexto) {
         await sincronizarContexto(email, password);
       }
-
-      setSucesso(true);
-
-      setTimeout(() => {
-        const userGuardado = JSON.parse(sessionStorage.getItem('@App:user') || '{}');
-
-        if (userGuardado?.tipo === 'admin') {
-          navigate('/admin', { replace: true });
-          return;
-        }
-
-        const contextoSalvo = localStorage.getItem('@App:contexto_visual');
-        const fallbackUniverso = contextoSalvo === 'carro' ? '/carros' : '/imoveis';
-        const destino = loginDestinationPath(location.state, fallbackUniverso);
-
-        navigate(destino, { replace: true });
-      }, 1000);
+      concluirEntrada();
     } catch (err) {
       console.error(err);
       setErro(err.response?.data?.erro || 'Email ou palavra-passe incorretos.');
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleCredential = async (credential) => {
+    setErro('');
+    setLoading(true);
+
+    try {
+      const resposta = await loginGoogle({ credential });
+      if (resposta?.requiresCompletion) {
+        navigate('/registo', {
+          state: {
+            googleCredential: credential,
+            googleProfile: resposta.profile,
+            from: location.state?.from || destinoVoltar,
+            returnTo: location.state?.returnTo || destinoVoltar,
+          },
+        });
+        return;
+      }
+      concluirEntrada();
+    } catch (err) {
+      console.error(err);
+      setErro(err.response?.data?.erro || 'Não foi possível continuar com Google. Tenta novamente.');
       setLoading(false);
     }
   };
@@ -236,6 +265,34 @@ export default function Login() {
           border-radius: 12px;
         }
 
+        .auth-divider {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin: 20px 0;
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+        }
+        .auth-divider::before,
+        .auth-divider::after {
+          content: '';
+          height: 1px;
+          flex: 1;
+          background: #e2e8f0;
+        }
+        .auth-google-wrap {
+          display: flex;
+          justify-content: center;
+          min-height: 44px;
+        }
+        .auth-google-wrap.disabled {
+          pointer-events: none;
+          opacity: 0.65;
+        }
+
         .auth-info-banner {
           color: #102f50;
           font-size: 13.5px;
@@ -283,6 +340,17 @@ export default function Login() {
 
               {erro && <div className="auth-error">{erro}</div>}
 
+              {googleAuthAvailable && (
+                <>
+                  <GoogleAuthButton
+                    text="signin_with"
+                    disabled={loading}
+                    onCredential={handleGoogleCredential}
+                    onError={setErro}
+                  />
+                  <div className="auth-divider"><span>ou entra com email</span></div>
+                </>
+              )}
               <form onSubmit={handleLogin}>
 
                 <div className="auth-form-group">
