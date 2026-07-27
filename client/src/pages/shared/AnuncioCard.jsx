@@ -57,7 +57,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const isProfissional = anuncio?.utilizador?.tipoConta === 'profissional' || anuncio?.utilizador?.tipo === 'admin';
   const isCarro = anuncio?.tipo === 'carro';
   const imagemPrincipal = anuncio?.fotos?.[0] || anuncio?.imagens?.[0] || anuncio?.imagem;
-  const imagemPrincipalUrl = getImageUrl(imagemPrincipal, 'medium');
+  const imagemPrincipalUrl = getImageUrl(imagemPrincipal, 'large') || getImageUrl(imagemPrincipal, 'medium');
   const imagemPrincipalSrcSet = getImageSrcSet(imagemPrincipal);
   const imagemPrincipalDims = getImageDimensions(imagemPrincipal, { width: 800, height: 600 });
 
@@ -165,20 +165,6 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           overflow: hidden;
           background: #f8fafc;
         }
-        .nxc-img-bg {
-          position: absolute;
-          inset: 0;
-          background-size: cover;
-          background-position: center;
-          filter: blur(22px) brightness(0.82) saturate(1.1);
-          transform: scale(1.18);
-        }
-        .nxc-img-bg::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: rgba(15, 23, 42, 0.18);
-        }
         .nxc-img-fg {
           position: absolute;
           top: 0;
@@ -188,9 +174,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           object-fit: contain;
           object-position: center;
           display: block;
-          filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.28));
         }
-        .nxc-wrap.premium .nxc-img-fg { filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.28)) saturate(1.05) contrast(1.02); }
 
         .nxc-placeholder {
           position: absolute;
@@ -341,20 +325,16 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         <div className="nxc-img">
           {imagemPrincipalUrl
             ? (
-              <>
-                <div className="nxc-img-bg" style={{ backgroundImage: `url(${imagemPrincipalUrl})` }} />
-                <img
-                  className="nxc-img-fg"
-                  src={imagemPrincipalUrl}
-                  srcSet={imagemPrincipalSrcSet || undefined}
-                  sizes="(max-width: 720px) 100vw, 360px"
-                  width={imagemPrincipalDims.width}
-                  height={imagemPrincipalDims.height}
-                  alt={anuncio.titulo}
-                  loading="lazy"
-                  decoding="async"
-                />
-              </>
+              <img
+                className="nxc-img-fg"
+                src={imagemPrincipalUrl}
+                sizes="(max-width: 720px) 100vw, 360px"
+                width={imagemPrincipalDims.width}
+                height={imagemPrincipalDims.height}
+                alt={anuncio.titulo}
+                loading="lazy"
+                decoding="async"
+              />
             )
             : <div className="nxc-placeholder"><img src="/logo-noxvelia.png" alt="" loading="lazy" /></div>
           }
