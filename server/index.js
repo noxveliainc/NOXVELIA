@@ -23,6 +23,7 @@ import alertasRoutes from './routes/alertas.js';
 import analyticsRoutes from './routes/analytics.js';
 import systemRoutes from './routes/system.js';
 import partnershipsRoutes from './routes/partnerships.js';
+import marketNewsRoutes from './routes/marketNews.js';
 import { requestMetrics } from './middleware/metrics.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { verificarJwt } from './utils/jwt.js';
@@ -127,6 +128,7 @@ app.use('/api/media', mediaRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/partnerships', partnershipsRoutes);
+app.use('/api/market-news', marketNewsRoutes);
 
 app.get('/', (req, res) => res.status(200).json({ status: 'OK', mensagem: 'API NOXVELIA ativa!' }));
 
