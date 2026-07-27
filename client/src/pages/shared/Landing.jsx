@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Building2, Car, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck } from 'lucide-react';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
@@ -25,6 +25,8 @@ const TIPOLOGIAS_POPULARES = ['T1', 'T2', 'T3', 'T4', 'T5+'];
 const PRECOS_CARROS = [{ label: 'Até 10.000 €', value: '10000' }, { label: 'Até 20.000 €', value: '20000' }, { label: 'Até 30.000 €', value: '30000' }];
 const PRECOS_IMOVEIS = [{ label: 'Até 150.000 €', value: '150000' }, { label: 'Até 250.000 €', value: '250000' }, { label: 'Até 400.000 €', value: '400000' }];
 const LOGOS_COM_TEXTO_EMBUTIDO = new Set(['aiways', 'aston-martin', 'bentley']);
+const LandingListingsCarousel = lazy(() => import('./LandingListingsCarousel'));
+const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const formatarMoeda = (valor) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
 const formatarContagem = (valor) => (valor === null || valor === undefined ? '...' : new Intl.NumberFormat('pt-PT').format(valor));
@@ -39,6 +41,9 @@ export default function Landing() {
   const { signed } = useAuth();
   const landingViewTrackedRef = useRef(false);
   const brandRailRef = useRef(null);
+  const heroTitleRef = useRef(null);
+  const aosRef = useRef(null);
+  const animeRef = useRef(null);
   const publicarTo = signed ? '/publicar' : '/login';
   const publicarState = signed ? undefined : publishIntentState(location, '/');
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
@@ -90,6 +95,48 @@ export default function Landing() {
     rail.scrollBy({ left: direcao * Math.max(320, rail.clientWidth * 0.82), behavior: 'smooth' });
   };
 
+  const carregarAnime = () => {
+    if (!animeRef.current) animeRef.current = import('animejs').then((modulo) => modulo.animate);
+    return animeRef.current;
+  };
+
+  const animarCta = (evento) => {
+    if (prefersReducedMotion()) return;
+    const alvo = evento.currentTarget;
+    carregarAnime()
+      .then((animateFn) => animateFn(alvo, { scale: [1, 1.018, 1], duration: 320, ease: 'outQuad' }))
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    let ativo = true;
+    Promise.all([import('aos'), import('aos/dist/aos.css')])
+      .then(([modulo]) => {
+        if (!ativo) return;
+        const aos = modulo.default;
+        aos.init({ duration: 420, easing: 'ease-out-cubic', once: true, offset: 72, disable: prefersReducedMotion });
+        aosRef.current = aos;
+      })
+      .catch(() => {});
+    return () => { ativo = false; };
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion() || !heroTitleRef.current) return undefined;
+    let ativo = true;
+    carregarAnime()
+      .then((animateFn) => {
+        if (ativo && heroTitleRef.current) animateFn(heroTitleRef.current, { opacity: [0, 1], y: [10, 0], duration: 520, ease: 'outQuad' });
+      })
+      .catch(() => {});
+    return () => { ativo = false; };
+  }, []);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => aosRef.current?.refresh());
+    return () => window.cancelAnimationFrame(frame);
+  }, [loadingExemplos, noticiasMercado.length, metricas.length]);
+
   useEffect(() => {
     const trackLandingViewOnce = () => {
       if (landingViewTrackedRef.current) return;
@@ -125,7 +172,7 @@ export default function Landing() {
       try {
         const { data } = await api.get('/anuncios/em-alta/semana');
         if (!ativo) return;
-        setExemplos({ carro: (data?.carro || []).slice(0, 3), imovel: (data?.imovel || []).slice(0, 3) });
+        setExemplos({ carro: (data?.carro || []).slice(0, 6), imovel: (data?.imovel || []).slice(0, 6) });
         setErroExemplos(false);
       } catch {
         if (ativo) {
@@ -160,6 +207,12 @@ export default function Landing() {
     );
   };
 
+  const renderAnunciosSwiper = (lista, origem) => (
+    <Suspense fallback={<div className="lp-listing-fallback">{lista.slice(0, 2).map((anuncio) => renderAnuncio(anuncio, origem))}</div>}>
+      <LandingListingsCarousel items={lista} renderItem={(anuncio) => renderAnuncio(anuncio, origem)} />
+    </Suspense>
+  );
+
   const renderEstadoLista = (tipo, rota) => (
     <div className="lp-listing-state" role="status">
       <strong>{loadingExemplos ? 'A carregar seleção.' : (erroExemplos ? 'A seleção está a ser atualizada.' : `Ver anúncios de ${tipo}.`)}</strong>
@@ -179,7 +232,7 @@ export default function Landing() {
           <div className="lp-shell">
             <div className="lp-hero-top">
               <div className="lp-hero-copy">
-<h1 id="lp-title">Carros e imóveis em Portugal</h1>
+<h1 id="lp-title" ref={heroTitleRef}>Carros e imóveis em Portugal</h1>
                 <p>Filtra por localização, preço e características. Contacto direto com o anunciante.</p>
               </div>
               {metricas.length > 0 && <div className="lp-metrics">{metricas.map((metrica) => <div key={metrica.label}><strong>{formatarContagem(metrica.value)}</strong><span>{metrica.label}</span></div>)}</div>}
@@ -196,20 +249,20 @@ export default function Landing() {
           </div>
         </section>
 
-<section className="lp-section lp-category-section" aria-labelledby="lp-categories"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Pesquisar</span><h2 id="lp-categories">Escolhe a categoria</h2></div></div><div className="lp-category-grid"><Link className="lp-category-card" to="/carros"><img src="/social/noxvelia-drive-photo-premium.webp" alt="Automóvel anunciado na Noxvelia" /><span><small>Automóveis</small><strong>Ver carros</strong><em>Marca, modelo, km, combustível e preço.</em></span></Link><Link className="lp-category-card" to="/imoveis"><img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia" /><span><small>Imóveis</small><strong>Ver imóveis</strong><em>Tipologia, localização, área e valor.</em></span></Link></div></div></section>
+<section className="lp-section lp-category-section" aria-labelledby="lp-categories" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Pesquisar</span><h2 id="lp-categories">Escolhe a categoria</h2></div></div><div className="lp-category-grid"><Link className="lp-category-card" to="/carros"><img src="/social/noxvelia-drive-photo-premium.webp" alt="Automóvel anunciado na Noxvelia" /><span><small>Automóveis</small><strong>Ver carros</strong><em>Marca, modelo, km, combustível e preço.</em></span></Link><Link className="lp-category-card" to="/imoveis"><img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia" /><span><small>Imóveis</small><strong>Ver imóveis</strong><em>Tipologia, localização, área e valor.</em></span></Link></div></div></section>
 
-        <section className="lp-section lp-brand-section" id="marcas" aria-labelledby="lp-brands"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Marcas</span><h2 id="lp-brands">Automóveis por marca</h2></div><div className="lp-brand-controls"><button type="button" onClick={() => rolarMarcas(-1)} aria-label="Ver marcas anteriores">‹</button><button type="button" onClick={() => rolarMarcas(1)} aria-label="Ver mais marcas">›</button></div></div><div className="lp-brand-rail" ref={brandRailRef}><div className="lp-brand-grid">{MARCAS.map((marca) => { const marcaSlug = slugMarca(marca); return <Link className="lp-brand-card" to={`/carros?marca=${encodeURIComponent(marca)}`} key={marca} aria-label={`Ver anúncios ${marca}`}><span className={`lp-brand-mark ${LOGOS_COM_TEXTO_EMBUTIDO.has(marcaSlug) ? 'lp-brand-mark-clean' : ''}`}><span className="lp-brand-fallback" aria-hidden="true">{iniciaisMarca(marca)}</span><img src={logoMarca(marca)} alt="" loading="lazy" draggable="false" onError={(evento) => { evento.currentTarget.style.display = 'none'; evento.currentTarget.parentElement?.classList.add('logo-error'); }} /></span><strong>{marca}</strong></Link>; })}</div></div></div></section>
+        <section className="lp-section lp-brand-section" id="marcas" aria-labelledby="lp-brands" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Marcas</span><h2 id="lp-brands">Automóveis por marca</h2></div><div className="lp-brand-controls"><button type="button" onClick={() => rolarMarcas(-1)} aria-label="Ver marcas anteriores">‹</button><button type="button" onClick={() => rolarMarcas(1)} aria-label="Ver mais marcas">›</button></div></div><div className="lp-brand-rail" ref={brandRailRef}><div className="lp-brand-grid">{MARCAS.map((marca) => { const marcaSlug = slugMarca(marca); return <Link className="lp-brand-card" to={`/carros?marca=${encodeURIComponent(marca)}`} key={marca} aria-label={`Ver anúncios ${marca}`}><span className={`lp-brand-mark ${LOGOS_COM_TEXTO_EMBUTIDO.has(marcaSlug) ? 'lp-brand-mark-clean' : ''}`}><span className="lp-brand-fallback" aria-hidden="true">{iniciaisMarca(marca)}</span><img src={logoMarca(marca)} alt="" loading="lazy" draggable="false" onError={(evento) => { evento.currentTarget.style.display = 'none'; evento.currentTarget.parentElement?.classList.add('logo-error'); }} /></span><strong>{marca}</strong></Link>; })}</div></div></div></section>
 
-        <section className="lp-section lp-links-section" id="atalhos" aria-labelledby="lp-links"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Atalhos</span><h2 id="lp-links">Entradas úteis</h2></div></div><div className="lp-link-columns"><div><h3>Marcas populares</h3>{MARCAS_POPULARES.map((marca) => <Link key={marca} to={criarLinkPesquisa('carro', { marca })}>{marca}</Link>)}</div><div><h3>Modelos procurados</h3>{MODELOS_POPULARES.map(([marca, modelo]) => <Link key={`${marca}-${modelo}`} to={criarLinkPesquisa('carro', { marca, modelo })}>{marca} {modelo}</Link>)}</div><div><h3>Distritos</h3>{DISTRITOS_POPULARES.map((distrito) => <Link key={distrito} to={criarLinkPesquisa('carro', { distrito })}>{distrito}</Link>)}</div><div><h3>Imóveis</h3>{TIPOLOGIAS_POPULARES.map((tipologia) => <Link key={tipologia} to={criarLinkPesquisa('imovel', { tipologia })}>{tipologia}</Link>)}</div></div></div></section>
+        <section className="lp-section lp-links-section" id="atalhos" aria-labelledby="lp-links" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Atalhos</span><h2 id="lp-links">Entradas úteis</h2></div></div><div className="lp-link-columns"><div><h3>Marcas populares</h3>{MARCAS_POPULARES.map((marca) => <Link key={marca} to={criarLinkPesquisa('carro', { marca })}>{marca}</Link>)}</div><div><h3>Modelos procurados</h3>{MODELOS_POPULARES.map(([marca, modelo]) => <Link key={`${marca}-${modelo}`} to={criarLinkPesquisa('carro', { marca, modelo })}>{marca} {modelo}</Link>)}</div><div><h3>Distritos</h3>{DISTRITOS_POPULARES.map((distrito) => <Link key={distrito} to={criarLinkPesquisa('carro', { distrito })}>{distrito}</Link>)}</div><div><h3>Imóveis</h3>{TIPOLOGIAS_POPULARES.map((tipologia) => <Link key={tipologia} to={criarLinkPesquisa('imovel', { tipologia })}>{tipologia}</Link>)}</div></div></div></section>
 
-        {noticiasMercado.length > 0 && <section className="lp-section lp-news-section" id="atualidade" aria-labelledby="lp-news"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker"><Newspaper size={13} /> Atualidade</span><h2 id="lp-news">Mercado em Portugal</h2><p className="lp-section-copy">Notícias recentes sobre automóveis, habitação e crédito.</p></div></div><div className="lp-news-grid">{noticiasMercado.map((noticia) => { const dataNoticia = formatarDataCurta(noticia.publishedAt); return <a className="lp-news-card" href={noticia.url} target="_blank" rel="noopener noreferrer" key={noticia.id || noticia.url}><span className={`lp-news-pill ${noticia.vertical === 'automoveis' ? 'cars' : 'homes'}`}>{noticia.verticalLabel || 'Mercado'}</span><h3>{noticia.title}</h3>{noticia.summary && <p>{noticia.summary}</p>}<span className="lp-news-meta">{noticia.source}{dataNoticia ? ` · ${dataNoticia}` : ''}</span></a>; })}</div></div></section>}
-        {mostrarDestaques && <section className="lp-section lp-listing-section" id="destaques" aria-labelledby="lp-featured"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Anúncios</span><h2 id="lp-featured">Recentes na Noxvelia</h2></div></div><div className="lp-listing-columns">{(loadingExemplos || exemplos.carro.length > 0) && <div className="lp-listing-column"><div className="lp-column-top"><h3><Car size={16} /> Carros</h3><button type="button" onClick={() => navigate('/carros')}>Ver carros</button></div><div className="lp-listing-list">{exemplos.carro.length > 0 ? exemplos.carro.map((anuncio) => renderAnuncio(anuncio, '/carros')) : renderEstadoLista('carros', '/carros')}</div></div>}{(loadingExemplos || exemplos.imovel.length > 0) && <div className="lp-listing-column"><div className="lp-column-top"><h3><HomeIcon size={16} /> Imóveis</h3><button type="button" onClick={() => navigate('/imoveis')}>Ver imóveis</button></div><div className="lp-listing-list">{exemplos.imovel.length > 0 ? exemplos.imovel.map((anuncio) => renderAnuncio(anuncio, '/imoveis')) : renderEstadoLista('imóveis', '/imoveis')}</div></div>}</div></div></section>}
+        {noticiasMercado.length > 0 && <section className="lp-section lp-news-section" id="atualidade" aria-labelledby="lp-news" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker"><Newspaper size={13} /> Atualidade</span><h2 id="lp-news">Mercado em Portugal</h2><p className="lp-section-copy">Notícias recentes sobre automóveis, habitação e crédito.</p></div></div><div className="lp-news-grid">{noticiasMercado.map((noticia) => { const dataNoticia = formatarDataCurta(noticia.publishedAt); return <a className="lp-news-card" href={noticia.url} target="_blank" rel="noopener noreferrer" key={noticia.id || noticia.url}><span className={`lp-news-pill ${noticia.vertical === 'automoveis' ? 'cars' : 'homes'}`}>{noticia.verticalLabel || 'Mercado'}</span><h3>{noticia.title}</h3>{noticia.summary && <p>{noticia.summary}</p>}<span className="lp-news-meta">{noticia.source}{dataNoticia ? ` · ${dataNoticia}` : ''}</span></a>; })}</div></div></section>}
+        {mostrarDestaques && <section className="lp-section lp-listing-section" id="destaques" aria-labelledby="lp-featured" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Anúncios</span><h2 id="lp-featured">Recentes na Noxvelia</h2></div></div><div className="lp-listing-columns">{(loadingExemplos || exemplos.carro.length > 0) && <div className="lp-listing-column"><div className="lp-column-top"><h3><Car size={16} /> Carros</h3><button type="button" onClick={() => navigate('/carros')}>Ver carros</button></div><div className="lp-listing-list">{exemplos.carro.length > 0 ? renderAnunciosSwiper(exemplos.carro, '/carros') : renderEstadoLista('carros', '/carros')}</div></div>}{(loadingExemplos || exemplos.imovel.length > 0) && <div className="lp-listing-column"><div className="lp-column-top"><h3><HomeIcon size={16} /> Imóveis</h3><button type="button" onClick={() => navigate('/imoveis')}>Ver imóveis</button></div><div className="lp-listing-list">{exemplos.imovel.length > 0 ? renderAnunciosSwiper(exemplos.imovel, '/imoveis') : renderEstadoLista('imóveis', '/imoveis')}</div></div>}</div></div></section>}
 
-        <section className="lp-section lp-sell-section" id="anunciar" aria-labelledby="lp-sell"><div className="lp-shell lp-sell-box"><div><span className="lp-kicker">Anunciar</span><h2 id="lp-sell">Tens algo para vender?</h2><p>Publica grátis e recebe contactos no anúncio.</p></div><Link className="lp-main-cta" to={publicarTo} state={publicarState}>Publicar anúncio <ArrowRight size={16} /></Link>{temProfissionaisAtivos && <Link className="lp-soft-cta" to="/profissionais"><Building2 size={16} /> Ver profissionais</Link>}</div></section>
+        <section className="lp-section lp-sell-section" id="anunciar" aria-labelledby="lp-sell" data-aos="fade-up"><div className="lp-shell lp-sell-box"><div><span className="lp-kicker">Anunciar</span><h2 id="lp-sell">Tens algo para vender?</h2><p>Publica grátis e recebe contactos no anúncio.</p></div><Link className="lp-main-cta" to={publicarTo} state={publicarState} onPointerEnter={animarCta}>Publicar anúncio <ArrowRight size={16} /></Link>{temProfissionaisAtivos && <Link className="lp-soft-cta" to="/profissionais"><Building2 size={16} /> Ver profissionais</Link>}</div></section>
 
         <GoogleAdSlot placement="landing_between_highlights" minHeight={96} />
 
-        <section className="lp-section lp-cv-section" id="carvertical" aria-labelledby="lp-cv"><div className="lp-shell lp-cv-card"><div><span className="lp-kicker"><ShieldCheck size={12} /> Histórico automóvel</span><h2 id="lp-cv">20% de desconto na carVertical</h2><p>Consulta dados disponíveis sobre histórico, quilometragem e registos do veículo antes de fechar negócio.</p><a className="lp-main-cta" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer">Verificar veículo <ArrowRight size={16} /></a></div><div className="lp-cv-panel"><img src="/carvertical-logo.png" alt="carVertical" /><strong>20%</strong><span>de desconto através do link Noxvelia.</span></div></div></section>
+        <section className="lp-section lp-cv-section" id="carvertical" aria-labelledby="lp-cv" data-aos="fade-up"><div className="lp-shell lp-cv-card"><div><span className="lp-kicker"><ShieldCheck size={12} /> Histórico automóvel</span><h2 id="lp-cv">20% de desconto na carVertical</h2><p>Consulta dados disponíveis sobre histórico, quilometragem e registos do veículo antes de fechar negócio.</p><a className="lp-main-cta" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer" onPointerEnter={animarCta}>Verificar veículo <ArrowRight size={16} /></a></div><div className="lp-cv-panel"><img src="/carvertical-logo.png" alt="carVertical" /><strong>20%</strong><span>de desconto através do link Noxvelia.</span></div></div></section>
       </main>
       <Footer />
     </div>

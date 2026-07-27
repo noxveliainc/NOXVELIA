@@ -474,3 +474,71 @@
 .dark .lp-root :where(.lp-sell-box p, .lp-cv-card p) {
   color: rgba(255,250,240,.76) !important;
 }
+
+/* Motion discreto com Swiper/AOS: só nos destaques e sem efeitos pesados. */
+.lp-listing-fallback {
+  display: grid;
+  gap: 10px;
+}
+
+.lp-listing-swiper {
+  width: 100%;
+  padding: 0 2px 38px;
+}
+
+.lp-listing-swiper .swiper-slide {
+  height: auto;
+}
+
+.lp-listing-swiper .lp-listing-card {
+  height: 100%;
+}
+
+.lp-listing-swiper .swiper-button-prev,
+.lp-listing-swiper .swiper-button-next {
+  top: auto;
+  bottom: 0;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  border: 1px solid rgba(7,19,38,.18);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #071326;
+  box-shadow: 0 10px 24px -20px rgba(7,19,38,.7);
+}
+
+.lp-listing-swiper .swiper-button-prev {
+  left: auto;
+  right: 38px;
+}
+
+.lp-listing-swiper .swiper-button-next {
+  right: 2px;
+}
+
+.lp-listing-swiper .swiper-button-prev::after,
+.lp-listing-swiper .swiper-button-next::after {
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.lp-listing-swiper .swiper-button-disabled {
+  opacity: .35;
+}
+
+.dark .lp-listing-swiper .swiper-button-prev,
+.dark .lp-listing-swiper .swiper-button-next {
+  background: #071326;
+  border-color: rgba(217,196,156,.28);
+  color: #fffaf0;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-root [data-aos] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
