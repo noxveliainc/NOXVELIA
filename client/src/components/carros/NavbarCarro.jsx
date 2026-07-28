@@ -165,6 +165,8 @@ export default function NavbarCarro() {
         .ncr-section-link svg { width: 20px; height: 20px; stroke-width: 2.2; }
         .ncr-btn-menu { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; background: #ffffff; color: #0f172a; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; }
         .ncr-btn-menu:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
+        .ncr-btn-sponsor { border-color: rgba(217, 196, 156, 0.72); background: rgba(217, 196, 156, 0.16); color: #102f50; }
+        .ncr-btn-sponsor:hover { border-color: #d9c49c; background: rgba(217, 196, 156, 0.28); color: #071326; }
         .ncr-btn-menu svg { width: 17px; height: 17px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
         .ncr-btn-publish { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #0f172a; color: #ffffff; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s ease; margin-right: 12px; }
         .ncr-btn-publish:hover { background: #1e293b; }
@@ -300,6 +302,10 @@ export default function NavbarCarro() {
             <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
             Profissionais
           </Link>
+          <Link to="/patrocinios" className="ncr-btn-menu ncr-btn-sponsor">
+            <svg viewBox="0 0 24 24"><path d="M4 13V7a2 2 0 0 1 2-2h7l7 4v6l-7 4H6a2 2 0 0 1-2-2v-4z" /><path d="M13 5v14" /><path d="M7 19v2" /></svg>
+            Patrocinar
+          </Link>
           {signed ? (
             <>
               <Link to="/publicar" className="ncr-btn-publish">
@@ -404,6 +410,10 @@ export default function NavbarCarro() {
               <Link to="/profissionais" className="ncr-drawer-link" onClick={() => setMenuMobileAberto(false)}>
                 <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
                 Profissionais
+              </Link>
+              <Link to="/patrocinios" className="ncr-drawer-link sponsor" onClick={() => setMenuMobileAberto(false)}>
+                <svg viewBox="0 0 24 24"><path d="M4 13V7a2 2 0 0 1 2-2h7l7 4v6l-7 4H6a2 2 0 0 1-2-2v-4z" /><path d="M13 5v14" /><path d="M7 19v2" /></svg>
+                Torne-se patrocinador
               </Link>
               {signed ? (
                 <>

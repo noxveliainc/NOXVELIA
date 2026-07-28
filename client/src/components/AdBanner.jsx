@@ -180,8 +180,8 @@ export default function AdBanner({
           <Link className="nx-ad-banner-card nx-ad-banner-empty" to={sponsorshipUrl}>
             <span className="nx-ad-banner-label">Publicidade</span>
             <span className="nx-ad-empty-copy">
-              <strong>Zona de patrocínio</strong>
-              <span>Ver regras e preços</span>
+              <strong>Anunciar neste espaço</strong>
+              <span>Ver condições</span>
             </span>
           </Link>
         </aside>
@@ -257,6 +257,53 @@ function AdBannerStyles() {
         letter-spacing: .08em;
         text-transform: uppercase;
       }
+      .nx-ad-banner-empty {
+        display: flex;
+        min-height: var(--nx-ad-min-height);
+        align-items: center;
+        justify-content: center;
+        padding: 38px 18px 18px;
+        border-style: dashed;
+        background: linear-gradient(135deg, #fffaf0 0%, #ffffff 66%, rgba(217, 196, 156, .24) 100%);
+        transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+      }
+      .nx-ad-banner-empty:hover {
+        border-color: rgba(157, 123, 63, .52);
+        box-shadow: 0 18px 44px -34px rgba(7, 19, 38, .42);
+        transform: translateY(-1px);
+      }
+      .nx-ad-empty-copy {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        color: #071326;
+        text-align: center;
+      }
+      .nx-ad-empty-copy strong {
+        font-size: 12px;
+        line-height: 1.2;
+        font-weight: 950;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+      .nx-ad-empty-copy span {
+        display: inline-flex;
+        min-height: 30px;
+        align-items: center;
+        border-radius: 999px;
+        border: 1px solid rgba(217, 196, 156, .78);
+        background: rgba(217, 196, 156, .24);
+        color: #102f50;
+        padding: 0 12px;
+        font-size: 11px;
+        font-weight: 900;
+      }
+      .nx-ad-banner--sidebar .nx-ad-empty-copy {
+        flex-direction: column;
+        gap: 8px;
+      }
       .nx-ad-banner-direct img {
         display: block;
         width: 100%;
@@ -311,6 +358,22 @@ function AdBannerStyles() {
         border-color: rgba(217, 196, 156, .42);
         color: #f0dfbb;
       }
+      .dark .nx-ad-banner-empty {
+        background: linear-gradient(135deg, #071326 0%, #0d1d33 70%, rgba(217, 196, 156, .12) 100%);
+        border-color: rgba(240, 223, 187, .22);
+      }
+      .dark .nx-ad-banner-empty:hover {
+        border-color: rgba(240, 223, 187, .42);
+        box-shadow: 0 18px 44px -32px rgba(0, 0, 0, .7);
+      }
+      .dark .nx-ad-empty-copy {
+        color: #fffaf0;
+      }
+      .dark .nx-ad-empty-copy span {
+        background: rgba(217, 196, 156, .14);
+        border-color: rgba(240, 223, 187, .3);
+        color: #f0dfbb;
+      }
       @media (max-width: 640px) {
         .nx-ad-banner {
           margin: 14px auto;
@@ -318,6 +381,22 @@ function AdBannerStyles() {
         .nx-ad-banner-card {
           min-height: var(--nx-ad-mobile-min-height);
           border-radius: 12px;
+        }
+        .nx-ad-banner-empty {
+          min-height: max(var(--nx-ad-mobile-min-height), 62px);
+          padding: 30px 10px 10px;
+        }
+        .nx-ad-empty-copy {
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .nx-ad-empty-copy strong {
+          font-size: 10px;
+        }
+        .nx-ad-empty-copy span {
+          min-height: 24px;
+          padding: 0 9px;
+          font-size: 10px;
         }
         .nx-ad-banner-direct img {
           min-height: var(--nx-ad-mobile-min-height);
