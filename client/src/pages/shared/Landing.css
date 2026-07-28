@@ -559,3 +559,369 @@
     transition: none !important;
   }
 }
+
+/* ==========================================================================
+   Noxvelia refresh: landing mais limpa, comercial e menos "template".
+   Mantem a estrutura existente, mas aproxima a pagina de um portal real.
+   ========================================================================== */
+.lp-root {
+  --navy: #071326;
+  --blue: #102f50;
+  --gold: #d9c49c;
+  --paper: #fffaf0;
+  --paper-2: #f4efe5;
+  --line: rgba(7, 19, 38, .13);
+  --muted: #53667a;
+  background: #f4efe5 !important;
+}
+
+.lp-shell {
+  width: min(1200px, calc(100% - 44px));
+}
+
+.lp-kicker {
+  margin-bottom: 10px;
+  color: #102f50;
+  font-size: 10px;
+  letter-spacing: .1em;
+}
+
+.lp-kicker::before {
+  display: none;
+}
+
+.lp-hero {
+  min-height: min(640px, calc(100svh - 74px));
+  display: grid;
+  align-items: center;
+  padding: 54px 0 58px;
+  border-bottom: 1px solid rgba(7, 19, 38, .16);
+  background:
+    linear-gradient(90deg, rgba(7, 19, 38, .96) 0%, rgba(7, 19, 38, .86) 42%, rgba(7, 19, 38, .32) 100%),
+    url('/social/noxvelia-drive-photo-premium.webp') center / cover no-repeat !important;
+  color: #fffaf0;
+}
+
+.lp-hero .lp-shell {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(360px, 470px);
+  gap: clamp(28px, 5vw, 68px);
+  align-items: center;
+}
+
+.lp-hero-top {
+  display: block;
+  margin: 0;
+}
+
+.lp-hero-copy h1 {
+  max-width: 720px;
+  color: #fffaf0 !important;
+  font-size: clamp(44px, 6.2vw, 82px);
+  line-height: .94;
+  font-weight: 950;
+}
+
+.lp-hero-copy p {
+  max-width: 560px;
+  margin-top: 18px;
+  color: rgba(255, 250, 240, .86) !important;
+  font-size: clamp(15px, 1.45vw, 18px);
+}
+
+.lp-search-box {
+  border: 1px solid rgba(255, 250, 240, .36);
+  border-radius: 8px;
+  background: rgba(255, 250, 240, .96) !important;
+  box-shadow: 0 24px 70px -42px rgba(0, 0, 0, .88);
+  backdrop-filter: blur(10px);
+}
+
+.lp-tabs {
+  padding: 10px;
+  background: transparent !important;
+  border-bottom-color: rgba(7, 19, 38, .12);
+}
+
+.lp-tabs button {
+  flex: 1;
+  justify-content: center;
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #102f50;
+}
+
+.lp-tabs button.active {
+  background: #d9c49c !important;
+  border-color: rgba(7, 19, 38, .1);
+  color: #071326 !important;
+}
+
+.lp-search-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+
+.lp-search-grid label {
+  color: #42566d;
+}
+
+.lp-search-grid select {
+  min-height: 48px;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lp-search-grid button[type="submit"] {
+  grid-column: 1 / -1;
+  min-height: 52px;
+  border-radius: 8px;
+  background: #071326 !important;
+  border-color: #071326 !important;
+  color: #fffaf0 !important;
+}
+
+.lp-visits-bar {
+  padding: 10px 0;
+  background: #fffaf0;
+}
+
+.lp-visits-inner {
+  justify-content: center;
+}
+
+.lp-visits-headline {
+  color: #53667a;
+}
+
+.lp-section {
+  padding: 64px 0;
+}
+
+.lp-section-head {
+  margin-bottom: 22px;
+}
+
+.lp-section-head h2,
+.lp-sell-box h2,
+.lp-cv-card h2 {
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1;
+}
+
+.lp-category-section,
+.lp-brand-section,
+.lp-news-section,
+.lp-cv-section {
+  background: #f4efe5 !important;
+}
+
+.lp-category-grid {
+  gap: 14px;
+}
+
+.lp-category-card {
+  min-height: 260px;
+  border-radius: 8px;
+  border: 1px solid rgba(7, 19, 38, .12);
+}
+
+.lp-category-card::after {
+  background: linear-gradient(0deg, rgba(7, 19, 38, .88), rgba(7, 19, 38, .08));
+}
+
+.lp-category-card span {
+  left: 22px;
+  right: 22px;
+  bottom: 22px;
+}
+
+.lp-brand-rail {
+  padding: 0 2px 6px;
+}
+
+.lp-brand-grid {
+  grid-template-rows: repeat(2, 86px);
+  grid-auto-columns: minmax(124px, 144px);
+}
+
+.lp-brand-card {
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .72);
+  box-shadow: none;
+}
+
+.lp-brand-card:hover {
+  background: #ffffff;
+  border-color: rgba(217, 196, 156, .82);
+}
+
+.lp-news-grid {
+  grid-template-columns: minmax(0, 1.25fr) repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.lp-news-card {
+  min-height: 176px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .78);
+  box-shadow: none;
+}
+
+.lp-news-card:first-child {
+  grid-row: span 2;
+  min-height: 260px;
+  background: #071326;
+  color: #fffaf0;
+}
+
+.lp-news-card:first-child h3 {
+  color: #fffaf0;
+  font-size: clamp(22px, 2.5vw, 32px);
+}
+
+.lp-news-card:first-child p,
+.lp-news-card:first-child .lp-news-meta {
+  color: rgba(255, 250, 240, .74);
+}
+
+.lp-listing-section {
+  background: #ffffff !important;
+}
+
+.lp-listing-column {
+  padding: 14px;
+  border-radius: 8px;
+  background: #fffaf0;
+}
+
+.lp-listing-card {
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.lp-sell-section {
+  background: #fffaf0 !important;
+}
+
+.lp-sell-box,
+.lp-cv-card {
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.lp-cv-panel {
+  min-height: 210px;
+  border-radius: 8px;
+  background: #fff6df !important;
+}
+
+.lp-main-cta,
+.lp-soft-cta {
+  border-radius: 8px;
+}
+
+.dark .lp-root {
+  background: #040b16 !important;
+}
+
+.dark .lp-hero {
+  background:
+    linear-gradient(90deg, rgba(4, 11, 22, .98) 0%, rgba(7, 19, 38, .9) 48%, rgba(7, 19, 38, .4) 100%),
+    url('/social/noxvelia-drive-photo-premium.webp') center / cover no-repeat !important;
+}
+
+.dark .lp-search-box,
+.dark .lp-category-section,
+.dark .lp-brand-section,
+.dark .lp-news-section,
+.dark .lp-cv-section,
+.dark .lp-sell-section {
+  background-color: #071326 !important;
+}
+
+.dark .lp-search-box,
+.dark .lp-brand-card,
+.dark .lp-listing-column,
+.dark .lp-listing-card,
+.dark .lp-sell-box,
+.dark .lp-cv-card,
+.dark .lp-news-card {
+  background: #0d1d33 !important;
+  border-color: rgba(217, 196, 156, .22) !important;
+}
+
+.dark .lp-news-card:first-child {
+  background: #102f50 !important;
+}
+
+.dark .lp-tabs button,
+.dark .lp-search-grid label,
+.dark .lp-search-grid select,
+.dark .lp-brand-card strong,
+.dark .lp-section-copy,
+.dark .lp-news-card p,
+.dark .lp-news-meta {
+  color: rgba(255, 250, 240, .78) !important;
+}
+
+.dark .lp-search-grid select {
+  background: #071326 !important;
+}
+
+.dark .lp-tabs button.active,
+.dark .lp-search-grid button[type="submit"] {
+  background: #d9c49c !important;
+  border-color: #d9c49c !important;
+  color: #071326 !important;
+}
+
+@media (max-width: 960px) {
+  .lp-hero .lp-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-search-box {
+    max-width: 620px;
+  }
+
+  .lp-news-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .lp-news-card:first-child {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .lp-shell {
+    width: min(100% - 28px, 1180px);
+  }
+
+  .lp-hero {
+    min-height: 0;
+    padding: 44px 0 40px;
+  }
+
+  .lp-hero-copy h1 {
+    font-size: clamp(36px, 12vw, 48px);
+  }
+
+  .lp-search-grid,
+  .lp-news-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-section {
+    padding: 44px 0;
+  }
+
+  .lp-category-card {
+    min-height: 220px;
+  }
+}

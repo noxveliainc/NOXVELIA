@@ -1123,3 +1123,543 @@ h1, h2, h3, h4 {
   background: rgba(148, 163, 184, .18) !important;
   color: #94a3b8 !important;
 }
+/* ==========================================================================
+   Noxvelia refresh global: navegação, pesquisa, cartões e dark mode.
+   ========================================================================== */
+:root {
+  --nx-bg: #f4efe5;
+  --nx-bg-2: #ffffff;
+  --nx-bg-3: #fffaf0;
+  --nx-text: #071326;
+  --nx-text-2: #26394d;
+  --nx-text-sub: #53667a;
+  --nx-text-muted: #7a8796;
+  --nx-border: rgba(7, 19, 38, .14);
+  --nx-card-border: rgba(7, 19, 38, .14);
+  --nx-radius-md: 8px;
+  --nx-radius-lg: 8px;
+}
+
+.dark,
+[data-theme="dark"] {
+  --nx-bg: #040b16;
+  --nx-bg-2: #0d1d33;
+  --nx-bg-3: #071326;
+  --nx-text: #fffaf0;
+  --nx-text-2: #e9dfcc;
+  --nx-text-sub: #c8d1db;
+  --nx-text-muted: #9aa9b8;
+  --nx-border: rgba(217, 196, 156, .22);
+  --nx-card-border: rgba(217, 196, 156, .22);
+}
+
+body {
+  background: var(--nx-bg) !important;
+}
+
+.nl-root,
+.ncr-root,
+.nim-root {
+  height: 70px !important;
+  background: rgba(255, 250, 240, .94) !important;
+  border-bottom: 1px solid rgba(7, 19, 38, .14) !important;
+  box-shadow: none !important;
+}
+
+.nl-links a::after {
+  display: none !important;
+}
+
+.nl-links a,
+.ncr-btn-menu,
+.nim-btn-menu,
+.nl-btn-ghost {
+  color: #071326 !important;
+  font-weight: 820 !important;
+}
+
+.nl-links a:hover,
+.ncr-btn-menu:hover,
+.nim-btn-menu:hover {
+  color: #102f50 !important;
+}
+
+.nl-actions .nl-btn-sponsor {
+  display: none !important;
+}
+
+.nl-btn-solid,
+.ncr-btn-publish,
+.nim-btn-publish {
+  background: #d9c49c !important;
+  border-color: #d9c49c !important;
+  color: #071326 !important;
+  box-shadow: none !important;
+}
+
+.nl-btn-solid:hover,
+.ncr-btn-publish:hover,
+.nim-btn-publish:hover {
+  background: #f0dfbb !important;
+  border-color: #f0dfbb !important;
+  transform: none !important;
+}
+
+.ncr-btn-menu,
+.nim-btn-menu,
+.nl-btn-ghost,
+.nl-btn-solid,
+.ncr-btn-publish,
+.nim-btn-publish {
+  border-radius: 8px !important;
+}
+
+.ncr-btn-sponsor,
+.nim-btn-sponsor {
+  background: transparent !important;
+  border-color: rgba(217, 196, 156, .7) !important;
+  color: #102f50 !important;
+}
+
+.ncr-btn-home,
+.nim-btn-home {
+  background: #fffaf0 !important;
+}
+
+.dark .nl-root,
+.dark .ncr-root,
+.dark .nim-root {
+  background: rgba(4, 11, 22, .96) !important;
+  border-color: rgba(217, 196, 156, .2) !important;
+}
+
+.dark .nl-links a,
+.dark .ncr-btn-menu,
+.dark .nim-btn-menu,
+.dark .nl-btn-ghost,
+.dark .nl-brand,
+.dark .ncr-logo-brand-text,
+.dark .nim-logo-brand-text {
+  color: #fffaf0 !important;
+}
+
+.dark .ncr-btn-menu,
+.dark .nim-btn-menu,
+.dark .nl-btn-ghost,
+.dark .ncr-icon-btn,
+.dark .nim-icon-btn {
+  background: #0d1d33 !important;
+  border-color: rgba(217, 196, 156, .22) !important;
+}
+
+.dark .ncr-btn-sponsor,
+.dark .nim-btn-sponsor {
+  color: #f0dfbb !important;
+}
+
+.pesquisa-layout {
+  max-width: 1280px !important;
+  padding: 28px 24px !important;
+  gap: 18px !important;
+}
+
+.pesquisa-sidebar,
+.pesquisa-search-row,
+.pesquisa-topbar,
+.pesquisa-view-switch,
+.pesquisa-sort,
+.pesquisa-results-count,
+.pesquisa-filter-stat,
+.pesquisa-filter-input,
+.pesquisa-tag,
+.pesquisa-active-chip,
+.pesquisa-clear-btn {
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.pesquisa-sidebar {
+  width: 300px !important;
+  background: #fffaf0 !important;
+  border-color: rgba(7, 19, 38, .13) !important;
+}
+
+.pesquisa-search-row,
+.pesquisa-topbar {
+  background: #ffffff !important;
+  border: 1px solid rgba(7, 19, 38, .12) !important;
+}
+
+.pesquisa-grid,
+.pesquisa-skeleton-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 252px), 1fr)) !important;
+  gap: 18px !important;
+}
+
+.nxc-wrap {
+  border-radius: 8px !important;
+  border-color: rgba(7, 19, 38, .13) !important;
+  box-shadow: none !important;
+}
+
+.nxc-wrap:hover {
+  transform: none !important;
+  border-color: rgba(16, 47, 80, .24) !important;
+}
+
+.nxc-wrap.premium {
+  border-color: #d9c49c !important;
+  box-shadow: 0 18px 40px -36px rgba(7, 19, 38, .58) !important;
+}
+
+.nxc-badge-premium {
+  background: #071326 !important;
+  color: #fffaf0 !important;
+  border-color: rgba(217, 196, 156, .5) !important;
+}
+
+.nxc-featured-note {
+  background: #fff6df !important;
+  color: #102f50 !important;
+}
+
+.nx-ad-banner-card,
+.nx-ad-slot-card {
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.nx-ad-banner-empty {
+  min-height: 78px !important;
+  background: rgba(255, 255, 255, .72) !important;
+}
+
+.dark .pesquisa-root {
+  background: #040b16 !important;
+}
+
+.dark .pesquisa-sidebar,
+.dark .pesquisa-search-row,
+.dark .pesquisa-topbar,
+.dark .pesquisa-view-switch,
+.dark .pesquisa-sort,
+.dark .pesquisa-results-count,
+.dark .pesquisa-filter-stat,
+.dark .pesquisa-filter-input,
+.dark .pesquisa-tag,
+.dark .pesquisa-active-chip,
+.dark .pesquisa-clear-btn,
+.dark .nxc-wrap,
+.dark .nxc-footer,
+.dark .nxc-insight,
+.dark .nxc-tag,
+.dark .nx-ad-banner-card,
+.dark .nx-ad-slot-card {
+  background: #0d1d33 !important;
+  border-color: rgba(217, 196, 156, .22) !important;
+  color: #fffaf0 !important;
+}
+
+.dark .nxc-title,
+.dark .nxc-username,
+.dark .nxc-loc,
+.dark .nxc-insight-label,
+.dark .nxc-tag,
+.dark .nxc-trust-pill,
+.dark .nx-ad-banner-label,
+.dark .nx-ad-empty-copy span {
+  color: rgba(255, 250, 240, .76) !important;
+}
+
+.dark .nxc-price,
+.dark .nxc-insight-value,
+.dark .nx-ad-empty-copy strong {
+  color: #fffaf0 !important;
+}
+
+.dark .nxc-wrap.premium {
+  border-color: #d9c49c !important;
+  background: #0d1d33 !important;
+}
+
+.dark .nxc-featured-note,
+.dark .nxc-trust-pill.business {
+  background: rgba(217, 196, 156, .14) !important;
+  border-color: rgba(217, 196, 156, .32) !important;
+  color: #f0dfbb !important;
+}
+
+.dark .nx-ad-banner-empty {
+  background: #071326 !important;
+}
+
+@media (max-width: 1024px) {
+  .pesquisa-layout {
+    padding: 20px 14px 32px !important;
+  }
+
+  .pesquisa-sidebar,
+  .pesquisa-sidebar.collapsed {
+    width: min(88vw, 360px) !important;
+    border-radius: 0 8px 8px 0 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .nl-root,
+  .ncr-root,
+  .nim-root {
+    height: 64px !important;
+  }
+
+  .pesquisa-layout {
+    padding: 14px 8px 28px !important;
+  }
+
+  .pesquisa-search-row,
+  .pesquisa-topbar {
+    padding: 8px !important;
+  }
+
+  .pesquisa-grid,
+  .pesquisa-skeleton-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .nxc-img {
+    padding-top: 62% !important;
+  }
+
+  .nxc-body {
+    padding: 9px 9px 10px !important;
+    gap: 4px !important;
+  }
+
+  .nxc-price {
+    font-size: 16px !important;
+  }
+
+  .nxc-title {
+    font-size: 11.5px !important;
+    line-height: 1.3 !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .nxc-insights,
+  .nxc-trust-strip,
+  .nxc-footer {
+    display: none !important;
+  }
+
+  .nxc-badge-premium,
+  .nxc-badge-status {
+    top: 7px !important;
+    left: 7px !important;
+    padding: 4px 7px !important;
+    font-size: 8px !important;
+  }
+
+  .nxc-badge-tipo {
+    bottom: 7px !important;
+    left: 7px !important;
+    font-size: 7.5px !important;
+  }
+
+  .nxc-featured-note {
+    min-height: 18px !important;
+    padding: 3px 6px !important;
+    font-size: 9px !important;
+  }
+
+  .nx-ad-banner-empty {
+    min-height: 52px !important;
+  }
+}
+
+/* Patrocinios: pagina comercial mais simples e coerente com os novos espacos. */
+.sponsor-page {
+  background: #f4efe5 !important;
+  color: #071326 !important;
+}
+
+.sponsor-hero {
+  padding: 50px 0 34px !important;
+  background: #071326 !important;
+  border-bottom: 1px solid rgba(217, 196, 156, .28) !important;
+  color: #fffaf0 !important;
+}
+
+.sponsor-hero h1 {
+  max-width: 780px !important;
+  color: #fffaf0 !important;
+  font-size: clamp(38px, 5vw, 64px) !important;
+  letter-spacing: 0 !important;
+}
+
+.sponsor-hero p {
+  color: rgba(255, 250, 240, .78) !important;
+}
+
+.sponsor-kicker {
+  color: #f0dfbb !important;
+}
+
+.sponsor-price-card,
+.sponsor-panel,
+.sponsor-rule-card,
+.sponsor-example,
+.sponsor-browser,
+.sponsor-preview,
+.sponsor-choice,
+.sponsor-step {
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.sponsor-price-card {
+  background: #fffaf0 !important;
+  color: #071326 !important;
+  border-color: rgba(217, 196, 156, .48) !important;
+}
+
+.sponsor-panel {
+  background: #ffffff !important;
+  border-color: rgba(7, 19, 38, .13) !important;
+}
+
+.sponsor-rule-card,
+.sponsor-step,
+.sponsor-example,
+.sponsor-preview {
+  background: #fffaf0 !important;
+  border-color: rgba(7, 19, 38, .12) !important;
+}
+
+.sponsor-choice {
+  background: #ffffff !important;
+  border-color: rgba(7, 19, 38, .14) !important;
+}
+
+.sponsor-choice.is-selected,
+.sponsor-choice:has(input:checked) {
+  background: #fff6df !important;
+  border-color: #d9c49c !important;
+}
+
+.sponsor-submit,
+.sponsor-primary,
+.sponsor-checkout-btn {
+  border-radius: 8px !important;
+  background: #071326 !important;
+  color: #fffaf0 !important;
+  box-shadow: none !important;
+}
+
+.sponsor-submit:hover,
+.sponsor-primary:hover,
+.sponsor-checkout-btn:hover {
+  background: #102f50 !important;
+}
+
+.sponsor-field input,
+.sponsor-field select {
+  border-radius: 8px !important;
+  border-color: rgba(7, 19, 38, .16) !important;
+  background: #ffffff !important;
+}
+
+.dark .sponsor-page {
+  background: #040b16 !important;
+  color: #fffaf0 !important;
+}
+
+.dark .sponsor-hero {
+  background: #040b16 !important;
+  border-color: rgba(217, 196, 156, .22) !important;
+}
+
+.dark .sponsor-price-card,
+.dark .sponsor-panel,
+.dark .sponsor-rule-card,
+.dark .sponsor-example,
+.dark .sponsor-browser,
+.dark .sponsor-preview,
+.dark .sponsor-choice,
+.dark .sponsor-step,
+.dark .sponsor-field input,
+.dark .sponsor-field select {
+  background: #0d1d33 !important;
+  border-color: rgba(217, 196, 156, .22) !important;
+  color: #fffaf0 !important;
+}
+
+.dark .sponsor-choice.is-selected,
+.dark .sponsor-choice:has(input:checked) {
+  background: #102f50 !important;
+  border-color: #d9c49c !important;
+}
+
+@media (max-width: 720px) {
+  .sponsor-hero {
+    padding: 38px 0 26px !important;
+  }
+
+  .sponsor-hero h1 {
+    font-size: clamp(34px, 11vw, 48px) !important;
+  }
+}
+
+/* Correção final: wordmark das navbars internas sem etiqueta colada. */
+.ncr-logo-brand-text span,
+.nim-logo-brand-text span {
+  display: none !important;
+}
+
+.ncr-logo-wrapper,
+.nim-logo-wrapper {
+  flex: 0 0 auto !important;
+  max-width: min(46vw, 190px) !important;
+  min-width: 0 !important;
+}
+
+.ncr-logo,
+.nim-logo {
+  min-width: 0 !important;
+  gap: 8px !important;
+}
+
+.ncr-logo img,
+.nim-logo img {
+  flex: 0 0 auto !important;
+}
+
+.ncr-logo-brand-text,
+.nim-logo-brand-text {
+  max-width: 120px !important;
+  overflow: hidden !important;
+  color: #071326 !important;
+  font-size: 15px !important;
+  letter-spacing: .06em !important;
+  line-height: 1 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.ncr-section-links,
+.nim-section-links {
+  flex: 0 0 auto !important;
+}
+
+.dark .ncr-logo-brand-text,
+.dark .nim-logo-brand-text {
+  color: #fffaf0 !important;
+}
+
+@media (max-width: 420px) {
+  .ncr-logo-brand-text,
+  .nim-logo-brand-text {
+    max-width: 96px !important;
+    font-size: 13px !important;
+  }
+}

@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+﻿import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
@@ -1065,8 +1065,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               adsensePlacement="listing_top"
               vertical={tipoSeguro}
               className="pesquisa-top-ad"
-              minHeight={88}
-              mobileMinHeight={40}
+              minHeight={116}
+              mobileMinHeight={72}
             />
 
             {vistaAtiva === 'mapa' ? (
@@ -1097,8 +1097,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                         vertical={tipoSeguro}
                         variant="inline"
                         className="pesquisa-inline-ad"
-                        minHeight={110}
-                        mobileMinHeight={58}
+                        minHeight={104}
+                        mobileMinHeight={66}
                       />
                     )}
                   </React.Fragment>
@@ -1118,8 +1118,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                 adsensePlacement="listing_bottom"
                 vertical={tipoSeguro}
                 className="pesquisa-bottom-ad"
-                minHeight={96}
-                mobileMinHeight={44}
+                minHeight={110}
+                mobileMinHeight={70}
               />
             )}
 

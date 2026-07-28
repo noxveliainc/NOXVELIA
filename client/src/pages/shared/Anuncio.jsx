@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { getFunnelSessionId, trackFunnelEvent } from '../../utils/funnelAnalytics';
@@ -1008,8 +1008,8 @@ export default function Anuncio() {
                     adsensePlacement="detail_sidebar"
                     vertical={anuncio.tipo}
                     variant="sidebar"
-                    minHeight={180}
-                    mobileMinHeight={80}
+                    minHeight={220}
+                    mobileMinHeight={120}
                   />
                 </div>
 
@@ -1048,7 +1048,7 @@ export default function Anuncio() {
             </div>
           </div>
 
-          <AdBanner mode="direct" placement="detalhe_sugestoes" adsensePlacement="listing_before_suggestions" vertical={anuncio.tipo} minHeight={120} />
+          <AdBanner mode="direct" placement="detalhe_sugestoes" adsensePlacement="listing_before_suggestions" vertical={anuncio.tipo} minHeight={126} mobileMinHeight={78} />
 
           {sugeridos.length > 0 && (
             <div className="sugeridos-section">

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useCookieConsent from '../hooks/useCookieConsent';
 import api from '../services/api';
@@ -136,6 +136,78 @@ export default function AdBanner({
     '--nx-ad-mobile-min-height': `${mobileMinHeight}px`,
   };
 
+  const isLandingPlacement = placement === 'landing_between_highlights';
+  const bannerClassName = [
+    'nx-ad-banner',
+    `nx-ad-banner--${variant}`,
+    isLandingPlacement ? 'nx-ad-banner--landing' : '',
+    className,
+  ].filter(Boolean).join(' ');
+  const emptyCopy = useMemo(() => {
+    const placementText = String(placement || '');
+    const verticalText = String(vertical || '');
+    const isAuto = verticalText === 'carro' || placementText.includes('carros');
+    const isEstate = verticalText === 'imovel' || placementText.includes('imoveis');
+    const verticalLabel = isAuto ? 'automóveis' : isEstate ? 'imóveis' : 'Noxvelia';
+
+    if (isLandingPlacement) {
+      return {
+        label: 'Parcerias',
+        eyebrow: 'Espaço patrocinado',
+        title: 'Coloca a tua marca onde os compradores começam a pesquisa.',
+        body: 'Ideal para stands, oficinas, crédito, seguros, imobiliárias e serviços locais. Reserva por 7, 14 ou 30 dias.',
+        cta: 'Ver planos',
+      };
+    }
+
+    if (variant === 'sidebar' || placementText.includes('detalhe_sidebar')) {
+      return {
+        label: 'Publicidade',
+        eyebrow: 'Junto ao anúncio',
+        title: 'A tua marca perto do contacto.',
+        body: `Aparece na página de detalhe de ${verticalLabel}, numa zona de decisão do visitante.`,
+        cta: 'Reservar lateral',
+      };
+    }
+
+    if (variant === 'inline' || placementText.includes('feed_pesquisa')) {
+      return {
+        label: 'Publicidade',
+        eyebrow: 'Entre resultados',
+        title: `Patrocina o feed de ${verticalLabel}.`,
+        body: 'Uma presença curta e visível sem interromper a pesquisa.',
+        cta: 'Reservar espaço',
+      };
+    }
+
+    if (placementText.includes('topo')) {
+      return {
+        label: 'Publicidade',
+        eyebrow: 'Topo da listagem',
+        title: `Ganha visibilidade antes dos resultados de ${verticalLabel}.`,
+        body: 'Bom para campanhas locais, promoções e serviços ligados à compra.',
+        cta: 'Ver preços',
+      };
+    }
+
+    if (placementText.includes('fundo') || placementText.includes('sugestoes')) {
+      return {
+        label: 'Publicidade',
+        eyebrow: 'Fim da página',
+        title: 'Aparece quando o visitante continua a comparar opções.',
+        body: 'Uma posição discreta para reforçar a tua marca sem pesar no site.',
+        cta: 'Patrocinar',
+      };
+    }
+
+    return {
+      label: 'Publicidade',
+      eyebrow: 'Espaço disponível',
+      title: 'Anuncia neste espaço.',
+      body: 'Escolhe a posição, adiciona imagem ou GIF e define a duração da campanha.',
+      cta: 'Ver condições',
+    };
+  }, [isLandingPlacement, placement, vertical, variant]);
   const registarClique = () => {
     if (!directBanner?._id) return;
     api.post(`/banners/${directBanner._id}/clique`).catch(() => {});
@@ -147,7 +219,7 @@ export default function AdBanner({
         <AdBannerStyles />
         <aside
           ref={directRef}
-          className={`nx-ad-banner nx-ad-banner--${variant} ${className}`}
+          className={bannerClassName}
           style={slotStyle}
           aria-label="Publicidade"
         >
@@ -176,12 +248,20 @@ export default function AdBanner({
     return (
       <>
         <AdBannerStyles />
-        <aside className={`nx-ad-banner nx-ad-banner--${variant} ${className}`} style={slotStyle} aria-label="Publicidade disponível">
-          <Link className="nx-ad-banner-card nx-ad-banner-empty" to={sponsorshipUrl}>
-            <span className="nx-ad-banner-label">Publicidade</span>
-            <span className="nx-ad-empty-copy">
-              <strong>Anunciar neste espaço</strong>
-              <span>Ver condições</span>
+        <aside className={bannerClassName} style={slotStyle} aria-label="Publicidade disponível">
+          <Link className={`nx-ad-banner-card nx-ad-banner-empty${isLandingPlacement ? ' nx-ad-banner-empty-landing' : ''}`} to={sponsorshipUrl}>
+            <span className="nx-ad-banner-label">{emptyCopy.label}</span>
+            <span className="nx-ad-empty-layout">
+              <span className="nx-ad-empty-copy">
+                <span className="nx-ad-empty-eyebrow">{emptyCopy.eyebrow}</span>
+                <strong>{emptyCopy.title}</strong>
+                <span className="nx-ad-empty-body">{emptyCopy.body}</span>
+              </span>
+              <span className="nx-ad-empty-preview" aria-hidden="true">
+                <span className="nx-ad-preview-media" />
+                <span className="nx-ad-preview-lines"><i /><i /><i /></span>
+              </span>
+              <span className="nx-ad-empty-cta">{emptyCopy.cta}</span>
             </span>
           </Link>
         </aside>
@@ -192,7 +272,7 @@ export default function AdBanner({
   return (
     <>
       <AdBannerStyles />
-      <aside className={`nx-ad-banner nx-ad-banner--${variant} ${className}`} style={slotStyle} aria-label="Publicidade">
+      <aside className={bannerClassName} style={slotStyle} aria-label="Publicidade">
         <div className="nx-ad-banner-card nx-ad-banner-adsense">
           <div className="nx-ad-banner-label">Publicidade</div>
           <ins
@@ -374,9 +454,312 @@ function AdBannerStyles() {
         border-color: rgba(240, 223, 187, .3);
         color: #f0dfbb;
       }
+      /* Layout profissional para espaços vendidos diretamente. */
+      .nx-ad-banner-card {
+        border-radius: 8px;
+        box-shadow: none;
+      }
+      .nx-ad-banner-empty {
+        align-items: stretch;
+        justify-content: stretch;
+        padding: 18px;
+        border-style: solid;
+        background: #fffaf0;
+      }
+      .nx-ad-empty-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(180px, 260px) auto;
+        width: 100%;
+        gap: 16px;
+        align-items: center;
+      }
+      .nx-ad-empty-layout > * {
+        min-width: 0;
+      }
+      .nx-ad-empty-layout .nx-ad-empty-copy {
+        display: grid;
+        justify-content: start;
+        justify-items: start;
+        gap: 6px;
+        color: #071326;
+        text-align: left;
+      }
+      .nx-ad-empty-layout .nx-ad-empty-copy strong {
+        color: #071326;
+        font-size: clamp(17px, 1.8vw, 22px);
+        font-weight: 950;
+        letter-spacing: 0;
+        line-height: 1.08;
+        text-transform: none;
+      }
+      .nx-ad-empty-layout .nx-ad-empty-copy > span {
+        display: block;
+        min-height: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+      .nx-ad-empty-eyebrow {
+        color: #9b7b3f !important;
+        font-size: 10px !important;
+        font-weight: 950 !important;
+        letter-spacing: .08em !important;
+        line-height: 1.1 !important;
+        text-transform: uppercase !important;
+      }
+      .nx-ad-empty-body {
+        max-width: 620px;
+        color: #53667a !important;
+        font-size: 13px !important;
+        font-weight: 680 !important;
+        line-height: 1.42 !important;
+      }
+      .nx-ad-empty-preview {
+        min-height: 82px;
+        display: grid;
+        grid-template-columns: 78px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid rgba(7, 19, 38, .12);
+        border-radius: 8px;
+        background: #ffffff;
+      }
+      .nx-ad-preview-media {
+        display: block;
+        width: 100%;
+        height: 58px;
+        border-radius: 7px;
+        background: linear-gradient(135deg, #d9c49c, #fff4d8 54%, #102f50);
+      }
+      .nx-ad-preview-lines {
+        display: grid;
+        gap: 7px;
+      }
+      .nx-ad-preview-lines i {
+        display: block;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(7, 19, 38, .15);
+      }
+      .nx-ad-preview-lines i:nth-child(1) { width: 86%; }
+      .nx-ad-preview-lines i:nth-child(2) { width: 68%; }
+      .nx-ad-preview-lines i:nth-child(3) { width: 44%; background: rgba(217, 196, 156, .7); }
+      .nx-ad-empty-cta {
+        justify-self: end;
+        display: inline-flex;
+        min-height: 40px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 16px;
+        border-radius: 8px;
+        background: #071326;
+        color: #fffaf0;
+        font-size: 12px;
+        font-weight: 950;
+        white-space: nowrap;
+      }
+      .nx-ad-banner-empty:hover .nx-ad-empty-cta {
+        background: #102f50;
+      }
+      .nx-ad-banner--landing {
+        max-width: 1200px;
+        width: min(1200px, calc(100% - 44px));
+        margin: 34px auto 8px;
+      }
+      .nx-ad-banner--landing .nx-ad-banner-card {
+        min-height: max(var(--nx-ad-min-height), 172px) !important;
+      }
+      .nx-ad-banner--landing .nx-ad-banner-empty {
+        padding: 20px;
+        background: linear-gradient(135deg, #071326 0%, #102f50 62%, #fffaf0 62%, #fffaf0 100%) !important;
+        border-color: rgba(217, 196, 156, .34);
+      }
+      .nx-ad-banner--landing .nx-ad-banner-label {
+        background: rgba(255, 250, 240, .96);
+        color: #071326;
+      }
+      .nx-ad-banner--landing .nx-ad-empty-layout {
+        grid-template-columns: minmax(0, 1.1fr) minmax(240px, 340px) auto;
+        gap: 20px;
+      }
+      .nx-ad-banner--landing .nx-ad-empty-copy {
+        padding-top: 28px;
+      }
+      .nx-ad-banner--landing .nx-ad-empty-copy strong {
+        max-width: 680px;
+        color: #fffaf0;
+        font-size: clamp(23px, 2.8vw, 36px);
+      }
+      .nx-ad-banner--landing .nx-ad-empty-eyebrow,
+      .nx-ad-banner--landing .nx-ad-empty-body {
+        color: rgba(255, 250, 240, .78) !important;
+      }
+      .nx-ad-banner--landing .nx-ad-empty-preview {
+        min-height: 112px;
+        background: rgba(255, 250, 240, .96);
+        box-shadow: 0 18px 38px -34px rgba(0, 0, 0, .75);
+      }
+      .nx-ad-banner--landing .nx-ad-empty-cta {
+        background: #d9c49c;
+        color: #071326;
+      }
+      .nx-ad-banner--landing .nx-ad-banner-direct img {
+        max-height: 320px;
+      }
+      .nx-ad-banner--inline {
+        margin: 10px 0 12px;
+      }
+      .nx-ad-banner--inline .nx-ad-banner-card {
+        min-height: max(var(--nx-ad-min-height), 96px) !important;
+      }
+      .nx-ad-banner--inline .nx-ad-banner-empty {
+        padding: 14px 16px;
+      }
+      .nx-ad-banner--inline .nx-ad-empty-layout {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+      .nx-ad-banner--inline .nx-ad-empty-preview {
+        display: none;
+      }
+      .nx-ad-banner--inline .nx-ad-empty-copy strong {
+        font-size: 16px;
+      }
+      .nx-ad-banner--inline .nx-ad-empty-body {
+        font-size: 12px !important;
+      }
+      .nx-ad-banner--sidebar .nx-ad-banner-card {
+        min-height: max(var(--nx-ad-min-height), 210px) !important;
+      }
+      .nx-ad-banner--sidebar .nx-ad-banner-empty {
+        padding: 40px 14px 14px;
+      }
+      .nx-ad-banner--sidebar .nx-ad-empty-layout {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .nx-ad-banner--sidebar .nx-ad-empty-preview {
+        min-height: 96px;
+        grid-template-columns: 1fr;
+      }
+      .nx-ad-banner--sidebar .nx-ad-preview-lines {
+        display: none;
+      }
+      .nx-ad-banner--sidebar .nx-ad-empty-cta {
+        justify-self: stretch;
+        width: 100%;
+      }
+      .nx-ad-banner--sidebar .nx-ad-empty-copy strong {
+        font-size: 18px;
+      }
+      .pesquisa-top-ad .nx-ad-banner-card,
+      .pesquisa-bottom-ad .nx-ad-banner-card {
+        min-height: max(var(--nx-ad-min-height), 110px) !important;
+      }
+      .dark .nx-ad-empty-layout .nx-ad-empty-copy strong {
+        color: #fffaf0 !important;
+      }
+      .dark .nx-ad-empty-body,
+      .dark .nx-ad-empty-layout .nx-ad-empty-copy > span {
+        color: rgba(255, 250, 240, .76) !important;
+      }
+      .dark .nx-ad-empty-eyebrow {
+        color: #f0dfbb !important;
+      }
+      .dark .nx-ad-empty-preview {
+        background: #071326 !important;
+        border-color: rgba(217, 196, 156, .22) !important;
+      }
+      .dark .nx-ad-preview-lines i {
+        background: rgba(255, 250, 240, .16);
+      }
+      .dark .nx-ad-preview-lines i:nth-child(3) {
+        background: rgba(217, 196, 156, .72);
+      }
+      .dark .nx-ad-empty-cta {
+        background: #d9c49c !important;
+        color: #071326 !important;
+      }
+      .dark .nx-ad-banner--landing .nx-ad-banner-empty {
+        background: linear-gradient(135deg, #040b16 0%, #102f50 62%, #0d1d33 62%, #0d1d33 100%) !important;
+        border-color: rgba(217, 196, 156, .3) !important;
+      }
+      /* Correções anti-overlap: o selo de publicidade nunca pode tapar texto. */
+      .nx-ad-banner-empty {
+        flex-direction: column !important;
+        gap: 10px !important;
+        padding: 16px 18px !important;
+      }
+      .nx-ad-banner-empty > .nx-ad-banner-label {
+        position: static !important;
+        inset: auto !important;
+        align-self: flex-start !important;
+        background: #fffaf0 !important;
+        border-color: rgba(217, 196, 156, .74) !important;
+        color: #071326 !important;
+      }
+      .nx-ad-banner-empty .nx-ad-empty-layout {
+        align-items: center !important;
+      }
+      .nx-ad-banner--landing .nx-ad-banner-empty {
+        padding: 20px !important;
+      }
+      .nx-ad-banner--landing .nx-ad-empty-copy {
+        padding-top: 0 !important;
+      }
+      .nx-ad-banner--inline .nx-ad-banner-empty,
+      .nx-ad-banner--sidebar .nx-ad-banner-empty {
+        padding: 14px !important;
+      }
+      .nx-ad-banner--sidebar .nx-ad-banner-label {
+        align-self: flex-start !important;
+      }
+      .dark .nx-ad-banner-empty > .nx-ad-banner-label {
+        background: #fffaf0 !important;
+        border-color: rgba(217, 196, 156, .74) !important;
+        color: #071326 !important;
+      }
       @media (max-width: 640px) {
         .nx-ad-banner {
           margin: 14px auto;
+        }
+        .nx-ad-banner-empty {
+          padding: 10px !important;
+          gap: 8px !important;
+        }
+        .nx-ad-banner-empty > .nx-ad-banner-label {
+          position: static !important;
+          min-height: 20px !important;
+          padding: 0 8px !important;
+          font-size: 8px !important;
+        }
+        .nx-ad-empty-layout,
+        .nx-ad-banner--landing .nx-ad-empty-layout,
+        .nx-ad-banner--inline .nx-ad-empty-layout,
+        .nx-ad-banner--sidebar .nx-ad-empty-layout {
+          grid-template-columns: 1fr !important;
+          gap: 8px !important;
+        }
+        .nx-ad-empty-preview {
+          display: none !important;
+        }
+        .nx-ad-empty-layout .nx-ad-empty-copy strong {
+          font-size: 13px !important;
+          line-height: 1.12 !important;
+        }
+        .nx-ad-empty-body {
+          font-size: 11px !important;
+          line-height: 1.35 !important;
+        }
+        .nx-ad-empty-cta {
+          justify-self: stretch !important;
+          width: 100% !important;
+          min-height: 32px !important;
+          font-size: 11px !important;
+        }
+        .nx-ad-banner--landing .nx-ad-banner-card {
+          min-height: max(var(--nx-ad-mobile-min-height), 132px) !important;
         }
         .nx-ad-banner-card {
           min-height: var(--nx-ad-mobile-min-height);
@@ -411,7 +794,17 @@ function AdBannerStyles() {
         .nx-ad-banner-caption span {
           display: none;
         }
-        .nx-ad-banner-adsense {
+        .nx-ad-empty-layout .nx-ad-empty-copy > span {
+          display: block !important;
+          min-height: 0 !important;
+          padding: 0 !important;
+          border: 0 !important;
+          border-radius: 0 !important;
+          background: transparent !important;
+        }
+        .nx-ad-banner-empty .nx-ad-empty-layout {
+          width: 100% !important;
+        }        .nx-ad-banner-adsense {
           padding: 8px;
         }
         .nx-ad-banner-adsense .adsbygoogle {
@@ -421,3 +814,4 @@ function AdBannerStyles() {
     `}</style>
   );
 }
+
