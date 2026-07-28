@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Building2, Car, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck, TrendingUp } from 'lucide-react';
-import GoogleAdSlot from '../../components/GoogleAdSlot';
+import AdBanner from '../../components/AdBanner';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
 import NavbarLanding from './NavbarLanding';
@@ -299,7 +299,7 @@ export default function Landing() {
 
         <section className="lp-section lp-sell-section" id="anunciar" aria-labelledby="lp-sell" data-aos="fade-up"><div className="lp-shell lp-sell-box"><div><span className="lp-kicker">Anunciar</span><h2 id="lp-sell">Tens algo para vender?</h2><p>Publica grátis e recebe contactos no anúncio.</p></div><Link className="lp-main-cta" to={publicarTo} state={publicarState} onPointerEnter={animarCta}>Publicar anúncio <ArrowRight size={16} /></Link>{temProfissionaisAtivos && <Link className="lp-soft-cta" to="/profissionais"><Building2 size={16} /> Ver profissionais</Link>}</div></section>
 
-        <GoogleAdSlot placement="landing_between_highlights" minHeight={96} />
+        <AdBanner mode="direct" placement="landing_between_highlights" minHeight={96} />
 
         <section className="lp-section lp-cv-section" id="carvertical" aria-labelledby="lp-cv" data-aos="fade-up"><div className="lp-shell lp-cv-card"><div><span className="lp-kicker"><ShieldCheck size={12} /> Histórico automóvel</span><h2 id="lp-cv">20% de desconto na carVertical</h2><p>Consulta dados disponíveis sobre histórico, quilometragem e registos do veículo antes de fechar negócio.</p><a className="lp-main-cta" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer" onPointerEnter={animarCta}>Verificar veículo <ArrowRight size={16} /></a></div><div className="lp-cv-panel"><img src="/carvertical-logo.png" alt="carVertical" /><strong>20%</strong><span>de desconto através do link Noxvelia.</span></div></div></section>
       </main>

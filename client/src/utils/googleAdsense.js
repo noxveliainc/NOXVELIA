@@ -8,6 +8,10 @@ export const ADSENSE_TEST_MODE = String(import.meta.env.VITE_GOOGLE_ADSENSE_TEST
 const slots = {
   landing_between_highlights: import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_LANDING,
   search_results_top: import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_SEARCH,
+  search_results_inline: import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_SEARCH_INLINE || import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_SEARCH,
+  listing_top: import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_LISTING_TOP || import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_SEARCH,
+  listing_bottom: import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_LISTING_BOTTOM || import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_SEARCH,
+  detail_sidebar: import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_DETAIL_SIDEBAR || import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_DETAIL,
   listing_before_suggestions: import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_DETAIL,
 };
 

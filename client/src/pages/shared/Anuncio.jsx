@@ -4,7 +4,7 @@ import api from '../../services/api';
 import { getFunnelSessionId, trackFunnelEvent } from '../../utils/funnelAnalytics';
 import { useAuth } from '../../context/AuthContext';
 import { getVideoEmbedData } from '../../utils/videoEmbed';
-import GoogleAdSlot from '../../components/GoogleAdSlot';
+import AdBanner from '../../components/AdBanner';
 import Seo from '../../components/Seo';
 import { absoluteUrl, anuncioPath } from '../../utils/seo';
 import { normalizarExtras } from '../../utils/extras';
@@ -1001,6 +1001,16 @@ export default function Anuncio() {
                       <div className="fin-note">Simulação meramente indicativa. Os valores reais dependem da aprovação de crédito junto da instituição financeira parceira.</div>
                     </div>
                   )}
+
+                  <AdBanner
+                    mode="direct"
+                    placement="detalhe_sidebar"
+                    adsensePlacement="detail_sidebar"
+                    vertical={anuncio.tipo}
+                    variant="sidebar"
+                    minHeight={180}
+                    mobileMinHeight={80}
+                  />
                 </div>
 
                 <Link to={`/vendedor/${donoDoAnuncio?._id}`} className="seller-panel">
@@ -1038,7 +1048,7 @@ export default function Anuncio() {
             </div>
           </div>
 
-          <GoogleAdSlot placement="listing_before_suggestions" className="!px-0" minHeight={120} />
+          <AdBanner mode="direct" placement="detalhe_sugestoes" adsensePlacement="listing_before_suggestions" vertical={anuncio.tipo} minHeight={120} />
 
           {sugeridos.length > 0 && (
             <div className="sugeridos-section">

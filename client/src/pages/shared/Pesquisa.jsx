@@ -3,7 +3,7 @@ import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
 import AnuncioCard from './AnuncioCard';
-import GoogleAdSlot from '../../components/GoogleAdSlot';
+import AdBanner from '../../components/AdBanner';
 import useDebounce from '../../hooks/useDebounce';
 import Fuse from 'fuse.js';
 import { Icon } from '@mdi/react';
@@ -1059,7 +1059,15 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               </div>
             </div>
 
-            <GoogleAdSlot placement="search_results_top" className="!my-4 !px-0" minHeight={88} mobileMinHeight={40} />
+            <AdBanner
+              mode="direct"
+              placement={tipoSeguro === 'carro' ? 'listagem_topo_carros' : 'listagem_topo_imoveis'}
+              adsensePlacement="listing_top"
+              vertical={tipoSeguro}
+              className="pesquisa-top-ad"
+              minHeight={88}
+              mobileMinHeight={40}
+            />
 
             {vistaAtiva === 'mapa' ? (
               <div className="pesquisa-map-shell">
@@ -1078,13 +1086,41 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               </div>
             ) : (
               <div className="pesquisa-grid">
-                {resultados.map(anuncio => <AnuncioCard key={anuncio._id} anuncio={anuncio} showStatus={false} />)}
+                {resultados.map((anuncio, index) => (
+                  <React.Fragment key={anuncio._id}>
+                    <AnuncioCard anuncio={anuncio} showStatus={false} />
+                    {(index + 1) % 6 === 0 && index < resultados.length - 1 && (
+                      <AdBanner
+                        mode="direct"
+                        placement={tipoSeguro === 'carro' ? 'feed_pesquisa_carros' : 'feed_pesquisa_imoveis'}
+                        adsensePlacement="search_results_inline"
+                        vertical={tipoSeguro}
+                        variant="inline"
+                        className="pesquisa-inline-ad"
+                        minHeight={110}
+                        mobileMinHeight={58}
+                      />
+                    )}
+                  </React.Fragment>
+                ))}
                 {temMais && !loading && resultados.length > 0 && (
                   <div ref={sentinelaRef} className="infinite-spinner-container">
                     <div className="infinite-dot-pulse"></div><div className="infinite-dot-pulse"></div><div className="infinite-dot-pulse"></div>
                   </div>
                 )}
               </div>
+            )}
+
+            {vistaAtiva === 'grelha' && !loading && resultados.length > 0 && (
+              <AdBanner
+                mode="direct"
+                placement={tipoSeguro === 'carro' ? 'listagem_fundo_carros' : 'listagem_fundo_imoveis'}
+                adsensePlacement="listing_bottom"
+                vertical={tipoSeguro}
+                className="pesquisa-bottom-ad"
+                minHeight={96}
+                mobileMinHeight={44}
+              />
             )}
 
             {vistaAtiva === 'grelha' && loadingMais && (

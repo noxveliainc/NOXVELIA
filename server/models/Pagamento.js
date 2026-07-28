@@ -8,7 +8,7 @@ const pagamentoSchema = new mongoose.Schema({
   moeda:           { type: String, default: 'eur' },
 
   // 'premium' é agora um tipo válido (subscrição mensal)
-  tipo:   { type: String, enum: ['publicacao', 'destaque', 'bump', 'estatisticas', 'premium'], required: true },
+  tipo:   { type: String, enum: ['publicacao', 'destaque', 'bump', 'estatisticas', 'premium', 'patrocinio'], required: true },
   estado: { type: String, enum: ['pago', 'pendente', 'falhou', 'reembolsado'], required: true },
 
   createdAt: { type: Date, default: Date.now },

@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import dotenv from 'dotenv';
 import { verificarToken } from '../middleware/auth.js';
 import Anuncio from '../models/Anuncio.js';
+import BannerPatrocinado, { BANNER_POSICOES } from '../models/BannerPatrocinado.js';
 import User from '../models/User.js';
 import Pagamento from '../models/Pagamento.js';
 import { ativarPremiumUtilizador, desativarPremiumUtilizador } from '../services/premiumService.js';
@@ -12,6 +13,25 @@ dotenv.config();
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+const PATROCINIO_PLANOS = {
+  7: { dias: 7, valor: 499, label: '7 dias' },
+  14: { dias: 14, valor: 899, label: '14 dias' },
+  30: { dias: 30, valor: 1499, label: '30 dias' },
+};
+const BANNER_POSICOES_SET = new Set(BANNER_POSICOES);
+const cleanText = (value, max = 120) => String(value || '').trim().slice(0, max);
+const isSafeUrl = (value, { allowRelative = false } = {}) => {
+  const raw = cleanText(value, 1200);
+  if (!raw) return false;
+  if (allowRelative && raw.startsWith('/')) return true;
+  try {
+    const url = new URL(raw);
+    return ['http:', 'https:'].includes(url.protocol);
+  } catch {
+    return false;
+  }
+};
+const tipoCriativoFromUrl = (url = '') => (/\.gif(\?|#|$)/i.test(url) ? 'gif' : (url.startsWith('http') ? 'externo' : 'imagem'));
 // ─────────────────────────────────────────────────────────────
 // ROTA 1 — BUMP / DESTAQUE 7 DIAS / DESTAQUE GOLD (pagamento único)
 // Preços em cêntimos: bump = 1.49€, destaque5 = 1.99€, gold = 7.99€
@@ -77,6 +97,75 @@ router.post('/checkout', verificarToken, async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────
+// ROTA 1.1 — PATROCÍNIOS DIRETOS (self-service)
+// ─────────────────────────────────────────────────────────────
+router.post('/criar-checkout-patrocinio', verificarToken, async (req, res) => {
+  try {
+    const titulo = cleanText(req.body?.titulo, 120);
+    const imagemUrl = cleanText(req.body?.imagemUrl, 1200);
+    const linkDestino = cleanText(req.body?.linkDestino, 1200);
+    const posicao = cleanText(req.body?.posicao, 80);
+    const vertical = ['todos', 'carro', 'imovel'].includes(req.body?.vertical) ? req.body.vertical : 'todos';
+    const plano = PATROCINIO_PLANOS[Number(req.body?.duracaoDias)];
+
+    if (!titulo) return res.status(400).json({ erro: 'Indica o nome da marca ou campanha.' });
+    if (!isSafeUrl(imagemUrl, { allowRelative: true })) return res.status(400).json({ erro: 'Indica ou carrega um criativo válido.' });
+    if (!isSafeUrl(linkDestino)) return res.status(400).json({ erro: 'Indica um link de destino válido, começado por http:// ou https://.' });
+    if (!BANNER_POSICOES_SET.has(posicao)) return res.status(400).json({ erro: 'Escolhe uma disposição válida.' });
+    if (!plano) return res.status(400).json({ erro: 'Escolhe uma duração válida.' });
+
+    const banner = await BannerPatrocinado.create({
+      titulo,
+      imagemUrl,
+      linkDestino,
+      posicao,
+      vertical,
+      tipoCriativo: tipoCriativoFromUrl(imagemUrl),
+      duracaoDias: plano.dias,
+      valorCentimos: plano.valor,
+      ativo: false,
+      ativoAte: null,
+      estado: 'pendente_pagamento',
+      criadoPor: req.user.id,
+      compradoPor: req.user.id,
+      origem: 'self_service',
+    });
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: `Patrocínio Noxvelia — ${plano.label}`,
+            description: `${titulo} em zona publicitária Noxvelia.`,
+          },
+          unit_amount: plano.valor,
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      success_url: `${process.env.FRONTEND_URL}/patrocinios?pagamento=sucesso`,
+      cancel_url: `${process.env.FRONTEND_URL}/patrocinios?pagamento=cancelado`,
+      metadata: {
+        tipoPagamento: 'patrocinio_banner',
+        bannerId: String(banner._id),
+        userId: req.user.id,
+        duracaoDias: String(plano.dias),
+        valor: String(plano.valor),
+      },
+    });
+
+    banner.stripeSessionId = session.id;
+    await banner.save();
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error('❌ Erro no Stripe Checkout (patrocínio):', error);
+    res.status(500).json({ erro: 'Erro ao iniciar o pagamento do patrocínio.' });
+  }
+});
 // ─────────────────────────────────────────────────────────────
 // ROTA 2 — SUBSCRIÇÃO PREMIUM (10.99€/mês)
 // ─────────────────────────────────────────────────────────────
@@ -205,6 +294,50 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         console.log(`✅ Premium ativado para user ${userId} (sub: ${subscriptionId})`);
       } catch (err) {
         console.error('❌ Erro ao ativar premium:', err);
+      }
+      return res.json({ received: true });
+    }
+
+    // ── PATROCÍNIOS SELF-SERVICE ────────────────────────────────
+    if (meta.tipoPagamento === 'patrocinio_banner') {
+      const bannerId = meta.bannerId;
+      const userId = meta.userId;
+      const duracaoDias = Number(meta.duracaoDias) || 7;
+      const valor = Number(meta.valor) || 0;
+      const ativoAte = new Date(Date.now() + duracaoDias * 24 * 60 * 60 * 1000);
+
+      try {
+        await BannerPatrocinado.findByIdAndUpdate(bannerId, {
+          ativo: true,
+          estado: 'ativo',
+          ativoAte,
+          stripeSessionId: session.id,
+          stripePaymentId: String(session.payment_intent || session.id),
+        });
+
+        await Pagamento.create({
+          utilizador: userId,
+          stripePaymentId: session.id,
+          valor,
+          moeda: session.currency || 'eur',
+          tipo: 'patrocinio',
+          estado: 'pago',
+        });
+        console.log(`✅ Patrocínio ${bannerId} ativo por ${duracaoDias} dias.`);
+      } catch (err) {
+        console.error('❌ Erro ao ativar patrocínio:', err);
+        try {
+          await Pagamento.create({
+            utilizador: userId,
+            stripePaymentId: session.id,
+            valor,
+            moeda: session.currency || 'eur',
+            tipo: 'patrocinio',
+            estado: 'pendente',
+          });
+        } catch (saveErr) {
+          console.error('❌ CRÍTICO: Falha ao guardar patrocínio pendente:', saveErr);
+        }
       }
       return res.json({ received: true });
     }

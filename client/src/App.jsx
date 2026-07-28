@@ -35,6 +35,7 @@ const Planos         = lazy(() => import('./pages/shared/Planos'));
 const PremiumConfirmar = lazy(() => import('./pages/shared/PremiumConfirmar'));
 const SeoPesquisa    = lazy(() => import('./pages/shared/SeoPesquisa'));
 const Profissionais  = lazy(() => import('./pages/shared/Profissionais'));
+const Patrocinios    = lazy(() => import('./pages/shared/Patrocinios'));
 
 // 🌟 NOVA PÁGINA IMPORTADA
 const PoliticaPrivacidade = lazy(() => import('./pages/shared/PoliticaPrivacidade'));
@@ -93,6 +94,7 @@ function AppShell() {
             <Route path="/imoveis/:categoria/:cidade/:id" element={<Anuncio />} />
             <Route path="/vendedor/:id" element={<PerfilPublico />} />
             <Route path="/profissionais" element={<Profissionais />} />
+            <Route path="/patrocinios" element={<Patrocinios />} />
             
             {/* 🌟 ROTA DA POLÍTICA E TERMOS */}
             <Route path="/privacidade" element={<PoliticaPrivacidade />} />
