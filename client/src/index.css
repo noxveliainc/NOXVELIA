@@ -1262,6 +1262,28 @@ body {
   padding: 28px 24px !important;
   gap: 18px !important;
 }
+/* Pesquisa: resultados expandem quando os filtros estao recolhidos */
+.pesquisa-layout.filters-closed {
+  max-width: min(100%, 1760px) !important;
+  padding-inline: clamp(18px, 2.4vw, 34px) !important;
+}
+
+.pesquisa-layout.filters-closed .pesquisa-main-content {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.pesquisa-layout.filters-closed .pesquisa-search-row,
+.pesquisa-layout.filters-closed .pesquisa-topbar,
+.pesquisa-layout.filters-closed .nx-ad-banner {
+  width: 100% !important;
+}
+
+.pesquisa-layout.filters-closed .pesquisa-grid,
+.pesquisa-layout.filters-closed .pesquisa-skeleton-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 252px), 1fr)) !important;
+}
 
 .pesquisa-sidebar,
 .pesquisa-search-row,
@@ -1282,6 +1304,18 @@ body {
   width: 300px !important;
   background: #fffaf0 !important;
   border-color: rgba(7, 19, 38, .13) !important;
+}
+/* Pesquisa: sidebar recolhida nao reserva espaco */
+@media (min-width: 1025px) {
+  .pesquisa-sidebar.collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
 }
 
 .pesquisa-search-row,
