@@ -1663,3 +1663,23 @@ body {
     font-size: 13px !important;
   }
 }
+
+/* Tema unico claro Noxvelia */
+html,
+html.nx-light,
+html[data-theme="light"] {
+  color-scheme: light !important;
+}
+
+html.dark,
+html[data-theme="dark"],
+body.dark,
+body.nx-dark {
+  color-scheme: light !important;
+}
+
+.nx-theme-toggle,
+.ncr-drawer-theme-row,
+.nim-drawer-theme-row {
+  display: none !important;
+}

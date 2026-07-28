@@ -223,8 +223,8 @@ export default function PoliticaPrivacidade() {
                     <td><span className="legal-cookie-badge">Necessário</span></td>
                   </tr>
                   <tr>
-                    <td><em>localStorage</em><br /><code>@App:contexto_visual</code><br /><code>@App:tema</code></td>
-                    <td>Recordar a área de carros/imóveis e a preferência visual expressamente escolhida.</td>
+                    <td><em>localStorage</em><br /><code>@App:contexto_visual</code></td>
+                    <td>Recordar a área de automóveis/imóveis escolhida durante a navegação.</td>
                     <td>Até a escolha ser alterada ou os dados do navegador serem eliminados.</td>
                     <td><span className="legal-cookie-badge">Funcional</span></td>
                   </tr>
@@ -309,3 +309,4 @@ export default function PoliticaPrivacidade() {
     </>
   );
 }
+

@@ -1,39 +1,38 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useLayoutEffect, useMemo } from 'react';
 
 const ThemeContext = createContext(null);
 const THEME_KEY = '@App:tema';
 
-const getInitialTheme = () => {
+const applyLightTheme = () => {
+  const root = document.documentElement;
+  root.classList.remove('dark', 'nx-dark');
+  root.classList.add('nx-light');
+  root.dataset.theme = 'light';
+  root.style.colorScheme = 'light';
+
+  if (document.body) {
+    document.body.classList.remove('dark', 'nx-dark');
+    document.body.classList.add('nx-light');
+  }
+
   try {
-    const stored = localStorage.getItem(THEME_KEY);
-    if (stored === 'dark' || stored === 'nx-dark') return 'dark';
-    if (stored === 'light' || stored === 'nx-light') return 'light';
-    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    localStorage.removeItem(THEME_KEY);
   } catch {
-    return 'light';
+    // Sem impacto: a Noxvelia usa sempre tema claro.
   }
 };
 
 export function ThemeProvider({ children }) {
-  const [tema, setTema] = useState(getInitialTheme);
+  useLayoutEffect(() => {
+    applyLightTheme();
+  }, []);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    const isDark = tema === 'dark';
-    root.classList.toggle('dark', isDark);
-    root.classList.remove('nx-dark', 'nx-light');
-    root.dataset.theme = tema;
-    root.style.colorScheme = tema;
-
-    try {
-      localStorage.setItem(THEME_KEY, tema);
-    } catch {
-      // A escolha continua ativa nesta sessão se o armazenamento estiver bloqueado.
-    }
-  }, [tema]);
-
-  const toggleTema = () => setTema((prev) => (prev === 'dark' ? 'light' : 'dark'));
-  const value = useMemo(() => ({ tema, isDark: tema === 'dark', toggleTema }), [tema]);
+  const value = useMemo(() => ({
+    tema: 'light',
+    isDark: false,
+    toggleTema: applyLightTheme,
+    setTema: applyLightTheme,
+  }), []);
 
   return (
     <ThemeContext.Provider value={value}>

@@ -4,7 +4,7 @@ export default function LoadingScreen({
   label = 'A preparar a NOXVELIA',
   detail = 'Só um momento.',
   minHeight = '60vh',
-  tone = 'dark',
+  tone = 'light',
 }) {
   const isDark = tone === 'dark';
 
