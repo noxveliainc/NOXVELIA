@@ -418,7 +418,7 @@ export default function Editar() {
   const modelosDisponiveis = form.marca ? getModelosPorMarca(form.marca) : [];
   const cidadesDisponiveis = form.distrito ? DISTRITOS_CIDADES_PT[form.distrito] : [];
   const accentColorVar = 'var(--nx-accent-blue)';
-  const accentRgb = form.tipo === 'carro' ? '42, 193, 180' : '99, 179, 237';
+  const accentRgb = '16, 47, 80';
 
   if (fetchingData) {
     return (

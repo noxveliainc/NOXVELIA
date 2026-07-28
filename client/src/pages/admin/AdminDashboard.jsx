@@ -1018,8 +1018,8 @@ function PlanoBadge({ tipo, premium, tipoConta }) {
     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
       {tipoConta === 'profissional' ? (
         <span style={{
-          background: 'rgba(42, 193, 180, 0.1)', color: '#2ac1b4', padding: '4px 9px', borderRadius: '5px',
-          fontSize: '11px', fontWeight: 700, fontFamily: FONT_MONO, letterSpacing: '0.05em', border: '1px solid rgba(42, 193, 180, 0.2)'
+          background: 'rgba(217, 196, 156, 0.16)', color: '#102f50', padding: '4px 9px', borderRadius: '5px',
+          fontSize: '11px', fontWeight: 700, fontFamily: FONT_MONO, letterSpacing: '0.05em', border: '1px solid rgba(217, 196, 156, 0.38)'
         }}>
           PROFISSIONAL
         </span>

@@ -44,7 +44,7 @@ export default function PremiumConfirmar() {
   };
 
   const beneficios = [
-    'Podes publicar mais de 10 anúncios ativos enquanto o Premium estiver ativo.',
+    'Podes publicar acima do limite gratuito de 3 anúncios ativos enquanto o Premium estiver ativo.',
     'Os anúncios ativos têm destaque automático e prioridade nos resultados.',
     'Podes editar os dados de anúncios que já estão ativos.',
     'Tens acesso a uma montra pública mais completa, com contactos, links e mapa opcional.',
@@ -54,7 +54,7 @@ export default function PremiumConfirmar() {
   const regrasCancelamento = [
     'Os anúncios já ativos continuam online; não são apagados por deixares de pagar.',
     'Perdes os benefícios Premium: destaque automático, prioridade, edição de anúncios ativos e métricas avançadas.',
-    'Se tiveres mais de 10 anúncios ativos, não consegues publicar novos até renovares ou ficares dentro do limite gratuito.',
+    'Se tiveres mais de 3 anúncios ativos, não consegues publicar novos até renovares ou ficares dentro do limite gratuito.',
     'Continuas a poder marcar anúncios como vendidos ou apagar anúncios da tua conta.',
     'Destaques comprados à parte mantêm o prazo pago; só removemos o destaque automático do Premium.',
   ];
@@ -139,7 +139,7 @@ export default function PremiumConfirmar() {
             <aside className="pc-panel pc-side" aria-label="Resumo do Premium">
               <div className="pc-price">
                 <span className="pc-price-label">Plano Premium</span>
-                <strong>10.99€ <span>/mês</span></strong>
+                <strong>10,99€ <span>/mês</span></strong>
                 <p>Subscrição mensal com pagamento seguro através da Stripe. Podes cancelar pelo portal de gestão da subscrição.</p>
               </div>
 

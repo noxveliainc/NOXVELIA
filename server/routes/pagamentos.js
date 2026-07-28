@@ -70,7 +70,7 @@ router.post('/checkout', verificarToken, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// ROTA 2: WEBHOOK (O Cérebro que confirma o pagamento)
+// ROTA 2: WEBHOOK (confirma o pagamento)
 // ─────────────────────────────────────────────────────────────
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];

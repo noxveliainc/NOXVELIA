@@ -1059,7 +1059,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               </div>
             </div>
 
-            <GoogleAdSlot placement="search_results_top" className="!my-6 !px-0" minHeight={96} />
+            <GoogleAdSlot placement="search_results_top" className="!my-4 !px-0" minHeight={88} mobileMinHeight={40} />
 
             {vistaAtiva === 'mapa' ? (
               <div className="pesquisa-map-shell">

@@ -1,4 +1,4 @@
-﻿import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Building2, Car, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck, TrendingUp } from 'lucide-react';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
@@ -253,8 +253,6 @@ export default function Landing() {
   );
 
   const mostrarDestaques = loadingExemplos || exemplos.carro.length > 0 || exemplos.imovel.length > 0;
-  const graficoVisitas = visitasSite?.diario?.length > 1 ? visitasSite.diario.slice(-30) : null;
-  const picoVisitasDiarias = graficoVisitas ? Math.max(...graficoVisitas.map((dia) => dia.visitas), 1) : 1;
 
   return (
     <div className="lp-root">
@@ -288,13 +286,6 @@ export default function Landing() {
                 <TrendingUp size={18} strokeWidth={2.4} aria-hidden="true" />
                 <span><strong><ContadorAnimado valor={visitasSite.totalVisitas30Dias} /></strong> visitas nos últimos 30 dias</span>
               </div>
-              {graficoVisitas && (
-                <div className="lp-visits-spark" role="img" aria-label="Tendência de visitas nos últimos 30 dias">
-                  {graficoVisitas.map((dia) => (
-                    <span key={dia.dia} className="lp-visits-bar-col" style={{ height: `${Math.max(6, (dia.visitas / picoVisitasDiarias) * 100)}%` }} />
-                  ))}
-                </div>
-              )}
             </div>
           </section>
         )}

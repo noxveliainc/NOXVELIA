@@ -51,7 +51,7 @@ router.post('/events', eventLimiter, async (req, res) => {
   }
 });
 
-// Cache simples em memória — evita bater na base de dados a cada visita da landing.
+// Cache simples em memória — evita consultas repetidas a cada visita da landing.
 // Reinicia quando o processo reinicia; suficiente para um endpoint público de baixo custo.
 let siteVisitsCache = { data: null, expiresAt: 0 };
 const SITE_VISITS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos

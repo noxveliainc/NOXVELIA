@@ -11,7 +11,7 @@ const EVENTS = new Set([
   'publish_complete',
 ]);
 
-const getSessionId = () => {
+export const getFunnelSessionId = () => {
   if (typeof window === 'undefined') return '';
 
   try {
@@ -30,7 +30,7 @@ const getSessionId = () => {
 
 const buildPayload = (event, details = {}) => ({
   event,
-  sessionId: getSessionId(),
+  sessionId: getFunnelSessionId(),
   path: typeof window !== 'undefined' ? window.location.pathname.slice(0, 180) : '',
   vertical: ['carro', 'imovel'].includes(details.vertical) ? details.vertical : 'all',
   ...(details.listingId ? { listingId: String(details.listingId) } : {}),

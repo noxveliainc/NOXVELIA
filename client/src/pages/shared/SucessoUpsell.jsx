@@ -104,7 +104,7 @@ export default function SucessoUpsell() {
             <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 8px 0' }}>Destaque Premium</h2>
             <div className="upsell-price-box">
               <span className="upsell-price">1,99€</span>
-              <span className="upsell-price-sub"> / por 5 dias</span>
+              <span className="upsell-price-sub"> / por 7 dias</span>
             </div>
             <ul className="upsell-features">
               <li><strong>Moldura Dourada</strong> exclusiva</li>

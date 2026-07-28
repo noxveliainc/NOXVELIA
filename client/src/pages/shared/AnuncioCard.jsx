@@ -301,6 +301,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         @media (max-width: 640px) {
           .nxc-wrap { border-radius: 9px; }
+          .nxc-img { padding-top: 54%; }
           .nxc-wrap.premium { border-width: 1px; }
           .nxc-badge-premium, .nxc-badge-status { top: 8px; left: 8px; padding: 5px 8px; font-size: 8.5px; }
           .nxc-badge-tipo { bottom: 8px; left: 8px; padding: 3px 7px; font-size: 8px; }
@@ -328,6 +329,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
               <img
                 className="nxc-img-fg"
                 src={imagemPrincipalUrl}
+                srcSet={imagemPrincipalSrcSet || undefined}
                 sizes="(max-width: 720px) 100vw, 360px"
                 width={imagemPrincipalDims.width}
                 height={imagemPrincipalDims.height}

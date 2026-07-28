@@ -7,7 +7,7 @@ import ProfileView, { obterLinksVisiveisPerfil } from './ProfileView';
 import LoadingScreen from '../../components/LoadingScreen';
 import { Icon } from '@mdi/react';
 import { 
-  mdiCheckDecagram, mdiChartBar, mdiShareVariantOutline, mdiDomain, 
+  mdiChartBar, mdiDomain,
   mdiClose, mdiCrown, mdiStar, mdiChevronLeft, mdiPencil, mdiEarth,
   mdiWeb, mdiInstagram, mdiFacebook, mdiLinkedin, mdiYoutube, mdiMusicNote, mdiWhatsapp,
   mdiPlus, mdiTrashCanOutline
@@ -27,9 +27,6 @@ const TIPOS_LINK_PERFIL = [
 
 const criarLinkPerfilVazio = () => ({ tipo: 'website', url: '' });
 
-const obterMetaLinkPerfil = (tipo) => (
-  TIPOS_LINK_PERFIL.find((opcao) => opcao.value === tipo) || TIPOS_LINK_PERFIL[TIPOS_LINK_PERFIL.length - 1]
-);
 
 const prepararLinksParaEdicao = (linksPerfil, website) => {
   const links = Array.isArray(linksPerfil)
@@ -55,10 +52,10 @@ export default function Perfil() {
   const [abaActiva, setAbaActiva] = useState(contextoVisualAtual); 
   
   const [loading, setLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [, setIsDeleting] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingCapa, setUploadingCapa] = useState(false);
-  const [erro, setErro] = useState(null);
+  const [, setErro] = useState(null);
   const [linkCopiado, setLinkCopiado] = useState(false);
   
   const [anuncioAnalisado, setAnuncioAnalisado] = useState(null);

@@ -13,7 +13,7 @@ const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // ─────────────────────────────────────────────────────────────
-// ROTA 1 — BUMP / DESTAQUE 5 DIAS / DESTAQUE GOLD (pagamento único)
+// ROTA 1 — BUMP / DESTAQUE 7 DIAS / DESTAQUE GOLD (pagamento único)
 // Preços em cêntimos: bump = 1.49€, destaque5 = 1.99€, gold = 7.99€
 // ─────────────────────────────────────────────────────────────
 router.post('/checkout', verificarToken, async (req, res) => {
@@ -33,9 +33,9 @@ router.post('/checkout', verificarToken, async (req, res) => {
       nomeProduto = 'Bump Up (Subida ao Topo)';
       tipoPagamento = 'bump';
     } else if (pacote === 'destaque5') {
-      // 🆕 NOVO PACOTE — 1.99€, 5 dias de destaque
+      // Pacote de destaque simples — 1.99€, 7 dias de destaque
       preco = 199;
-      nomeProduto = 'Destaque (5 dias)';
+      nomeProduto = 'Destaque (7 dias)';
       tipoPagamento = 'destaque';
     } else if (pacote === 'gold') {
       preco = 799;
@@ -220,12 +220,12 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         });
         console.log(`✅ Anúncio ${anuncioId} destacado (7 dias).`);
       } else if (pacote === 'destaque5') {
-        // 🆕 NOVO PACOTE — aplica 5 dias de destaque
+        // Pacote de destaque simples — aplica 7 dias de destaque
         await Anuncio.findByIdAndUpdate(anuncioId, {
           destacado:              true,
-          dataExpiracaoDestaque:  new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+          dataExpiracaoDestaque:  new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
-        console.log(`✅ Anúncio ${anuncioId} destacado (5 dias).`);
+        console.log(`✅ Anúncio ${anuncioId} destacado (7 dias).`);
       } else if (pacote === 'bump') {
         await Anuncio.findByIdAndUpdate(anuncioId, { createdAt: new Date() });
         console.log(`✅ Anúncio ${anuncioId} subiu ao topo.`);

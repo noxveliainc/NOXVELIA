@@ -1068,3 +1068,58 @@ h1, h2, h3, h4 {
 .dark .nx-social-btn:hover {
   color: #f0dfbb !important;
 }
+
+/* Dark mode: publicação e cartões de anúncio adicionados nas últimas iterações. */
+.dark .pub-quality-card,
+.dark .pub-feature-tile,
+.dark .pub-pro-badge,
+.dark .pub-admin-contact-note,
+.dark .pub-trust-card.is-active,
+.dark .pub-quick-tag,
+.dark .pub-thumb-wrap {
+  background: #0b1626 !important;
+  border-color: rgba(217, 196, 156, 0.35) !important;
+  color: #eaf0f7 !important;
+  box-shadow: none !important;
+}
+
+.dark .pub-quality-title strong,
+.dark .pub-feature-tile,
+.dark .pub-extra-tag,
+.dark .pub-trust-card-desc,
+.dark .pub-admin-contact-note,
+.dark .pub-pro-badge-text,
+.dark .pub-pro-badge-text strong,
+.dark .pub-quick-tag,
+.dark .pub-upload-zone span,
+.dark .pub-switch-row {
+  color: #eaf0f7 !important;
+}
+
+.dark .pub-quality-title span,
+.dark .pub-quality-score span,
+.dark .pub-quality-tip,
+.dark .pub-trust-card-desc,
+.dark .pub-input::placeholder {
+  color: #b8c3d3 !important;
+}
+
+.dark .pub-quality-track,
+.dark .pub-feature-box,
+.dark .pub-switch,
+.dark .pub-extra-del {
+  background: rgba(255,255,255,.12) !important;
+  border-color: rgba(255,255,255,.18) !important;
+}
+
+.dark .pub-toggle-btn.active,
+.dark .pub-quality-tip {
+  background: #fff8e8 !important;
+  border-color: rgba(217, 196, 156, 0.55) !important;
+  color: #071326 !important;
+}
+
+.dark .pub-submit:disabled {
+  background: rgba(148, 163, 184, .18) !important;
+  color: #94a3b8 !important;
+}

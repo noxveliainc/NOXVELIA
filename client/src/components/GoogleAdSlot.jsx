@@ -13,6 +13,7 @@ export default function GoogleAdSlot({
   placement,
   className = '',
   minHeight = 96,
+  mobileMinHeight = Math.min(minHeight, 56),
   format = 'auto',
 }) {
   const consent = useCookieConsent();
@@ -52,21 +53,37 @@ export default function GoogleAdSlot({
 
   if (!enabled || failed) return null;
 
+  const slotStyle = {
+    '--nx-ad-min-height': `${minHeight}px`,
+    '--nx-ad-mobile-min-height': `${mobileMinHeight}px`,
+  };
+
   return (
-    <aside className={`mx-auto my-8 w-full max-w-7xl px-4 sm:px-6 ${className}`} aria-label="Publicidade">
-      <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
-        <div className="mb-2 text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">Publicidade</div>
-        <ins
-          ref={adRef}
-          className="adsbygoogle"
-          style={{ display: 'block', minHeight }}
-          data-ad-client={ADSENSE_CLIENT}
-          data-ad-slot={slot}
-          data-ad-format={format}
-          data-full-width-responsive="true"
-          data-adtest={ADSENSE_TEST_MODE ? 'on' : undefined}
-        />
-      </div>
-    </aside>
+    <>
+      <style>{`
+        .nx-ad-slot .adsbygoogle { min-height: var(--nx-ad-min-height); }
+        @media (max-width: 640px) {
+          .nx-ad-slot { margin-top: 12px !important; margin-bottom: 14px !important; padding-left: 0 !important; padding-right: 0 !important; }
+          .nx-ad-slot-card { border-radius: 12px !important; padding: 8px !important; }
+          .nx-ad-slot-label { margin-bottom: 4px !important; font-size: 9px !important; }
+          .nx-ad-slot .adsbygoogle { min-height: var(--nx-ad-mobile-min-height) !important; }
+        }
+      `}</style>
+      <aside className={`nx-ad-slot mx-auto my-8 w-full max-w-7xl px-4 sm:px-6 ${className}`} style={slotStyle} aria-label="Publicidade">
+        <div className="nx-ad-slot-card overflow-hidden rounded-xl border border-slate-200/80 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
+          <div className="nx-ad-slot-label mb-2 text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">Publicidade</div>
+          <ins
+            ref={adRef}
+            className="adsbygoogle"
+            style={{ display: 'block', minHeight: 'var(--nx-ad-min-height)' }}
+            data-ad-client={ADSENSE_CLIENT}
+            data-ad-slot={slot}
+            data-ad-format={format}
+            data-full-width-responsive="true"
+            data-adtest={ADSENSE_TEST_MODE ? 'on' : undefined}
+          />
+        </div>
+      </aside>
+    </>
   );
 }

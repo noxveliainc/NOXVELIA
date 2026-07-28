@@ -1,6 +1,8 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
+import crypto from 'node:crypto';
 import Anuncio from '../models/Anuncio.js';
+import AnuncioView from '../models/AnuncioView.js';
 import User from '../models/User.js';
 import Alerta from '../models/Alerta.js';
 import Notificacao from '../models/Notificacao.js';
@@ -11,6 +13,7 @@ import { normalizarCarro, normalizarEquipamento, normalizarImovel } from '../uti
 import { attachImagesToOwnerByUrls, deleteImagesByOwner } from '../services/imageService.js';
 
 const router = express.Router();
+const LIMITE_ANUNCIOS_GRATUITOS = 3;
 const visitLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 120,
@@ -30,6 +33,25 @@ const dividirFiltroTexto = (valor) => String(valor || '')
   .split(',')
   .map(normalizarFiltroTexto)
   .filter(Boolean);
+const normalizarSessionIdVisita = (valor) => {
+  const texto = String(valor || '').trim();
+  return /^[A-Za-z0-9_-]{12,120}$/.test(texto) ? texto : '';
+};
+
+const obterIpCliente = (req) => String(
+  req.ip ||
+  req.headers['cf-connecting-ip'] ||
+  req.headers['x-real-ip'] ||
+  String(req.headers['x-forwarded-for'] || '').split(',')[0] ||
+  ''
+).trim();
+
+const criarChaveVisitante = (req) => {
+  const sessionId = normalizarSessionIdVisita(req.body?.sessionId || req.get('x-noxvelia-session'));
+  const userAgent = String(req.get('user-agent') || '').slice(0, 220);
+  const ip = obterIpCliente(req).slice(0, 80);
+  return crypto.createHash('sha256').update(`${sessionId}|${ip}|${userAgent}`).digest('hex');
+};
 
 const dividirTipoImovelFiltro = (valor) => {
   const tipos = dividirFiltroTexto(valor);
@@ -443,12 +465,39 @@ router.get('/favoritos', verificarToken, async (req, res) => {
 
     const anunciosFavoritos = await Anuncio.find({
       _id: { $in: user.favoritos },
-      estado: { $ne: 'apagado' }
+      estado: 'ativo'
     }).populate('utilizador', 'nome avatarUrl').lean();
 
     res.json(anunciosFavoritos);
   } catch (error) {
     res.status(500).json({ erro: 'Erro ao carregar favoritos.' });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// 4.1 RESUMO DO LIMITE DE PUBLICAÇÃO
+// ─────────────────────────────────────────────────────────────
+router.get('/limite-publicacao', verificarToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('tipo premiumAtivo');
+    if (!user) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
+
+    const ilimitado = user.tipo === 'admin' || user.premiumAtivo === true;
+    const ativos = await Anuncio.countDocuments({ utilizador: req.user.id, estado: 'ativo' });
+    const limite = ilimitado ? null : LIMITE_ANUNCIOS_GRATUITOS;
+    const restantes = ilimitado ? null : Math.max(0, limite - ativos);
+
+    res.json({
+      ativos,
+      limite,
+      restantes,
+      proximo: ilimitado ? null : Math.min(ativos + 1, limite),
+      ilimitado,
+      premiumAtivo: user.premiumAtivo === true,
+      admin: user.tipo === 'admin',
+    });
+  } catch {
+    res.status(500).json({ erro: 'Erro ao verificar limite de publicação.' });
   }
 });
 
@@ -478,6 +527,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+
 // ─────────────────────────────────────────────────────────────
 // 5. CHECK GUARDADO
 // ─────────────────────────────────────────────────────────────
@@ -493,7 +543,7 @@ router.get('/:id/check-guardado', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 // 6. CRIAR NOVO ANÚNCIO
 //    Regras:
-//    - Conta gratuita  → máx 10 anúncios ativos
+//    - Conta gratuita  → máx 3 anúncios ativos
 //    - Conta Premium → ilimitado + destaque automático
 //    - Admin → ilimitado + destaque opcional pelo painel
 //
@@ -515,13 +565,13 @@ router.post('/', verificarToken, async (req, res) => {
     if (!ehAdmin && !ehPremium) {
       const totalAtivos = await Anuncio.countDocuments({
         utilizador: req.user.id,
-        estado: { $ne: 'apagado' }
+        estado: 'ativo'
       });
 
-      if (totalAtivos >= 10) {
+      if (totalAtivos >= LIMITE_ANUNCIOS_GRATUITOS) {
         return res.status(403).json({
           erro: 'LIMITE_ATINGIDO',
-          mensagem: 'Atingiste o limite de 10 anúncios gratuitos. Adere ao Plano Premium para publicares sem limites.'
+          mensagem: `Atingiste o limite de ${LIMITE_ANUNCIOS_GRATUITOS} anúncios ativos gratuitos. Adere ao Premium para publicares sem limite enquanto o plano estiver ativo.`
         });
       }
     }
@@ -739,6 +789,15 @@ router.post('/:id/guardar', verificarToken, async (req, res) => {
 router.post('/:id/visita', visitLimiter, async (req, res) => {
   try {
     const hoje = new Date().toISOString().slice(0, 10);
+    const visitorKey = criarChaveVisitante(req);
+
+    try {
+      await AnuncioView.create({ anuncio: req.params.id, visitorKey, dayKey: hoje });
+    } catch (erro) {
+      if (erro?.code === 11000) return res.json({ success: true, counted: false });
+      throw erro;
+    }
+
     const atualizado = await Anuncio.findOneAndUpdate(
       { _id: req.params.id, estado: { $ne: 'apagado' } },
       [
@@ -774,8 +833,11 @@ router.post('/:id/visita', visitLimiter, async (req, res) => {
       ],
       { new: false }
     );
-    if (!atualizado) return res.status(404).json({ erro: 'Anúncio removido.' });
-    res.json({ success: true });
+    if (!atualizado) {
+      await AnuncioView.deleteOne({ anuncio: req.params.id, visitorKey, dayKey: hoje }).catch(() => {});
+      return res.status(404).json({ erro: 'Anúncio removido.' });
+    }
+    res.json({ success: true, counted: true });
   } catch (error) {
     res.status(500).json({ erro: 'Erro ao contabilizar visita.' });
   }

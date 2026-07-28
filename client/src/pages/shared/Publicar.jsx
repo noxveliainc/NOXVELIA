@@ -133,6 +133,7 @@ export default function Publicar() {
   const [novoExtra, setNovoExtra] = useState('');
 
   const [modalPremiumAberto, setModalPremiumAberto] = useState(false);
+  const [limitePublicacao, setLimitePublicacao] = useState(null);
 
   const [form, setForm] = useState({
     tipo: contextoFocado,
@@ -204,6 +205,21 @@ export default function Publicar() {
   useEffect(() => {
     if (signed) trackFunnelEvent('publish_start', { vertical: contextoFocado });
   }, [signed, contextoFocado]);
+
+  useEffect(() => {
+    if (authLoading || !signed) return undefined;
+    let ativo = true;
+
+    api.get('/anuncios/limite-publicacao')
+      .then(({ data }) => {
+        if (ativo) setLimitePublicacao(data || null);
+      })
+      .catch(() => {
+        if (ativo) setLimitePublicacao(null);
+      });
+
+    return () => { ativo = false; };
+  }, [authLoading, signed, user?.premiumAtivo, user?.tipo]);
 
   const handle = e => {
     const { name, value, type, checked } = e.target;
@@ -416,8 +432,15 @@ export default function Publicar() {
   const modelosDisponiveis = form.marca ? getModelosPorMarca(form.marca) : [];
   const cidadesDisponiveis = form.distrito ? DISTRITOS_CIDADES_PT[form.distrito] : [];
   const accentColorVar = '#102f50';
-  const accentRgb = form.tipo === 'carro' ? '42, 193, 180' : '62, 207, 142';
+  const accentRgb = '16, 47, 80';
   const ehPremium = user?.premiumAtivo === true;
+  const usoGratisAtivo = limitePublicacao && !limitePublicacao.ilimitado;
+  const anunciosAtivosGratis = Number(limitePublicacao?.ativos || 0);
+  const limiteGratis = Number(limitePublicacao?.limite || 3);
+  const restantesGratis = Number(limitePublicacao?.restantes ?? Math.max(0, limiteGratis - anunciosAtivosGratis));
+  const proximoAnuncioGratis = Math.min(Number(limitePublicacao?.proximo || anunciosAtivosGratis + 1), limiteGratis);
+  const limiteGratisAtingido = usoGratisAtivo && restantesGratis <= 0;
+  const progressoGratis = Math.min(100, Math.max(0, (anunciosAtivosGratis / Math.max(limiteGratis, 1)) * 100));
   const qualidade = calcularQualidadeFormulario(form, fotos, equipamento);
 
   return (
@@ -434,6 +457,24 @@ export default function Publicar() {
         .btn-cancel:hover { background: #f1f5f9; border-color: #cbd5e1; color: #0f172a; transform: translateY(-2px); }
 
         .pub-error { background: #fef2f2; border: 1px solid #fecaca; padding: 16px; border-radius: 12px; color: #ef4444; font-size: 14px; font-weight: 500; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
+        .pub-limit-meter { background: #ffffff; border: 1px solid #d9c38d; border-radius: 18px; padding: 18px; margin-bottom: 18px; box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07); }
+        .pub-limit-meter span { display: block; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: #5f6f86; margin-bottom: 4px; }
+        .pub-limit-meter strong { display: block; color: #06152a; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; line-height: 1.1; }
+        .pub-limit-meter p { margin: 10px 0 0; color: #46566d; font-size: 13px; line-height: 1.55; }
+        .pub-limit-progress { overflow: hidden; height: 8px; margin-top: 14px; border-radius: 999px; background: #edf2f7; }
+        .pub-limit-progress span { display: block; height: 100%; margin: 0; border-radius: inherit; background: linear-gradient(90deg, #102f50, #d9c38d); transition: width .25s ease; }
+        .pub-limit-card { background: #ffffff; border: 1px solid #d9c38d; border-radius: 22px; padding: 28px; box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08); }
+        .pub-limit-card h2 { margin: 0 0 10px; color: #06152a; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; line-height: 1.15; }
+        .pub-limit-card p { margin: 0; color: #46566d; line-height: 1.65; font-size: 14px; }
+        .pub-limit-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+        .pub-limit-actions button { border: 1px solid #d8c494; border-radius: 12px; min-height: 46px; padding: 0 18px; font-weight: 800; cursor: pointer; }
+        .pub-limit-primary { background: #102f50; color: #fff; }
+        .pub-limit-secondary { background: #fffaf0; color: #102f50; }
+        .dark .pub-limit-meter, .dark .pub-limit-card { background: #0b1626; border-color: rgba(217, 195, 141, .45); box-shadow: none; }
+        .dark .pub-limit-meter strong, .dark .pub-limit-card h2 { color: #fff8e8; }
+        .dark .pub-limit-meter span, .dark .pub-limit-meter p, .dark .pub-limit-card p { color: #d8deea; }
+        .dark .pub-limit-progress { background: rgba(255,255,255,.12); }
+        .dark .pub-limit-secondary { background: rgba(255, 248, 232, .08); color: #fff8e8; border-color: rgba(217, 195, 141, .5); }
 
         .pub-form { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 40px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 40px; }
 
@@ -546,6 +587,8 @@ export default function Publicar() {
           .pub-feature-grid { grid-template-columns: 1fr; }
           .pub-quality-head { align-items: flex-start; flex-direction: column; }
           .pub-quality-score { text-align: left; }
+          .pub-limit-actions { flex-direction: column; }
+          .pub-limit-actions button { width: 100%; }
         }
 
         .premium-modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 24px; animation: fadeIn 0.2s ease-out; }
@@ -570,9 +613,9 @@ export default function Publicar() {
             </div>
             <h2 className="premium-title">Limite atingido</h2>
             <p className="premium-desc">
-              O plano gratuito permite criar até <strong>10 anúncios</strong> em simultâneo. Para publicares mais anúncios, adere ao <strong>Premium</strong>.
+              O plano gratuito permite manter até <strong>3 anúncios ativos</strong>. Os anúncios existentes continuam online; para publicar sem limite enquanto o plano estiver ativo, adere ao <strong>Premium</strong>.
             </p>
-            <button className="premium-btn" onClick={() => navigate('/planos')}>
+            <button className="premium-btn" onClick={() => navigate('/premium-confirmar')}>
               Aderir ao Premium
             </button>
             <button className="premium-close-btn" onClick={() => navigate('/perfil')}>
@@ -604,7 +647,34 @@ export default function Publicar() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="pub-form">
+          {usoGratisAtivo && (
+            <div className="pub-limit-meter" role="status">
+              <span>Plano gratuito</span>
+              <strong>{limiteGratisAtingido ? `${limiteGratis} de ${limiteGratis} anúncios ativos` : `Anúncio ${proximoAnuncioGratis} de ${limiteGratis}`}</strong>
+              <div className="pub-limit-progress" aria-hidden="true">
+                <span style={{ width: `${progressoGratis}%` }} />
+              </div>
+              <p>
+                {limiteGratisAtingido
+                  ? 'Atingiste o limite de anúncios ativos gratuitos. Os anúncios atuais continuam online; para publicar mais, renova para Premium ou remove ou desativa um anúncio.'
+                  : `Ainda podes publicar ${restantesGratis} anúncio${restantesGratis === 1 ? '' : 's'} ativo${restantesGratis === 1 ? '' : 's'} no plano gratuito.`}
+              </p>
+            </div>
+          )}
+
+          {limiteGratisAtingido ? (
+            <section className="pub-limit-card">
+              <h2>Limite gratuito atingido</h2>
+              <p>
+                O plano gratuito permite 3 anúncios ativos. Mantemos os teus anúncios online, mas novas publicações ficam disponíveis quando passares para Premium ou ficares abaixo do limite gratuito.
+              </p>
+              <div className="pub-limit-actions">
+                <button type="button" className="pub-limit-primary" onClick={() => navigate('/premium-confirmar')}>Ver Premium</button>
+                <button type="button" className="pub-limit-secondary" onClick={() => navigate('/perfil')}>Gerir anúncios</button>
+              </div>
+            </section>
+          ) : (
+            <form onSubmit={handleSubmit} className="pub-form">
 
             <div>
               <div className="pub-section-header">
@@ -1090,6 +1160,7 @@ export default function Publicar() {
             </button>
 
           </form>
+          )}
         </div>
       </div>
     </>

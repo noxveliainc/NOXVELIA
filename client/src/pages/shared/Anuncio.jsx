@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
-import { trackFunnelEvent } from '../../utils/funnelAnalytics';
+import { getFunnelSessionId, trackFunnelEvent } from '../../utils/funnelAnalytics';
 import { useAuth } from '../../context/AuthContext';
 import { getVideoEmbedData } from '../../utils/videoEmbed';
 import GoogleAdSlot from '../../components/GoogleAdSlot';
@@ -105,7 +105,6 @@ export default function Anuncio() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
   const [fotoActiva, setFotoActiva] = useState(0);
-  const [abaAtiva, setAbaAtiva] = useState('especificacoes');
 
   const [mostrarTelefone, setMostrarTelefone] = useState(false);
   const [guardado, setGuardado] = useState(false);
@@ -125,7 +124,6 @@ export default function Anuncio() {
     window.scrollTo(0, 0);
     setLoading(true);
     setFotoActiva(0);
-    setAbaAtiva('especificacoes');
     setMostrarTelefone(false);
 
     const carregar = async () => {
@@ -139,10 +137,10 @@ export default function Anuncio() {
         try {
           if (!sessionStorage.getItem(visitKey)) {
             sessionStorage.setItem(visitKey, '1');
-            api.post(`/anuncios/${id}/visita`).catch(() => sessionStorage.removeItem(visitKey));
+            api.post(`/anuncios/${id}/visita`, { sessionId: getFunnelSessionId() }).catch(() => sessionStorage.removeItem(visitKey));
           }
         } catch {
-          api.post(`/anuncios/${id}/visita`).catch(() => {});
+          api.post(`/anuncios/${id}/visita`, { sessionId: getFunnelSessionId() }).catch(() => {});
         }
 
         api.get('/anuncios')
@@ -510,11 +508,6 @@ export default function Anuncio() {
         .decision-label { display: block; font-size: 9.5px; color: #94a3b8; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; line-height: 1; margin-bottom: 5px; }
         .decision-value { display: block; color: #0f172a; font-size: 13px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .tabs-wrap { display: flex; gap: 4px; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 16px; padding: 5px; margin-bottom: 22px; overflow-x: auto; scrollbar-width: none; box-shadow: 0 16px 34px -30px rgba(15,23,42,0.5); width: 100%; max-width: 100%; }
-        .tabs-wrap::-webkit-scrollbar { display: none; }
-        .tab-btn { padding: 10px 18px; background: transparent; border: none; border-radius: 11px; color: #64748b; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: all .2s; letter-spacing: .01em; flex-shrink: 0; }
-        .tab-btn:hover { color: #0f172a; }
-        .tab-btn.active { color: #fffaf0 !important; background: ${accent}; }
 
         .specs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 155px), 1fr)); gap: 12px; width: 100%; }
         .spec-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; transition: border-color .2s, transform .2s, box-shadow .2s; animation: nx-rise .35s ease backwards; min-width: 0; }
@@ -543,8 +536,12 @@ export default function Anuncio() {
         .tour-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
         .tab-panel { animation: nx-fade-in .35s ease; }
+        .open-detail-stack { display: flex; flex-direction: column; gap: 24px; width: 100%; }
+        .open-detail-section { width: 100%; min-width: 0; }
+        .open-detail-title { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: #475569; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
+        .open-detail-title::before { content: ''; width: 18px; height: 1px; background: #d9c49c; flex: 0 0 auto; }
 
-        .sidebar-sticky { position: sticky; top: 88px; display: flex; flex-direction: column; gap: 16px; max-height: calc(100vh - 104px); overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; scrollbar-width: thin; width: 100%; min-width: 0; }
+        .sidebar-sticky { position: static; display: flex; flex-direction: column; gap: 16px; max-height: none; overflow: visible; overscroll-behavior: auto; padding-right: 0; scrollbar-width: auto; width: 100%; min-width: 0; }
         .price-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 22px; padding: 26px; box-shadow: 0 28px 70px -52px rgba(15,23,42,0.7); width: 100%; min-width: 0; }
         .panel-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 3.5vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 4px; }
         .panel-price-m2 { font-size: 13px; color: #64748b; font-weight: 600; margin-bottom: 16px; }
@@ -822,47 +819,48 @@ export default function Anuncio() {
                 ))}
               </div>
 
-              <div className="tabs-wrap" role="tablist">
-                <button type="button" role="tab" aria-selected={abaAtiva === 'especificacoes'} className={`tab-btn ${abaAtiva === 'especificacoes' ? 'active' : ''}`} onClick={() => setAbaAtiva('especificacoes')}>Ficha Técnica</button>
-                {extrasOpcionais.length > 0 && (<button type="button" role="tab" aria-selected={abaAtiva === 'equipamento'} className={`tab-btn ${abaAtiva === 'equipamento' ? 'active' : ''}`} onClick={() => setAbaAtiva('equipamento')}>{isCarro ? 'Equipamento' : 'Detalhes'}</button>)}
-                <button type="button" role="tab" aria-selected={abaAtiva === 'descricao'} className={`tab-btn ${abaAtiva === 'descricao' ? 'active' : ''}`} onClick={() => setAbaAtiva('descricao')}>Descrição</button>
-              </div>
-
-              {abaAtiva === 'especificacoes' && (
-                <div className="specs-grid tab-panel">
-                  {especificacoesVisiveis.map((s, i) => (
-                    <div key={i} className="spec-card" style={{ animationDelay: `${i * 35}ms` }}>
-                      <div className="spec-label"><Icon path={s.icon} size={0.75} />{s.label}</div>
-                      <div className="spec-value">{s.value}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {abaAtiva === 'equipamento' && extrasOpcionais.length > 0 && (
-                <div className="extras-panel tab-panel">
-                  {gruposExtras.map((grupo, grupoIndex) => (
-                    <section key={grupo.titulo} className="extras-group">
-                      <div className="extras-group-title">{grupo.titulo}</div>
-                      <div className="extras-grid">
-                        {grupo.items.map((extra, i) => (
-                          <div key={grupo.titulo + '-' + extra + '-' + i} className="extra-item" style={{ animationDelay: String((grupoIndex + i) * 30) + 'ms' }}>
-                            <span className="extra-check"><Icon path={mdiCheckCircleOutline} size={0.7} /></span>
-                            <span className="extra-text">{extra}</span>
-                          </div>
-                        ))}
+              <div className="open-detail-stack">
+                <section className="open-detail-section">
+                  <div className="open-detail-title">Ficha técnica</div>
+                  <div className="specs-grid tab-panel">
+                    {especificacoesVisiveis.map((s, i) => (
+                      <div key={i} className="spec-card" style={{ animationDelay: `${i * 35}ms` }}>
+                        <div className="spec-label"><Icon path={s.icon} size={0.75} />{s.label}</div>
+                        <div className="spec-value">{s.value}</div>
                       </div>
-                    </section>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                </section>
 
-              {abaAtiva === 'descricao' && (
-                <div className="desc-box tab-panel">
-                  <div className="desc-head"><Icon path={mdiFileDocumentOutline} size={0.8} />Descrição do Anunciante</div>
-                  <div className="desc-text">{anuncio.descricao || 'O vendedor ainda não adicionou uma descrição detalhada.'}</div>
-                </div>
-              )}
+                {extrasOpcionais.length > 0 && (
+                  <section className="open-detail-section">
+                    <div className="open-detail-title">{isCarro ? 'Equipamento' : 'Detalhes'}</div>
+                    <div className="extras-panel tab-panel">
+                      {gruposExtras.map((grupo, grupoIndex) => (
+                        <section key={grupo.titulo} className="extras-group">
+                          <div className="extras-group-title">{grupo.titulo}</div>
+                          <div className="extras-grid">
+                            {grupo.items.map((extra, i) => (
+                              <div key={grupo.titulo + '-' + extra + '-' + i} className="extra-item" style={{ animationDelay: String((grupoIndex + i) * 30) + 'ms' }}>
+                                <span className="extra-check"><Icon path={mdiCheckCircleOutline} size={0.7} /></span>
+                                <span className="extra-text">{extra}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                <section className="open-detail-section">
+                  <div className="open-detail-title">Descrição</div>
+                  <div className="desc-box tab-panel">
+                    <div className="desc-head"><Icon path={mdiFileDocumentOutline} size={0.8} />Descrição do Anunciante</div>
+                    <div className="desc-text">{anuncio.descricao || 'O vendedor ainda não adicionou uma descrição detalhada.'}</div>
+                  </div>
+                </section>
+              </div>
 
               {videoEmbed && (
                 <section className="tour-card" aria-labelledby="tour-virtual-title">
@@ -913,7 +911,7 @@ export default function Anuncio() {
                         {podeEditarAnuncioAtivo ? (
                           <Link to={`/editar/${id}`} className="btn-owner-edit">Editar Dados</Link>
                         ) : (
-                          <Link to="/planos" className="btn-owner-edit is-locked">Premium para editar</Link>
+                          <Link to="/premium-confirmar" className="btn-owner-edit is-locked">Premium para editar</Link>
                         )}
                         <button type="button" className="btn-owner-sold" onClick={() => setMostrarModalVendido(true)}>
                           <Icon path={mdiCheck} size={0.7} style={{marginRight: 4}} /> Vendido
