@@ -1,4 +1,4 @@
-﻿import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Building2, Car, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck, TrendingUp } from 'lucide-react';
 import AdBanner from '../../components/AdBanner';
@@ -91,6 +91,8 @@ export default function Landing() {
     : [];
 
   const temProfissionaisAtivos = Number(resumoPublico?.profissionais || 0) > 0;
+  const totalVisitasLanding = Number(visitasSite?.totalVisitas30Dias || 0);
+  const mostrarVisitasSite = totalVisitasLanding >= 500;
 
   const atualizarPesquisa = (campo, valor) => {
     setPesquisa((atual) => {
@@ -279,12 +281,12 @@ export default function Landing() {
           </div>
         </section>
 
-        {visitasSite && (
+        {mostrarVisitasSite && (
           <section className="lp-visits-bar" aria-label="Estatísticas de visitas ao site">
             <div className="lp-shell lp-visits-inner">
               <div className="lp-visits-headline">
                 <TrendingUp size={18} strokeWidth={2.4} aria-hidden="true" />
-                <span><strong><ContadorAnimado valor={visitasSite.totalVisitas30Dias} /></strong> visitas nos últimos 30 dias</span>
+                <span><strong><ContadorAnimado valor={totalVisitasLanding} /></strong> visitas nos últimos 30 dias</span>
               </div>
             </div>
           </section>
@@ -297,7 +299,7 @@ export default function Landing() {
         {noticiasMercado.length > 0 && <section className="lp-section lp-news-section" id="atualidade" aria-labelledby="lp-news" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker"><Newspaper size={13} /> Atualidade</span><h2 id="lp-news">Mercado em Portugal</h2><p className="lp-section-copy">Notícias recentes sobre automóveis, habitação e crédito.</p></div></div><div className="lp-news-grid">{noticiasMercado.map((noticia) => { const dataNoticia = formatarDataCurta(noticia.publishedAt); return <a className="lp-news-card" href={noticia.url} target="_blank" rel="noopener noreferrer" key={noticia.id || noticia.url}><span className={`lp-news-pill ${noticia.vertical === 'automoveis' ? 'cars' : 'homes'}`}>{noticia.verticalLabel || 'Mercado'}</span><h3>{noticia.title}</h3>{noticia.summary && <p>{noticia.summary}</p>}<span className="lp-news-meta">{noticia.source}{dataNoticia ? ` · ${dataNoticia}` : ''}</span></a>; })}</div></div></section>}
         {mostrarDestaques && <section className="lp-section lp-listing-section" id="destaques" aria-labelledby="lp-featured" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Anúncios</span><h2 id="lp-featured">Recentes na Noxvelia</h2></div></div><div className="lp-listing-columns">{(loadingExemplos || exemplos.carro.length > 0) && <div className="lp-listing-column"><div className="lp-column-top"><h3><Car size={16} /> Automóveis</h3><button type="button" onClick={() => navigate('/carros')}>Ver automóveis</button></div><div className="lp-listing-list">{exemplos.carro.length > 0 ? renderAnunciosSwiper(exemplos.carro, '/carros') : renderEstadoLista('automóveis', '/carros')}</div></div>}{(loadingExemplos || exemplos.imovel.length > 0) && <div className="lp-listing-column"><div className="lp-column-top"><h3><HomeIcon size={16} /> Imóveis</h3><button type="button" onClick={() => navigate('/imoveis')}>Ver imóveis</button></div><div className="lp-listing-list">{exemplos.imovel.length > 0 ? renderAnunciosSwiper(exemplos.imovel, '/imoveis') : renderEstadoLista('imóveis', '/imoveis')}</div></div>}</div></div></section>}
 
-        <section className="lp-section lp-sell-section" id="anunciar" aria-labelledby="lp-sell" data-aos="fade-up"><div className="lp-shell lp-sell-box"><div><span className="lp-kicker">Anunciar</span><h2 id="lp-sell">Tens algo para vender?</h2><p>Publica grátis e recebe contactos no anúncio.</p></div><Link className="lp-main-cta" to={publicarTo} state={publicarState} onPointerEnter={animarCta}>Publicar anúncio <ArrowRight size={16} /></Link>{temProfissionaisAtivos && <Link className="lp-soft-cta" to="/profissionais"><Building2 size={16} /> Ver profissionais</Link>}</div></section>
+        <section className="lp-section lp-sell-section" id="anunciar" aria-labelledby="lp-sell" data-aos="fade-up"><div className="lp-shell lp-sell-box"><div><span className="lp-kicker">Anunciar</span><h2 id="lp-sell">Tens algo para vender?</h2><p>Publica grátis e recebe contactos no anúncio.</p></div><Link className="lp-main-cta" to={publicarTo} state={publicarState} onPointerEnter={animarCta}>Criar anúncio <ArrowRight size={16} /></Link>{temProfissionaisAtivos && <Link className="lp-soft-cta" to="/profissionais"><Building2 size={16} /> Ver profissionais</Link>}</div></section>
 
         <AdBanner mode="direct" placement="landing_between_highlights" minHeight={176} mobileMinHeight={150} />
 

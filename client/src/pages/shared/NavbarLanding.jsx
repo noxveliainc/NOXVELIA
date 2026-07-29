@@ -567,7 +567,7 @@ export default function NavbarLanding() {
 
           <div className="nl-links">
             <a href="#pesquisa">Pesquisar</a>
-            <a href="#anunciar">Anunciar grátis</a>
+            <a href="#anunciar">Criar anúncio</a>
             <a href="#marcas">Marcas</a>
             <Link to="/profissionais">Profissionais</Link>
             <Link to="/patrocinios">Patrocinar</Link>
@@ -594,7 +594,7 @@ export default function NavbarLanding() {
             <ThemeToggle />
             <Link to="/patrocinios" className="nl-btn-ghost nl-btn-sponsor">Patrocinar</Link>
             {!signed && <Link to="/login" state={{ from: location.pathname }} className="nl-btn-ghost">Entrar</Link>}
-            <Link to={publicarTo} state={publicarState} className="nl-btn-solid">Anunciar grátis</Link>
+            <Link to={publicarTo} state={publicarState} className="nl-btn-solid">Criar anúncio</Link>
 
             {signed ? (
               <div ref={userMenuRef} className="nl-user-wrap">
@@ -649,13 +649,13 @@ export default function NavbarLanding() {
               </div>
             </div>
             <a href="#pesquisa" onClick={() => setMenuMobileAberto(false)}>Pesquisar</a>
-            <a href="#anunciar" onClick={() => setMenuMobileAberto(false)}>Anunciar grátis</a>
+            <a href="#anunciar" onClick={() => setMenuMobileAberto(false)}>Criar anúncio</a>
             <a href="#marcas" onClick={() => setMenuMobileAberto(false)}>Marcas</a>
             <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Automóveis</Link>
             <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Imóveis</Link>
             <Link to="/profissionais" onClick={() => setMenuMobileAberto(false)}>Profissionais</Link>
             <Link to="/patrocinios" onClick={() => setMenuMobileAberto(false)}>Torne-se patrocinador</Link>
-            <Link className="nl-mobile-primary" to={publicarTo} state={publicarState} onClick={() => setMenuMobileAberto(false)}>Publicar anúncio</Link>
+            <Link className="nl-mobile-primary" to={publicarTo} state={publicarState} onClick={() => setMenuMobileAberto(false)}>Criar anúncio</Link>
             {signed ? (
               <>
                 <Link to="/perfil" onClick={() => setMenuMobileAberto(false)}>O meu perfil</Link>

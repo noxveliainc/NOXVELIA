@@ -87,7 +87,7 @@ export default function SobreNos() {
                 A NOXVELIA nasce em Portugal para tornar a procura de automóveis e imóveis mais direta, organizada e transparente. Estamos a construir uma plataforma onde os anúncios têm melhor apresentação, dados mais completos e contacto simples.
               </p>
               <div className="about-actions">
-                <Link className="about-btn primary" to="/publicar">Publicar anúncio <Icon path={mdiArrowRight} size={0.72} /></Link>
+                <Link className="about-btn primary" to="/publicar">Criar anúncio <Icon path={mdiArrowRight} size={0.72} /></Link>
                 <Link className="about-btn secondary" to="/carros">Ver automóveis</Link>
                 <Link className="about-btn secondary" to="/imoveis">Ver imóveis</Link>
               </div>

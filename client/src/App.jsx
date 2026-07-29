@@ -107,7 +107,7 @@ function AppShell() {
             <Route path="/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/sucesso/:id" element={<ProtectedRoute><SucessoUpsell /></ProtectedRoute>} />
-            <Route path="/planos" element={<ProtectedRoute><Planos /></ProtectedRoute>} />
+            <Route path="/planos" element={<Planos />} />
             <Route path="/premium-confirmar" element={<ProtectedRoute><PremiumConfirmar /></ProtectedRoute>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />

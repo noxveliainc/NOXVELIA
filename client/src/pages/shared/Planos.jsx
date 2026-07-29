@@ -18,7 +18,7 @@ const SpinnerIcon = () => (
 export default function Planos() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { sincronizarUser, user } = useAuth();
+  const { sincronizarUser, user, signed } = useAuth();
   const [loadingStripe, setLoadingStripe] = useState(false);
   const [aSincronizar, setASincronizar] = useState(false);
   const temSubscricaoStripe = Boolean(user?.stripeCustomerId || user?.stripeSubscriptionId);
@@ -27,7 +27,7 @@ export default function Planos() {
   // Quando o Stripe devolve com sucesso, sincroniza o estado premium
   useEffect(() => {
     const resultado = searchParams.get('premium');
-    if (resultado === 'sucesso') {
+    if (resultado === 'sucesso' && signed) {
       setASincronizar(true);
       sincronizarUser().finally(() => setASincronizar(false));
     }
@@ -36,7 +36,7 @@ export default function Planos() {
 
   useEffect(() => {
     const idUtilizador = user?._id || user?.id;
-    if (!idUtilizador) return;
+    if (!signed || !idUtilizador) return;
 
     let ativo = true;
     setASincronizar(true);
@@ -49,6 +49,10 @@ export default function Planos() {
   }, [user?._id, user?.id]);
 
   const iniciarAssinatura = () => {
+    if (!signed) {
+      navigate('/login', { state: { from: '/premium-confirmar' } });
+      return;
+    }
     navigate('/premium-confirmar');
   };
 
@@ -364,8 +368,8 @@ export default function Planos() {
                 <li key={f}><CheckIcon />{f}</li>
               ))}
             </ul>
-            <button className="pl-btn pl-btn--ghost" onClick={() => navigate('/perfil')}>
-              Ir para o meu Perfil
+            <button className="pl-btn pl-btn--ghost" onClick={() => signed ? navigate('/perfil') : navigate('/registo')}>
+              {signed ? 'Ir para o meu Perfil' : 'Começar grátis'}
             </button>
           </div>
 

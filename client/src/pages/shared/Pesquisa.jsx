@@ -1,4 +1,4 @@
-﻿import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
@@ -512,6 +512,10 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
 
   const mostrarSugestoesPesquisa = searchFocused && sugestoesPesquisa.length > 0;
+  const totalAnunciosReais = Number(totalResultados || resultados.length || 0);
+  const mostrarPublicidadeTopo = !loading && vistaAtiva === 'grelha' && totalAnunciosReais >= 3;
+  const mostrarPublicidadeInline = !loading && totalAnunciosReais >= 8;
+  const mostrarPublicidadeFundo = !loading && vistaAtiva === 'grelha' && totalAnunciosReais >= 6;
 
   return (
     <>
@@ -597,6 +601,20 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           max-width: 1480px;
           padding: 28px;
           gap: 18px;
+          transition: max-width .22s ease, padding .22s ease;
+        }
+        .pesquisa-layout.filters-closed {
+          max-width: min(100%, 1760px) !important;
+          padding-inline: 28px !important;
+        }
+        .pesquisa-layout.filters-closed .pesquisa-main-content {
+          flex: 1 1 100% !important;
+          width: 100% !important;
+          max-width: none !important;
+        }
+        .pesquisa-layout.filters-closed .pesquisa-grid,
+        .pesquisa-layout.filters-closed .pesquisa-skeleton-grid {
+          grid-template-columns: repeat(auto-fill, minmax(min(100%, 252px), 1fr)) !important;
         }
         .pesquisa-sidebar {
           background: rgba(255,255,255,0.92);
@@ -813,7 +831,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
       <div className="pesquisa-root">
         <div className="sidebar-mobile-overlay" onClick={() => setSidebarMobileAberta(false)} aria-hidden="true"></div>
 
-        <div className={`pesquisa-layout vista-${vistaAtiva}`}>
+        <div className={`pesquisa-layout vista-${vistaAtiva} ${isSidebarOpen ? 'filters-open' : 'filters-closed'}`}>
 
           <aside className={`pesquisa-sidebar${isSidebarOpen ? '' : ' collapsed'}`} role={sidebarMobileAberta ? 'dialog' : undefined} aria-label="Filtros de pesquisa" aria-modal={sidebarMobileAberta ? 'true' : undefined} aria-hidden={sidebarHidden} inert={sidebarHidden ? '' : undefined}>
             <div className="pesquisa-sidebar-header">
@@ -961,6 +979,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
             className="pesquisa-sidebar-toggle"
             onClick={() => setIsSidebarOpen(prev => !prev)}
             title={isSidebarOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+            aria-label={isSidebarOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+            aria-expanded={isSidebarOpen}
           >
             <Icon path={isSidebarOpen ? mdiChevronLeft : mdiChevronRight} size={0.9} />
           </button>
@@ -1059,15 +1079,17 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               </div>
             </div>
 
-            <AdBanner
-              mode="direct"
-              placement={tipoSeguro === 'carro' ? 'listagem_topo_carros' : 'listagem_topo_imoveis'}
-              adsensePlacement="listing_top"
-              vertical={tipoSeguro}
-              className="pesquisa-top-ad"
-              minHeight={116}
-              mobileMinHeight={72}
-            />
+            {mostrarPublicidadeTopo && (
+              <AdBanner
+                mode="direct"
+                placement={tipoSeguro === 'carro' ? 'listagem_topo_carros' : 'listagem_topo_imoveis'}
+                adsensePlacement="listing_top"
+                vertical={tipoSeguro}
+                className="pesquisa-top-ad"
+                minHeight={116}
+                mobileMinHeight={72}
+              />
+            )}
 
             {vistaAtiva === 'mapa' ? (
               <div className="pesquisa-map-shell">
@@ -1089,7 +1111,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                 {resultados.map((anuncio, index) => (
                   <React.Fragment key={anuncio._id}>
                     <AnuncioCard anuncio={anuncio} showStatus={false} />
-                    {(index + 1) % 6 === 0 && index < resultados.length - 1 && (
+                    {mostrarPublicidadeInline && (index + 1) % 6 === 0 && index < resultados.length - 1 && (
                       <AdBanner
                         mode="direct"
                         placement={tipoSeguro === 'carro' ? 'feed_pesquisa_carros' : 'feed_pesquisa_imoveis'}
@@ -1111,7 +1133,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               </div>
             )}
 
-            {vistaAtiva === 'grelha' && !loading && resultados.length > 0 && (
+            {mostrarPublicidadeFundo && (
               <AdBanner
                 mode="direct"
                 placement={tipoSeguro === 'carro' ? 'listagem_fundo_carros' : 'listagem_fundo_imoveis'}
@@ -1137,7 +1159,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                 {error ? (
                   <button type="button" className="pesquisa-empty-action" onClick={() => puxarDadosServidor(1, false, tipoSeguro)}>Tentar novamente</button>
                 ) : (
-                  <Link to="/publicar" state={publicarState} className="pesquisa-empty-action">Publicar anúncio</Link>
+                  <Link to="/publicar" state={publicarState} className="pesquisa-empty-action">Criar anúncio</Link>
                 )}
               </div>
             )}

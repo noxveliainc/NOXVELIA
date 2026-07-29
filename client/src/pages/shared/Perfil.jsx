@@ -248,6 +248,12 @@ export default function Perfil() {
   const mediaQualidadePerfil = anunciosComScorePerfil.length
     ? Math.round((anunciosComScorePerfil.reduce((total, anuncio) => total + Number(anuncio.scoreQualidade || 0), 0) / anunciosComScorePerfil.length) * 10) / 10
     : 0;
+  const temMetricasPremiumPerfil = anunciosAtivosPerfil.length > 0
+    || totalDestacadosPerfil > 0
+    || totalVisitasPerfil > 0
+    || totalContactosPerfil > 0
+    || totalGuardadosPerfil > 0
+    || mediaQualidadePerfil > 0;
   const premiumAtivoPerfil = utilizador?.premiumAtivo === true || utilizador?.tipo === 'admin';
   const formatarMetricaPerfil = (valor) => new Intl.NumberFormat('pt-PT').format(Number(valor || 0));
 
@@ -305,6 +311,9 @@ export default function Perfil() {
         .perfil-premium-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; width: 100%; }
         .perfil-premium-title { margin: 0; color: #102f50; font-size: 18px; line-height: 1.2; font-weight: 900; }
         .perfil-premium-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%; }
+        .perfil-premium-empty { display: flex; flex-direction: column; gap: 8px; padding: 18px; border: 1px dashed rgba(16,47,80,.2); border-radius: 12px; background: rgba(255,255,255,.74); color: #475569; }
+        .perfil-premium-empty strong { color: #102f50; font-size: 14px; font-weight: 900; }
+        .perfil-premium-empty span { font-size: 13px; line-height: 1.5; }
         @media (min-width: 640px) { .perfil-premium-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .perfil-premium-head { flex-direction: row; justify-content: space-between; align-items: flex-start; } .perfil-premium-title { font-size: 22px; } }
         @media (min-width: 1024px) { .perfil-premium-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
         
@@ -459,14 +468,21 @@ export default function Perfil() {
             </span>
           </div>
 
-          <div className="perfil-premium-grid">
-            <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(anunciosAtivosPerfil.length)}</strong><span>ativos</span></div>
-            <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(totalDestacadosPerfil)}</strong><span>destaques</span></div>
-            <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(totalVisitasPerfil)}</strong><span>visitas</span></div>
-            <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(totalContactosPerfil)}</strong><span>contactos</span></div>
-            <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(totalGuardadosPerfil)}</strong><span>guardados</span></div>
-            <div className="perfil-premium-metric"><strong>{mediaQualidadePerfil ? `${mediaQualidadePerfil}/10` : '-'}</strong><span>qualidade</span></div>
-          </div>
+          {temMetricasPremiumPerfil ? (
+            <div className="perfil-premium-grid">
+              <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(anunciosAtivosPerfil.length)}</strong><span>ativos</span></div>
+              <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(totalDestacadosPerfil)}</strong><span>destaques</span></div>
+              <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(totalVisitasPerfil)}</strong><span>visitas</span></div>
+              <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(totalContactosPerfil)}</strong><span>contactos</span></div>
+              <div className="perfil-premium-metric"><strong>{formatarMetricaPerfil(totalGuardadosPerfil)}</strong><span>guardados</span></div>
+              <div className="perfil-premium-metric"><strong>{mediaQualidadePerfil ? `${mediaQualidadePerfil}/10` : '-'}</strong><span>qualidade</span></div>
+            </div>
+          ) : (
+            <div className="perfil-premium-empty" role="status">
+              <strong>Ainda sem atividade</strong>
+              <span>Publica o teu primeiro anúncio para veres estatísticas aqui.</span>
+            </div>
+          )}
 
           <div className="perfil-premium-bottom">
             <div className="perfil-premium-actions">

@@ -78,6 +78,15 @@ export default function NavbarImovel() {
     navigate('/');
   };
 
+  const handleIrParaMarcas = (e) => {
+    e.preventDefault();
+    setMenuMobileAberto(false);
+    navigate('/#marcas');
+    setTimeout(() => {
+      document.getElementById('marcas')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  };
+
   const handlePremium = (e) => {
     e.preventDefault();
     setMenuMobileAberto(false);
@@ -297,6 +306,10 @@ export default function NavbarImovel() {
             <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10.5V20h13v-9.5" /><path d="M9.5 20v-5h5v5" /></svg>
             Início
           </button>
+          <button type="button" onClick={handleIrParaMarcas} className="nim-btn-menu">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16" /><path d="M4 12h10" /><path d="M4 18h16" /></svg>
+            Marcas
+          </button>
           <Link to="/profissionais" className="nim-btn-menu">
             <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
             Profissionais
@@ -405,6 +418,10 @@ export default function NavbarImovel() {
               <button type="button" className="nim-drawer-link nim-drawer-link-home" onClick={handleIrParaHome}>
                 <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10.5V20h13v-9.5" /><path d="M9.5 20v-5h5v5" /></svg>
                 Página inicial
+              </button>
+              <button type="button" className="nim-drawer-link nim-drawer-link-marcas" onClick={handleIrParaMarcas}>
+                <svg viewBox="0 0 24 24"><path d="M4 6h16" /><path d="M4 12h10" /><path d="M4 18h16" /></svg>
+                Marcas
               </button>
               <Link to="/profissionais" className="nim-drawer-link" onClick={() => setMenuMobileAberto(false)}>
                 <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
