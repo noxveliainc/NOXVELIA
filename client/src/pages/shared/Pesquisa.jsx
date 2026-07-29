@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+﻿import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
@@ -546,11 +546,14 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .pesquisa-filter-stat { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; }
         .pesquisa-filter-stat strong { display: block; font-size: 17px; color: #0f172a; font-family: var(--nx-font-display); line-height: 1; }
         .pesquisa-filter-stat span { display: block; margin-top: 5px; font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
-        .pesquisa-filter-group { margin-bottom: 24px; }
+        .pesquisa-filter-section { margin-bottom: 16px; padding: 12px; border: 1px solid rgba(226,232,240,.92); border-radius: 16px; background: rgba(248,250,252,.72); }
+        .pesquisa-filter-section-title { margin: 0 0 10px; padding: 0 2px; font-size: 11px; font-weight: 950; color: #102f50; text-transform: uppercase; letter-spacing: .08em; }
+        .pesquisa-filter-group { margin-bottom: 10px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+        .pesquisa-filter-section .pesquisa-filter-group:last-child { margin-bottom: 0; }
         .pesquisa-filter-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-        .pesquisa-filter-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--nx-text-sub); margin-bottom: 12px; }
+        .pesquisa-filter-title { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; color: #102f50; margin-bottom: 10px; }
 
-        .pesquisa-filter-input { width: 100%; padding: 12px 14px; border: 1px solid var(--nx-input-border); border-radius: var(--nx-radius-sm); font-size: 14px; font-family: var(--nx-font-body); color: var(--nx-text); outline: none; background: var(--nx-input-bg); box-sizing: border-box; transition: all 0.2s ease; }
+        .pesquisa-filter-input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--nx-input-border); border-radius: 10px; font-size: 13px; font-family: var(--nx-font-body); color: var(--nx-text); outline: none; background: var(--nx-input-bg); box-sizing: border-box; transition: all 0.2s ease; }
         .pesquisa-filter-input:focus { border-color: var(--nx-accent-car); }
 
         .pesquisa-tags { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -743,6 +746,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           border-color: rgba(217,196,156,.22) !important;
           color: #fffaf0 !important;
         }
+        .dark .pesquisa-filter-section { background: rgba(7,19,38,.72) !important; border-color: rgba(217,196,156,.18) !important; }
+        .dark .pesquisa-filter-section-title { color: #fffaf0 !important; }
         .dark .pesquisa-filter-input {
           background: #071326 !important;
           border-color: rgba(217,196,156,.22) !important;
@@ -846,8 +851,10 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               <div className="pesquisa-filter-stat"><strong>{filtrosAtivos.length}</strong><span>ativos</span></div>
               <div className="pesquisa-filter-stat"><strong>{loading && resultados.length === 0 ? '...' : totalResultados}</strong><span>anúncios</span></div>
             </div>
-            <div className="pesquisa-filter-group">
-              <div className="pesquisa-filter-title">Orçamento (€)</div>
+            <div className="pesquisa-filter-section">
+              <div className="pesquisa-filter-section-title">Preço e localização</div>
+              <div className="pesquisa-filter-group">
+                <div className="pesquisa-filter-title">Orçamento (€)</div>
               <div className="pesquisa-filter-grid-2">
                 <input type="number" min="0" className="pesquisa-filter-input" placeholder="Mínimo" value={filtros.precoMin} onChange={(e) => setFiltros(f => ({ ...f, precoMin: e.target.value }))} />
                 <input type="number" min="0" className="pesquisa-filter-input" placeholder="Máximo" value={filtros.precoMax} onChange={(e) => setFiltros(f => ({ ...f, precoMax: e.target.value }))} />
@@ -868,21 +875,23 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                 <option value="">{filtros.distrito && filtros.distrito !== 'Todos' ? 'Todas as cidades' : 'Escolhe primeiro o distrito'}</option>
                 {cidadesDisponiveis.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
+              </div>
             </div>
 
             {tipoSeguro === 'carro' ? (
-              <>
+              <div className="pesquisa-filter-section">
+                <div className="pesquisa-filter-section-title">Automóvel</div>
                 <div className="pesquisa-filter-group">
-                  <div className="pesquisa-filter-title">Marca do Veículo</div>
+                  <div className="pesquisa-filter-title">Marca</div>
                   <select className="pesquisa-filter-input" value={filtros.marca} onChange={(e) => setFiltros(f => ({ ...f, marca: e.target.value, modelo: '' }))}>
-                    <option value="">Todas as Marcas</option>
+                    <option value="">Todas as marcas</option>
                     {MARCAS.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </div>
                 <div className="pesquisa-filter-group">
-                  <div className="pesquisa-filter-title">Modelo Específico</div>
+                  <div className="pesquisa-filter-title">Modelo</div>
                   <select className="pesquisa-filter-input" value={filtros.modelo} onChange={(e) => setFiltros(f => ({ ...f, modelo: e.target.value }))} disabled={!filtros.marca}>
-                    <option value="">{filtros.marca ? 'Todos os Modelos' : 'Escolha a Marca Primeiro'}</option>
+                    <option value="">{filtros.marca ? 'Todos os modelos' : 'Escolhe primeiro a marca'}</option>
                     {modelosDisponiveis.map((mod, idx) => {
                       const nomeModelo = typeof mod === 'object' ? (mod.modelo || mod.nome || '') : mod;
                       return <option key={`mod-${idx}`} value={nomeModelo}>{nomeModelo}</option>;
@@ -929,11 +938,12 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                     ))}
                   </div>
                 </div>
-              </>
+              </div>
             ) : (
-              <>
+              <div className="pesquisa-filter-section">
+                <div className="pesquisa-filter-section-title">Imóvel</div>
               <div className="pesquisa-filter-group">
-                <div className="pesquisa-filter-title">Tipo de imovel</div>
+                <div className="pesquisa-filter-title">Tipo de imóvel</div>
                 <div className="pesquisa-tags">
                   {TIPOS_IMOVEL.map(tipo => (
                     <button key={tipo.value} type="button" className={`pesquisa-tag ${(filtros.tiposImovel || []).includes(tipo.value) ? 'active' : ''}`} onClick={() => toggleTag('tiposImovel', tipo.value)}>{tipo.label}</button>
@@ -960,16 +970,20 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                 <div className="pesquisa-tags">
                   <button type="button" className={`pesquisa-tag ${filtros.garagem ? 'active' : ''}`} onClick={() => setFiltros(f => ({ ...f, garagem: !f.garagem }))}>Garagem</button>
                 </div>
-              </div>              </>
+              </div>
+              </div>
             )}
-            <div className="pesquisa-filter-group">
-              <div className="pesquisa-filter-title">Confiança e anunciante</div>
+            <div className="pesquisa-filter-section">
+              <div className="pesquisa-filter-section-title">Confiança</div>
+              <div className="pesquisa-filter-group">
+                <div className="pesquisa-filter-title">Anunciante</div>
               <div className="pesquisa-tags">
                 <button type="button" className={`pesquisa-tag ${filtros.garantia ? 'active' : ''}`} onClick={() => setFiltros(f => ({ ...f, garantia: !f.garantia }))}>Com garantia</button>
                 {tipoSeguro === 'carro' && <button type="button" className={`pesquisa-tag ${filtros.aceitaRetoma ? 'active' : ''}`} onClick={() => setFiltros(f => ({ ...f, aceitaRetoma: !f.aceitaRetoma }))}>Aceita retoma</button>}
                 <button type="button" className={`pesquisa-tag ${filtros.tipoAnunciante === 'profissional' ? 'active' : ''}`} onClick={() => setFiltros(f => ({ ...f, tipoAnunciante: f.tipoAnunciante === 'profissional' ? '' : 'profissional' }))}>Profissional</button>
                 <button type="button" className={`pesquisa-tag ${filtros.tipoAnunciante === 'particular' ? 'active' : ''}`} onClick={() => setFiltros(f => ({ ...f, tipoAnunciante: f.tipoAnunciante === 'particular' ? '' : 'particular' }))}>Particular</button>
               </div>
+            </div>
             </div>
             <button type="button" className="pesquisa-apply-btn" onClick={ejecutarFiltrosManuais}>Aplicar Filtros</button>
           </aside>

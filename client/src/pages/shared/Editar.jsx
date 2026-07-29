@@ -40,6 +40,17 @@ const COMODIDADES_IMOVEL = [
 const ANO_ATUAL = new Date().getFullYear();
 const CAMPOS_NUMERICOS_CARRO = new Set(['preco', 'km', 'ano', 'mesRegisto', 'potencia', 'cilindrada', 'portas', 'lugares']);
 const CAMPOS_TEXTO_CURTO_CARRO = new Set(['versao', 'cor']);
+const OPCAO_OUTRO_VEICULO = '__outro__';
+const normalizarTextoLivreVeiculo = (value, max = 80) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+const obterMarcaFinal = (form) => form.marca === OPCAO_OUTRO_VEICULO
+  ? normalizarTextoLivreVeiculo(form.marcaPersonalizada, 60)
+  : normalizarTextoLivreVeiculo(form.marca, 60);
+const obterModeloFinal = (form) => form.modelo === OPCAO_OUTRO_VEICULO
+  ? normalizarTextoLivreVeiculo(form.modeloPersonalizado, 80)
+  : normalizarTextoLivreVeiculo(form.modelo, 80);
+const obterNomesModelos = (marca) => getModelosPorMarca(marca)
+  .map((modelo) => (typeof modelo === 'object' ? modelo.modelo || modelo.nome : modelo))
+  .filter(Boolean);
 const TRACOES_CARRO = [
   { value: 'dianteira', label: 'Dianteira' },
   { value: 'traseira', label: 'Traseira' },
@@ -73,8 +84,8 @@ const numeroInteiroValido = (value, min, max) => {
 };
 
 const validarCamposCarro = (form) => {
-  if (!form.marca) return 'Seleciona a marca da viatura.';
-  if (!form.modelo) return 'Seleciona o modelo da viatura.';
+  if (!obterMarcaFinal(form)) return 'Indica a marca da viatura.';
+  if (!obterModeloFinal(form)) return 'Indica o modelo da viatura.';
   if (!numeroInteiroValido(form.ano, 1930, ANO_ATUAL + 1)) return `O ano deve estar entre 1930 e ${ANO_ATUAL + 1}.`;
   if (!numeroInteiroValido(form.mesRegisto, 1, 12)) return 'Seleciona o mês de registo.';
   if (!numeroInteiroValido(form.km, 0, 2000000)) return 'A quilometragem deve estar entre 0 e 2 000 000 km.';
@@ -152,7 +163,9 @@ export default function Editar() {
     andar: '',
     certEnergetico: 'C',
     marca: '',
+    marcaPersonalizada: '',
     modelo: '',
+    modeloPersonalizado: '',
     versao: '',
     ano: '',
     mesRegisto: '',
@@ -184,6 +197,11 @@ export default function Editar() {
         const contactoAdmin = user?.tipo === 'admin';
         const telefoneOriginal = data.telefone || '';
         const emailOriginal = data.email || '';
+        const marcaOriginal = data.carro?.marca || '';
+        const marcaExisteNaLista = MARCAS.includes(marcaOriginal);
+        const modelosOriginais = marcaExisteNaLista ? obterNomesModelos(marcaOriginal) : [];
+        const modeloOriginal = data.carro?.modelo || '';
+        const modeloExisteNaLista = modelosOriginais.includes(modeloOriginal);
 
         setForm({
           tipo: data.tipo,
@@ -213,8 +231,10 @@ export default function Editar() {
           condominio: data.imovel?.condominio || false,
           andar: data.imovel?.andar || '',
           certEnergetico: data.imovel?.certificadoEnergetico || 'C',
-          marca: data.carro?.marca || '',
-          modelo: data.carro?.modelo || '',
+          marca: marcaOriginal ? (marcaExisteNaLista ? marcaOriginal : OPCAO_OUTRO_VEICULO) : '',
+          marcaPersonalizada: marcaOriginal && !marcaExisteNaLista ? marcaOriginal : '',
+          modelo: modeloOriginal ? (modeloExisteNaLista ? modeloOriginal : OPCAO_OUTRO_VEICULO) : '',
+          modeloPersonalizado: modeloOriginal && !modeloExisteNaLista ? modeloOriginal : '',
           versao: data.carro?.versao || '',
           ano: data.carro?.ano || '',
           mesRegisto: data.carro?.mesRegisto || '',
@@ -251,10 +271,17 @@ export default function Editar() {
       val = Number.isFinite(numero) ? Math.max(0, Math.floor(numero)) : '';
     }
     if (name === 'vin') val = String(val || '').toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '').slice(0, 17);
+    if (name === 'marcaPersonalizada') val = String(val || '').replace(/\s+/g, ' ').slice(0, 60);
+    if (name === 'modeloPersonalizado') val = String(val || '').replace(/\s+/g, ' ').slice(0, 80);
     if (CAMPOS_TEXTO_CURTO_CARRO.has(name)) val = String(val || '').replace(/\s+/g, ' ').slice(0, name === 'versao' ? 100 : 40);
     setForm(f => {
       const updated = { ...f, [name]: val };
-      if (name === 'marca') updated.modelo = '';
+      if (name === 'marca') {
+        updated.modelo = val === OPCAO_OUTRO_VEICULO ? OPCAO_OUTRO_VEICULO : '';
+        updated.modeloPersonalizado = '';
+        if (val !== OPCAO_OUTRO_VEICULO) updated.marcaPersonalizada = '';
+      }
+      if (name === 'modelo' && val !== OPCAO_OUTRO_VEICULO) updated.modeloPersonalizado = '';
       if (name === 'distrito') updated.cidade = '';
       if (name === 'tipoImovel') {
         if (TIPOS_SEM_TIPOLOGIA.includes(val)) {
@@ -348,6 +375,8 @@ export default function Editar() {
       setErro('Utiliza um link válido do YouTube ou de um tour Matterport.');
       setLoading(false); return;
     }
+    const marcaFinal = obterMarcaFinal(form);
+    const modeloFinal = obterModeloFinal(form);
     const contacto = validarContactosAnuncio(form, ehAdmin);
     if (contacto.erro) {
       setErro(contacto.erro);
@@ -386,8 +415,8 @@ export default function Editar() {
         };
       } else {
         payload.carro = {
-          marca: form.marca,
-          modelo: form.modelo,
+          marca: marcaFinal,
+          modelo: modeloFinal,
           ...(form.versao.trim() ? { versao: form.versao.trim() } : {}),
           ano: Number(form.ano),
           ...(form.mesRegisto ? { mesRegisto: Number(form.mesRegisto) } : {}),
@@ -415,7 +444,10 @@ export default function Editar() {
     }
   };
 
-  const modelosDisponiveis = form.marca ? getModelosPorMarca(form.marca) : [];
+  const marcaFinalFormulario = obterMarcaFinal(form);
+  const marcaPersonalizadaAtiva = form.marca === OPCAO_OUTRO_VEICULO;
+  const modeloPersonalizadoAtivo = form.modelo === OPCAO_OUTRO_VEICULO;
+  const modelosDisponiveis = marcaFinalFormulario && !marcaPersonalizadaAtiva ? obterNomesModelos(marcaFinalFormulario) : [];
   const cidadesDisponiveis = form.distrito ? DISTRITOS_CIDADES_PT[form.distrito] : [];
   const accentColorVar = 'var(--nx-accent-blue)';
   const accentRgb = '16, 47, 80';
@@ -804,17 +836,40 @@ export default function Editar() {
                       <select className="pub-input" name="marca" value={form.marca} onChange={handle} required>
                         <option value="">Selecionar Marca</option>
                         {MARCAS.map(m => <option key={m} value={m}>{m}</option>)}
+                        <option value={OPCAO_OUTRO_VEICULO}>Outra marca</option>
                       </select>
+                      {marcaPersonalizadaAtiva && (
+                        <input
+                          className="pub-input"
+                          name="marcaPersonalizada"
+                          value={form.marcaPersonalizada}
+                          onChange={handle}
+                          placeholder="Escreve a marca"
+                          maxLength={60}
+                          required
+                          style={{ marginTop: 8 }}
+                        />
+                      )}
                     </div>
                     <div>
                       <label className="pub-label">Modelo *</label>
                       <select className="pub-input" name="modelo" value={form.modelo} onChange={handle} required disabled={!form.marca}>
                         <option value="">{form.marca ? 'Selecionar Modelo' : 'Escolha primeiro a Marca'}</option>
-                        {modelosDisponiveis.map((mod, idx) => {
-                          const nome = typeof mod === 'object' ? mod.modelo : mod;
-                          return <option key={idx} value={nome}>{nome}</option>;
-                        })}
+                        {modelosDisponiveis.map((nome, idx) => <option key={idx} value={nome}>{nome}</option>)}
+                        {form.marca && <option value={OPCAO_OUTRO_VEICULO}>Outro modelo</option>}
                       </select>
+                      {modeloPersonalizadoAtivo && (
+                        <input
+                          className="pub-input"
+                          name="modeloPersonalizado"
+                          value={form.modeloPersonalizado}
+                          onChange={handle}
+                          placeholder="Escreve o modelo"
+                          maxLength={80}
+                          required
+                          style={{ marginTop: 8 }}
+                        />
+                      )}
                     </div>
                   </div>
 

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useCookieConsent from '../hooks/useCookieConsent';
 import api from '../services/api';
@@ -257,9 +257,10 @@ export default function AdBanner({
                 <strong>{emptyCopy.title}</strong>
                 <span className="nx-ad-empty-body">{emptyCopy.body}</span>
               </span>
-              <span className="nx-ad-empty-preview" aria-hidden="true">
-                <span className="nx-ad-preview-media" />
-                <span className="nx-ad-preview-lines"><i /><i /><i /></span>
+                            <span className="nx-ad-empty-preview" aria-hidden="true">
+                <span className="nx-ad-preview-badge">Campanha local</span>
+                <span className="nx-ad-preview-title">Imagem, GIF ou banner próprio</span>
+                <span className="nx-ad-preview-meta">7, 14 ou 30 dias</span>
               </span>
               <span className="nx-ad-empty-cta">{emptyCopy.cta}</span>
             </span>
@@ -720,6 +721,43 @@ function AdBannerStyles() {
         border-color: rgba(217, 196, 156, .74) !important;
         color: #071326 !important;
       }
+
+      /* Slot vazio com aspeto final, sem wireframe de conteúdo por preencher. */
+      .nx-ad-empty-preview {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        padding: 16px !important;
+        background: linear-gradient(135deg, #fffaf0 0%, #f5ead4 100%) !important;
+      }
+      .nx-ad-preview-badge {
+        display: inline-flex !important;
+        min-height: 22px !important;
+        align-items: center !important;
+        padding: 0 9px !important;
+        border-radius: 999px !important;
+        background: #102f50 !important;
+        color: #fffaf0 !important;
+        font-size: 9px !important;
+        font-weight: 950 !important;
+        letter-spacing: .08em !important;
+        text-transform: uppercase !important;
+      }
+      .nx-ad-preview-title {
+        color: #102f50 !important;
+        font-size: 15px !important;
+        font-weight: 900 !important;
+        line-height: 1.18 !important;
+      }
+      .nx-ad-preview-meta {
+        color: #53667a !important;
+        font-size: 12px !important;
+        font-weight: 750 !important;
+      }
+      .nx-ad-preview-media,
+      .nx-ad-preview-lines { display: none !important; }
       @media (max-width: 640px) {
         .nx-ad-banner {
           margin: 14px auto;

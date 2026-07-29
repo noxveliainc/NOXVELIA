@@ -128,7 +128,7 @@ export default function ProfileView({
           transition: opacity .2s;
           color: #fff;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 850;
           text-transform: uppercase;
           letter-spacing: .06em;
           backdrop-filter: blur(2px);
@@ -184,7 +184,7 @@ export default function ProfileView({
           pointer-events: none;
           color: #fff;
           font-size: 10px;
-          font-weight: 800;
+          font-weight: 850;
           text-transform: uppercase;
         }
         .profile-avatar-wrap.is-editable:hover .profile-avatar-overlay { opacity: 1; }
@@ -229,7 +229,7 @@ export default function ProfileView({
         .profile-name {
           font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 28px;
-          font-weight: 800;
+          font-weight: 850;
           color: #0f172a;
           margin: 0 0 6px;
           display: flex;
@@ -271,7 +271,7 @@ export default function ProfileView({
           align-items: center;
           gap: 6px;
           font-size: 13px;
-          font-weight: 800;
+          font-weight: 850;
           color: #102f50;
           text-decoration: none;
           border: 1px solid rgba(217,196,156,0.36);
@@ -298,24 +298,25 @@ export default function ProfileView({
         }
         .profile-btn-solid, .profile-btn-primary, .profile-btn-outline {
           padding: 12px;
-          border-radius: 8px;
+          border-radius: 10px;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 850;
           text-transform: uppercase;
           cursor: pointer;
-          transition: opacity .2s, background .2s, border-color .2s, color .2s;
+          transition: background .2s, border-color .2s, color .2s, transform .2s;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
           text-decoration: none;
         }
-        .profile-btn-solid { background: #0f172a; color: #ffffff; border: none; }
+        .profile-btn-solid { background: #102f50; color: #fffaf0; border: 1px solid #102f50; }
+        .profile-btn-solid:hover, .profile-btn-primary:hover, .profile-btn-outline:hover { transform: translateY(-1px); }
         .profile-map-panel { padding: 0 36px 36px; }
         .profile-map-loading { min-height: 230px; display: grid; place-items: center; border: 1px solid #e2e8f0; border-radius: 16px; background: #f8fafc; color: #64748b; font-size: 13px; font-weight: 800; }
-        .profile-btn-primary { background: rgba(217,196,156,0.14); color: #102f50; border: 1px solid rgba(217,196,156,0.34); }
-        .profile-btn-outline { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; }
-        .profile-btn-outline.danger:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+        .profile-btn-primary { background: #fffaf0; color: #102f50; border: 1px solid rgba(217,196,156,0.72); }
+        .profile-btn-outline { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+        .profile-btn-outline.danger:hover { border-color: #fecdd3; color: #be123c; background: #fff1f2; }
         .dark .profile-card {
           background: #111c30;
           border-color: #334155;

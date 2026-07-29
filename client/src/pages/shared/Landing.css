@@ -925,3 +925,20 @@
     min-height: 220px;
   }
 }
+/* Identidade por vertical: automóveis em teal, imóveis em verde. */
+.lp-tabs button[data-vertical="carro"].active {
+  background: #0f6f78 !important;
+  border-color: rgba(15, 111, 120, .32) !important;
+  color: #fffaf0 !important;
+}
+.lp-tabs button[data-vertical="imovel"].active {
+  background: #2f7d57 !important;
+  border-color: rgba(47, 125, 87, .32) !important;
+  color: #fffaf0 !important;
+}
+.lp-category-card-auto { border-color: rgba(15, 111, 120, .34) !important; }
+.lp-category-card-estate { border-color: rgba(47, 125, 87, .34) !important; }
+.lp-category-card-auto::after { background: linear-gradient(0deg, rgba(7, 19, 38, .88), rgba(15, 111, 120, .28)) !important; }
+.lp-category-card-estate::after { background: linear-gradient(0deg, rgba(7, 19, 38, .88), rgba(47, 125, 87, .28)) !important; }
+.lp-category-card-auto small { color: #bce9ee !important; }
+.lp-category-card-estate small { color: #cce9d6 !important; }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -167,11 +167,12 @@ export default function NavbarCarro() {
         
         .ncr-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
         .ncr-section-links { display: flex; align-items: center; gap: 3px; margin-left: 2px; padding: 3px; border: 1px solid rgba(148, 163, 184, 0.24); border-radius: 999px; background: rgba(255, 255, 255, 0.06); box-shadow: none; }
-        .ncr-section-link { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 999px; color: #94a3b8; text-decoration: none; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; }
+        .ncr-section-link { display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: auto; min-width: 34px; height: 34px; padding: 0 11px; border-radius: 999px; color: #64748b; text-decoration: none; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; font-size: 11px; font-weight: 850; }
         .ncr-section-link:hover { background: rgba(148, 163, 184, 0.14); color: #0f172a; transform: translateY(-1px); }
-        .ncr-section-link.active.carros { background: rgba(217, 196, 156, 0.18); color: #102f50; }
-        .ncr-section-link.active.imoveis { background: rgba(16, 47, 80, 0.18); color: #102f50; }
-        .ncr-section-link svg { width: 20px; height: 20px; stroke-width: 2.2; }
+        .ncr-section-link.active.carros { background: rgba(15, 111, 120, 0.14); color: #0f6f78; }
+        .ncr-section-link.active.imoveis { background: rgba(47, 125, 87, 0.14); color: #2f7d57; }
+        .ncr-section-link svg { width: 18px; height: 18px; stroke-width: 2.2; flex-shrink: 0; }
+        .ncr-section-label { line-height: 1; white-space: nowrap; }
         .ncr-btn-menu { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; background: #ffffff; color: #0f172a; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; }
         .ncr-btn-menu:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
         .ncr-btn-sponsor { border-color: rgba(217, 196, 156, 0.72); background: rgba(217, 196, 156, 0.16); color: #102f50; }
@@ -249,7 +250,8 @@ export default function NavbarCarro() {
           .ncr-logo-brand-text { font-size: 15px; }
           .ncr-logo-brand-text span { display: none; }
           .ncr-section-links { gap: 4px; padding: 3px; }
-          .ncr-section-link { width: 32px; height: 32px; }
+          .ncr-section-link { width: 32px; min-width: 32px; height: 32px; padding: 0; }
+          .ncr-section-label { display: none; }
           .ncr-actions { display: none; }
           .ncr-burger-btn { display: inline-flex; }
         }
@@ -281,22 +283,24 @@ export default function NavbarCarro() {
         <div ref={logoRef} className={`ncr-logo-wrapper ${dropdownAberto ? 'active' : ''}`} onClick={() => setDropdownAberto(prev => !prev)}>
           <div className="ncr-logo">
             <img src="/logo-noxvelia.png" alt="NOXVELIA" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
-            <div className="ncr-logo-brand-text">NOXVELIA <span>Carros</span></div>
+            <div className="ncr-logo-brand-text">NOXVELIA <span>Automóveis</span></div>
           </div>
           {dropdownAberto && (
             <div className="ncr-switcher-dropdown" onClick={e => e.stopPropagation()}>
-              <Link to="/carros" className="ncr-switcher-item current" onClick={() => setDropdownAberto(false)}>Carros</Link>
+              <Link to="/carros" className="ncr-switcher-item current" onClick={() => setDropdownAberto(false)}>Automóveis</Link>
               <Link to="/imoveis" className="ncr-switcher-item" onClick={() => setDropdownAberto(false)}>Imóveis</Link>
             </div>
           )}
         </div>
 
         <div className="ncr-section-links" aria-label="Pesquisar por categoria">
-          <Link to="/carros" className="ncr-section-link active carros" aria-label="Pesquisar carros" title="Pesquisar carros" onClick={() => setMenuMobileAberto(false)}>
+          <Link to="/carros" className="ncr-section-link active carros" aria-label="Pesquisar automóveis" title="Pesquisar automóveis" onClick={() => setMenuMobileAberto(false)}>
             <Car aria-hidden="true" />
+            <span className="ncr-section-label">Automóveis</span>
           </Link>
           <Link to="/imoveis" className="ncr-section-link imoveis" aria-label="Pesquisar imoveis" title="Pesquisar imoveis" onClick={() => setMenuMobileAberto(false)}>
             <House aria-hidden="true" />
+            <span className="ncr-section-label">Imóveis</span>
           </Link>
         </div>
 

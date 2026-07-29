@@ -155,10 +155,20 @@ export default function Planos() {
         }
         .pl-premium-note {
           min-height: 118px;
-          border: 1px solid rgba(217, 196, 156, 0.42);
-          border-radius: 16px;
+          border: 1px solid #e2e8f0;
+          border-radius: 18px;
           padding: 18px;
-          background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(217,196,156,0.08));
+          background: #ffffff;
+          box-shadow: 0 10px 25px -18px rgba(15, 23, 42, 0.16);
+          position: relative;
+          overflow: hidden;
+        }
+        .pl-premium-note::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #102f50, #d9c49c);
         }
         .pl-premium-note strong {
           display: block;
