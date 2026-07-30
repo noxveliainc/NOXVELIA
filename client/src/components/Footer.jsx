@@ -8,7 +8,7 @@ export default function Footer() {
   return (
     <>
       <style>{`
-        .nx-footer { background: #fffaf0; border-top: 1px solid rgba(16, 47, 80, 0.14); padding: 48px 32px 32px; margin-top: auto; font-family: var(--nx-font-body, 'Inter', sans-serif); color: #071326; }
+        .nx-footer { background: #ffffff; border-top: 1px solid rgba(16, 47, 80, 0.14); padding: 48px 32px 32px; margin-top: auto; font-family: var(--nx-font-body, 'Inter', sans-serif); color: #071326; }
         .nx-footer-inner { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
         .nx-footer-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 32px; }
         .nx-footer-brand img { filter: drop-shadow(0 8px 18px rgba(16, 47, 80, 0.12)); }
@@ -133,7 +133,7 @@ export default function Footer() {
 
           <div className="nx-footer-bottom">
             <div className="nx-footer-copy">
-              &copy; {new Date().getFullYear()} NOXVELIA INC. Todos os direitos reservados.
+              &copy; {new Date().getFullYear()} NOXVELIA. Todos os direitos reservados.
             </div>
             
             <div className="nx-social-links">

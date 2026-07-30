@@ -1,4 +1,4 @@
-﻿import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
@@ -348,7 +348,9 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
   const modelosDisponiveis = filtros.marca ? getModelosPorMarca(filtros.marca) : [];
   const cidadesDisponiveis = (filtros.distrito && filtros.distrito !== 'Todos') ? DISTRITOS_CIDADES_PT[filtros.distrito] : [];
-  const accent = 'var(--nx-gold)';
+  const accent = tipoSeguro === 'imovel' ? '#697446' : 'var(--nx-gold)';
+  const accentText = tipoSeguro === 'imovel' ? '#ffffff' : '#071326';
+  const accentSoft = tipoSeguro === 'imovel' ? 'rgba(105,116,70,.18)' : 'rgba(217,196,156,.18)';
   const sidebarHidden = isMobileViewport ? !sidebarMobileAberta : !isSidebarOpen;
 
   const filtrosAtivos = [
@@ -554,14 +556,14 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .pesquisa-filter-title { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; color: #102f50; margin-bottom: 10px; }
 
         .pesquisa-filter-input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--nx-input-border); border-radius: 10px; font-size: 13px; font-family: var(--nx-font-body); color: var(--nx-text); outline: none; background: var(--nx-input-bg); box-sizing: border-box; transition: all 0.2s ease; }
-        .pesquisa-filter-input:focus { border-color: var(--nx-accent-car); }
+        .pesquisa-filter-input:focus { border-color: ${accent}; }
 
         .pesquisa-tags { display: flex; flex-wrap: wrap; gap: 8px; }
         .pesquisa-tag { padding: 8px 12px; border: 1px solid var(--nx-border); border-radius: 6px; background: var(--nx-bg-3); font-size: 12px; font-weight: 600; cursor: pointer; color: var(--nx-text-sub); transition: all 0.2s ease; flex: 1 1 calc(50% - 8px); text-align: center; }
         .pesquisa-tag:hover { background: var(--nx-border); color: var(--nx-text); }
-        .pesquisa-tag.active { background: ${accent}; color: #071326; border-color: ${accent}; }
+        .pesquisa-tag.active { background: ${accent}; color: ${accentText}; border-color: ${accent}; }
 
-        .pesquisa-apply-btn { width: 100%; padding: 14px; background: ${accent}; color: #071326; border: none; border-radius: var(--nx-radius-sm); font-family: var(--nx-font-body); font-weight: 900; font-size: 13px; cursor: pointer; transition: opacity 0.2s ease, transform 0.2s ease; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 8px; }
+        .pesquisa-apply-btn { width: 100%; padding: 14px; background: ${accent}; color: ${accentText}; border: none; border-radius: var(--nx-radius-sm); font-family: var(--nx-font-body); font-weight: 900; font-size: 13px; cursor: pointer; transition: opacity 0.2s ease, transform 0.2s ease; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 8px; }
         .pesquisa-apply-btn:hover { opacity: 0.85; }
 
         .pesquisa-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -570,7 +572,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .pesquisa-search-composer { position: relative; min-width: 0; }
 
         .pesquisa-omnibar-wrapper { background: var(--nx-card-bg); border: 1px solid var(--nx-card-border); border-radius: var(--nx-radius-md); display: flex; align-items: center; padding: 10px 20px; box-shadow: 0 10px 26px -24px rgba(15,23,42,0.45); }
-        .pesquisa-omnibar-wrapper:focus-within { border-color: ${accent}; box-shadow: 0 0 0 3px rgba(217,196,156,0.18); }
+        .pesquisa-omnibar-wrapper:focus-within { border-color: ${accent}; box-shadow: 0 0 0 3px ${accentSoft}; }
         .pesquisa-omnibar-wrapper input { flex: 1; border: none; padding: 8px; font-size: 15px; color: var(--nx-text); outline: none; background: transparent; }
         .pesquisa-input-clear { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 999px; background: transparent; color: #94a3b8; cursor: pointer; }
         .pesquisa-input-clear:hover { background: rgba(15,23,42,.06); color: #0f172a; }
@@ -584,6 +586,10 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
         .pesquisa-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         .pesquisa-results-count { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 900; color: #102f50; background: rgba(217,196,156,.14); border: 1px solid rgba(217,196,156,.42); border-radius: 999px; padding: 8px 11px; text-transform: uppercase; letter-spacing: .06em; }
+        .pesquisa-root.is-imovel .pesquisa-results-count,
+        .pesquisa-root.is-imovel .pesquisa-active-chip { background: rgba(105,116,70,.12); border-color: rgba(105,116,70,.28); color: #3f4f2d; }
+        .pesquisa-root.is-imovel .pesquisa-filter-section-title,
+        .pesquisa-root.is-imovel .pesquisa-filter-title { color: #3f4f2d; }
         .pesquisa-sort { border: 1px solid #e2e8f0; background: #ffffff; border-radius: 12px; padding: 10px 34px 10px 12px; font-family: var(--nx-font-body); font-size: 13px; font-weight: 800; color: var(--nx-text); cursor: pointer; outline: none; }
         .pesquisa-sort option { background: var(--nx-bg-2); color: var(--nx-text); }
         .pesquisa-active-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: -8px 0 22px; min-height: 34px; }
@@ -824,7 +830,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         }
 
         .pesquisa-empty { text-align: center; padding: 100px 20px; color: var(--nx-text-sub); }
-        .pesquisa-empty-action { margin-top: 18px; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border: 0; border-radius: 12px; background: ${accent}; color: #020617; text-decoration: none; font-family: var(--nx-font-body); font-size: 13px; font-weight: 900; cursor: pointer; }
+        .pesquisa-empty-action { margin-top: 18px; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border: 0; border-radius: 12px; background: ${accent}; color: ${accentText}; text-decoration: none; font-family: var(--nx-font-body); font-size: 13px; font-weight: 900; cursor: pointer; }
         .pesquisa-empty-action:hover { filter: brightness(0.96); }
         .infinite-spinner-container { text-align: center; padding: 40px 0; font-size: 13px; color: var(--nx-text-sub); font-weight: 500; grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .infinite-dot-pulse { width: 6px; height: 6px; background: var(--nx-text-sub); border-radius: 50%; display: inline-block; animation: pulse 0.6s infinite alternate; }
@@ -833,7 +839,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         @keyframes pulse { from { opacity: 0.2; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
       `}</style>
 
-      <div className="pesquisa-root">
+      <div className={`pesquisa-root is-${tipoSeguro}`}>
         <div className="sidebar-mobile-overlay" onClick={() => setSidebarMobileAberta(false)} aria-hidden="true"></div>
 
         <div className={`pesquisa-layout vista-${vistaAtiva} ${isSidebarOpen ? 'filters-open' : 'filters-closed'}`}>
@@ -1067,8 +1073,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
             {error && <div style={{ color: '#92400e', padding: '16px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '8px', fontSize: '14px', fontWeight: 600, border: '1px solid rgba(245, 158, 11, 0.22)', marginBottom: '24px' }}>{error}</div>}
 
-            {/* ── BANNER CTA ── */}
-            {/* Remove esta linha e substitui por {!user && <BannerCTA tipo={tipoSeguro} origem={location.pathname} />} se tiveres contexto de autenticação */}
             <div className="pesquisa-topbar">
               <div className="pesquisa-results-count">{loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} anúncios`}</div>
               <div className="pesquisa-view-tools">

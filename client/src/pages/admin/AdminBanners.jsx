@@ -204,7 +204,7 @@ export default function AdminBanners({ colors, fonts }) {
         .nx-banners-preview img { width: 100%; height: 180px; object-fit: cover; display: block; }
         .nx-banners-list { display: grid; gap: 12px; }
         .nx-banner-row { display: grid; grid-template-columns: 132px minmax(0, 1fr) auto; gap: 14px; align-items: center; border: 1px solid ${palette.border || '#dfe8e4'}; border-radius: 12px; padding: 12px; background: #fff; }
-        .nx-banner-row img { width: 132px; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; background: #f4efe5; }
+        .nx-banner-row img { width: 132px; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; background: #ffffff; }
         .nx-banner-row h3 { margin: 0 0 5px; color: ${palette.text || '#102326'}; font-size: 15px; font-weight: 900; }
         .nx-banner-row p { margin: 0; color: ${palette.textDim || '#4f646a'}; font-size: 12px; line-height: 1.45; }
         .nx-banner-row-metrics { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 9px; color: ${palette.textFaint || '#7b8b90'}; font-size: 11px; font-family: ${typo.mono || 'monospace'}; }

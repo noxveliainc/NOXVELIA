@@ -154,8 +154,8 @@ export default function AdBanner({
       return {
         label: 'Parcerias',
         eyebrow: 'Espaço patrocinado',
-        title: 'Coloca a tua marca onde os compradores começam a pesquisa.',
-        body: 'Ideal para stands, oficinas, crédito, seguros, imobiliárias e serviços locais. Reserva por 7, 14 ou 30 dias.',
+        title: 'Preço de lançamento para parceiros da Noxvelia.',
+        body: 'Uma oportunidade simples para testar presença no site desde cedo, por 7, 14 ou 30 dias.',
         cta: 'Ver planos',
       };
     }
@@ -184,8 +184,8 @@ export default function AdBanner({
       return {
         label: 'Publicidade',
         eyebrow: 'Topo da listagem',
-        title: `Ganha visibilidade antes dos resultados de ${verticalLabel}.`,
-        body: 'Bom para campanhas locais, promoções e serviços ligados à compra.',
+        title: `Preço de lançamento no topo de ${verticalLabel}.`,
+        body: 'Bom para parceiros locais que querem testar visibilidade sem investimento pesado.',
         cta: 'Ver preços',
       };
     }
@@ -345,7 +345,7 @@ function AdBannerStyles() {
         justify-content: center;
         padding: 38px 18px 18px;
         border-style: dashed;
-        background: linear-gradient(135deg, #fffaf0 0%, #ffffff 66%, rgba(217, 196, 156, .24) 100%);
+        background: linear-gradient(135deg, #ffffff 0%, #ffffff 66%, rgba(217, 196, 156, .18) 100%);
         transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
       }
       .nx-ad-banner-empty:hover {
@@ -391,7 +391,7 @@ function AdBannerStyles() {
         min-height: var(--nx-ad-min-height);
         max-height: 260px;
         object-fit: cover;
-        background: #f4efe5;
+        background: #ffffff;
       }
       .nx-ad-banner--sidebar .nx-ad-banner-direct img {
         max-height: none;
@@ -465,7 +465,7 @@ function AdBannerStyles() {
         justify-content: stretch;
         padding: 18px;
         border-style: solid;
-        background: #fffaf0;
+        background: #ffffff;
       }
       .nx-ad-empty-layout {
         display: grid;
@@ -574,7 +574,7 @@ function AdBannerStyles() {
       }
       .nx-ad-banner--landing .nx-ad-banner-empty {
         padding: 20px;
-        background: linear-gradient(135deg, #071326 0%, #102f50 62%, #fffaf0 62%, #fffaf0 100%) !important;
+        background: linear-gradient(135deg, #071326 0%, #102f50 62%, #ffffff 62%, #ffffff 100%) !important;
         border-color: rgba(217, 196, 156, .34);
       }
       .nx-ad-banner--landing .nx-ad-banner-label {
@@ -696,7 +696,7 @@ function AdBannerStyles() {
         position: static !important;
         inset: auto !important;
         align-self: flex-start !important;
-        background: #fffaf0 !important;
+        background: #ffffff !important;
         border-color: rgba(217, 196, 156, .74) !important;
         color: #071326 !important;
       }
@@ -717,7 +717,7 @@ function AdBannerStyles() {
         align-self: flex-start !important;
       }
       .dark .nx-ad-banner-empty > .nx-ad-banner-label {
-        background: #fffaf0 !important;
+        background: #ffffff !important;
         border-color: rgba(217, 196, 156, .74) !important;
         color: #071326 !important;
       }
@@ -730,7 +730,7 @@ function AdBannerStyles() {
         align-items: flex-start !important;
         gap: 8px !important;
         padding: 16px !important;
-        background: linear-gradient(135deg, #fffaf0 0%, #f5ead4 100%) !important;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 62%, rgba(217,196,156,.22) 100%) !important;
       }
       .nx-ad-preview-badge {
         display: inline-flex !important;

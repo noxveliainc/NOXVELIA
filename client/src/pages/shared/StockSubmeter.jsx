@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 
@@ -72,7 +72,7 @@ export default function StockSubmeter() {
         .stock-page, .stock-page * { box-sizing: border-box; }
         .stock-page {
           min-height: 100%;
-          background: #f6f1e7;
+          background: #ffffff;
           color: #071326;
           padding: 58px 18px 78px;
           font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -125,21 +125,21 @@ export default function StockSubmeter() {
           padding: 15px;
           border: 1px solid #ddd1bc;
           border-radius: 12px;
-          background: rgba(255,255,255,.55);
+          background: #ffffff;
         }
         .stock-point strong { display: block; color: #071326; font-size: 15px; margin-bottom: 5px; }
         .stock-point span { color: #587076; font-size: 12px; line-height: 1.45; }
         .stock-card {
           border: 1px solid #d9d2c4;
           border-radius: 18px;
-          background: rgba(255,255,255,.82);
+          background: #ffffff;
           box-shadow: 0 26px 70px -52px rgba(7,19,38,.42);
           overflow: hidden;
         }
         .stock-card-head {
           padding: 24px 26px 18px;
           border-bottom: 1px solid #e4ddcf;
-          background: rgba(255,250,240,.72);
+          background: #ffffff;
         }
         .stock-card-head h1 { margin: 0; font-size: 26px; letter-spacing: -.02em; }
         .stock-card-head p { margin: 8px 0 0; color: #536b72; line-height: 1.5; }
@@ -177,7 +177,7 @@ export default function StockSubmeter() {
           padding: 16px;
           border: 1px dashed #c9b78f;
           border-radius: 14px;
-          background: #fffaf0;
+          background: #ffffff;
         }
         .stock-file input { min-height: auto; padding: 0; border: 0; background: transparent; }
         .stock-file small, .stock-note { color: #60767c; font-size: 12px; line-height: 1.45; }
@@ -223,7 +223,7 @@ export default function StockSubmeter() {
       <div className="stock-wrap">
         <section className="stock-hero">
           <div className="stock-kicker">Stock de stands</div>
-          <h1 className="stock-title">Coloca vários automóveis na NOXVELIA sem inserir um a um.</h1>
+          <h1 className="stock-title">Coloca vários automóveis na NOXVELIA sem teres de os inserir um a um.</h1>
           <p className="stock-lead">
             Envia o ficheiro de stock do teu stand. A equipa valida o formato, prepara a importação e responde-te com os próximos passos.
           </p>

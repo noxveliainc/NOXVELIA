@@ -35,7 +35,7 @@ const obterVendedorDemo = async () => {
 
   if (!vendedor) {
     vendedor = new User({
-      nome: 'NOXVELIA Demonstração',
+      nome: 'Perfil interno de testes',
       email: DEMO_EMAIL,
       password: DEMO_PASSWORD,
       telefone: await telefoneLivre(),
@@ -47,25 +47,25 @@ const obterVendedorDemo = async () => {
       mostrarMapaPerfil: true,
       tipo: 'cliente',
       tipoConta: 'profissional',
-      premiumAtivo: true,
-      limiteAnuncios: 999,
+      premiumAtivo: false,
+      limiteAnuncios: 4,
       avatarUrl: LOGO_IMAGE,
       capaUrl: '/noxvelia-hero-coast.webp',
       website: 'https://www.noxvelia.com',
-      bio: 'Perfil de demonstração NOXVELIA para apresentar anúncios automóveis e imóveis com e sem destaque.',
+      bio: 'Perfil interno usado apenas para testes controlados de anúncios automóveis e imóveis.',
       linksPerfil: [{ tipo: 'website', url: 'https://www.noxvelia.com' }],
-      rating: 4.8,
-      totalAvaliacoes: 12,
-      verificado: true,
+      rating: 0,
+      totalAvaliacoes: 0,
+      verificado: false,
     });
     await vendedor.save();
     return vendedor;
   }
 
-  vendedor.nome = vendedor.nome || 'NOXVELIA Demonstração';
+  vendedor.nome = vendedor.nome || 'Perfil interno de testes';
   vendedor.tipoConta = 'profissional';
-  vendedor.premiumAtivo = true;
-  vendedor.limiteAnuncios = Math.max(Number(vendedor.limiteAnuncios || 0), 999);
+  vendedor.premiumAtivo = false;
+  vendedor.limiteAnuncios = Math.max(Number(vendedor.limiteAnuncios || 0), 4);
   vendedor.avatarUrl = vendedor.avatarUrl || LOGO_IMAGE;
   vendedor.capaUrl = vendedor.capaUrl || '/noxvelia-hero-coast.webp';
   vendedor.localidade = vendedor.localidade || 'Porto';
@@ -74,13 +74,13 @@ const obterVendedorDemo = async () => {
   vendedor.standCodigoPostal = vendedor.standCodigoPostal || '4000-064';
   vendedor.mostrarMapaPerfil = true;
   vendedor.website = vendedor.website || 'https://www.noxvelia.com';
-  vendedor.bio = vendedor.bio || 'Perfil de demonstração NOXVELIA para apresentar anúncios automóveis e imóveis com e sem destaque.';
+  vendedor.bio = vendedor.bio || 'Perfil interno usado apenas para testes controlados de anúncios automóveis e imóveis.';
   vendedor.linksPerfil = Array.isArray(vendedor.linksPerfil) && vendedor.linksPerfil.length
     ? vendedor.linksPerfil
     : [{ tipo: 'website', url: 'https://www.noxvelia.com' }];
-  vendedor.rating = vendedor.rating || 4.8;
-  vendedor.totalAvaliacoes = vendedor.totalAvaliacoes || 12;
-  vendedor.verificado = true;
+  vendedor.rating = 0;
+  vendedor.totalAvaliacoes = 0;
+  vendedor.verificado = false;
   await vendedor.save();
   return vendedor;
 };

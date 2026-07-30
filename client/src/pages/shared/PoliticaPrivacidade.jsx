@@ -42,7 +42,7 @@ export default function PoliticaPrivacidade() {
         .legal-back:hover { color: #0f172a; }
         
         .legal-header { text-align: center; margin-bottom: 48px; padding-bottom: 40px; border-bottom: 1px solid #e2e8f0; }
-        .legal-icon-wrap { width: 64px; height: 64px; background: #fffaf0; border: 1px solid rgba(217, 196, 156, 0.42); color: #102f50; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+        .legal-icon-wrap { width: 64px; height: 64px; background: #ffffff; border: 1px solid rgba(217, 196, 156, 0.42); color: #102f50; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
         .legal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 4vw, 36px); font-weight: 800; color: #0f172a; letter-spacing: -0.02em; margin-bottom: 12px; }
         .legal-subtitle { font-size: 15px; color: #64748b; }
         

@@ -308,7 +308,7 @@ export default function Login() {
           font-size: 13.5px;
           font-weight: 500;
           margin-bottom: 24px;
-          background: #fffaf0;
+          background: #ffffff;
           padding: 14px;
           border: 1px solid rgba(217, 196, 156, 0.42);
           border-radius: 12px;

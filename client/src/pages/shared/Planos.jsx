@@ -216,7 +216,7 @@ export default function Planos() {
           letter-spacing: 0.06em;
           text-transform: uppercase;
           color: #0f172a;
-          background: #fffaf0;
+          background: #ffffff;
           border: 1px solid rgba(217,196,156,.38);
           padding: 4px 10px;
           border-radius: 100px;
@@ -319,7 +319,7 @@ export default function Planos() {
           border-color: #d9c49c;
           color: #102f50;
         }
-        .pl-btn--outline-pro:hover { background: #fffaf0; }
+        .pl-btn--outline-pro:hover { background: #ffffff; }
 
         .pl-spinner {
           width: 16px; height: 16px;

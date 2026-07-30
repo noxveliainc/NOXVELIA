@@ -233,9 +233,9 @@ export default function Patrocinios() {
         path="/patrocinios"
       />
       <style>{`
-        .sponsor-page { min-height: 100vh; background: #f4efe5; color: #071326; font-family: Inter, system-ui, sans-serif; }
+        .sponsor-page { min-height: 100vh; background: #ffffff; color: #071326; font-family: Inter, system-ui, sans-serif; }
         .sponsor-shell { width: min(1180px, calc(100% - 36px)); margin: 0 auto; }
-        .sponsor-hero { padding: 54px 0 34px; border-bottom: 1px solid rgba(7,19,38,.12); background: linear-gradient(180deg, #fffaf0, #f4efe5); }
+        .sponsor-hero { padding: 54px 0 34px; border-bottom: 1px solid rgba(7,19,38,.12); background: #ffffff; }
         .sponsor-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 28px; align-items: end; }
         .sponsor-kicker { display: inline-flex; align-items: center; gap: 8px; color: #102f50; font-size: 11px; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
         .sponsor-kicker::before { content: ''; width: 28px; height: 1px; background: #d9c49c; }
@@ -253,18 +253,18 @@ export default function Patrocinios() {
         .sponsor-panel h2 { margin: 0 0 14px; font-size: 24px; font-weight: 950; }
         .sponsor-panel-intro { margin: -6px 0 16px; color: #596b7c; font-size: 14px; line-height: 1.5; }
         .sponsor-steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-        .sponsor-step { border: 1px solid rgba(7,19,38,.11); border-radius: 12px; background: #fffaf0; padding: 14px; }
+        .sponsor-step { border: 1px solid rgba(7,19,38,.11); border-radius: 12px; background: #ffffff; padding: 14px; }
         .sponsor-step svg { color: #102f50; margin-bottom: 9px; }
         .sponsor-step strong { display: block; font-size: 14px; font-weight: 950; }
         .sponsor-step span { display: block; margin-top: 5px; color: #596b7c; font-size: 12px; line-height: 1.4; }
         .sponsor-rules { display: grid; gap: 12px; }
-        .sponsor-rule-card { border: 1px solid rgba(7,19,38,.11); border-radius: 12px; background: #fffaf0; padding: 15px; }
+        .sponsor-rule-card { border: 1px solid rgba(7,19,38,.11); border-radius: 12px; background: #ffffff; padding: 15px; }
         .sponsor-rule-card h3 { margin: 0 0 10px; font-size: 15px; font-weight: 950; }
         .sponsor-rule-card ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
         .sponsor-rule-card li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; color: #45576a; font-size: 13px; line-height: 1.42; }
         .sponsor-rule-card svg { color: #102f50; margin-top: 1px; }
         .sponsor-examples { display: grid; gap: 10px; }
-        .sponsor-example { border: 1px solid rgba(7,19,38,.11); border-radius: 12px; background: #fffaf0; padding: 15px; }
+        .sponsor-example { border: 1px solid rgba(7,19,38,.11); border-radius: 12px; background: #ffffff; padding: 15px; }
         .sponsor-example h3 { margin: 0 0 8px; font-size: 15px; font-weight: 950; }
         .sponsor-example p { margin: 0 0 8px; color: #45576a; font-size: 13px; line-height: 1.42; }
         .sponsor-example dl { display: grid; gap: 6px; margin: 0; }
@@ -294,10 +294,10 @@ export default function Patrocinios() {
         .sponsor-form { display: grid; gap: 16px; }
         .sponsor-field { display: grid; gap: 7px; }
         .sponsor-field label, .sponsor-group-title { color: #4f6173; font-size: 10px; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
-        .sponsor-field input, .sponsor-field select { width: 100%; min-height: 46px; border: 1px solid rgba(7,19,38,.16); border-radius: 9px; background: #fffaf0; color: #071326; padding: 0 12px; font-size: 14px; font-weight: 760; box-sizing: border-box; }
+        .sponsor-field input, .sponsor-field select { width: 100%; min-height: 46px; border: 1px solid rgba(7,19,38,.16); border-radius: 9px; background: #ffffff; color: #071326; padding: 0 12px; font-size: 14px; font-weight: 760; box-sizing: border-box; }
         .sponsor-duration-grid, .sponsor-position-grid { display: grid; gap: 10px; }
         .sponsor-duration-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        .sponsor-choice { border: 1px solid rgba(7,19,38,.16); border-radius: 10px; background: #fffaf0; padding: 13px; text-align: left; cursor: pointer; color: #071326; }
+        .sponsor-choice { border: 1px solid rgba(7,19,38,.16); border-radius: 10px; background: #ffffff; padding: 13px; text-align: left; cursor: pointer; color: #071326; }
         .sponsor-choice.active { border-color: #9d7b3f; background: rgba(217,196,156,.28); box-shadow: inset 0 0 0 1px rgba(157,123,63,.28); }
         .sponsor-choice strong { display: block; font-size: 19px; font-weight: 950; }
         .sponsor-choice span { display: block; margin-top: 4px; color: #596b7c; font-size: 12px; font-weight: 780; line-height: 1.35; }
@@ -306,7 +306,7 @@ export default function Patrocinios() {
         .sponsor-upload-row { display: flex; gap: 9px; flex-wrap: wrap; }
         .sponsor-button { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 9px; border: 1px solid #d9c49c; background: #d9c49c; color: #071326; padding: 0 16px; font-size: 14px; font-weight: 900; cursor: pointer; text-decoration: none; }
         .sponsor-button.secondary { background: #ffffff; border-color: rgba(7,19,38,.16); color: #071326; }
-        .sponsor-preview { min-height: 170px; overflow: hidden; border: 1px dashed rgba(7,19,38,.18); border-radius: 12px; background: #fffaf0; display: grid; place-items: center; color: #596b7c; font-size: 13px; font-weight: 850; }
+        .sponsor-preview { min-height: 170px; overflow: hidden; border: 1px dashed rgba(7,19,38,.18); border-radius: 12px; background: #ffffff; display: grid; place-items: center; color: #596b7c; font-size: 13px; font-weight: 850; }
         .sponsor-preview img { width: 100%; height: 220px; object-fit: cover; display: block; }
         .sponsor-alert { border-radius: 10px; padding: 12px 14px; font-size: 13px; font-weight: 800; }
         .sponsor-alert.ok { background: rgba(22,139,130,.12); color: #0f766e; }
@@ -329,8 +329,8 @@ export default function Patrocinios() {
         <div className="sponsor-shell sponsor-hero-grid">
           <div>
             <span className="sponsor-kicker">Patrocínios Noxvelia</span>
-            <h1>Publicidade direta para marcas que querem aparecer no momento certo.</h1>
-            <p>Cria uma campanha simples: escolhes a posição, carregas o criativo, indicas o link e defines a duração. O visitante clica no banner e segue para o destino que escolheste.</p>
+            <h1>Preço de lançamento para marcas que querem aparecer no momento certo.</h1>
+            <p>Nesta fase inicial, os espaços têm preço de lançamento para parceiros que querem testar presença na Noxvelia desde cedo. Escolhes a posição, carregas o criativo, indicas o link e defines a duração.</p>
           </div>
           <div className="sponsor-price-card">
             <span>desde</span>

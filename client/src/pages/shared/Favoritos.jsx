@@ -81,7 +81,7 @@ export default function Favoritos() {
           align-items: center;
           gap: 8px;
           color: #102f50;
-          background: #fffaf0;
+          background: #ffffff;
           border: 1px solid rgba(217, 196, 156, 0.42);
           border-radius: 999px;
           padding: 7px 11px;
@@ -143,7 +143,7 @@ export default function Favoritos() {
           width: 76px;
           height: 76px;
           border-radius: 20px;
-          background: #fffaf0;
+          background: #ffffff;
           border: 1px solid rgba(217, 196, 156, 0.42);
           color: #102f50;
           display: flex;

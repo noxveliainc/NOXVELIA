@@ -111,7 +111,7 @@ export default function ProfileView({
         }
         .profile-cover {
           height: 220px;
-          background: linear-gradient(135deg, #cbd5e1, #f1f5f9);
+          background: radial-gradient(circle at 18% 24%, rgba(217,196,156,.42), transparent 28%), linear-gradient(135deg, rgba(16,47,80,.96), rgba(7,19,38,.86)), repeating-linear-gradient(45deg, rgba(255,255,255,.08) 0 1px, transparent 1px 18px);
           position: relative;
           cursor: default;
         }
@@ -213,13 +213,13 @@ export default function ProfileView({
         .profile-badge.profissional { background: rgba(217,196,156,0.14); color: #102f50; border-color: rgba(217,196,156,0.34); }
         .profile-badge.premium { background: rgba(217,196,156,0.16); color: #7a612e; border-color: rgba(217,196,156,0.42); }
         .profile-upgrade {
-          background: transparent;
-          color: #102f50;
-          border: 1px dashed rgba(217,196,156,0.6);
+          background: #d9c49c;
+          color: #071326;
+          border: 1px solid #d9c49c;
           border-radius: 6px;
           font-size: 10px;
           font-weight: 900;
-          padding: 6px 10px;
+          padding: 6px 11px;
           cursor: pointer;
           text-transform: uppercase;
           display: inline-flex;
@@ -275,12 +275,12 @@ export default function ProfileView({
           color: #102f50;
           text-decoration: none;
           border: 1px solid rgba(217,196,156,0.36);
-          background: #fffaf0;
+          background: #ffffff;
           border-radius: 999px;
           padding: 8px 12px;
           max-width: 240px;
         }
-        .profile-link.whatsapp { color: #102f50; border-color: rgba(217,196,156,0.48); background: #fff7df; }
+        .profile-link.whatsapp { color: #102f50; border-color: rgba(217,196,156,0.48); background: #fff9eb; }
         .profile-link span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .profile-stars { display: flex; align-items: center; gap: 4px; color: #f59e0b; margin-bottom: 24px; }
         .profile-stars-text { font-size: 13px; font-weight: 800; color: #0f172a; margin-left: 4px; }
@@ -314,7 +314,7 @@ export default function ProfileView({
         .profile-btn-solid:hover, .profile-btn-primary:hover, .profile-btn-outline:hover { transform: translateY(-1px); }
         .profile-map-panel { padding: 0 36px 36px; }
         .profile-map-loading { min-height: 230px; display: grid; place-items: center; border: 1px solid #e2e8f0; border-radius: 16px; background: #f8fafc; color: #64748b; font-size: 13px; font-weight: 800; }
-        .profile-btn-primary { background: #fffaf0; color: #102f50; border: 1px solid rgba(217,196,156,0.72); }
+        .profile-btn-primary { background: #ffffff; color: #102f50; border: 1px solid rgba(217,196,156,0.72); }
         .profile-btn-outline { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
         .profile-btn-outline.danger:hover { border-color: #fecdd3; color: #be123c; background: #fff1f2; }
         .dark .profile-card {

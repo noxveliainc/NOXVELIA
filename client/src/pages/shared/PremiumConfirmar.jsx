@@ -67,7 +67,7 @@ export default function PremiumConfirmar() {
         .pc-back { border: 0; background: transparent; color: #5d6b78; font-size: 12px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; padding: 0; margin-bottom: 24px; }
         .pc-back:hover { color: #102f50; }
         .pc-hero { display: grid; grid-template-columns: minmax(0, .88fr) minmax(320px, .52fr); gap: 22px; align-items: stretch; }
-        .pc-panel { background: #fffaf0; border: 1px solid rgba(7, 19, 38, .12); border-radius: 18px; box-shadow: 0 24px 60px -46px rgba(7, 19, 38, .55); }
+        .pc-panel { background: #ffffff; border: 1px solid rgba(7, 19, 38, .12); border-radius: 18px; box-shadow: 0 24px 60px -46px rgba(7, 19, 38, .55); }
         .pc-main { padding: clamp(28px, 4vw, 44px); }
         .pc-kicker { display: inline-flex; align-items: center; min-height: 32px; padding: 0 11px; border: 1px solid rgba(217, 196, 156, .72); border-radius: 999px; background: rgba(217, 196, 156, .22); color: #102f50; font-size: 11px; font-weight: 950; letter-spacing: .1em; text-transform: uppercase; }
         .pc-title { max-width: 680px; margin: 18px 0 14px; font-family: "Plus Jakarta Sans", Inter, sans-serif; font-size: clamp(34px, 5vw, 62px); line-height: 1.02; letter-spacing: 0; font-weight: 950; }

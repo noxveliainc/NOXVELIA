@@ -494,7 +494,7 @@ export default function Publicar() {
         .pub-limit-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
         .pub-limit-actions button { border: 1px solid #d8c494; border-radius: 12px; min-height: 46px; padding: 0 18px; font-weight: 800; cursor: pointer; }
         .pub-limit-primary { background: #102f50; color: #fff; }
-        .pub-limit-secondary { background: #fffaf0; color: #102f50; }
+        .pub-limit-secondary { background: #ffffff; color: #102f50; }
         .dark .pub-limit-meter, .dark .pub-limit-card { background: #0b1626; border-color: rgba(217, 195, 141, .45); box-shadow: none; }
         .dark .pub-limit-meter strong, .dark .pub-limit-card h2 { color: #fff8e8; }
         .dark .pub-limit-meter span, .dark .pub-limit-meter p, .dark .pub-limit-card p { color: #d8deea; }

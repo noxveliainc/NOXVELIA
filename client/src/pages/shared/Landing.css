@@ -5,13 +5,13 @@
   --navy: #071326;
   --blue: #102f50;
   --gold: #d9c49c;
-  --paper: #fffaf0;
-  --paper-2: #f4efe5;
+  --paper: #ffffff;
+  --paper-2: #ffffff;
   --line: rgba(7, 19, 38, .14);
   --muted: #596b7c;
   min-height: 100vh;
   overflow-x: hidden;
-  background: var(--paper-2);
+  background: #ffffff;
   color: var(--navy);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -27,19 +27,19 @@
 .lp-kicker { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 12px; color: var(--blue); font-size: 11px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
 .lp-kicker::before { content: ''; width: 28px; height: 1px; background: var(--gold); }
 
-.lp-hero { padding: 32px 0 22px; background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%); border-bottom: 1px solid var(--line); }
+.lp-hero { padding: 32px 0 22px; background: #ffffff; border-bottom: 1px solid var(--line); }
 .lp-hero-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 22px; align-items: center; margin-bottom: 18px; }
 .lp-hero-copy h1 { max-width: 650px; margin: 0; color: var(--navy); font-size: clamp(34px, 4.4vw, 58px); line-height: 1; letter-spacing: 0; font-weight: 950; }
 .lp-hero-copy p { max-width: 560px; margin: 12px 0 0; color: #45576a; font-size: 16px; line-height: 1.5; }
 
 .lp-search-box { overflow: hidden; border: 1px solid rgba(7,19,38,.16); border-radius: 10px; background: #ffffff; box-shadow: 0 20px 60px -48px rgba(7,19,38,.65); }
-.lp-tabs { display: flex; padding: 8px; gap: 6px; border-bottom: 1px solid rgba(7,19,38,.1); background: #f8f3ea; }
+.lp-tabs { display: flex; padding: 8px; gap: 6px; border-bottom: 1px solid rgba(7,19,38,.1); background: #ffffff; }
 .lp-tabs button { min-height: 42px; display: inline-flex; align-items: center; gap: 8px; padding: 0 18px; border: 0; border-radius: 7px; background: transparent; color: #435668; font-size: 14px; font-weight: 900; cursor: pointer; }
 .lp-tabs button.active { color: var(--paper); background: var(--navy); }
 .lp-search-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; padding: 14px; align-items: end; }
 .lp-search-grid label { min-width: 0; display: grid; gap: 6px; color: #4f6173; font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
 .lp-search-grid select { width: 100%; min-height: 50px; padding: 0 12px; color: var(--navy); border: 1px solid rgba(7,19,38,.16); border-radius: 8px; background: var(--paper); font-size: 13px; font-weight: 760; }
-.lp-search-grid select:disabled { color: #8793a0; background: #f0ede6; }
+.lp-search-grid select:disabled { color: #8793a0; background: #f8fafc; }
 .lp-search-grid button[type="submit"] { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--navy); border-radius: 8px; background: var(--navy); color: var(--paper); font-size: 14px; font-weight: 900; cursor: pointer; }
 
 /* Barra de visitas do site — dados reais do funil, atualizados periodicamente. */
@@ -80,7 +80,7 @@
 
 .lp-category-section,
 .lp-brand-section,
-.lp-cv-section { background: var(--paper-2); }
+.lp-cv-section { background: #ffffff; }
 .lp-category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .lp-category-card { position: relative; min-height: 280px; overflow: hidden; border-radius: 10px; background: var(--navy); color: var(--paper); text-decoration: none; }
 .lp-category-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .25s ease; }
@@ -119,8 +119,10 @@
 .lp-listing-card { width: 100%; min-width: 0; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; align-items: stretch; padding: 10px; border: 1px solid rgba(240,223,187,.14); border-radius: 8px; background: rgba(255,250,240,.08); color: inherit; text-align: left; cursor: pointer; }
 .lp-listing-img { min-width: 0; min-height: 92px; overflow: hidden; border-radius: 7px; background: var(--paper); }
 .lp-listing-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.lp-listing-no-photo { width: 100%; height: 100%; display: grid; place-items: center; }
-.lp-listing-no-photo img { width: 58px; height: 58px; object-fit: contain; opacity: .84; }
+.lp-listing-no-photo { width: 100%; height: 100%; display: grid; place-items: center; gap: 6px; padding: 10px; background: rgba(255,255,255,.94); color: #102f50; text-align: center; }
+.lp-listing-no-photo svg { width: 34px; height: 34px; opacity: .78; }
+.lp-listing-no-photo em { font-style: normal; font-size: 9px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; line-height: 1.2; }
+.lp-listing-no-photo.is-imovel { color: #5f683a; }
 .lp-listing-body { min-width: 0; display: grid; align-content: center; gap: 4px; }
 .lp-listing-price { color: var(--gold); font-size: 16px; font-weight: 900; }
 .lp-listing-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--paper); font-size: 14px; font-weight: 850; }
@@ -130,14 +132,14 @@
 .lp-listing-state { min-height: 132px; display: grid; align-content: center; justify-items: start; gap: 8px; padding: 16px; border: 1px dashed rgba(240,223,187,.22); border-radius: 8px; color: rgba(255,250,240,.72); }
 .lp-listing-state strong { color: var(--paper); }
 
-.lp-sell-section { background: var(--paper); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.lp-sell-section { background: #ffffff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .lp-sell-box { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 26px; border: 1px solid var(--line); border-radius: 10px; background: #ffffff; }
 .lp-sell-box p,
 .lp-cv-card p { margin: 10px 0 0; color: var(--muted); line-height: 1.6; }
 .lp-main-cta,
 .lp-soft-cta { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 18px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 900; }
 .lp-main-cta { background: var(--navy); border: 1px solid var(--navy); color: var(--paper); }
-.lp-soft-cta { background: var(--paper); border: 1px solid var(--line); color: var(--navy); }
+.lp-soft-cta { background: #ffffff; border: 1px solid var(--line); color: var(--navy); }
 
 .lp-cv-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); gap: 22px; align-items: center; padding: 28px; border: 1px solid var(--line); border-radius: 10px; background: #ffffff; }
 .lp-cv-card .lp-main-cta { margin-top: 18px; }
@@ -285,7 +287,7 @@
 }
 
 .lp-news-section {
-  background: var(--paper-2);
+  background: #ffffff;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
@@ -435,7 +437,7 @@
 }
 
 .lp-root :where(.lp-soft-cta) {
-  background: #fffaf0 !important;
+  background: #ffffff !important;
   border-color: rgba(7,19,38,.18) !important;
   color: #071326 !important;
 }
@@ -568,11 +570,11 @@
   --navy: #071326;
   --blue: #102f50;
   --gold: #d9c49c;
-  --paper: #fffaf0;
-  --paper-2: #f4efe5;
+  --paper: #ffffff;
+  --paper-2: #ffffff;
   --line: rgba(7, 19, 38, .13);
   --muted: #53667a;
-  background: #f4efe5 !important;
+  background: #ffffff !important;
 }
 
 .lp-shell {
@@ -685,7 +687,7 @@
 
 .lp-visits-bar {
   padding: 10px 0;
-  background: #fffaf0;
+  background: #ffffff;
 }
 
 .lp-visits-inner {
@@ -715,7 +717,7 @@
 .lp-brand-section,
 .lp-news-section,
 .lp-cv-section {
-  background: #f4efe5 !important;
+  background: #ffffff !important;
 }
 
 .lp-category-grid {
@@ -749,7 +751,7 @@
 
 .lp-brand-card {
   border-radius: 8px;
-  background: rgba(255, 255, 255, .72);
+  background: #ffffff;
   box-shadow: none;
 }
 
@@ -766,7 +768,7 @@
 .lp-news-card {
   min-height: 176px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, .78);
+  background: #ffffff;
   box-shadow: none;
 }
 
@@ -794,7 +796,7 @@
 .lp-listing-column {
   padding: 14px;
   border-radius: 8px;
-  background: #fffaf0;
+  background: #ffffff;
 }
 
 .lp-listing-card {
@@ -803,7 +805,7 @@
 }
 
 .lp-sell-section {
-  background: #fffaf0 !important;
+  background: #ffffff !important;
 }
 
 .lp-sell-box,

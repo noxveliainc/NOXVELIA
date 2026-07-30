@@ -7,7 +7,9 @@ import { getImageDimensions, getImageSrcSet, getImageUrl } from '../../utils/ima
 
 const CARD_ICON_PATHS = {
   camera: 'M4 8h3l1.5-2h7L17 8h3v10H4V8zm8 8a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
+  car: 'M7 16h10M6 16l1-5 2-3h6l2 3 1 5M8 18h.01M16 18h.01',
   check: 'M12 3l7 3v5c0 5-3.1 8.3-7 10-3.9-1.7-7-5-7-10V6l7-3zm-3 9 2 2 4-5',
+  home: 'M4 11l8-7 8 7v9h-5v-5H9v5H4v-9',
   location: 'M12 21s6-5.2 6-11a6 6 0 0 0-12 0c0 5.8 6 11 6 11zm0-8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
   star: 'M12 4l2.3 4.7 5.2.8-3.8 3.7.9 5.2-4.6-2.4-4.6 2.4.9-5.2-3.8-3.7 5.2-.8L12 4z',
   trash: 'M6 7h12M9 7V5h6v2m-7 3 .6 9h6.8l.6-9',
@@ -56,6 +58,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const isVerificado = anuncio?.utilizador?.tipo === 'admin' || anuncio?.utilizador?.premiumAtivo === true;
   const isProfissional = anuncio?.utilizador?.tipoConta === 'profissional' || anuncio?.utilizador?.tipo === 'admin';
   const isCarro = anuncio?.tipo === 'carro';
+  const isImovel = !isCarro;
   const imagemPrincipal = anuncio?.fotos?.[0] || anuncio?.imagens?.[0] || anuncio?.imagem;
   const imagemPrincipalUrl = getImageUrl(imagemPrincipal, 'large') || getImageUrl(imagemPrincipal, 'medium');
   const imagemPrincipalSrcSet = getImageSrcSet(imagemPrincipal);
@@ -73,14 +76,26 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
     return mapa[String(valor).toLowerCase()] || valor;
   };
 
+  const formatarKm = (valor) => {
+    const numero = Number(valor);
+    if (!Number.isFinite(numero)) return null;
+    if (numero >= 100000) return `${Math.round(numero / 1000)}k km`;
+    return `${new Intl.NumberFormat('pt-PT').format(numero)} km`;
+  };
+
+  const formatarArea = (valor) => {
+    const numero = Number(valor);
+    if (!Number.isFinite(numero) || numero <= 0) return null;
+    return `${new Intl.NumberFormat('pt-PT').format(numero)} m²`;
+  };
   const destaques = (isCarro ? [
     { label: 'Ano', value: anuncio?.carro?.ano || null },
-    { label: 'Km', value: anuncio?.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null },
+    { label: 'Km', value: formatarKm(anuncio?.carro?.km) },
     { label: 'Combustível', value: formatarCombustivel(anuncio?.carro?.combustivel) },
     { label: 'Caixa', value: anuncio?.carro?.transmissao || null },
   ] : [
-    { label: 'Tipo', value: anuncio?.imovel?.tipologia || anuncio?.imovel?.tipoImovel },
-    { label: 'Área', value: anuncio?.imovel?.area ? `${anuncio.imovel.area} m2` : null },
+    { label: 'Tipologia', value: anuncio?.imovel?.tipologia || anuncio?.imovel?.tipoImovel },
+    { label: 'Área', value: formatarArea(anuncio?.imovel?.area) },
     { label: 'Quartos', value: anuncio?.imovel?.quartos != null ? `${anuncio.imovel.quartos}` : null },
     { label: 'Garagem', value: anuncio?.imovel?.garagem ? 'Sim' : null },
   ]).filter(item => item.value).slice(0, 3);
@@ -134,6 +149,8 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           background: #fbfcfb;
           border-color: #b8c5c1;
         }
+        .nxc-wrap.is-imovel { border-color: rgba(107, 90, 54, .18); }
+        .nxc-wrap.is-imovel:hover { border-color: rgba(120, 96, 49, .38); }
         .nxc-wrap.premium {
           border-color: #d9c49c;
           border-width: 2px;
@@ -182,13 +199,23 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #cbd5e1;
+          color: #102f50;
+          background: linear-gradient(135deg, rgba(217,196,156,.16), rgba(255,255,255,.82)), #f8fafc;
         }
-        .nxc-placeholder img {
-          width: min(92px, 44%);
-          height: auto;
-          object-fit: contain;
-          opacity: .92;
+        .nxc-placeholder-inner {
+          display: grid;
+          place-items: center;
+          gap: 8px;
+          color: #102f50;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+        .nxc-placeholder-inner svg { width: 42px; height: 42px; color: currentColor; opacity: .72; }
+        .nxc-placeholder.is-imovel {
+          color: #5f683a;
+          background: radial-gradient(circle at 24% 22%, rgba(95,104,58,.16), transparent 34%), linear-gradient(135deg, rgba(224,214,189,.44), rgba(255,255,255,.9)), #f8fafc;
         }
 
         /* ── BADGES ── */
@@ -227,6 +254,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           z-index: 5;
           text-transform: uppercase; letter-spacing: .06em;
         }
+        .nxc-wrap.is-imovel .nxc-badge-tipo { color: #3f4f2d; border-color: rgba(95,104,58,.2); background: rgba(255,255,255,.94); }
 
         .nxc-delete-btn {
           position: absolute;
@@ -259,7 +287,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         }
         .nxc-price-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
         .nxc-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -.02em; line-height: 1; }
-        .nxc-title { font-size: 14px; font-weight: 600; color: #475569; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .nxc-title { font-size: 14px; font-weight: 600; color: #475569; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
         .nxc-featured-note {
           width: max-content; max-width: 100%; min-height: 24px;
@@ -276,6 +304,10 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-insight { min-width: 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 7px 8px; }
         .nxc-insight-label { display: block; font-size: 8.5px; font-weight: 900; color: #94a3b8; letter-spacing: .08em; text-transform: uppercase; line-height: 1; margin-bottom: 4px; }
         .nxc-insight-value { display: block; font-size: 11.5px; font-weight: 800; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.1; }
+        .nxc-wrap.is-imovel .nxc-insights { grid-template-columns: 1.08fr .96fr .96fr; }
+        .nxc-wrap.is-imovel .nxc-insight { background: #fbfaf6; border-color: rgba(95,104,58,.18); }
+        .nxc-wrap.is-imovel .nxc-insight-label { color: #7a8454; }
+        .nxc-wrap.is-imovel .nxc-insight:first-child { background: rgba(95,104,58,.1); border-color: rgba(95,104,58,.26); }
 
         .nxc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
         .nxc-tag { font-size: 10.5px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; white-space: nowrap; }
@@ -285,7 +317,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-user { display: flex; align-items: center; gap: 8px; min-width: 0; }
         .nxc-avatar { width: 24px; height: 24px; border-radius: 50%; background: #f8fafc; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #64748b; overflow: hidden; flex-shrink: 0; position: relative; }
         .nxc-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-        .nxc-username { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #475569; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nxc-username { min-width: 0; display: flex; align-items: center; gap: 4px; font-size: 12px; color: #475569; font-weight: 600; white-space: normal; overflow-wrap: anywhere; line-height: 1.2; }
         .nxc-username.mine { color: #0f172a; font-weight: 700; }
         .nxc-loc { display: flex; align-items: center; gap: 3px; font-size: 11px; color: #64748b; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
 
@@ -320,7 +352,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-icon { flex: 0 0 auto; display: inline-block; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
       `}</style>
 
-      <Link to={anuncioPath(anuncio)} className={`nxc-wrap${isPremium ? ' premium' : ''}`}>
+      <Link to={anuncioPath(anuncio)} className={`nxc-wrap ${isCarro ? 'is-carro' : 'is-imovel'}${isPremium ? ' premium' : ''}`}>
 
         {/* ── IMAGEM ── */}
         <div className="nxc-img">
@@ -338,7 +370,14 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
                 decoding="async"
               />
             )
-            : <div className="nxc-placeholder"><img src="/logo-noxvelia.png" alt="" loading="lazy" /></div>
+            : (
+              <div className={`nxc-placeholder ${isImovel ? 'is-imovel' : 'is-carro'}`}>
+                <span className="nxc-placeholder-inner">
+                  <CardIcon name={isImovel ? 'home' : 'car'} size={44} />
+                  {isImovel ? 'Imóvel sem foto' : 'Automóvel sem foto'}
+                </span>
+              </div>
+            )
           }
 
           <span className="nxc-badge-tipo">{isCarro ? 'Automóvel' : 'Imóvel'}</span>
@@ -396,7 +435,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
             </div>
           )}
           {!isCarro && <div className="nxc-tags">
-            {anuncio?.imovel?.area        && <span className="nxc-tag">{anuncio.imovel.area} m²</span>}
+            {anuncio?.imovel?.area        && <span className="nxc-tag">{formatarArea(anuncio.imovel.area)}</span>}
             {anuncio?.imovel?.tipologia   && <span className="nxc-tag">{anuncio.imovel.tipologia}</span>}
           </div>}
         </div>
