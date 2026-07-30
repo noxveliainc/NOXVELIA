@@ -11,7 +11,8 @@
     "check": "node --check index.js",
     "images:migrate": "node scripts/migrateCloudinaryImages.js",
     "images:cleanup": "node scripts/cleanupImages.js",
-    "demo:seed": "node scripts/seedDemoListings.js"
+    "demo:seed": "node scripts/seedDemoListings.js",
+    "stock:autoscout24": "node scripts/convertAutoscout24ToNoxveliaCsv.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.99.0",
