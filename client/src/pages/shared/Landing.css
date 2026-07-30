@@ -944,3 +944,57 @@
 .lp-category-card-estate::after { background: linear-gradient(0deg, rgba(7, 19, 38, .88), rgba(47, 125, 87, .28)) !important; }
 .lp-category-card-auto small { color: #bce9ee !important; }
 .lp-category-card-estate small { color: #cce9d6 !important; }
+/* Landing full width refinada para desktop largo. */
+@media (min-width: 721px) {
+  .lp-shell {
+    width: calc(100% - clamp(44px, 5vw, 112px)) !important;
+    max-width: none !important;
+    margin-inline: auto !important;
+  }
+
+  .lp-hero .lp-shell {
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 540px) !important;
+  }
+
+  .lp-search-box,
+  .lp-category-grid,
+  .lp-brand-rail,
+  .lp-news-grid,
+  .lp-listing-columns,
+  .lp-sell-box,
+  .lp-cv-card {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .lp-shell {
+    width: calc(100% - clamp(64px, 5.6vw, 132px)) !important;
+  }
+
+  .lp-hero .lp-shell {
+    grid-template-columns: minmax(0, 1.04fr) minmax(460px, 580px) !important;
+    gap: clamp(44px, 6vw, 96px) !important;
+  }
+
+  .lp-hero-copy h1 {
+    max-width: 820px !important;
+  }
+
+  .lp-hero-copy p {
+    max-width: 680px !important;
+  }
+
+  .lp-category-card {
+    min-height: 320px !important;
+  }
+
+  .lp-brand-grid {
+    grid-auto-columns: minmax(146px, 168px) !important;
+  }
+
+  .lp-news-card:first-child {
+    min-height: 300px !important;
+  }
+}

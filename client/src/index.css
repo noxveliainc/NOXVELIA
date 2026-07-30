@@ -1717,3 +1717,69 @@ body.nx-dark {
 .nim-drawer-theme-row {
   display: none !important;
 }
+/* Noxvelia final shell layout: navbar/footer bege e pesquisa full width. */
+:root {
+  --nx-shell-beige: #fffaf0;
+  --nx-shell-beige-border: #eadfc9;
+}
+
+.nl-root,
+.ncr-root,
+.nim-root,
+.nl-root.scrolled,
+.ncr-root.scrolled,
+.nim-root.scrolled {
+  background: rgba(255, 250, 240, .98) !important;
+  border-bottom-color: rgba(7, 19, 38, .12) !important;
+}
+
+.nx-footer {
+  background: var(--nx-shell-beige) !important;
+  border-top-color: rgba(7, 19, 38, .12) !important;
+}
+
+@media (min-width: 1025px) {
+  .pesquisa-layout {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 24px clamp(18px, 2.4vw, 56px) 56px !important;
+    gap: 16px !important;
+  }
+
+  .pesquisa-layout.filters-open,
+  .pesquisa-layout.filters-closed {
+    max-width: none !important;
+  }
+
+  .pesquisa-sidebar {
+    width: clamp(300px, 17vw, 340px) !important;
+  }
+
+  .pesquisa-sidebar-toggle {
+    margin-left: 0 !important;
+  }
+
+  .pesquisa-main-content {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  .pesquisa-layout.filters-closed .pesquisa-main-content {
+    width: calc(100% - 44px) !important;
+  }
+
+  .pesquisa-search-row,
+  .pesquisa-topbar,
+  .pesquisa-layout .nx-ad-banner {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .pesquisa-grid,
+  .pesquisa-skeleton-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 258px), 1fr)) !important;
+    gap: 18px !important;
+  }
+}

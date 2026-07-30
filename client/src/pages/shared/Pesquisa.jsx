@@ -529,7 +529,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     <>
       <style>{`
         .pesquisa-root { background: var(--nx-bg); font-family: var(--nx-font-body); color: var(--nx-text); min-height: 100vh; display: flex; flex-direction: column; }
-        .pesquisa-layout { display: flex; max-width: 1400px; margin: 0 auto; width: 100%; padding: 32px; gap: 24px; flex: 1; align-items: flex-start; }
+        .pesquisa-layout { display: flex; max-width: none; margin: 0; width: 100%; padding: 28px clamp(18px, 2.4vw, 48px) 48px; gap: 18px; flex: 1; align-items: flex-start; }
 
         .pesquisa-sidebar { width: 320px; flex-shrink: 0; background: var(--nx-bg-2); border: 1px solid var(--nx-border); border-radius: var(--nx-radius-lg); padding: 24px; position: sticky; top: 96px; max-height: calc(100vh - 120px); overflow-y: auto; box-shadow: 0 18px 40px -28px rgba(15,23,42,0.35); transition: width 0.25s ease, opacity 0.2s ease, padding 0.25s ease, border-color 0.25s ease; }
         .pesquisa-sidebar::-webkit-scrollbar { width: 4px; }
@@ -613,7 +613,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           transition: max-width .22s ease, padding .22s ease;
         }
         .pesquisa-layout.filters-closed {
-          max-width: min(100%, 1760px) !important;
+          max-width: none !important;
           padding-inline: 28px !important;
         }
         .pesquisa-layout.filters-closed .pesquisa-main-content {
@@ -690,7 +690,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .pesquisa-view-switch button:hover { color: #0f172a; }
         .pesquisa-view-switch button.active {
           background: ${accent};
-          color: #020617;
+          color: ${accentText};
           box-shadow: 0 8px 18px -14px ${accent};
         }
         .pesquisa-map-shell {
