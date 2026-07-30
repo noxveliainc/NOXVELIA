@@ -163,6 +163,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           position: relative;
           box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
           box-sizing: border-box;
+          min-width: 300px;
         }
         .nxc-wrap * { box-sizing: border-box; }
         .nxc-wrap:hover {
@@ -349,12 +350,12 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         /* ── BODY ── */
         .nxc-body {
-          padding: 14px 16px 16px;
-          display: flex; flex-direction: column; flex: 1; gap: 7px;
+          padding: 18px 20px 20px;
+          display: flex; flex-direction: column; flex: 1; gap: 9px;
         }
         .nxc-price-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-        .nxc-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 21px; font-weight: 800; color: #0f172a; letter-spacing: -.02em; line-height: 1; }
-        .nxc-title { font-size: 14px; font-weight: 600; color: #475569; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .nxc-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 25px; font-weight: 800; color: #0f172a; letter-spacing: -.02em; line-height: 1; }
+        .nxc-title { font-size: 15px; font-weight: 600; color: #475569; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
         .nxc-featured-note {
           width: max-content; max-width: 100%; min-height: 24px;
@@ -367,45 +368,45 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-trust-pill { display: inline-flex; align-items: center; min-height: 22px; padding: 0 7px; border-radius: 999px; border: 1px solid #e2d1a9; background: #fff7e6; color: #102f50; font-size: 10px; font-weight: 850; white-space: nowrap; }
         .nxc-trust-pill.business { background: rgba(16,47,80,.08); border-color: rgba(16,47,80,.18); color: #102f50; }
 
-        /* ── INSIGHTS: faixa única com divisórias, em vez de 3 caixas soltas ── */
+        /* ── INSIGHTS: cada especificação ocupa só o espaço que o seu valor precisa,
+           nunca corta texto — quebra para a linha seguinte se o cartão for estreito. */
         .nxc-insights {
           display: flex;
+          flex-wrap: wrap;
           align-items: stretch;
-          margin-top: 9px;
+          margin-top: 10px;
           border: 1px solid #e2e8f0;
           border-radius: 11px;
           background: #f8fafc;
           overflow: hidden;
         }
         .nxc-insight {
-          flex: 1 1 0;
-          min-width: 0;
+          flex: 1 1 auto;
+          min-width: fit-content;
           display: flex;
           align-items: center;
-          gap: 6px;
-          padding: 8px 8px;
-          position: relative;
+          gap: 7px;
+          padding: 9px 12px;
         }
         .nxc-insight + .nxc-insight {
           border-left: 1px solid #e2e8f0;
         }
         .nxc-insight-icon {
           flex-shrink: 0;
-          width: 24px; height: 24px;
-          border-radius: 7px;
+          width: 26px; height: 26px;
+          border-radius: 8px;
           display: flex; align-items: center; justify-content: center;
           background: rgba(16, 47, 80, .07);
           color: #102f50;
         }
-        .nxc-insight-icon svg { width: 12px; height: 12px; }
-        .nxc-insight-text { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+        .nxc-insight-icon svg { width: 13px; height: 13px; }
+        .nxc-insight-text { display: flex; flex-direction: column; gap: 1px; white-space: nowrap; }
         .nxc-insight-label {
           font-size: 8px; font-weight: 900; color: #94a3b8;
           letter-spacing: .05em; text-transform: uppercase; line-height: 1;
         }
         .nxc-insight-value {
-          font-size: 11.5px; font-weight: 800; color: #0f172a;
-          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3;
+          font-size: 12px; font-weight: 800; color: #0f172a; line-height: 1.3;
         }
         .nxc-wrap.is-imovel .nxc-insights { background: #fbfaf6; border-color: rgba(95,104,58,.2); }
         .nxc-wrap.is-imovel .nxc-insight + .nxc-insight { border-left-color: rgba(95,104,58,.2); }
@@ -416,13 +417,13 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-tag { font-size: 10.5px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; white-space: nowrap; }
 
         /* ── FOOTER ── */
-        .nxc-footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #ffffff; border-top: 1px solid #eef2f6; }
-        .nxc-user { display: flex; align-items: center; gap: 8px; min-width: 0; }
-        .nxc-avatar { width: 26px; height: 26px; border-radius: 50%; background: #f8fafc; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #64748b; overflow: hidden; flex-shrink: 0; position: relative; }
+        .nxc-footer { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: #ffffff; border-top: 1px solid #eef2f6; }
+        .nxc-user { display: flex; align-items: center; gap: 9px; min-width: 0; }
+        .nxc-avatar { width: 30px; height: 30px; border-radius: 50%; background: #f8fafc; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #64748b; overflow: hidden; flex-shrink: 0; position: relative; }
         .nxc-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-        .nxc-username { min-width: 0; display: flex; align-items: center; gap: 4px; font-size: 12px; color: #475569; font-weight: 600; white-space: normal; overflow-wrap: anywhere; line-height: 1.2; }
+        .nxc-username { min-width: 0; display: flex; align-items: center; gap: 4px; font-size: 12.5px; color: #475569; font-weight: 600; white-space: normal; overflow-wrap: anywhere; line-height: 1.25; }
         .nxc-username.mine { color: #0f172a; font-weight: 700; }
-        .nxc-loc { display: flex; align-items: center; gap: 3px; font-size: 11px; color: #64748b; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+        .nxc-loc { display: flex; align-items: center; gap: 3px; font-size: 11.5px; color: #64748b; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
 
         /* ── MODAL ── */
         .nxc-modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.72); z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -435,22 +436,22 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-modal-delete { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #ef4444; color: #fff; font-weight: 800; cursor: pointer; }
 
         @media (max-width: 640px) {
-          .nxc-wrap { border-radius: 12px; }
+          .nxc-wrap { border-radius: 12px; min-width: 0; }
           .nxc-wrap.premium { border-width: 2px; }
           .nxc-badge-premium, .nxc-badge-status { top: 8px; left: 8px; padding: 5px 9px; font-size: 8.5px; }
           .nxc-badge-tipo { bottom: 8px; left: 8px; padding: 3px 7px; font-size: 8px; }
           .nxc-photo-count { right: 8px; bottom: 8px; padding: 3px 7px; font-size: 9px; }
-          .nxc-body { padding: 10px 12px 11px; gap: 5px; }
-          .nxc-price { font-size: 18px; }
-          .nxc-title { font-size: 13px; line-height: 1.35; -webkit-line-clamp: 2; }
+          .nxc-body { padding: 13px 14px 14px; gap: 7px; }
+          .nxc-price { font-size: 20px; }
+          .nxc-title { font-size: 13.5px; line-height: 1.35; -webkit-line-clamp: 2; }
           .nxc-featured-note { min-height: 20px; padding: 3px 7px; font-size: 10.5px; }
-          .nxc-insights { margin-top: 6px; }
-          .nxc-insight { padding: 7px 6px; gap: 5px; }
-          .nxc-insight-icon { width: 20px; height: 20px; border-radius: 6px; }
-          .nxc-insight-icon svg { width: 10px; height: 10px; }
+          .nxc-insights { margin-top: 7px; }
+          .nxc-insight { padding: 7px 9px; gap: 6px; }
+          .nxc-insight-icon { width: 22px; height: 22px; border-radius: 7px; }
+          .nxc-insight-icon svg { width: 11px; height: 11px; }
           .nxc-insight-label { font-size: 7.5px; }
-          .nxc-insight-value { font-size: 10.5px; }
-          .nxc-footer { padding: 9px 12px; }
+          .nxc-insight-value { font-size: 11px; }
+          .nxc-footer { padding: 10px 14px; }
         }
 
         .nxc-icon { flex: 0 0 auto; display: inline-block; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
