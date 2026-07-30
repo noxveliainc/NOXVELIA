@@ -5,5 +5,7 @@ Disallow: /perfil
 Disallow: /favoritos
 Disallow: /editar/
 Disallow: /sucesso/
+Disallow: /premium-confirmar
 
 Sitemap: https://www.noxvelia.com/sitemap.xml
+Sitemap: https://www.noxvelia.com/api/system/sitemap.xml

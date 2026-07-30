@@ -63,8 +63,8 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener('noxvelia:auth-expired', expirada);
   }, [sincronizarUser]);
 
-  const login = async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
+  const login = async (email, password, extra = {}) => {
+    const response = await api.post('/auth/login', { email, password, ...extra });
     const { token, user: userData, utilizador } = response.data;
     const dadosUtilizador = userData || utilizador;
 

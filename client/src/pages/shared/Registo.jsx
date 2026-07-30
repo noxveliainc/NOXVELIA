@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import GoogleAuthButton, { googleAuthAvailable } from '../../components/GoogleAuthButton';
+import TurnstileWidget, { turnstileAvailable } from '../../components/TurnstileWidget';
 import { loginBackPath, loginDestinationPath } from '../../utils/navigationState';
 
 const DISTRITOS_PT = [
@@ -33,6 +34,7 @@ export default function Registo() {
   const [mostrarConfirmarPassword, setMostrarConfirmarPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
 
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
   const [contactoConfirmado, setContactoConfirmado] = useState(false);
@@ -107,6 +109,7 @@ export default function Registo() {
           localidade: formData.localidade,
           tipoConta: formData.tipoConta,
           aceitouTermos: formData.aceitouTermos,
+          turnstileToken,
         });
 
         if (resposta?.requiresCompletion) {
@@ -128,6 +131,7 @@ export default function Registo() {
         tipo: 'cliente',
         tipoConta: 'particular',
         aceitouTermos: formData.aceitouTermos,
+        turnstileToken,
       };
 
       await api.post('/auth/register', dadosParaSubmeter);
@@ -158,10 +162,14 @@ export default function Registo() {
 
   const handleGoogleCredential = async (credential) => {
     setErro('');
+    if (turnstileAvailable && !turnstileToken) {
+      setErro('Confirma a verificacao de seguranca para continuar.');
+      return;
+    }
     setLoading(true);
 
     try {
-      const resposta = await loginGoogle({ credential });
+      const resposta = await loginGoogle({ credential, turnstileToken });
       if (resposta?.requiresCompletion) {
         setGoogleCredential(credential);
         setFormData((atual) => ({
@@ -455,6 +463,8 @@ export default function Registo() {
         .auth-confirm-check:hover { background: #f1f5f9; }
         .auth-confirm-check input { margin-top: 2px; width: 18px; height: 18px; accent-color: #0f172a; cursor: pointer; flex-shrink: 0; }
         .auth-confirm-check span { font-size: 14px; color: #475569; line-height: 1.5; font-weight: 500; }
+        .auth-turnstile { margin: 14px 0 4px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .auth-turnstile small { color: #64748b; font-size: 12px; font-weight: 600; }
       `}</style>
 
       {mostrarConfirmacao && (
@@ -625,6 +635,8 @@ export default function Registo() {
                 .
               </span>
             </div>
+
+            <TurnstileWidget value={turnstileToken} onChange={setTurnstileToken} action="register" />
 
             <button className="auth-btn" type="submit" disabled={loading}>
               {loading ? 'A processar...' : (registoGoogle ? 'Concluir registo' : 'Criar Conta')}

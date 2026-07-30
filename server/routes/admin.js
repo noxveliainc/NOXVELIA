@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import User from '../models/User.js';
 import Anuncio from '../models/Anuncio.js';
 import FunnelEvent from '../models/FunnelEvent.js';
@@ -9,6 +9,7 @@ import { verificarToken, verificarAdmin } from '../middleware/auth.js';
 import { criarNotificacao } from '../controllers/notificacaoController.js';
 import adminPartnershipsRoutes from './adminPartnerships.js';
 import adminBannersRoutes from './adminBanners.js';
+import adminStockIntegrationsRoutes from './adminStockIntegrations.js';
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.use(verificarToken);
 router.use(verificarAdmin);
 router.use('/partnerships', adminPartnershipsRoutes);
 router.use('/banners', adminBannersRoutes);
+router.use('/stock-integrations', adminStockIntegrationsRoutes);
 
 // 1. MÉTRICAS GLOBAIS E RECEITA
 router.get('/dashboard/stats', async (req, res) => {

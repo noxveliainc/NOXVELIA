@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+﻿import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import PartnershipEmails from './PartnershipEmails';
 import AdminPostImages from './AdminPostImages';
 import AdminBanners from './AdminBanners';
+import AdminStockIntegrations from './AdminStockIntegrations';
 import LoadingScreen from '../../components/LoadingScreen';
 
 import { Icon } from '@mdi/react';
@@ -491,6 +492,7 @@ export default function AdminDashboard() {
             { id: 'anuncios', label: 'Moderação de Anúncios', icon: <Icon path={mdiFileDocumentOutline} size={0.7} />, count: anuncios.length },
             { id: 'criativos', label: 'Criativos', icon: <Icon path={mdiImageMultipleOutline} size={0.7} /> },
             { id: 'publicidade', label: 'Publicidade', icon: <Icon path={mdiCurrencyEur} size={0.7} /> },
+            { id: 'integracoes', label: 'Integrações', icon: <Icon path={mdiRefresh} size={0.7} /> },
             { id: 'parcerias', label: 'Emails de Parcerias', icon: <Icon path={mdiEmailOutline} size={0.7} /> },
             { id: 'funil', label: 'Funil', icon: <Icon path={mdiChartTimelineVariant} size={0.7} /> },
           ].map(tab => {
@@ -966,6 +968,10 @@ export default function AdminDashboard() {
 
           {activeTab === 'publicidade' && (
             <AdminBanners colors={COLORS} fonts={{ display: FONT_DISPLAY, body: FONT_BODY, mono: FONT_MONO }} />
+          )}
+
+          {activeTab === 'integracoes' && (
+            <AdminStockIntegrations utilizadores={utilizadores} colors={COLORS} fonts={{ display: FONT_DISPLAY, body: FONT_BODY, mono: FONT_MONO }} />
           )}
         </div>
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import GoogleAuthButton, { googleAuthAvailable } from '../../components/GoogleAuthButton';
+import TurnstileWidget, { turnstileAvailable } from '../../components/TurnstileWidget';
 import { loginBackPath, loginDestinationPath } from '../../utils/navigationState';
 
 export default function Login() {
@@ -11,6 +12,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -45,11 +47,15 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setErro('');
+    if (turnstileAvailable && !turnstileToken) {
+      setErro('Confirma a verificacao de seguranca para continuar.');
+      return;
+    }
     setLoading(true);
 
     try {
       if (sincronizarContexto) {
-        await sincronizarContexto(email, password);
+        await sincronizarContexto(email, password, { turnstileToken });
       }
       concluirEntrada();
     } catch (err) {
@@ -61,10 +67,14 @@ export default function Login() {
 
   const handleGoogleCredential = async (credential) => {
     setErro('');
+    if (turnstileAvailable && !turnstileToken) {
+      setErro('Confirma a verificacao de seguranca para continuar.');
+      return;
+    }
     setLoading(true);
 
     try {
-      const resposta = await loginGoogle({ credential });
+      const resposta = await loginGoogle({ credential, turnstileToken });
       if (resposta?.requiresCompletion) {
         navigate('/registo', {
           state: {
@@ -313,6 +323,8 @@ export default function Login() {
           margin-bottom: 12px;
         }
         .auth-success p { color: #64748b; font-size: 15px; }
+        .auth-turnstile { margin: 14px 0 4px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .auth-turnstile small { color: #64748b; font-size: 12px; font-weight: 600; }
       `}</style>
 
       <div className="auth-root">
@@ -396,6 +408,8 @@ export default function Login() {
                     </button>
                   </div>
                 </div>
+
+                <TurnstileWidget value={turnstileToken} onChange={setTurnstileToken} action="login" />
 
                 <button className="auth-btn" type="submit" disabled={loading}>
                   {loading ? 'A verificar...' : 'Entrar na Plataforma'}

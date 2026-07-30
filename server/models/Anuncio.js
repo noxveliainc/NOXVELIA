@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 
 const videoUrlSuportado = (value) => {
   if (!value) return true;
@@ -121,7 +121,16 @@ const anuncioSchema = new mongoose.Schema({
   scoreQualidade: { type: Number, min: 0, max: 10, default: 0 },
   scoreDetalhes: { fotos: Number, descricao: Number, preco: Number, localizacao: Number, extras: Number, disponibilidade: Number },
   scoreAnaliseAssistida: { pontosFuertes: [String], pontosMelhorar: [String], sentimento: String, qualidadeDescricao: String, recomendacao: String },
-  
+  origemImportacao: {
+    provider: { type: String, enum: ['mystand', 'feed_generico'], default: undefined },
+    integracao: { type: mongoose.Schema.Types.ObjectId, ref: 'StockIntegration' },
+    externalId: { type: String, trim: true, maxlength: 180 },
+    externalUrl: { type: String, trim: true, maxlength: 1000 },
+    importadoEm: Date,
+    vistoNoFeedEm: Date,
+    removidoNoFeedEm: Date,
+    rawHash: { type: String, trim: true, maxlength: 80 },
+  },
   estado: { type: String, enum: ['ativo','pausado','expirado','pendente','apagado'], default: 'ativo' },
   apagadoEm: Date, 
   
@@ -141,6 +150,8 @@ anuncioSchema.index({ 'localizacao.cidade': 1 });
 anuncioSchema.index({ utilizador: 1 });
 anuncioSchema.index({ titulo: 'text', descricao: 'text' }, { weights: { titulo: 10, descricao: 5 }, name: 'BuscaTextoOmnibarIndex' });
 anuncioSchema.index({ destacado: -1, createdAt: -1 });
+anuncioSchema.index({ utilizador: 1, 'origemImportacao.provider': 1, 'origemImportacao.externalId': 1 }, { unique: true, sparse: true, name: 'OrigemImportacaoUnicaPorUtilizador' });
+anuncioSchema.index({ 'origemImportacao.integracao': 1, estado: 1 });
 
 anuncioSchema.set('autoIndex', true);
 

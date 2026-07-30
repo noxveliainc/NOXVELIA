@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { clearAuth, getAuthToken } from '../utils/authSession';
+import { reportClientIssue } from '../utils/clientMonitoring';
 
 const isLocalApiUrl = (url = '') =>
   /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(url);
@@ -40,6 +41,19 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && getAuthToken()) {
       clearAuth();
       window.dispatchEvent(new Event('noxvelia:auth-expired'));
+    }
+    if (error.response?.status === 429 || error.response?.status >= 500) {
+      reportClientIssue({
+        kind: 'api_error',
+        message: `${String(error.config?.method || 'GET').toUpperCase()} ${error.config?.url || ''} respondeu ${error.response.status}`,
+        status: error.response.status,
+        method: String(error.config?.method || 'GET').toUpperCase(),
+        endpoint: error.config?.url,
+        source: 'axios',
+        extra: {
+          responseMessage: error.response?.data?.erro || error.response?.data?.message,
+        },
+      });
     }
     return Promise.reject(error);
   },

@@ -1,6 +1,7 @@
-import cron from 'node-cron';
+﻿import cron from 'node-cron';
 import Anuncio from '../models/Anuncio.js';
 import Notificacao from '../models/Notificacao.js';
+import { sincronizarIntegracoesStockAtivas } from '../services/stockImportService.js';
 
 export const iniciarCronJobs = () => {
   // Corre todos os dias à meia-noite
@@ -38,6 +39,21 @@ export const iniciarCronJobs = () => {
       }
     } catch (error) {
       console.error('❌ [CRON] Erro ao verificar destaques:', error);
+    }
+  });
+  cron.schedule('17 */6 * * *', async () => {
+    if (process.env.STOCK_SYNC_CRON_ENABLED === 'false') return;
+    console.log('[CRON] A sincronizar stocks automóveis configurados...');
+    try {
+      const resultados = await sincronizarIntegracoesStockAtivas({ limite: 8 });
+      if (resultados.length) {
+        const ok = resultados.filter((item) => item.ok).length;
+        console.log(`[CRON] Stock sync concluído: ${ok}/${resultados.length} integrações com sucesso.`);
+      } else {
+        console.log('[CRON] Nenhuma integração de stock elegível para sincronizar agora.');
+      }
+    } catch (error) {
+      console.error('[CRON] Erro ao sincronizar stocks automóveis:', error.message);
     }
   });
 };

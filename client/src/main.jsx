@@ -4,6 +4,7 @@ import App from './App.jsx'
 import './index.css'
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { installClientMonitoring } from './utils/clientMonitoring.js';
 
 const CHUNK_RELOAD_KEY = '@Noxvelia:chunk-reload';
 const CHUNK_RELOAD_WINDOW_MS = 30000;
@@ -48,6 +49,8 @@ window.addEventListener('vite:preloadError', (event) => {
 window.addEventListener('unhandledrejection', (event) => {
   reloadOnStaleChunk(event.reason);
 });
+
+installClientMonitoring();
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const appTree = (
   <ThemeProvider>
