@@ -593,7 +593,6 @@ export default function NavbarLanding() {
               )}
             </button>
             <ThemeToggle />
-            <Link to="/enviar-stock" className="nl-btn-ghost">Enviar stock</Link>
             <Link to="/patrocinios" className="nl-btn-ghost nl-btn-sponsor">Patrocinar</Link>
             {!signed && <Link to="/login" state={{ from: location.pathname }} className="nl-btn-ghost">Entrar</Link>}
             <Link to={publicarTo} state={publicarState} className="nl-btn-solid">Criar anúncio</Link>
