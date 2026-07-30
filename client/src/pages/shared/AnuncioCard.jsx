@@ -176,37 +176,47 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-wrap.is-imovel { border-color: rgba(107, 90, 54, .2); }
         .nxc-wrap.is-imovel:hover { border-color: rgba(120, 96, 49, .48); }
 
-        /* ── PREMIUM / DESTAQUE: presença clara sem exagero ── */
+        /* ── PREMIUM / DESTAQUE: tem de se ver à distância, mesmo sem hover ── */
         .nxc-wrap.premium {
-          border-color: transparent;
-          background:
-            linear-gradient(#fffdf8, #fffdf8) padding-box,
-            linear-gradient(135deg, #102f50 0%, #d9c49c 55%, #102f50 100%) border-box;
-          border: 2px solid transparent;
-          box-shadow: 0 20px 44px -26px rgba(16, 47, 80, .45), 0 0 0 1px rgba(217, 196, 156, .25);
+          border: 3px solid #d9c49c;
+          background: linear-gradient(165deg, #fdf6e7 0%, #ffffff 42%, #ffffff 100%);
+          box-shadow:
+            0 0 0 1px rgba(217, 196, 156, .55),
+            0 26px 50px -22px rgba(16, 47, 80, .4),
+            0 0 0 6px rgba(217, 196, 156, .12);
         }
         .nxc-wrap.premium:hover {
-          box-shadow: 0 28px 56px -26px rgba(16, 47, 80, .55), 0 0 0 1px rgba(217, 196, 156, .4);
-          transform: translateY(-5px);
+          border-color: #c7a252;
+          box-shadow:
+            0 0 0 1px rgba(217, 196, 156, .75),
+            0 34px 64px -22px rgba(16, 47, 80, .5),
+            0 0 0 9px rgba(217, 196, 156, .18);
+          transform: translateY(-6px) scale(1.008);
         }
         .nxc-wrap.premium::before {
           content: '';
           position: absolute;
-          top: -2px; left: -2px; right: -2px;
-          height: 5px;
-          background: linear-gradient(90deg, #102f50 0%, #f0dfb4 25%, #d9c49c 50%, #f0dfb4 75%, #102f50 100%);
-          background-size: 200% 100%;
+          top: 0; left: 0; right: 0;
+          height: 7px;
+          background: linear-gradient(90deg, #0c2540 0%, #f5e6bf 22%, #d9c49c 45%, #f5e6bf 68%, #0c2540 100%);
+          background-size: 220% 100%;
           z-index: 8;
-          animation: nxc-shimmer 3.5s linear infinite;
+          animation: nxc-shimmer 3s linear infinite;
         }
         @keyframes nxc-shimmer {
           0% { background-position: 0% 0; }
-          100% { background-position: 200% 0; }
+          100% { background-position: 220% 0; }
+        }
+        @keyframes nxc-badge-pulse {
+          0%, 100% { box-shadow: 0 12px 24px -12px rgba(2,6,23,.8), 0 0 0 0 rgba(217,196,156,.55); }
+          50% { box-shadow: 0 12px 24px -12px rgba(2,6,23,.8), 0 0 0 6px rgba(217,196,156,0); }
         }
         @media (prefers-reduced-motion: reduce) {
           .nxc-wrap.premium::before { animation: none; }
+          .nxc-badge-premium { animation: none !important; }
         }
         .nxc-wrap.premium .nxc-price { color: #102f50; }
+        .nxc-wrap.premium .nxc-body { padding-top: 17px; }
 
         /* ── IMAGEM: fundo desfocado da própria foto + foto completa nítida por cima ── */
         .nxc-img {
@@ -274,19 +284,19 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         /* ── BADGES ── */
         .nxc-badge-premium {
           position: absolute;
-          top: 12px; left: 12px;
-          background: linear-gradient(135deg, #102f50 0%, #1b4573 55%, #d9c49c 100%);
+          top: 14px; left: 14px;
+          background: linear-gradient(135deg, #0c2540 0%, #1b4573 55%, #b9944e 100%);
           color: #fffaf0;
-          font-size: 10.5px; font-weight: 900;
-          padding: 7px 12px 7px 10px;
+          font-size: 11.5px; font-weight: 900;
+          padding: 8px 14px 8px 11px;
           border-radius: 999px;
           text-transform: uppercase; letter-spacing: .09em;
-          display: flex; align-items: center; gap: 5px;
+          display: flex; align-items: center; gap: 6px;
           z-index: 9;
-          border: 1px solid rgba(255, 250, 240, 0.35);
-          box-shadow: 0 12px 24px -12px rgba(2, 6, 23, 0.8);
+          border: 1.5px solid rgba(255, 250, 240, 0.5);
+          animation: nxc-badge-pulse 2.4s ease-in-out infinite;
         }
-        .nxc-badge-premium svg { color: #f0dfb4; }
+        .nxc-badge-premium svg { color: #f5e0ab; }
 
         .nxc-badge-status {
           position: absolute;
@@ -357,11 +367,11 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-trust-pill.business { background: rgba(16,47,80,.08); border-color: rgba(16,47,80,.18); color: #102f50; }
 
         .nxc-insights { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
-        .nxc-insight { min-width: 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 7px 8px; display: flex; align-items: flex-start; gap: 6px; }
-        .nxc-insight svg { margin-top: 2px; color: #94a3b8; flex-shrink: 0; }
-        .nxc-insight-text { min-width: 0; }
-        .nxc-insight-label { display: block; font-size: 8.5px; font-weight: 900; color: #94a3b8; letter-spacing: .08em; text-transform: uppercase; line-height: 1; margin-bottom: 4px; }
-        .nxc-insight-value { display: block; font-size: 11.5px; font-weight: 800; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.1; }
+        .nxc-insight { min-width: 0; width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 7px 7px 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+        .nxc-insight svg { color: #94a3b8; flex-shrink: 0; }
+        .nxc-insight-text { min-width: 0; width: 100%; }
+        .nxc-insight-label { display: block; width: 100%; font-size: 7.8px; font-weight: 900; color: #94a3b8; letter-spacing: .03em; text-transform: uppercase; line-height: 1.2; margin-bottom: 3px; overflow-wrap: break-word; hyphens: auto; }
+        .nxc-insight-value { display: block; width: 100%; font-size: 11px; font-weight: 800; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.15; }
         .nxc-wrap.is-imovel .nxc-insights { grid-template-columns: 1.08fr .96fr .96fr; }
         .nxc-wrap.is-imovel .nxc-insight { background: #fbfaf6; border-color: rgba(95,104,58,.18); }
         .nxc-wrap.is-imovel .nxc-insight svg { color: #a8ab86; }
