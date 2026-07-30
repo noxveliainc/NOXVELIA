@@ -310,6 +310,8 @@ const csvEscape = (value) => {
   return text;
 };
 
+const getCountryCode = (row) => normalizeText(pick(row, ['country_code', 'country', 'countryCode']), 30).toUpperCase() || 'SEM PAIS';
+
 const isPortugalRow = (row, countryArg) => {
   if (normalizeKey(countryArg) === 'all') return true;
   const country = normalizeKey(pick(row, ['country_code', 'country', 'countryCode']));
@@ -391,6 +393,7 @@ const convert = async (args) => {
   let portugalRows = 0;
   let skipped = 0;
   let exported = 0;
+  const countryCounts = new Map();
 
   for await (const record of readCsvRecords(args.input)) {
     if (!headers.length) {
@@ -401,6 +404,8 @@ const convert = async (args) => {
 
     scanned += 1;
     const row = toObject(headers, parseCsvRecord(record, delimiter));
+    const countryCode = getCountryCode(row);
+    countryCounts.set(countryCode, (countryCounts.get(countryCode) || 0) + 1);
     if (!isPortugalRow(row, args.country)) continue;
     portugalRows += 1;
 
@@ -419,7 +424,11 @@ const convert = async (args) => {
   output.end();
   await new Promise((resolve) => output.on('finish', resolve));
 
-  return { scanned, portugalRows, skipped, exported, output: path.resolve(args.output) };
+  const countries = [...countryCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([country, count]) => ({ country, count }));
+
+  return { scanned, portugalRows, skipped, exported, output: path.resolve(args.output), countries };
 };
 
 convert(parseArgs(process.argv))
@@ -428,6 +437,13 @@ convert(parseArgs(process.argv))
     console.log(`Linhas analisadas: ${result.scanned}`);
     console.log(`Viaturas Portugal encontradas: ${result.portugalRows}`);
     console.log(`Viaturas exportadas: ${result.exported}`);
+    if (result.exported === 0 && result.countries?.length) {
+      console.log('Paises encontrados no ficheiro:');
+      for (const item of result.countries.slice(0, 12)) {
+        console.log(`- ${item.country}: ${item.count}`);
+      }
+      console.log('Este ficheiro nao tem viaturas de Portugal. Nao importes este CSV vazio.');
+    }
     console.log(`Ficheiro: ${result.output}`);
   })
   .catch((error) => {
