@@ -1,8 +1,8 @@
-﻿import mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 const stockIntegrationSchema = new mongoose.Schema({
   nome: { type: String, required: true, trim: true, maxlength: 120 },
-  provider: { type: String, enum: ['mystand', 'feed_generico'], default: 'mystand', index: true },
+  provider: { type: String, enum: ['mystand', 'feed_generico', 'manual'], default: 'mystand', index: true },
   utilizador: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   feedUrl: {
     type: String,
@@ -13,7 +13,7 @@ const stockIntegrationSchema = new mongoose.Schema({
       validator(value) {
         try {
           const url = new URL(value);
-          return ['http:', 'https:'].includes(url.protocol);
+          return ['http:', 'https:', 'manual:'].includes(url.protocol);
         } catch {
           return false;
         }
@@ -22,7 +22,7 @@ const stockIntegrationSchema = new mongoose.Schema({
     },
   },
   apiToken: { type: String, trim: true, maxlength: 1200, select: false },
-  formato: { type: String, enum: ['auto', 'json', 'xml'], default: 'auto' },
+  formato: { type: String, enum: ['auto', 'json', 'xml', 'csv'], default: 'auto' },
   ativo: { type: Boolean, default: true, index: true },
   frequenciaHoras: { type: Number, min: 6, max: 24, default: 6 },
   defaultDistrito: { type: String, trim: true, maxlength: 80, default: '' },

@@ -1,4 +1,4 @@
-﻿import crypto from 'node:crypto';
+import crypto from 'node:crypto';
 import Anuncio from '../models/Anuncio.js';
 import User from '../models/User.js';
 import StockIntegration from '../models/StockIntegration.js';
@@ -130,15 +130,84 @@ const parseXmlItems = (xml) => {
   return items;
 };
 
+
+const detectarSeparadorCsv = (header = '') => {
+  const candidatos = [';', ',', '\t'];
+  return candidatos
+    .map((separador) => ({ separador, total: String(header).split(separador).length }))
+    .sort((a, b) => b.total - a.total)[0]?.separador || ';';
+};
+
+const parseCsvRows = (csv, delimiter) => {
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let quoted = false;
+  const input = String(csv || '').replace(/^\uFEFF/, '');
+
+  for (let i = 0; i < input.length; i += 1) {
+    const char = input[i];
+    const next = input[i + 1];
+
+    if (char === '"') {
+      if (quoted && next === '"') {
+        cell += '"';
+        i += 1;
+      } else {
+        quoted = !quoted;
+      }
+      continue;
+    }
+
+    if (!quoted && char === delimiter) {
+      row.push(cell.trim());
+      cell = '';
+      continue;
+    }
+
+    if (!quoted && (char === '\n' || char === '\r')) {
+      if (char === '\r' && next === '\n') i += 1;
+      row.push(cell.trim());
+      if (row.some((value) => value !== '')) rows.push(row);
+      row = [];
+      cell = '';
+      continue;
+    }
+
+    cell += char;
+  }
+
+  row.push(cell.trim());
+  if (row.some((value) => value !== '')) rows.push(row);
+  return rows;
+};
+
+const parseCsvItems = (csv) => {
+  const linhasTexto = String(csv || '').split(/\r?\n/).filter((line) => line.trim());
+  const separador = detectarSeparadorCsv(linhasTexto[0] || '');
+  const rows = parseCsvRows(csv, separador);
+  if (rows.length < 2) return [];
+  const headers = rows[0].map((header, index) => texto(header || `campo_${index + 1}`, 120));
+  return rows.slice(1, MAX_FEED_ITEMS + 1).map((row) => headers.reduce((acc, header, index) => {
+    acc[header] = row[index] ?? '';
+    return acc;
+  }, {}));
+};
+
 const parseFeedPayload = (raw, contentType = '', formato = 'auto') => {
   const trimmed = String(raw || '').trim();
   if (!trimmed) return [];
+  const firstLine = trimmed.split(/\r?\n/, 1)[0] || '';
   const shouldTryJson = formato === 'json' || (formato === 'auto' && (/json/i.test(contentType) || /^[\[{]/.test(trimmed)));
+  const shouldTryXml = formato === 'xml' || (formato === 'auto' && (/xml/i.test(contentType) || /^</.test(trimmed)));
+  const shouldTryCsv = formato === 'csv' || (formato === 'auto' && (/csv|text\/plain/i.test(contentType) || (/[,;\t]/.test(firstLine) && !/^</.test(trimmed))));
+
   if (shouldTryJson) {
     const payload = JSON.parse(trimmed);
     return procurarItemsJson(payload).slice(0, MAX_FEED_ITEMS);
   }
-  if (formato === 'xml' || formato === 'auto') return parseXmlItems(trimmed);
+  if (shouldTryXml) return parseXmlItems(trimmed);
+  if (shouldTryCsv) return parseCsvItems(trimmed);
   return [];
 };
 
@@ -452,6 +521,168 @@ export const sincronizarIntegracaoStock = async (integracaoId, { acionadoPor = '
             ultimaConclusaoEm: terminadoEm,
             ultimoErro: erro,
             ultimoResumo: resumo,
+          },
+        },
+      }
+    );
+    throw error;
+  }
+};
+
+
+export const importarConteudoStockManual = async ({
+  nome = '',
+  utilizador,
+  conteudo,
+  formato = 'auto',
+  fileName = '',
+  defaultDistrito = '',
+  defaultCidade = '',
+  defaultTelefone = '',
+  defaultEmail = '',
+  criadoPor,
+} = {}) => {
+  const startedAt = new Date();
+  const user = await User.findById(utilizador).select('nome email telefone localidade premiumAtivo tipo tipoConta');
+  if (!user) throw Object.assign(new Error('Utilizador associado nao encontrado.'), { status: 404 });
+
+  const conteudoLimpo = String(conteudo || '').trim();
+  if (!conteudoLimpo) throw Object.assign(new Error('Adiciona um ficheiro ou conteudo para importar.'), { status: 400 });
+  if (conteudoLimpo.length > 6_000_000) throw Object.assign(new Error('O ficheiro e demasiado grande para importacao direta.'), { status: 413 });
+
+  const formatoSeguro = ['auto', 'json', 'xml', 'csv'].includes(formato) ? formato : 'auto';
+  const integracao = await StockIntegration.create({
+    nome: texto(nome || `Importacao manual ${fileName || new Date().toLocaleDateString('pt-PT')}`, 120),
+    provider: 'manual',
+    utilizador,
+    feedUrl: `manual://stock/${Date.now()}`,
+    formato: formatoSeguro,
+    ativo: false,
+    frequenciaHoras: 24,
+    defaultDistrito,
+    defaultCidade,
+    defaultTelefone,
+    defaultEmail,
+    criadoPor,
+    sincronizacao: {
+      estado: 'em_execucao',
+      ultimaExecucaoEm: startedAt,
+      ultimoErro: '',
+    },
+  });
+
+  const resumo = { recebidos: 0, criados: 0, atualizados: 0, pausados: 0, falhados: 0 };
+  const erros = [];
+
+  try {
+    const contentType = fileName.endsWith('.csv') ? 'text/csv' : fileName.endsWith('.json') ? 'application/json' : fileName.endsWith('.xml') ? 'application/xml' : '';
+    const items = parseFeedPayload(conteudoLimpo, contentType, formatoSeguro);
+    resumo.recebidos = items.length;
+    if (!items.length) throw new Error('Nao foram encontradas viaturas no ficheiro/conteudo enviado.');
+
+    for (const item of items) {
+      try {
+        const { externalId, anuncio } = mapearViatura(item, integracao, user);
+        const existente = await Anuncio.findOne({
+          utilizador: integracao.utilizador,
+          'origemImportacao.provider': integracao.provider,
+          'origemImportacao.externalId': externalId,
+        });
+
+        if (existente) {
+          await Anuncio.updateOne(
+            { _id: existente._id },
+            {
+              $set: {
+                ...anuncio,
+                estado: existente.estado === 'apagado' ? 'apagado' : 'ativo',
+                destacado: existente.destacado === true,
+                dataExpiracaoDestaque: existente.dataExpiracaoDestaque,
+                visitas: existente.visitas || 0,
+                guardados: existente.guardados || 0,
+                contactos: existente.contactos || 0,
+                historicoVisitas: existente.historicoVisitas || [],
+                'origemImportacao.removidoNoFeedEm': null,
+              },
+            },
+            { runValidators: true }
+          );
+          resumo.atualizados += 1;
+        } else {
+          await Anuncio.create({
+            ...anuncio,
+            estado: 'ativo',
+            destacado: false,
+            planoPublicacao: user.premiumAtivo ? 'premium' : 'basico',
+          });
+          resumo.criados += 1;
+        }
+      } catch (error) {
+        resumo.falhados += 1;
+        if (erros.length < MAX_ERRORS_PER_LOG) {
+          const flat = flattenObject(item);
+          erros.push({
+            externalId: texto(primeiroValor(flat, ['id', 'externalId', 'codigo', 'stockId', 'referencia']), 180),
+            titulo: texto(primeiroValor(flat, ['titulo', 'title', 'marca', 'modelo']), 180),
+            motivo: texto(error.message, 400),
+          });
+        }
+      }
+    }
+
+    const estado = resumo.falhados > 0 ? 'parcial' : 'sucesso';
+    const terminadoEm = new Date();
+    await StockImportLog.create({
+      integracao: integracao._id,
+      utilizador: integracao.utilizador,
+      provider: integracao.provider,
+      iniciadoEm: startedAt,
+      terminadoEm,
+      estado,
+      resumo,
+      erros,
+      acionadoPor: 'admin',
+    });
+    await StockIntegration.updateOne(
+      { _id: integracao._id },
+      {
+        $set: {
+          sincronizacao: {
+            estado,
+            ultimaExecucaoEm: startedAt,
+            ultimaConclusaoEm: terminadoEm,
+            ultimoErro: erros[0]?.motivo || '',
+            ultimoResumo: resumo,
+          },
+        },
+      }
+    );
+
+    return { integracao: integracao._id, estado, resumo, erros };
+  } catch (error) {
+    const terminadoEm = new Date();
+    const erro = texto(error.message, 500);
+    await StockImportLog.create({
+      integracao: integracao._id,
+      utilizador: integracao.utilizador,
+      provider: integracao.provider,
+      iniciadoEm: startedAt,
+      terminadoEm,
+      estado: 'erro',
+      resumo: { ...resumo, falhados: resumo.falhados || 1 },
+      erros: [{ motivo: erro }],
+      acionadoPor: 'admin',
+    });
+    await StockIntegration.updateOne(
+      { _id: integracao._id },
+      {
+        $set: {
+          sincronizacao: {
+            estado: 'erro',
+            ultimaExecucaoEm: startedAt,
+            ultimaConclusaoEm: terminadoEm,
+            ultimoErro: erro,
+            ultimoResumo: { ...resumo, falhados: resumo.falhados || 1 },
           },
         },
       }

@@ -1,5 +1,17 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import api from '../../services/api';
+
+const emptyManualForm = {
+  nome: 'Importacao manual de stock',
+  utilizador: '',
+  formato: 'csv',
+  conteudo: '',
+  fileName: '',
+  defaultDistrito: '',
+  defaultCidade: '',
+  defaultTelefone: '',
+  defaultEmail: '',
+};
 
 const emptyForm = {
   nome: '',
@@ -40,6 +52,8 @@ export default function AdminStockIntegrations({ colors, fonts, utilizadores = [
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [syncingId, setSyncingId] = useState('');
+  const [manualImporting, setManualImporting] = useState(false);
+  const [manualForm, setManualForm] = useState(emptyManualForm);
   const [feedback, setFeedback] = useState('');
   const [erro, setErro] = useState('');
 
@@ -74,6 +88,7 @@ export default function AdminStockIntegrations({ colors, fonts, utilizadores = [
   }, { total: 0, ativas: 0, criados: 0, atualizados: 0, falhados: 0 }), [integracoes]);
 
   const updateForm = (campo, valor) => setForm((atual) => ({ ...atual, [campo]: valor }));
+  const updateManualForm = (campo, valor) => setManualForm((atual) => ({ ...atual, [campo]: valor }));
 
   const resetForm = () => {
     setForm(emptyForm);
@@ -99,6 +114,59 @@ export default function AdminStockIntegrations({ colors, fonts, utilizadores = [
       defaultEmail: integracao.defaultEmail || '',
     });
     setFeedback(integracao.apiTokenConfigurado ? 'Integração carregada. O token atual está guardado; só escreve novo token se quiseres substituir.' : 'Integração carregada.');
+  };
+
+
+  const inferirFormatoFicheiro = (nome = '') => {
+    const lower = String(nome).toLowerCase();
+    if (lower.endsWith('.json')) return 'json';
+    if (lower.endsWith('.xml')) return 'xml';
+    if (lower.endsWith('.csv')) return 'csv';
+    return 'auto';
+  };
+
+  const lerFicheiroManual = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (file.size > 6 * 1024 * 1024) {
+      setErro('O ficheiro e demasiado grande para importacao direta. Usa um feed URL ou divide o ficheiro.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setManualForm((atual) => ({
+        ...atual,
+        conteudo: String(reader.result || ''),
+        fileName: file.name,
+        formato: atual.formato === 'auto' ? inferirFormatoFicheiro(file.name) : atual.formato,
+      }));
+      setErro('');
+      setFeedback(`Ficheiro carregado: ${file.name}`);
+    };
+    reader.onerror = () => setErro('Nao foi possivel ler o ficheiro selecionado.');
+    reader.readAsText(file, 'UTF-8');
+  };
+
+  const importarManual = async (event) => {
+    event.preventDefault();
+    setManualImporting(true);
+    setFeedback('');
+    setErro('');
+    try {
+      const payload = {
+        ...manualForm,
+        conteudo: manualForm.conteudo.trim(),
+      };
+      const { data } = await api.post('/admin/stock-integrations/manual-import', payload);
+      await carregarIntegracoes();
+      const resumo = data?.resumo || {};
+      setFeedback(`Importacao concluida: ${resumo.criados || 0} criados, ${resumo.atualizados || 0} atualizados, ${resumo.falhados || 0} falhados.`);
+      setManualForm({ ...emptyManualForm, utilizador: manualForm.utilizador, defaultDistrito: manualForm.defaultDistrito, defaultCidade: manualForm.defaultCidade, defaultTelefone: manualForm.defaultTelefone, defaultEmail: manualForm.defaultEmail });
+    } catch (error) {
+      setErro(error.response?.data?.erro || 'Nao foi possivel importar este ficheiro.');
+    } finally {
+      setManualImporting(false);
+    }
   };
 
   const guardar = async (event) => {
@@ -159,6 +227,13 @@ export default function AdminStockIntegrations({ colors, fonts, utilizadores = [
         .nx-stock-card small { display: block; color: ${palette.textDim || '#4f646a'}; font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; font-family: ${typo.mono || 'monospace'}; }
         .nx-stock-card strong { display: block; margin-top: 8px; color: ${palette.text || '#102326'}; font-size: 25px; font-weight: 900; font-family: ${typo.display || 'sans-serif'}; }
         .nx-stock-layout { display: grid; grid-template-columns: minmax(310px, 400px) minmax(0, 1fr); gap: 18px; align-items: start; }
+
+        .nx-stock-manual-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+        .nx-stock-manual-head h3 { margin: 0 0 6px; color: ${palette.text || '#102326'}; font-family: ${typo.display || 'sans-serif'}; font-size: 20px; font-weight: 900; }
+        .nx-stock-manual-head p { margin: 0; color: ${palette.textDim || '#4f646a'}; font-size: 12px; line-height: 1.55; max-width: 760px; }
+        .nx-stock-textarea { width: 100%; min-height: 150px; border: 1px solid ${palette.borderStrong || '#b9cac4'}; border-radius: 8px; background: #fff; color: ${palette.text || '#102326'}; padding: 11px; font-size: 12px; font-family: ${typo.mono || 'monospace'}; resize: vertical; box-sizing: border-box; }
+        .nx-stock-template { color: ${palette.gold || '#9d7b3f'}; font-size: 12px; font-weight: 900; text-decoration: none; }
+        .nx-stock-template:hover { text-decoration: underline; }
         .nx-stock-form { display: grid; gap: 12px; }
         .nx-stock-form label { display: grid; gap: 6px; color: ${palette.textDim || '#4f646a'}; font-size: 11px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; font-family: ${typo.mono || 'monospace'}; }
         .nx-stock-form input, .nx-stock-form select { min-height: 42px; border: 1px solid ${palette.borderStrong || '#b9cac4'}; border-radius: 8px; background: #fff; color: ${palette.text || '#102326'}; padding: 0 11px; font-size: 13px; font-family: ${typo.body || 'sans-serif'}; box-sizing: border-box; }
@@ -207,13 +282,44 @@ export default function AdminStockIntegrations({ colors, fonts, utilizadores = [
 
       {(feedback || erro) && <div className={`nx-stock-feedback ${erro ? 'error' : 'ok'}`}>{erro || feedback}</div>}
 
+
+      <form className="nx-stock-card nx-stock-form" onSubmit={importarManual}>
+        <div className="nx-stock-manual-head">
+          <div>
+            <h3>Importacao rapida</h3>
+            <p>Importa CSV, XML ou JSON ja exportado por um stand/software. Esta importacao nao corre automaticamente e nao pausa anuncios ausentes.</p>
+          </div>
+          <a className="nx-stock-template" href="/templates/importacao-stock-noxvelia.csv" download>Descarregar modelo CSV</a>
+        </div>
+        <div className="nx-stock-grid-2">
+          <label>Nome da importacao<input value={manualForm.nome} onChange={(event) => updateManualForm('nome', event.target.value)} /></label>
+          <label>Stand associado<select value={manualForm.utilizador} onChange={(event) => updateManualForm('utilizador', event.target.value)} required><option value="">Escolher utilizador</option>{standsDisponiveis.map((stand) => <option key={stand._id} value={stand._id}>{stand.nome} - {stand.email}</option>)}</select></label>
+        </div>
+        <div className="nx-stock-grid-2">
+          <label>Formato<select value={manualForm.formato} onChange={(event) => updateManualForm('formato', event.target.value)}><option value="csv">CSV</option><option value="json">JSON</option><option value="xml">XML</option><option value="auto">Auto</option></select></label>
+          <label>Ficheiro<input type="file" accept=".csv,.json,.xml,text/csv,application/json,application/xml,text/xml" onChange={lerFicheiroManual} /></label>
+        </div>
+        <div className="nx-stock-grid-2">
+          <label>Distrito fallback<input value={manualForm.defaultDistrito} onChange={(event) => updateManualForm('defaultDistrito', event.target.value)} placeholder="Porto" /></label>
+          <label>Cidade fallback<input value={manualForm.defaultCidade} onChange={(event) => updateManualForm('defaultCidade', event.target.value)} placeholder="Vila Nova de Gaia" /></label>
+        </div>
+        <div className="nx-stock-grid-2">
+          <label>Telefone fallback<input value={manualForm.defaultTelefone} onChange={(event) => updateManualForm('defaultTelefone', event.target.value)} placeholder="912345678" /></label>
+          <label>Email fallback<input value={manualForm.defaultEmail} onChange={(event) => updateManualForm('defaultEmail', event.target.value)} placeholder="stock@stand.pt" /></label>
+        </div>
+        <label>Conteudo colado ou lido do ficheiro<textarea className="nx-stock-textarea" value={manualForm.conteudo} onChange={(event) => updateManualForm('conteudo', event.target.value)} placeholder="id;marca;modelo;ano;km;preco;fotos;cidade;distrito..." required /></label>
+        <div className="nx-stock-actions">
+          <button className="nx-stock-btn primary" type="submit" disabled={manualImporting}>{manualImporting ? 'A importar...' : 'Importar agora'}</button>
+        </div>
+      </form>
+
       <div className="nx-stock-layout">
         <form className="nx-stock-card nx-stock-form" onSubmit={guardar}>
           <label>Nome da integração<input value={form.nome} onChange={(event) => updateForm('nome', event.target.value)} placeholder="Ex: MyStand · Stand Silva" /></label>
           <label>Stand associado<select value={form.utilizador} onChange={(event) => updateForm('utilizador', event.target.value)}><option value="">Escolher utilizador</option>{standsDisponiveis.map((stand) => <option key={stand._id} value={stand._id}>{stand.nome} · {stand.email}</option>)}</select></label>
           <div className="nx-stock-grid-2">
             <label>Provider<select value={form.provider} onChange={(event) => updateForm('provider', event.target.value)}><option value="mystand">MyStand</option><option value="feed_generico">Feed genérico</option></select></label>
-            <label>Formato<select value={form.formato} onChange={(event) => updateForm('formato', event.target.value)}><option value="auto">Auto</option><option value="json">JSON</option><option value="xml">XML</option></select></label>
+            <label>Formato<select value={form.formato} onChange={(event) => updateForm('formato', event.target.value)}><option value="auto">Auto</option><option value="json">JSON</option><option value="xml">XML</option><option value="csv">CSV</option></select></label>
           </div>
           <label>URL do feed<input value={form.feedUrl} onChange={(event) => updateForm('feedUrl', event.target.value)} placeholder="https://..." /></label>
           <label>Token/API key opcional<input value={form.apiToken} onChange={(event) => updateForm('apiToken', event.target.value)} placeholder={editingId ? 'Manter vazio para não alterar' : 'Bearer token ou chave fornecida'} /></label>
@@ -271,7 +377,7 @@ export default function AdminStockIntegrations({ colors, fonts, utilizadores = [
                   </div>
                 )}
                 <div className="nx-stock-actions">
-                  <button className="nx-stock-btn dark" type="button" onClick={() => sincronizar(integracao)} disabled={syncingId === integracao._id}>{syncingId === integracao._id ? 'A sincronizar...' : 'Sincronizar agora'}</button>
+                  {integracao.provider !== 'manual' && <button className="nx-stock-btn dark" type="button" onClick={() => sincronizar(integracao)} disabled={syncingId === integracao._id}>{syncingId === integracao._id ? 'A sincronizar...' : 'Sincronizar agora'}</button>}
                   <button className="nx-stock-btn" type="button" onClick={() => editar(integracao)}>Editar</button>
                   <button className="nx-stock-btn danger" type="button" onClick={() => desativar(integracao)}>Desativar</button>
                 </div>

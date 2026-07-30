@@ -1,4 +1,4 @@
-﻿import mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 const videoUrlSuportado = (value) => {
   if (!value) return true;
@@ -122,7 +122,7 @@ const anuncioSchema = new mongoose.Schema({
   scoreDetalhes: { fotos: Number, descricao: Number, preco: Number, localizacao: Number, extras: Number, disponibilidade: Number },
   scoreAnaliseAssistida: { pontosFuertes: [String], pontosMelhorar: [String], sentimento: String, qualidadeDescricao: String, recomendacao: String },
   origemImportacao: {
-    provider: { type: String, enum: ['mystand', 'feed_generico'], default: undefined },
+    provider: { type: String, enum: ['mystand', 'feed_generico', 'manual'], default: undefined },
     integracao: { type: mongoose.Schema.Types.ObjectId, ref: 'StockIntegration' },
     externalId: { type: String, trim: true, maxlength: 180 },
     externalUrl: { type: String, trim: true, maxlength: 1000 },

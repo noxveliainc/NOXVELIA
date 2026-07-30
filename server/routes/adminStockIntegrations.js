@@ -1,17 +1,17 @@
-﻿import express from 'express';
+import express from 'express';
 import StockIntegration from '../models/StockIntegration.js';
 import StockImportLog from '../models/StockImportLog.js';
 import User from '../models/User.js';
-import { sincronizarIntegracaoStock } from '../services/stockImportService.js';
+import { importarConteudoStockManual, sincronizarIntegracaoStock } from '../services/stockImportService.js';
 
 const router = express.Router();
 
 const cleanBody = (body = {}) => ({
   nome: String(body.nome || '').trim(),
-  provider: body.provider === 'feed_generico' ? 'feed_generico' : 'mystand',
+  provider: ['mystand', 'feed_generico', 'manual'].includes(body.provider) ? body.provider : 'mystand',
   utilizador: String(body.utilizador || '').trim(),
   feedUrl: String(body.feedUrl || '').trim(),
-  formato: ['auto', 'json', 'xml'].includes(body.formato) ? body.formato : 'auto',
+  formato: ['auto', 'json', 'xml', 'csv'].includes(body.formato) ? body.formato : 'auto',
   ativo: body.ativo !== false,
   frequenciaHoras: Number(body.frequenciaHoras || 6),
   defaultDistrito: String(body.defaultDistrito || '').trim(),
@@ -34,6 +34,27 @@ const serializeIntegration = (item) => ({
   ...item,
   apiTokenConfigurado: Boolean(item.apiToken),
   apiToken: undefined,
+});
+
+
+router.post('/manual-import', async (req, res) => {
+  try {
+    const resultado = await importarConteudoStockManual({
+      nome: String(req.body.nome || '').trim(),
+      utilizador: String(req.body.utilizador || '').trim(),
+      conteudo: String(req.body.conteudo || ''),
+      formato: ['auto', 'json', 'xml', 'csv'].includes(req.body.formato) ? req.body.formato : 'auto',
+      fileName: String(req.body.fileName || '').trim(),
+      defaultDistrito: String(req.body.defaultDistrito || '').trim(),
+      defaultCidade: String(req.body.defaultCidade || '').trim(),
+      defaultTelefone: String(req.body.defaultTelefone || '').trim(),
+      defaultEmail: String(req.body.defaultEmail || '').trim().toLowerCase(),
+      criadoPor: req.user.id,
+    });
+    res.status(201).json(resultado);
+  } catch (error) {
+    res.status(error.status || 500).json({ erro: error.status ? error.message : (error.message || 'Erro ao importar stock.') });
+  }
 });
 
 router.get('/', async (_req, res) => {
