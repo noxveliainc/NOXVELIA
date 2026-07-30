@@ -570,6 +570,7 @@ export default function NavbarLanding() {
             <a href="#anunciar">Criar anúncio</a>
             <a href="#marcas">Marcas</a>
             <Link to="/profissionais">Profissionais</Link>
+            <Link to="/enviar-stock">Enviar stock</Link>
             <Link to="/patrocinios">Patrocinar</Link>
           </div>
 
@@ -592,6 +593,7 @@ export default function NavbarLanding() {
               )}
             </button>
             <ThemeToggle />
+            <Link to="/enviar-stock" className="nl-btn-ghost">Enviar stock</Link>
             <Link to="/patrocinios" className="nl-btn-ghost nl-btn-sponsor">Patrocinar</Link>
             {!signed && <Link to="/login" state={{ from: location.pathname }} className="nl-btn-ghost">Entrar</Link>}
             <Link to={publicarTo} state={publicarState} className="nl-btn-solid">Criar anúncio</Link>
@@ -654,6 +656,7 @@ export default function NavbarLanding() {
             <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Automóveis</Link>
             <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Imóveis</Link>
             <Link to="/profissionais" onClick={() => setMenuMobileAberto(false)}>Profissionais</Link>
+            <Link to="/enviar-stock" onClick={() => setMenuMobileAberto(false)}>Enviar stock</Link>
             <Link to="/patrocinios" onClick={() => setMenuMobileAberto(false)}>Torne-se patrocinador</Link>
             <Link className="nl-mobile-primary" to={publicarTo} state={publicarState} onClick={() => setMenuMobileAberto(false)}>Criar anúncio</Link>
             {signed ? (

@@ -6,6 +6,7 @@ import PartnershipEmails from './PartnershipEmails';
 import AdminPostImages from './AdminPostImages';
 import AdminBanners from './AdminBanners';
 import AdminStockIntegrations from './AdminStockIntegrations';
+import AdminStockSubmissions from './AdminStockSubmissions';
 import LoadingScreen from '../../components/LoadingScreen';
 
 import { Icon } from '@mdi/react';
@@ -492,6 +493,7 @@ export default function AdminDashboard() {
             { id: 'anuncios', label: 'Moderação de Anúncios', icon: <Icon path={mdiFileDocumentOutline} size={0.7} />, count: anuncios.length },
             { id: 'criativos', label: 'Criativos', icon: <Icon path={mdiImageMultipleOutline} size={0.7} /> },
             { id: 'publicidade', label: 'Publicidade', icon: <Icon path={mdiCurrencyEur} size={0.7} /> },
+            { id: 'stock-pedidos', label: 'Pedidos de stock', icon: <Icon path={mdiFileDocumentOutline} size={0.7} /> },
             { id: 'integracoes', label: 'Integrações', icon: <Icon path={mdiRefresh} size={0.7} /> },
             { id: 'parcerias', label: 'Emails de Parcerias', icon: <Icon path={mdiEmailOutline} size={0.7} /> },
             { id: 'funil', label: 'Funil', icon: <Icon path={mdiChartTimelineVariant} size={0.7} /> },
@@ -968,6 +970,10 @@ export default function AdminDashboard() {
 
           {activeTab === 'publicidade' && (
             <AdminBanners colors={COLORS} fonts={{ display: FONT_DISPLAY, body: FONT_BODY, mono: FONT_MONO }} />
+          )}
+
+          {activeTab === 'stock-pedidos' && (
+            <AdminStockSubmissions colors={COLORS} fonts={{ display: FONT_DISPLAY, body: FONT_BODY, mono: FONT_MONO }} />
           )}
 
           {activeTab === 'integracoes' && (

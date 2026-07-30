@@ -36,6 +36,7 @@ const PremiumConfirmar = lazy(() => import('./pages/shared/PremiumConfirmar'));
 const SeoPesquisa    = lazy(() => import('./pages/shared/SeoPesquisa'));
 const Profissionais  = lazy(() => import('./pages/shared/Profissionais'));
 const Patrocinios    = lazy(() => import('./pages/shared/Patrocinios'));
+const StockSubmeter  = lazy(() => import('./pages/shared/StockSubmeter'));
 
 // 🌟 NOVA PÁGINA IMPORTADA
 const PoliticaPrivacidade = lazy(() => import('./pages/shared/PoliticaPrivacidade'));
@@ -95,6 +96,7 @@ function AppShell() {
             <Route path="/vendedor/:id" element={<PerfilPublico />} />
             <Route path="/profissionais" element={<Profissionais />} />
             <Route path="/patrocinios" element={<Patrocinios />} />
+            <Route path="/enviar-stock" element={<StockSubmeter />} />
             
             {/* 🌟 ROTA DA POLÍTICA E TERMOS */}
             <Route path="/privacidade" element={<PoliticaPrivacidade />} />

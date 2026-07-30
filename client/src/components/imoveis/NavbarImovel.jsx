@@ -318,6 +318,10 @@ export default function NavbarImovel() {
             <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
             Profissionais
           </Link>
+          <Link to="/enviar-stock" className="nim-btn-menu">
+            <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z" /><path d="M8 9h8M8 13h5" /></svg>
+            Enviar stock
+          </Link>
           <Link to="/patrocinios" className="nim-btn-menu nim-btn-sponsor">
             <svg viewBox="0 0 24 24"><path d="M4 13V7a2 2 0 0 1 2-2h7l7 4v6l-7 4H6a2 2 0 0 1-2-2v-4z" /><path d="M13 5v14" /><path d="M7 19v2" /></svg>
             Patrocinar
@@ -430,6 +434,10 @@ export default function NavbarImovel() {
               <Link to="/profissionais" className="nim-drawer-link" onClick={() => setMenuMobileAberto(false)}>
                 <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
                 Profissionais
+              </Link>
+              <Link to="/enviar-stock" className="nim-drawer-link" onClick={() => setMenuMobileAberto(false)}>
+                <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z" /><path d="M8 9h8M8 13h5" /></svg>
+                Enviar stock
               </Link>
               <Link to="/patrocinios" className="nim-drawer-link sponsor" onClick={() => setMenuMobileAberto(false)}>
                 <svg viewBox="0 0 24 24"><path d="M4 13V7a2 2 0 0 1 2-2h7l7 4v6l-7 4H6a2 2 0 0 1-2-2v-4z" /><path d="M13 5v14" /><path d="M7 19v2" /></svg>
