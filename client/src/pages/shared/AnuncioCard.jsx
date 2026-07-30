@@ -95,10 +95,11 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
     return mapa[String(valor).toLowerCase()] || valor;
   };
 
+  // Sempre o número completo, formatado à portuguesa (ex: 312.000 km).
+  // Nada de abreviaturas em "k" — nem todos os visitantes as reconhecem.
   const formatarKm = (valor) => {
     const numero = Number(valor);
     if (!Number.isFinite(numero)) return null;
-    if (numero >= 100000) return `${Math.round(numero / 1000)}k km`;
     return `${new Intl.NumberFormat('pt-PT').format(numero)} km`;
   };
 
@@ -366,17 +367,50 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-trust-pill { display: inline-flex; align-items: center; min-height: 22px; padding: 0 7px; border-radius: 999px; border: 1px solid #e2d1a9; background: #fff7e6; color: #102f50; font-size: 10px; font-weight: 850; white-space: nowrap; }
         .nxc-trust-pill.business { background: rgba(16,47,80,.08); border-color: rgba(16,47,80,.18); color: #102f50; }
 
-        .nxc-insights { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
-        .nxc-insight { min-width: 0; width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 7px 7px 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
-        .nxc-insight svg { color: #94a3b8; flex-shrink: 0; }
-        .nxc-insight-text { min-width: 0; width: 100%; }
-        .nxc-insight-label { display: block; width: 100%; font-size: 7.8px; font-weight: 900; color: #94a3b8; letter-spacing: .03em; text-transform: uppercase; line-height: 1.2; margin-bottom: 3px; overflow-wrap: break-word; hyphens: auto; }
-        .nxc-insight-value { display: block; width: 100%; font-size: 11px; font-weight: 800; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.15; }
-        .nxc-wrap.is-imovel .nxc-insights { grid-template-columns: 1.08fr .96fr .96fr; }
-        .nxc-wrap.is-imovel .nxc-insight { background: #fbfaf6; border-color: rgba(95,104,58,.18); }
-        .nxc-wrap.is-imovel .nxc-insight svg { color: #a8ab86; }
-        .nxc-wrap.is-imovel .nxc-insight-label { color: #7a8454; }
-        .nxc-wrap.is-imovel .nxc-insight:first-child { background: rgba(95,104,58,.1); border-color: rgba(95,104,58,.26); }
+        /* ── INSIGHTS: faixa única com divisórias, em vez de 3 caixas soltas ── */
+        .nxc-insights {
+          display: flex;
+          align-items: stretch;
+          margin-top: 9px;
+          border: 1px solid #e2e8f0;
+          border-radius: 11px;
+          background: #f8fafc;
+          overflow: hidden;
+        }
+        .nxc-insight {
+          flex: 1 1 0;
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 8px;
+          position: relative;
+        }
+        .nxc-insight + .nxc-insight {
+          border-left: 1px solid #e2e8f0;
+        }
+        .nxc-insight-icon {
+          flex-shrink: 0;
+          width: 24px; height: 24px;
+          border-radius: 7px;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(16, 47, 80, .07);
+          color: #102f50;
+        }
+        .nxc-insight-icon svg { width: 12px; height: 12px; }
+        .nxc-insight-text { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+        .nxc-insight-label {
+          font-size: 8px; font-weight: 900; color: #94a3b8;
+          letter-spacing: .05em; text-transform: uppercase; line-height: 1;
+        }
+        .nxc-insight-value {
+          font-size: 11.5px; font-weight: 800; color: #0f172a;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3;
+        }
+        .nxc-wrap.is-imovel .nxc-insights { background: #fbfaf6; border-color: rgba(95,104,58,.2); }
+        .nxc-wrap.is-imovel .nxc-insight + .nxc-insight { border-left-color: rgba(95,104,58,.2); }
+        .nxc-wrap.is-imovel .nxc-insight-icon { background: rgba(95,104,58,.12); color: #5f683a; }
+        .nxc-wrap.is-imovel .nxc-insight-label { color: #8a9166; }
 
         .nxc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
         .nxc-tag { font-size: 10.5px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; white-space: nowrap; }
@@ -410,9 +444,11 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           .nxc-price { font-size: 18px; }
           .nxc-title { font-size: 13px; line-height: 1.35; -webkit-line-clamp: 2; }
           .nxc-featured-note { min-height: 20px; padding: 3px 7px; font-size: 10.5px; }
-          .nxc-insights { gap: 5px; margin-top: 5px; }
-          .nxc-insight { border-radius: 8px; padding: 6px; }
-          .nxc-insight-label { font-size: 7.5px; margin-bottom: 3px; }
+          .nxc-insights { margin-top: 6px; }
+          .nxc-insight { padding: 7px 6px; gap: 5px; }
+          .nxc-insight-icon { width: 20px; height: 20px; border-radius: 6px; }
+          .nxc-insight-icon svg { width: 10px; height: 10px; }
+          .nxc-insight-label { font-size: 7.5px; }
           .nxc-insight-value { font-size: 10.5px; }
           .nxc-footer { padding: 9px 12px; }
         }
@@ -501,10 +537,14 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
             <div className="nxc-insights">
               {destaques.map((item) => (
                 <span key={item.label} className="nxc-insight">
-                  {INSIGHT_ICONS[item.label] && <CardIcon name={INSIGHT_ICONS[item.label]} size={13} />}
+                  {INSIGHT_ICONS[item.label] && (
+                    <span className="nxc-insight-icon">
+                      <CardIcon name={INSIGHT_ICONS[item.label]} size={12} />
+                    </span>
+                  )}
                   <span className="nxc-insight-text">
                     <span className="nxc-insight-label">{item.label}</span>
-                    <span className="nxc-insight-value">{item.value}</span>
+                    <span className="nxc-insight-value" title={item.value}>{item.value}</span>
                   </span>
                 </span>
               ))}
