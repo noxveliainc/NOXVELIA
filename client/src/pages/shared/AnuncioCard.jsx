@@ -353,9 +353,18 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           padding: 18px 20px 20px;
           display: flex; flex-direction: column; flex: 1; gap: 9px;
         }
-        .nxc-price-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-        .nxc-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 25px; font-weight: 800; color: #0f172a; letter-spacing: -.02em; line-height: 1; }
-        .nxc-title { font-size: 15px; font-weight: 600; color: #475569; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .nxc-title { font-size: 16px; font-weight: 800; color: #0f172a; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* ── ESPECIFICAÇÕES: uma linha de texto corrido, sem caixas nem ícones —
+           nunca corta, quebra a palavra inteira para a linha seguinte se precisar. */
+        .nxc-specs {
+          font-size: 13px;
+          font-weight: 600;
+          color: #64748b;
+          line-height: 1.5;
+        }
+        .nxc-specs-sep { margin: 0 6px; color: #cbd5e1; font-weight: 400; }
+        .nxc-wrap.is-imovel .nxc-specs { color: #7a8454; }
 
         .nxc-featured-note {
           width: max-content; max-width: 100%; min-height: 24px;
@@ -364,57 +373,16 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           background: linear-gradient(135deg, rgba(217,196,156,.22), rgba(217,196,156,.1)); color: #102f50;
           font-size: 12px; font-weight: 850; line-height: 1;
         }
-        .nxc-trust-strip { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+        .nxc-trust-strip { display: flex; flex-wrap: wrap; gap: 5px; }
         .nxc-trust-pill { display: inline-flex; align-items: center; min-height: 22px; padding: 0 7px; border-radius: 999px; border: 1px solid #e2d1a9; background: #fff7e6; color: #102f50; font-size: 10px; font-weight: 850; white-space: nowrap; }
         .nxc-trust-pill.business { background: rgba(16,47,80,.08); border-color: rgba(16,47,80,.18); color: #102f50; }
 
-        /* ── INSIGHTS: cada especificação ocupa só o espaço que o seu valor precisa,
-           nunca corta texto — quebra para a linha seguinte se o cartão for estreito. */
-        .nxc-insights {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: stretch;
-          margin-top: 10px;
-          border: 1px solid #e2e8f0;
-          border-radius: 11px;
-          background: #f8fafc;
-          overflow: hidden;
-        }
-        .nxc-insight {
-          flex: 1 1 auto;
-          min-width: fit-content;
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          padding: 9px 12px;
-        }
-        .nxc-insight + .nxc-insight {
-          border-left: 1px solid #e2e8f0;
-        }
-        .nxc-insight-icon {
-          flex-shrink: 0;
-          width: 26px; height: 26px;
-          border-radius: 8px;
-          display: flex; align-items: center; justify-content: center;
-          background: rgba(16, 47, 80, .07);
-          color: #102f50;
-        }
-        .nxc-insight-icon svg { width: 13px; height: 13px; }
-        .nxc-insight-text { display: flex; flex-direction: column; gap: 1px; white-space: nowrap; }
-        .nxc-insight-label {
-          font-size: 8px; font-weight: 900; color: #94a3b8;
-          letter-spacing: .05em; text-transform: uppercase; line-height: 1;
-        }
-        .nxc-insight-value {
-          font-size: 12px; font-weight: 800; color: #0f172a; line-height: 1.3;
-        }
-        .nxc-wrap.is-imovel .nxc-insights { background: #fbfaf6; border-color: rgba(95,104,58,.2); }
-        .nxc-wrap.is-imovel .nxc-insight + .nxc-insight { border-left-color: rgba(95,104,58,.2); }
-        .nxc-wrap.is-imovel .nxc-insight-icon { background: rgba(95,104,58,.12); color: #5f683a; }
-        .nxc-wrap.is-imovel .nxc-insight-label { color: #8a9166; }
-
-        .nxc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+        .nxc-tags { display: flex; flex-wrap: wrap; gap: 6px; }
         .nxc-tag { font-size: 10.5px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; white-space: nowrap; }
+
+        /* ── PREÇO: em destaque no fim do corpo, como na referência ── */
+        .nxc-price-row { margin-top: auto; padding-top: 4px; }
+        .nxc-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -.02em; line-height: 1; }
 
         /* ── FOOTER ── */
         .nxc-footer { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: #ffffff; border-top: 1px solid #eef2f6; }
@@ -443,14 +411,9 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           .nxc-photo-count { right: 8px; bottom: 8px; padding: 3px 7px; font-size: 9px; }
           .nxc-body { padding: 13px 14px 14px; gap: 7px; }
           .nxc-price { font-size: 20px; }
-          .nxc-title { font-size: 13.5px; line-height: 1.35; -webkit-line-clamp: 2; }
+          .nxc-title { font-size: 14.5px; line-height: 1.35; -webkit-line-clamp: 2; }
           .nxc-featured-note { min-height: 20px; padding: 3px 7px; font-size: 10.5px; }
-          .nxc-insights { margin-top: 7px; }
-          .nxc-insight { padding: 7px 9px; gap: 6px; }
-          .nxc-insight-icon { width: 22px; height: 22px; border-radius: 7px; }
-          .nxc-insight-icon svg { width: 11px; height: 11px; }
-          .nxc-insight-label { font-size: 7.5px; }
-          .nxc-insight-value { font-size: 11px; }
+          .nxc-specs { font-size: 12px; }
           .nxc-footer { padding: 10px 14px; }
         }
 
@@ -519,10 +482,19 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         {/* ── BODY ── */}
         <div className="nxc-body">
-          <div className="nxc-price-row">
-            <div className="nxc-price">{preco}</div>
-          </div>
           <div className="nxc-title">{anuncio?.titulo}</div>
+
+          {destaques.length > 0 && (
+            <div className="nxc-specs">
+              {destaques.map((item, i) => (
+                <React.Fragment key={item.label}>
+                  {i > 0 && <span className="nxc-specs-sep">·</span>}
+                  {item.value}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+
           {isPremium && (
             <div className="nxc-featured-note">
               <CardIcon name="star" size={12} /> Anúncio em destaque
@@ -533,28 +505,16 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
               {trustBadges.map((badge) => <span key={badge.label} className={`nxc-trust-pill ${badge.tone || ''}`.trim()}>{badge.label}</span>)}
             </div>
           )}
-
-          {destaques.length > 0 && (
-            <div className="nxc-insights">
-              {destaques.map((item) => (
-                <span key={item.label} className="nxc-insight">
-                  {INSIGHT_ICONS[item.label] && (
-                    <span className="nxc-insight-icon">
-                      <CardIcon name={INSIGHT_ICONS[item.label]} size={12} />
-                    </span>
-                  )}
-                  <span className="nxc-insight-text">
-                    <span className="nxc-insight-label">{item.label}</span>
-                    <span className="nxc-insight-value" title={item.value}>{item.value}</span>
-                  </span>
-                </span>
-              ))}
+          {!isCarro && (anuncio?.imovel?.area || anuncio?.imovel?.tipologia) && (
+            <div className="nxc-tags">
+              {anuncio?.imovel?.area      && <span className="nxc-tag">{formatarArea(anuncio.imovel.area)}</span>}
+              {anuncio?.imovel?.tipologia && <span className="nxc-tag">{anuncio.imovel.tipologia}</span>}
             </div>
           )}
-          {!isCarro && <div className="nxc-tags">
-            {anuncio?.imovel?.area        && <span className="nxc-tag">{formatarArea(anuncio.imovel.area)}</span>}
-            {anuncio?.imovel?.tipologia   && <span className="nxc-tag">{anuncio.imovel.tipologia}</span>}
-          </div>}
+
+          <div className="nxc-price-row">
+            <div className="nxc-price">{preco}</div>
+          </div>
         </div>
 
         {/* ── FOOTER ── */}
