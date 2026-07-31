@@ -350,8 +350,8 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         /* ── BODY ── */
         .nxc-body {
-          padding: 13px 14px 14px;
-          display: flex; flex-direction: column; flex: 1; gap: 6px;
+          padding: 14px 15px 15px;
+          display: flex; flex-direction: column; flex: 1; gap: 10px;
         }
         .nxc-title { font-size: 14px; font-weight: 800; color: #0f172a; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
@@ -378,7 +378,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-trust-pill.business { background: rgba(16,47,80,.08); border-color: rgba(16,47,80,.18); color: #102f50; }
 
         /* ── PREÇO: em destaque no fim do corpo, como na referência ── */
-        .nxc-price-row { margin-top: auto; padding-top: 4px; }
+        .nxc-price-row { margin-top: auto; padding-top: 8px; }
         .nxc-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -.02em; line-height: 1; }
 
         /* ── FOOTER ── */
