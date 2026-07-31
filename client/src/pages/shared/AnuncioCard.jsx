@@ -79,7 +79,14 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const isCarro = anuncio?.tipo === 'carro';
   const isImovel = !isCarro;
   const imagemPrincipal = anuncio?.fotos?.[0] || anuncio?.imagens?.[0] || anuncio?.imagem;
-  const imagemPrincipalUrl = getImageUrl(imagemPrincipal, 'large') || getImageUrl(imagemPrincipal, 'medium');
+  // Tenta primeiro a variante sem corte (original); só recua para 'large'/'medium'
+  // se essa variante não existir. O contentor já usa object-fit: contain, por isso
+  // a imagem nunca é cortada aqui — se ainda aparecer cortada, a miniatura 'large'/
+  // 'medium' está a ser gerada já recortada no backend/pipeline de imagens.
+  const imagemPrincipalUrl = getImageUrl(imagemPrincipal, 'original')
+    || getImageUrl(imagemPrincipal, 'large')
+    || getImageUrl(imagemPrincipal, 'medium')
+    || getImageUrl(imagemPrincipal);
   const imagemPrincipalSrcSet = getImageSrcSet(imagemPrincipal);
   const imagemPrincipalDims = getImageDimensions(imagemPrincipal, { width: 800, height: 600 });
 
@@ -181,12 +188,13 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         /* ── PREMIUM / DESTAQUE: tem de se ver à distância, mesmo sem hover ── */
         .nxc-wrap.premium {
           border: 3px solid #d9c49c;
-          background: linear-gradient(165deg, #fdf6e7 0%, #ffffff 42%, #ffffff 100%);
+          background: linear-gradient(165deg, #fbf1d9 0%, #f9ecd0 45%, #f6e6c2 100%);
           box-shadow:
             0 0 0 1px rgba(217, 196, 156, .55),
             0 26px 50px -22px rgba(16, 47, 80, .4),
             0 0 0 6px rgba(217, 196, 156, .12);
         }
+        .nxc-wrap.premium .nxc-footer { background: rgba(251, 241, 217, .6); border-top-color: rgba(217, 196, 156, .35); }
         .nxc-wrap.premium:hover {
           border-color: #c7a252;
           box-shadow:
