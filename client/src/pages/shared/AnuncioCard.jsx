@@ -163,7 +163,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           position: relative;
           box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
           box-sizing: border-box;
-          min-width: 300px;
+          min-width: 250px;
         }
         .nxc-wrap * { box-sizing: border-box; }
         .nxc-wrap:hover {
@@ -350,15 +350,15 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         /* ── BODY ── */
         .nxc-body {
-          padding: 18px 20px 20px;
-          display: flex; flex-direction: column; flex: 1; gap: 9px;
+          padding: 13px 14px 14px;
+          display: flex; flex-direction: column; flex: 1; gap: 6px;
         }
-        .nxc-title { font-size: 16px; font-weight: 800; color: #0f172a; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .nxc-title { font-size: 14px; font-weight: 800; color: #0f172a; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
         /* ── ESPECIFICAÇÕES: uma linha de texto corrido, sem caixas nem ícones —
            nunca corta, quebra a palavra inteira para a linha seguinte se precisar. */
         .nxc-specs {
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 600;
           color: #64748b;
           line-height: 1.5;
@@ -377,21 +377,18 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-trust-pill { display: inline-flex; align-items: center; min-height: 22px; padding: 0 7px; border-radius: 999px; border: 1px solid #e2d1a9; background: #fff7e6; color: #102f50; font-size: 10px; font-weight: 850; white-space: nowrap; }
         .nxc-trust-pill.business { background: rgba(16,47,80,.08); border-color: rgba(16,47,80,.18); color: #102f50; }
 
-        .nxc-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-        .nxc-tag { font-size: 10.5px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; white-space: nowrap; }
-
         /* ── PREÇO: em destaque no fim do corpo, como na referência ── */
         .nxc-price-row { margin-top: auto; padding-top: 4px; }
-        .nxc-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -.02em; line-height: 1; }
+        .nxc-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -.02em; line-height: 1; }
 
         /* ── FOOTER ── */
-        .nxc-footer { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: #ffffff; border-top: 1px solid #eef2f6; }
-        .nxc-user { display: flex; align-items: center; gap: 9px; min-width: 0; }
-        .nxc-avatar { width: 30px; height: 30px; border-radius: 50%; background: #f8fafc; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #64748b; overflow: hidden; flex-shrink: 0; position: relative; }
+        .nxc-footer { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #ffffff; border-top: 1px solid #eef2f6; }
+        .nxc-user { display: flex; align-items: center; gap: 8px; min-width: 0; }
+        .nxc-avatar { width: 26px; height: 26px; border-radius: 50%; background: #f8fafc; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #64748b; overflow: hidden; flex-shrink: 0; position: relative; }
         .nxc-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-        .nxc-username { min-width: 0; display: flex; align-items: center; gap: 4px; font-size: 12.5px; color: #475569; font-weight: 600; white-space: normal; overflow-wrap: anywhere; line-height: 1.25; }
+        .nxc-username { min-width: 0; display: flex; align-items: center; gap: 4px; font-size: 12px; color: #475569; font-weight: 600; white-space: normal; overflow-wrap: anywhere; line-height: 1.2; }
         .nxc-username.mine { color: #0f172a; font-weight: 700; }
-        .nxc-loc { display: flex; align-items: center; gap: 3px; font-size: 11.5px; color: #64748b; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+        .nxc-loc { display: flex; align-items: center; gap: 3px; font-size: 11px; color: #64748b; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
 
         /* ── MODAL ── */
         .nxc-modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.72); z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -409,12 +406,12 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           .nxc-badge-premium, .nxc-badge-status { top: 8px; left: 8px; padding: 5px 9px; font-size: 8.5px; }
           .nxc-badge-tipo { bottom: 8px; left: 8px; padding: 3px 7px; font-size: 8px; }
           .nxc-photo-count { right: 8px; bottom: 8px; padding: 3px 7px; font-size: 9px; }
-          .nxc-body { padding: 13px 14px 14px; gap: 7px; }
-          .nxc-price { font-size: 20px; }
-          .nxc-title { font-size: 14.5px; line-height: 1.35; -webkit-line-clamp: 2; }
-          .nxc-featured-note { min-height: 20px; padding: 3px 7px; font-size: 10.5px; }
-          .nxc-specs { font-size: 12px; }
-          .nxc-footer { padding: 10px 14px; }
+          .nxc-body { padding: 11px 12px 12px; gap: 5px; }
+          .nxc-price { font-size: 17px; }
+          .nxc-title { font-size: 13px; line-height: 1.35; -webkit-line-clamp: 2; }
+          .nxc-featured-note { min-height: 18px; padding: 3px 7px; font-size: 10px; }
+          .nxc-specs { font-size: 11px; }
+          .nxc-footer { padding: 9px 12px; }
         }
 
         .nxc-icon { flex: 0 0 auto; display: inline-block; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
@@ -503,12 +500,6 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           {trustBadges.length > 0 && (
             <div className="nxc-trust-strip" aria-label="Sinais de confiança">
               {trustBadges.map((badge) => <span key={badge.label} className={`nxc-trust-pill ${badge.tone || ''}`.trim()}>{badge.label}</span>)}
-            </div>
-          )}
-          {!isCarro && (anuncio?.imovel?.area || anuncio?.imovel?.tipologia) && (
-            <div className="nxc-tags">
-              {anuncio?.imovel?.area      && <span className="nxc-tag">{formatarArea(anuncio.imovel.area)}</span>}
-              {anuncio?.imovel?.tipologia && <span className="nxc-tag">{anuncio.imovel.tipologia}</span>}
             </div>
           )}
 
