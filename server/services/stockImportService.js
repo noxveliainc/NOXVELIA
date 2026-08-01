@@ -616,7 +616,7 @@ export const importarConteudoStockManual = async ({
     utilizador,
     feedUrl: `manual://stock/${Date.now()}`,
     formato: formatoSeguro,
-    ativo: false,
+    ativo: true,
     frequenciaHoras: 24,
     defaultDistrito,
     defaultCidade,
