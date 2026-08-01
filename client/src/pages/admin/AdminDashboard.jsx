@@ -485,7 +485,7 @@ export default function AdminDashboard() {
         {/* ===================== TABS ===================== */}
         <div style={{
           display: 'flex', gap: '6px', marginBottom: '20px', borderBottom: `1px solid ${COLORS.border}`,
-          paddingBottom: '0px', overflowX: 'auto'
+          paddingBottom: '0px', flexWrap: 'wrap'
         }}>
           {[
             { id: 'visao-geral', label: 'Visão geral', icon: <Icon path={mdiViewDashboardOutline} size={0.7} /> },
@@ -494,7 +494,7 @@ export default function AdminDashboard() {
             { id: 'criativos', label: 'Criativos', icon: <Icon path={mdiImageMultipleOutline} size={0.7} /> },
             { id: 'publicidade', label: 'Publicidade', icon: <Icon path={mdiCurrencyEur} size={0.7} /> },
             { id: 'stock-pedidos', label: 'Pedidos de stock', icon: <Icon path={mdiFileDocumentOutline} size={0.7} /> },
-            { id: 'integracoes', label: 'Integrações', icon: <Icon path={mdiRefresh} size={0.7} /> },
+            { id: 'integracoes', label: 'Integrações de stock', icon: <Icon path={mdiRefresh} size={0.7} /> },
             { id: 'parcerias', label: 'Emails de Parcerias', icon: <Icon path={mdiEmailOutline} size={0.7} /> },
             { id: 'funil', label: 'Funil', icon: <Icon path={mdiChartTimelineVariant} size={0.7} /> },
           ].map(tab => {

@@ -1,0 +1,3 @@
+﻿id;marca;modelo;versao;ano;mesRegisto;km;combustivel;transmissao;cilindrada;potencia;preco;cor;portas;lugares;fotos;cidade;distrito;telefone;email;descricao;url
+DEMO-BMW-001;BMW;Serie 3;320d Pack M;2020;6;89000;Diesel;Automatico;1995;190;29900;Preto;5;5;https://www.noxvelia.com/logo-noxvelia.png;Lisboa;Lisboa;912345678;stock@stand.pt;Exemplo de viatura para testar a importacao. Substitui estes dados pelos dados reais do stand.;https://www.noxvelia.com
+DEMO-RENAULT-002;Renault;Clio;1.5 dCi;2018;3;126000;Diesel;Manual;1461;90;8750;Branco;5;5;https://www.noxvelia.com/logo-noxvelia.png;Porto;Porto;912345678;stock@stand.pt;Exemplo de viatura compacta para testar a importacao.;https://www.noxvelia.com
