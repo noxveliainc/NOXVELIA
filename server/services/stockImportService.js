@@ -126,6 +126,7 @@ const extrairValoresXml = (fragment, tagName) => {
   }
   return values;
 };
+
 const parseXmlItems = (xml) => {
   const items = [];
   const itemRegex = /<(vehicle|viatura|carro|item|ad|anuncio)\b[^>]*>([\s\S]*?)<\/\1>/gi;
@@ -172,7 +173,6 @@ const parseXmlItems = (xml) => {
   }
   return items;
 };
-
 
 const detectarSeparadorCsv = (header = '') => {
   const candidatos = [';', ',', '\t'];
@@ -297,6 +297,12 @@ const normalizarTipoVeiculoImportado = (value) => {
   if (key.includes('sedan') || key.includes('berlina')) return 'sedan';
   return 'outro';
 };
+
+const normalizarVin = (value) => {
+  const key = String(value || '').trim().toUpperCase();
+  return /^[A-HJ-NPR-Z0-9]{17}$/.test(key) ? key : undefined;
+};
+
 const extrairFotos = (raw) => {
   const direct = primeiroValor(raw, ['fotos', 'photos', 'imagens', 'images', 'imageUrls', 'image_urls', 'foto', 'photo', 'imagem', 'image', 'urlImagem']);
   const values = asArray(direct)
@@ -364,7 +370,7 @@ const mapearViatura = (item, integracao, user) => {
     seccao: normalizarSeccao(primeiroValor(raw, ['estado', 'condition', 'seccao', 'secção', 'new_used']), km),
     tipoVeiculo: normalizarTipoVeiculoImportado(primeiroValor(raw, ['tipoVeiculo', 'bodyType', 'body', 'categoria', 'category'])),
     matricula: primeiroValor(raw, ['matricula', 'licensePlate', 'license_plate', 'plate', 'registration']),
-    vin: primeiroValor(raw, ['vin', 'chassis', 'chassisNumber']),
+    vin: normalizarVin(primeiroValor(raw, ['vin', 'chassis', 'chassisNumber'])),
     inspecaoAte: primeiroValor(raw, ['inspecaoAte', 'inspection_valid_until']),
   });
 
@@ -582,7 +588,6 @@ export const sincronizarIntegracaoStock = async (integracaoId, { acionadoPor = '
     throw error;
   }
 };
-
 
 export const importarConteudoStockManual = async ({
   nome = '',
