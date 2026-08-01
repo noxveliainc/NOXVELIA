@@ -5,3 +5,6 @@ tmp/
 .env
 server/.env
 client/.env.local
+data/*.csv
+data/ 
+data/ 

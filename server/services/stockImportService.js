@@ -1,4 +1,4 @@
-import crypto from 'node:crypto';
+﻿import crypto from 'node:crypto';
 import Anuncio from '../models/Anuncio.js';
 import User from '../models/User.js';
 import StockIntegration from '../models/StockIntegration.js';
@@ -106,6 +106,26 @@ const decodeXmlEntities = (value) => String(value || '')
   .replace(/&#39;/g, "'")
   .trim();
 
+const atribuirValorXml = (item, tag, value) => {
+  if (value === null || value === undefined || value === '') return;
+  if (Object.prototype.hasOwnProperty.call(item, tag)) {
+    item[tag] = [...asArray(item[tag]), value].flat();
+  } else {
+    item[tag] = value;
+  }
+};
+
+const extrairValoresXml = (fragment, tagName) => {
+  const escapedTag = String(tagName).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`<${escapedTag}\\b[^>]*>([\\s\\S]*?)<\\/${escapedTag}>`, 'gi');
+  const values = [];
+  let match;
+  while ((match = regex.exec(fragment))) {
+    const value = decodeXmlEntities(match[1].replace(/<[^>]+>/g, ' '));
+    if (value) values.push(value);
+  }
+  return values;
+};
 const parseXmlItems = (xml) => {
   const items = [];
   const itemRegex = /<(vehicle|viatura|carro|item|ad|anuncio)\b[^>]*>([\s\S]*?)<\/\1>/gi;
@@ -117,13 +137,36 @@ const parseXmlItems = (xml) => {
     let tagMatch;
     while ((tagMatch = tagRegex.exec(body))) {
       const tag = tagMatch[1].split(':').pop();
-      const value = decodeXmlEntities(tagMatch[2].replace(/<[^>]+>/g, ' '));
-      if (!value) continue;
-      if (Object.prototype.hasOwnProperty.call(item, tag)) {
-        item[tag] = [...asArray(item[tag]), value];
-      } else {
-        item[tag] = value;
+      const rawValue = tagMatch[2];
+      const normalizedTag = chave(tag);
+
+      if (normalizedTag === 'images') {
+        const imageUrls = extrairValoresXml(rawValue, 'image');
+        atribuirValorXml(item, tag, imageUrls.length ? imageUrls : decodeXmlEntities(rawValue.replace(/<[^>]+>/g, ' ')));
+        continue;
       }
+
+      if (normalizedTag === 'extras') {
+        const extras = extrairValoresXml(rawValue, 'extra');
+        atribuirValorXml(item, tag, extras.length ? extras : decodeXmlEntities(rawValue.replace(/<[^>]+>/g, ' ')));
+        continue;
+      }
+
+      if (normalizedTag === 'localization') {
+        ['title', 'city', 'address', 'postal_code', 'locality', 'email'].forEach((field) => {
+          const value = extrairValoresXml(rawValue, field)[0];
+          if (value) atribuirValorXml(item, 'localization.' + field, value);
+        });
+        const phones = extrairValoresXml(rawValue, 'phone');
+        if (phones.length) {
+          atribuirValorXml(item, 'localization.phone', phones[0]);
+          atribuirValorXml(item, 'localization.phones.phone', phones);
+        }
+        continue;
+      }
+
+      const value = decodeXmlEntities(rawValue.replace(/<[^>]+>/g, ' '));
+      atribuirValorXml(item, tag, value);
     }
     items.push(item);
   }
@@ -213,29 +256,20 @@ const parseFeedPayload = (raw, contentType = '', formato = 'auto') => {
 
 const normalizarCombustivel = (value) => {
   const key = chave(value);
-  const map = {
-    gasolina: 'gasolina',
-    petrol: 'gasolina',
-    diesel: 'diesel',
-    gasoleo: 'diesel',
-    gasoleo: 'diesel',
-    eletrico: 'eletrico',
-    electrico: 'eletrico',
-    electric: 'eletrico',
-    hibrido: 'hibrido',
-    hybrid: 'hibrido',
-    'plug-in-hybrid': 'hibrido',
-    plugin: 'hibrido',
-    gpl: 'gpl',
-    lpg: 'gpl',
-  };
-  return map[key] || undefined;
+  if (!key) return undefined;
+  if (key.includes('hibrido') || key.includes('hybrid')) return 'hibrido';
+  if (key.includes('eletrico') || key.includes('electric')) return 'eletrico';
+  if (key.includes('diesel') || key.includes('gasoleo')) return 'diesel';
+  if (key.includes('gpl') || key.includes('lpg')) return 'gpl';
+  if (key.includes('gasolina') || key.includes('petrol')) return 'gasolina';
+  return undefined;
 };
 
 const normalizarTransmissao = (value) => {
   const key = chave(value);
-  if (['automatico', 'automatica', 'auto', 'automatic'].includes(key)) return 'automatico';
-  if (['manual'].includes(key)) return 'manual';
+  if (!key) return undefined;
+  if (key.includes('manual')) return 'manual';
+  if (key.includes('automat')) return 'automatico';
   return undefined;
 };
 
@@ -248,6 +282,21 @@ const normalizarSeccao = (value, km) => {
   return 'usado';
 };
 
+const normalizarTipoVeiculoImportado = (value) => {
+  const key = chave(value);
+  if (!key) return 'outro';
+  if (key.includes('suv') || key.includes('tt') || key.includes('todo-o-terreno')) return 'suv';
+  if (key.includes('desportivo') || key.includes('coupe')) return 'coupe';
+  if (key.includes('cabrio') || key.includes('descapotavel')) return 'cabrio';
+  if (key.includes('carrinha') || key.includes('station')) return 'carrinha';
+  if (key.includes('comercial')) return 'comercial';
+  if (key.includes('monovolume')) return 'monovolume';
+  if (key.includes('pickup') || key.includes('pick-up')) return 'pickup';
+  if (key.includes('citadino')) return 'citadino';
+  if (key.includes('utilitario')) return 'utilitario';
+  if (key.includes('sedan') || key.includes('berlina')) return 'sedan';
+  return 'outro';
+};
 const extrairFotos = (raw) => {
   const direct = primeiroValor(raw, ['fotos', 'photos', 'imagens', 'images', 'imageUrls', 'image_urls', 'foto', 'photo', 'imagem', 'image', 'urlImagem']);
   const values = asArray(direct)
@@ -269,19 +318,21 @@ const mapearViatura = (item, integracao, user) => {
   const marca = texto(primeiroValor(raw, ['marca', 'make', 'brand', 'vehicle.make', 'viatura.marca']), 60);
   const modelo = texto(primeiroValor(raw, ['modelo', 'model', 'vehicle.model', 'viatura.modelo']), 80);
   const versao = texto(primeiroValor(raw, ['versao', 'versão', 'version', 'trim', 'variant', 'vehicle.trim']), 100);
-  const ano = inteiro(primeiroValor(raw, ['ano', 'year', 'anoMatricula', 'registrationYear', 'vehicle.year']));
-  const mesRegisto = inteiro(primeiroValor(raw, ['mesRegisto', 'mes_registo', 'month', 'registrationMonth', 'mesMatricula'])) || 1;
+  const ano = inteiro(primeiroValor(raw, ['ano', 'year', 'anoMatricula', 'registrationYear', 'registration_year', 'first_registration_year', 'firstRegistrationYear', 'vehicle.year']));
+  const mesRegisto = inteiro(primeiroValor(raw, ['mesRegisto', 'mes_registo', 'month', 'registrationMonth', 'registration_month', 'first_registration_month', 'firstRegistrationMonth', 'mesMatricula'])) || 1;
   const km = inteiro(primeiroValor(raw, ['km', 'kms', 'quilometros', 'quilometragem', 'mileage']));
   const preco = inteiro(primeiroValor(raw, ['preco', 'preço', 'price', 'valor', 'amount']));
-  const combustivel = normalizarCombustivel(primeiroValor(raw, ['combustivel', 'combustível', 'fuel', 'fuelType']));
-  const transmissao = normalizarTransmissao(primeiroValor(raw, ['transmissao', 'transmissão', 'gearbox', 'transmission']));
-  const cilindrada = inteiro(primeiroValor(raw, ['cilindrada', 'cc', 'engineSize', 'displacement']));
+  const combustivel = normalizarCombustivel(primeiroValor(raw, ['combustivel', 'combustível', 'fuel', 'fuelType', 'fuel_type']));
+  const transmissao = normalizarTransmissao(primeiroValor(raw, ['transmissao', 'transmissão', 'gearbox', 'gearboxType', 'gearbox_type', 'transmission']));
+  const cilindrada = inteiro(primeiroValor(raw, ['cilindrada', 'cc', 'engineSize', 'engine_capacity', 'engineCapacity', 'displacement']));
   const potencia = inteiro(primeiroValor(raw, ['potencia', 'potência', 'cv', 'hp', 'power']));
   const cor = texto(primeiroValor(raw, ['cor', 'color', 'exteriorColor', 'exterior_color']), 40);
-  const portas = inteiro(primeiroValor(raw, ['portas', 'doors']));
-  const lugares = inteiro(primeiroValor(raw, ['lugares', 'seats']));
+  const portas = inteiro(primeiroValor(raw, ['portas', 'doors', 'number_doors', 'numberDoors', 'number_of_doors']));
+  const lugares = inteiro(primeiroValor(raw, ['lugares', 'seats', 'capacity', 'number_seats', 'numberSeats']));
   const fotos = extrairFotos(raw);
   const externalUrl = texto(primeiroValor(raw, ['url', 'link', 'vehicleUrl', 'detailUrl']), 1000);
+  const garantiaMeses = inteiro(primeiroValor(raw, ['garantiaMeses', 'warrantyMonths', 'warranty_months', 'vendors_warranty_months']));
+  const videoUrl = texto(primeiroValor(raw, ['videoUrl', 'video_url', 'video']), 500);
 
   const faltas = [];
   if (!externalId) faltas.push('ID externo');
@@ -310,15 +361,17 @@ const mapearViatura = (item, integracao, user) => {
     portas,
     lugares,
     tracao: primeiroValor(raw, ['tracao', 'tracção', 'traction']) || undefined,
-    seccao: normalizarSeccao(primeiroValor(raw, ['estado', 'condition', 'seccao', 'secção']), km),
-    tipoVeiculo: primeiroValor(raw, ['tipoVeiculo', 'bodyType', 'body', 'categoria']) || 'outro',
-    matricula: primeiroValor(raw, ['matricula', 'licensePlate', 'plate']),
+    seccao: normalizarSeccao(primeiroValor(raw, ['estado', 'condition', 'seccao', 'secção', 'new_used']), km),
+    tipoVeiculo: normalizarTipoVeiculoImportado(primeiroValor(raw, ['tipoVeiculo', 'bodyType', 'body', 'categoria', 'category'])),
+    matricula: primeiroValor(raw, ['matricula', 'licensePlate', 'license_plate', 'plate', 'registration']),
     vin: primeiroValor(raw, ['vin', 'chassis', 'chassisNumber']),
+    inspecaoAte: primeiroValor(raw, ['inspecaoAte', 'inspection_valid_until']),
   });
 
   const localizacao = {
     distrito: texto(primeiroValor(raw, ['distrito', 'district']) || integracao.defaultDistrito || user.localidade || '', 80),
-    cidade: texto(primeiroValor(raw, ['cidade', 'city', 'localidade']) || integracao.defaultCidade || user.localidade || '', 100),
+    cidade: texto(primeiroValor(raw, ['cidade', 'city', 'localidade', 'localization.city', 'localization.locality']) || integracao.defaultCidade || user.localidade || '', 100),
+    morada: texto(primeiroValor(raw, ['morada', 'address', 'localization.address']) || '', 180),
   };
 
   const equipamento = normalizarEquipamento(primeiroValor(raw, ['equipamento', 'extras', 'options', 'features']));
@@ -331,15 +384,16 @@ const mapearViatura = (item, integracao, user) => {
     titulo,
     descricao,
     preco,
-    telefone: texto(primeiroValor(raw, ['telefone', 'phone']) || integracao.defaultTelefone || user.telefone || '', 40),
-    email: texto(primeiroValor(raw, ['email']) || integracao.defaultEmail || user.email || '', 180).toLowerCase(),
+    telefone: texto(primeiroValor(raw, ['telefone', 'phone', 'phones', 'contactPhone', 'contact_phone', 'localization.phone', 'localization.phones.phone']) || integracao.defaultTelefone || user.telefone || '', 40),
+    email: texto(primeiroValor(raw, ['email', 'contactEmail', 'contact_email', 'localization.email']) || integracao.defaultEmail || user.email || '', 180).toLowerCase(),
     utilizador: integracao.utilizador,
     localizacao,
     fotos,
+    videoUrl,
     equipamento,
     carro,
-    garantia: primeiroValor(raw, ['garantia', 'warranty']) ? texto(primeiroValor(raw, ['garantia', 'warranty']), 80) : null,
-    aceitaRetoma: ['sim', 'true', '1', 'yes'].includes(chave(primeiroValor(raw, ['aceitaRetoma', 'retoma', 'tradeIn']))),
+    garantia: garantiaMeses ? `${garantiaMeses} meses` : (primeiroValor(raw, ['garantia', 'warranty']) ? texto(primeiroValor(raw, ['garantia', 'warranty']), 80) : null),
+    aceitaRetoma: ['sim', 'true', '1', 'yes'].includes(chave(primeiroValor(raw, ['aceitaRetoma', 'retoma', 'tradeIn', 'accept_returns']))),
     origemImportacao: {
       provider: integracao.provider,
       integracao: integracao._id,
