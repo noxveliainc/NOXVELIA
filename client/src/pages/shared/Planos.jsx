@@ -308,11 +308,11 @@ export default function Planos() {
         }
         .pl-btn--ghost:hover { background: #f8fafc; }
 
-        .pl-btn--dark {
+        .pl-btn--primary {
           background: #0f172a;
           color: #ffffff;
         }
-        .pl-btn--dark:hover { filter: brightness(1.15); }
+        .pl-btn--primary:hover { filter: brightness(1.15); }
 
         .pl-btn--outline-pro {
           background: transparent;
@@ -411,7 +411,7 @@ export default function Planos() {
                 {loadingStripe ? <SpinnerIcon /> : 'Gerir a Minha Subscrição'}
               </button>
             ) : (
-              <button className="pl-btn pl-btn--dark" onClick={iniciarAssinatura} disabled={loadingStripe}>
+              <button className="pl-btn pl-btn--primary" onClick={iniciarAssinatura} disabled={loadingStripe}>
                 Ver detalhes e aderir
               </button>
             )}

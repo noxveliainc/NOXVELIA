@@ -387,7 +387,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         /* ── PREÇO: em destaque no fim do corpo, como na referência ── */
         .nxc-price-row { margin-top: auto; padding-top: 8px; }
-        .nxc-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -.02em; line-height: 1; }
+        .nxc-price { font-family: var(--nx-font-display); font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -.02em; line-height: 1; }
 
         /* ── FOOTER ── */
         .nxc-footer { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #ffffff; border-top: 1px solid #eef2f6; }

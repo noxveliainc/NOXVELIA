@@ -495,11 +495,6 @@ export default function Publicar() {
         .pub-limit-actions button { border: 1px solid #d8c494; border-radius: 12px; min-height: 46px; padding: 0 18px; font-weight: 800; cursor: pointer; }
         .pub-limit-primary { background: #102f50; color: #fff; }
         .pub-limit-secondary { background: #ffffff; color: #102f50; }
-        .dark .pub-limit-meter, .dark .pub-limit-card { background: #0b1626; border-color: rgba(217, 195, 141, .45); box-shadow: none; }
-        .dark .pub-limit-meter strong, .dark .pub-limit-card h2 { color: #fff8e8; }
-        .dark .pub-limit-meter span, .dark .pub-limit-meter p, .dark .pub-limit-card p { color: #d8deea; }
-        .dark .pub-limit-progress { background: rgba(255,255,255,.12); }
-        .dark .pub-limit-secondary { background: rgba(255, 248, 232, .08); color: #fff8e8; border-color: rgba(217, 195, 141, .5); }
 
         .pub-form { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 40px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 40px; }
 

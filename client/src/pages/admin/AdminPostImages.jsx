@@ -361,7 +361,7 @@ function chips(items, { x, y }) {
 // images on single-hero-photo templates (cover, launch, showroom, etc.)
 // so uploading more than one photo always has a visible effect.
 let stripCounter = 0;
-function extraPhotosStrip({ images = [], x, y, size = 62, gap = 10, align = 'left', accent: _accent = '#2ac1b4', extraCount = 0, tone = 'dark' }) {
+function extraPhotosStrip({ images = [], x, y, size = 62, gap = 10, align = 'left', accent: _accent = '#2ac1b4', extraCount = 0, tone = 'navy' }) {
   const list = images.slice(0, 3);
   if (!list.length) return '';
   const startX = align === 'right' ? x - (list.length - 1) * (size + gap) : x;

@@ -317,59 +317,6 @@ export default function ProfileView({
         .profile-btn-primary { background: #ffffff; color: #102f50; border: 1px solid rgba(217,196,156,0.72); }
         .profile-btn-outline { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
         .profile-btn-outline.danger:hover { border-color: #fecdd3; color: #be123c; background: #fff1f2; }
-        .dark .profile-card {
-          background: #111c30;
-          border-color: #334155;
-          box-shadow: 0 22px 54px -34px rgba(0,0,0,0.95);
-        }
-        .dark .profile-cover {
-          background: linear-gradient(135deg, #0f172a, #1e293b);
-        }
-        .dark .profile-avatar {
-          background: #0f172a;
-          border-color: #111c30;
-          color: #d9c49c;
-        }
-        .dark .profile-name,
-        .dark .profile-stars-text,
-        .dark .profile-stat-val {
-          color: #f8fafc;
-        }
-        .dark .profile-contact-line,
-        .dark .profile-contact-line span,
-        .dark .profile-contact-line a,
-        .dark .profile-bio,
-        .dark .profile-stars-count,
-        .dark .profile-stat-label {
-          color: #cbd5e1;
-        }
-        .dark .profile-badge,
-        .dark .profile-link,
-        .dark .profile-btn-outline {
-          background: #0f172a;
-          border-color: #334155;
-          color: #e2e8f0;
-        }
-        .dark .profile-badge.profissional,
-        .dark .profile-link.whatsapp,
-        .dark .profile-btn-primary {
-          background: rgba(217,196,156,0.14);
-          border-color: rgba(217,196,156,0.32);
-          color: #f0dfbb;
-        }
-        .dark .profile-badge.premium {
-          background: rgba(217,196,156,0.18);
-          border-color: rgba(217,196,156,0.38);
-          color: #f0dfbb;
-        }
-        .dark .profile-btn-solid {
-          background: #f8fafc;
-          color: #020617;
-        }
-        .dark .profile-stat-divider {
-          background: #334155;
-        }
-        .dark .profile-map-loading { background: #0f172a; border-color: #334155; color: #cbd5e1; }
         @media (max-width: 768px) {
           .profile-body { padding: 0 22px 28px; }
           .profile-map-panel { padding: 0 22px 28px; }

@@ -134,21 +134,6 @@ export default function PerfilPublico() {
         .pp-empty-btn { min-height: 42px; padding: 0 16px; border: 0; border-radius: 10px; background: #0f172a; color: #ffffff; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; }
         .pp-empty-btn:hover { background: #1e293b; }
         .pp-empty-standalone { margin-top: 4px; }
-        .dark .pp-root { background: #020817; color: #e2e8f0; }
-        .dark .pp-hero { background: #020817; border-color: #334155; }
-        .dark .pp-back { color: #cbd5e1; }
-        .dark .pp-back:hover, .dark .pp-section-title, .dark .pp-empty h3 { color: #f8fafc; }
-        .dark .pp-section-header { border-color: #1e293b; }
-        .dark .pp-section-copy, .dark .pp-count, .dark .pp-empty p { color: #cbd5e1; }
-        .dark .pp-count { background: #111c30; border: 1px solid #334155; }
-        .dark .pp-summary-item, .dark .pp-showcase-tab { background: #0b1220; border-color: #334155; color: #cbd5e1; }
-        .dark .pp-summary-item strong { color: #f8fafc; }
-        .dark .pp-summary-item span { color: #94a3b8; }
-        .dark .pp-showcase-tab:hover { color: #f8fafc; border-color: #d9c49c; }
-        .dark .pp-showcase-tab.active { background: #d9c49c; border-color: #d9c49c; color: #041016; }
-        .dark .pp-empty { background: #0b1220; border-color: #334155; }
-        .dark .pp-empty-btn { background: #d9c49c; color: #041016; }
-        .dark .pp-empty-btn:hover { background: #f0dfbb; }
         @media (max-width: 860px) {
           .pp-showcase-summary { grid-template-columns: 1fr; margin-top: 0; }
           .pp-section-header { align-items: flex-start; flex-direction: column; }

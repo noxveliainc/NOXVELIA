@@ -4,12 +4,10 @@ export default function LoadingScreen({
   label = 'A preparar a NOXVELIA',
   detail = 'Só um momento.',
   minHeight = '60vh',
-  tone = 'light',
 }) {
-  const isDark = tone === 'dark';
 
   return (
-    <div className={`nx-loading-screen ${isDark ? 'dark' : 'light'}`} style={{ minHeight }} role="status" aria-live="polite">
+    <div className="nx-loading-screen light" style={{ minHeight }} role="status" aria-live="polite">
       <style>{`
         .nx-loading-screen,
         .nx-loading-screen * {
@@ -24,10 +22,6 @@ export default function LoadingScreen({
           font-family: var(--nx-font-body, Inter, ui-sans-serif, system-ui, sans-serif);
         }
 
-        .nx-loading-screen.dark {
-          color: #ecfdfb;
-          background: #082126;
-        }
 
         .nx-loading-screen.light {
           color: #102326;

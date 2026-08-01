@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
-import { ThemeProvider } from './context/ThemeContext.jsx';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { installClientMonitoring } from './utils/clientMonitoring.js';
 
@@ -52,11 +51,7 @@ window.addEventListener('unhandledrejection', (event) => {
 
 installClientMonitoring();
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const appTree = (
-  <ThemeProvider>
-    <App />
-  </ThemeProvider>
-);
+const appTree = <App />;
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     {googleClientId ? (

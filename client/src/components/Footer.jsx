@@ -24,15 +24,6 @@ export default function Footer() {
         .nx-social-btn { width: 40px; height: 40px; border-radius: 10px; background: #ffffff; border: 1px solid rgba(16, 47, 80, 0.14); display: flex; align-items: center; justify-content: center; color: #102f50; transition: background-color 0.16s, border-color 0.16s, color 0.16s; text-decoration: none; }
         .nx-social-btn:hover { background: rgba(217, 196, 156, 0.28); border-color: rgba(217, 196, 156, 0.8); color: #071326; }
         .nx-social-btn svg { width: 18px; height: 18px; fill: currentColor; }
-        .dark .nx-footer { background: #040b16; border-top-color: rgba(217, 196, 156, 0.22); color: #fffaf0; }
-        .dark .nx-footer-brand img { filter: drop-shadow(0 0 14px rgba(217, 196, 156, 0.22)); }
-        .dark .nx-footer-brand p { color: #d7e0ea; }
-        .dark .nx-footer-col h4, .dark .nx-footer-copy { color: #fffaf0; }
-        .dark .nx-footer-col a, .dark .nx-footer-col button { color: #d7e0ea; }
-        .dark .nx-footer-col a:hover, .dark .nx-footer-col button:hover { color: #f0dfbb; }
-        .dark .nx-footer-bottom { border-top-color: rgba(217, 196, 156, 0.2); }
-        .dark .nx-social-btn { background: rgba(255, 250, 240, 0.06); border-color: rgba(217, 196, 156, 0.26); color: #d7e0ea; }
-        .dark .nx-social-btn:hover { background: rgba(217, 196, 156, 0.14); border-color: rgba(217, 196, 156, 0.5); color: #f0dfbb; }
 
         /* 🌟 CSS DO MODAL DE SUPORTE */
         .suporte-modal-overlay { position: fixed; inset: 0; background: rgba(4, 7, 17, 0.78); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px; }

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import ThemeToggle from '../../components/ThemeToggle';
 import { publishIntentState } from '../../utils/navigationState';
 
 export default function NavbarLanding() {
@@ -229,14 +228,7 @@ export default function NavbarLanding() {
           font-weight: 720;
         }
 
-        .dark .nl-mobile-menu-head {
-          color: #ecfdfb !important;
-          border-bottom-color: #334155 !important;
-        }
 
-        .dark .nl-mobile-menu-head span {
-          color: #b7c7cb !important;
-        }
 
         .nl-mobile-menu a,
         .nl-mobile-menu button {
@@ -274,10 +266,6 @@ export default function NavbarLanding() {
           background: #102f50;
         }
 
-        .dark .nl-mobile-menu a.nl-mobile-primary {
-          color: #062326 !important;
-          background: #d9c49c !important;
-        }
 
         .nl-btn-ghost,
         .nl-btn-solid {
@@ -305,16 +293,18 @@ export default function NavbarLanding() {
         }
 
         .nl-btn-solid {
-          color: #fff;
-          border: 1px solid #071326;
-          background: #071326;
-          box-shadow: 0 12px 24px -18px rgba(8, 33, 38, 0.75);
+          color: #102f50;
+          border: 1px solid #102f50;
+          background: transparent;
+          box-shadow: none;
         }
 
         .nl-btn-solid:hover {
           transform: translateY(-1px);
-          background: #102f50;
-          box-shadow: 0 16px 28px -18px rgba(8, 33, 38, 0.8);
+          color: #071326;
+          border-color: #071326;
+          background: rgba(255, 255, 255, 0.72);
+          box-shadow: none;
         }
 
         .nl-user-wrap {
@@ -531,31 +521,31 @@ export default function NavbarLanding() {
           background: #f0dfbb !important;
         }
 
-        .nl-btn-solid,
+                .nl-btn-solid {
+          color: #102f50 !important;
+          border-color: #102f50 !important;
+          background: transparent !important;
+          box-shadow: none !important;
+        }
+
+        .nl-btn-solid:hover {
+          color: #071326 !important;
+          border-color: #071326 !important;
+          background: rgba(255, 255, 255, 0.72) !important;
+        }
+
         .nl-mobile-menu a.nl-mobile-primary {
-          color: #071326 !important;
-          border-color: #d9c49c !important;
-          background: #d9c49c !important;
+          color: #ffffff !important;
+          border-color: #071326 !important;
+          background: #071326 !important;
         }
 
-        .nl-btn-solid:hover,
         .nl-mobile-menu a.nl-mobile-primary:hover {
-          color: #071326 !important;
-          background: #f0dfbb !important;
-          border-color: #f0dfbb !important;
+          color: #ffffff !important;
+          background: #102f50 !important;
+          border-color: #102f50 !important;
         }
 
-        .dark .nl-root {
-          border-bottom-color: rgba(240, 223, 187, 0.14) !important;
-          background: rgba(7, 19, 38, 0.92) !important;
-        }
-
-        .dark .nl-brand,
-        .dark .nl-links a,
-        .dark .nl-btn-ghost,
-        .dark .nl-user-trigger {
-          color: #fffaf0 !important;
-        }
       `}</style>
 
       <nav className="nl-root" aria-label="Navegação principal" ref={navRef}>
@@ -592,7 +582,6 @@ export default function NavbarLanding() {
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
               )}
             </button>
-            <ThemeToggle />
             <Link to="/patrocinios" className="nl-btn-ghost nl-btn-sponsor">Patrocinar</Link>
             {!signed && <Link to="/login" state={{ from: location.pathname }} className="nl-btn-ghost">Entrar</Link>}
             <Link to={publicarTo} state={publicarState} className="nl-btn-solid">Criar anúncio</Link>

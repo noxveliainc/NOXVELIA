@@ -115,13 +115,6 @@ export default function Profissionais() {
         .pro-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 4px; color: #102f50; font-size: 12px; font-weight: 900; }
         .pro-rating { display: inline-flex; align-items: center; gap: 5px; color: #9d7b3f; }
         .pro-state { padding: 62px 20px; text-align: center; color: #60767c; font-size: 14px; font-weight: 750; }
-        .dark .pro-root { background: #071326; color: #fffaf0; }
-        .dark .pro-hero, .dark .pro-toolbar { background: rgba(7,19,38,0.94); border-color: rgba(240,223,187,.18); }
-        .dark .pro-card, .dark .pro-summary-item, .dark .pro-search, .dark .pro-select { background: #102f50; border-color: rgba(240,223,187,.18); color: #fffaf0; }
-        .dark .pro-card.is-featured { border-color: rgba(217,196,156,0.62); box-shadow: 0 18px 36px -28px rgba(217,196,156,0.38); }
-        .dark .pro-name strong, .dark .pro-summary-item strong, .dark .pro-list-title { color: #f8fafc; }
-        .dark .pro-hero p, .dark .pro-bio, .dark .pro-location, .dark .pro-summary-item span, .dark .pro-list-note { color: rgba(255,250,240,.74); }
-        .dark .pro-stat { background: #071326; border-color: rgba(240,223,187,.18); }
         @media (max-width: 980px) { .pro-hero-grid, .pro-tools { grid-template-columns: 1fr; } .pro-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pro-toolbar { top: 64px; } }
         @media (max-width: 640px) { .pro-shell { width: min(100% - 24px, 1220px); } .pro-hero { padding-top: 30px; } .pro-hero h1 { font-size: 36px; } .pro-grid, .pro-summary { grid-template-columns: 1fr; } .pro-list-head { align-items: flex-start; flex-direction: column; } .pro-list-note { text-align: left; } .pro-card { min-height: 0; } .pro-summary-item { min-height: 72px; } }
       `}</style>

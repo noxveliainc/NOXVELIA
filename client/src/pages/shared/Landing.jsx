@@ -1,6 +1,6 @@
-import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+﻿import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, Building2, Car, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck, TrendingUp } from 'lucide-react';
+import { ArrowRight, Building2, Car, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck } from 'lucide-react';
 import AdBanner from '../../components/AdBanner';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
@@ -27,7 +27,6 @@ const MARCAS_HOME = [
   ...MARCAS_POPULARES_PT.filter((marca) => MARCAS.includes(marca)),
   ...MARCAS.filter((marca) => !MARCAS_POPULARES_PT.includes(marca)),
 ];
-const SITE_VISITS_REFRESH_MS = 3 * 60 * 1000;
 const LandingListingsCarousel = lazy(() => import('./LandingListingsCarousel'));
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -37,33 +36,6 @@ const formatarDataCurta = (valor) => { const data = valor ? new Date(valor) : nu
 const slugMarca = (marca) => marca.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const logoMarca = (marca) => `/marcas/${slugMarca(marca)}.${marca === 'Jaecoo' ? 'svg' : 'png'}`;
 const iniciaisMarca = (marca) => marca.split(/[\s&-]+/).filter(Boolean).slice(0, 2).map((parte) => parte[0]).join('').toUpperCase();
-
-function ContadorAnimado({ valor }) {
-  const [mostrado, setMostrado] = useState(0);
-  const frameRef = useRef(null);
-  const anteriorRef = useRef(0);
-
-  useEffect(() => {
-    if (valor == null) return undefined;
-    if (prefersReducedMotion()) { setMostrado(valor); anteriorRef.current = valor; return undefined; }
-    const inicio = anteriorRef.current;
-    const diferenca = valor - inicio;
-    if (diferenca === 0) return undefined;
-    const duracao = 900;
-    const t0 = performance.now();
-    const passo = (agora) => {
-      const progresso = Math.min(1, (agora - t0) / duracao);
-      const facilitado = 1 - (1 - progresso) ** 3;
-      setMostrado(Math.round(inicio + diferenca * facilitado));
-      if (progresso < 1) frameRef.current = requestAnimationFrame(passo);
-      else anteriorRef.current = valor;
-    };
-    frameRef.current = requestAnimationFrame(passo);
-    return () => frameRef.current && cancelAnimationFrame(frameRef.current);
-  }, [valor]);
-
-  return <>{formatarNumero(mostrado)}</>;
-}
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -81,7 +53,6 @@ export default function Landing() {
   const [loadingExemplos, setLoadingExemplos] = useState(true);
   const [erroExemplos, setErroExemplos] = useState(false);
   const [noticiasMercado, setNoticiasMercado] = useState([]);
-  const [visitasSite, setVisitasSite] = useState(null);
   const [pesquisa, setPesquisa] = useState({ tipo: 'carro', marca: '', modelo: '', combustivel: '', tipologia: '', distrito: '', precoMax: '' });
 
   const criarLinkPesquisa = (tipo, filtros = {}) => {
@@ -96,8 +67,6 @@ export default function Landing() {
     : [];
 
   const temProfissionaisAtivos = Number(resumoPublico?.profissionais || 0) > 0;
-  const totalVisitasLanding = Number(visitasSite?.totalVisitas30Dias || 0);
-  const mostrarVisitasSite = totalVisitasLanding >= 500;
 
   const atualizarPesquisa = (campo, valor) => {
     setPesquisa((atual) => {
@@ -194,18 +163,6 @@ export default function Landing() {
 
   useEffect(() => {
     let ativo = true;
-    const buscarVisitasSite = () => {
-      api.get('/analytics/site-visitas')
-        .then(({ data }) => { if (ativo) setVisitasSite(data || null); })
-        .catch(() => {});
-    };
-    buscarVisitasSite();
-    const intervalo = window.setInterval(buscarVisitasSite, SITE_VISITS_REFRESH_MS);
-    return () => { ativo = false; window.clearInterval(intervalo); };
-  }, []);
-
-  useEffect(() => {
-    let ativo = true;
     const carregarExemplos = async () => {
       try {
         const { data } = await api.get('/anuncios/em-alta/semana');
@@ -267,36 +224,37 @@ export default function Landing() {
       <NavbarLanding />
       <main>
         <section className="lp-hero" aria-labelledby="lp-title">
-          <div className="lp-shell">
-            <div className="lp-hero-top">
-              <div className="lp-hero-copy">
-<h1 id="lp-title" ref={heroTitleRef}>Automóveis e imóveis em Portugal</h1>
-                <p>Filtra por localização, preço e características. Contacto direto com o anunciante.</p>
+          <div className="lp-shell lp-hero-shell">
+            <div className="lp-hero-copy">
+              <span className="lp-kicker lp-hero-kicker">Noxvelia Lens</span>
+              <h1 id="lp-title" ref={heroTitleRef}>Automóveis e imóveis em Portugal</h1>
+              <p>Fotografias fortes, preço claro e contacto direto ao anunciante.</p>
+              <div className="lp-hero-actions" aria-label="Ações principais">
+                <a className="lp-main-cta" href="#pesquisa">Pesquisar agora</a>
+                <Link className="lp-soft-cta" to={publicarTo} state={publicarState}>Criar anúncio</Link>
               </div>
             </div>
 
-            <form className="lp-search-box" id="pesquisa" onSubmit={submeterPesquisa}>
-              <div className="lp-tabs" role="tablist" aria-label="Tipo de pesquisa"><button type="button" role="tab" aria-selected={pesquisa.tipo === 'carro'} data-vertical="carro" className={pesquisa.tipo === 'carro' ? 'active' : ''} onClick={() => atualizarPesquisa('tipo', 'carro')}><Car size={16} /> Automóveis</button><button type="button" role="tab" aria-selected={pesquisa.tipo === 'imovel'} data-vertical="imovel" className={pesquisa.tipo === 'imovel' ? 'active' : ''} onClick={() => atualizarPesquisa('tipo', 'imovel')}><HomeIcon size={16} /> Imóveis</button></div>
-              <div className="lp-search-grid">
-                {pesquisa.tipo === 'carro' ? <><label>Marca<select value={pesquisa.marca} onChange={(evento) => atualizarPesquisa('marca', evento.target.value)}><option value="">Todas as marcas</option>{MARCAS_HOME.map((marca) => <option key={marca} value={marca}>{marca}</option>)}</select></label><label>Modelo<select value={pesquisa.modelo} onChange={(evento) => atualizarPesquisa('modelo', evento.target.value)} disabled={!pesquisa.marca}><option value="">{pesquisa.marca ? 'Todos os modelos' : 'Escolhe a marca'}</option>{modelosPesquisa.map((modelo) => <option key={modelo} value={modelo}>{modelo}</option>)}</select></label><label>Combustível<select value={pesquisa.combustivel} onChange={(evento) => atualizarPesquisa('combustivel', evento.target.value)}><option value="">Todos</option>{COMBUSTIVEIS_POPULARES.map((combustivel) => <option key={combustivel} value={combustivel}>{combustivel}</option>)}</select></label><label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_CARROS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label></> : <><label>Tipologia<select value={pesquisa.tipologia} onChange={(evento) => atualizarPesquisa('tipologia', evento.target.value)}><option value="">Todas</option>{TIPOLOGIAS_POPULARES.map((tipologia) => <option key={tipologia} value={tipologia}>{tipologia}</option>)}</select></label><label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_IMOVEIS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label></>}
-                <label>Distrito<select value={pesquisa.distrito} onChange={(evento) => atualizarPesquisa('distrito', evento.target.value)}><option value="">Portugal inteiro</option>{DISTRITOS.map((distrito) => <option key={distrito} value={distrito}>{distrito}</option>)}</select></label>
-                <button type="submit"><Search size={17} /> Ver anúncios</button>
+            <div className="lp-lens-card">
+              <div className="lp-lens-media" aria-hidden="true">
+                <img src="/social/noxvelia-drive-photo-premium.webp" alt="" />
+                <div className="lp-lens-caption">
+                  <strong>Vista antes da visita.</strong>
+                  <span>Imagem grande, dados essenciais e decisão mais rápida.</span>
+                </div>
               </div>
-            </form>
+
+              <form className="lp-search-box" id="pesquisa" onSubmit={submeterPesquisa}>
+                <div className="lp-tabs" role="tablist" aria-label="Tipo de pesquisa"><button type="button" role="tab" aria-selected={pesquisa.tipo === 'carro'} data-vertical="carro" className={pesquisa.tipo === 'carro' ? 'active' : ''} onClick={() => atualizarPesquisa('tipo', 'carro')}><Car size={16} /> Automóveis</button><button type="button" role="tab" aria-selected={pesquisa.tipo === 'imovel'} data-vertical="imovel" className={pesquisa.tipo === 'imovel' ? 'active' : ''} onClick={() => atualizarPesquisa('tipo', 'imovel')}><HomeIcon size={16} /> Imóveis</button></div>
+                <div className="lp-search-grid">
+                  {pesquisa.tipo === 'carro' ? <><label>Marca<select value={pesquisa.marca} onChange={(evento) => atualizarPesquisa('marca', evento.target.value)}><option value="">Todas as marcas</option>{MARCAS_HOME.map((marca) => <option key={marca} value={marca}>{marca}</option>)}</select></label><label>Modelo<select value={pesquisa.modelo} onChange={(evento) => atualizarPesquisa('modelo', evento.target.value)} disabled={!pesquisa.marca}><option value="">{pesquisa.marca ? 'Todos os modelos' : 'Escolhe a marca'}</option>{modelosPesquisa.map((modelo) => <option key={modelo} value={modelo}>{modelo}</option>)}</select></label><label>Combustível<select value={pesquisa.combustivel} onChange={(evento) => atualizarPesquisa('combustivel', evento.target.value)}><option value="">Todos</option>{COMBUSTIVEIS_POPULARES.map((combustivel) => <option key={combustivel} value={combustivel}>{combustivel}</option>)}</select></label><label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_CARROS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label></> : <><label>Tipologia<select value={pesquisa.tipologia} onChange={(evento) => atualizarPesquisa('tipologia', evento.target.value)}><option value="">Todas</option>{TIPOLOGIAS_POPULARES.map((tipologia) => <option key={tipologia} value={tipologia}>{tipologia}</option>)}</select></label><label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_IMOVEIS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label></>}
+                  <label>Distrito<select value={pesquisa.distrito} onChange={(evento) => atualizarPesquisa('distrito', evento.target.value)}><option value="">Portugal inteiro</option>{DISTRITOS.map((distrito) => <option key={distrito} value={distrito}>{distrito}</option>)}</select></label>
+                  <button type="submit"><Search size={17} /> Ver anúncios</button>
+                </div>
+              </form>
+            </div>
           </div>
         </section>
-
-        {mostrarVisitasSite && (
-          <section className="lp-visits-bar" aria-label="Estatísticas de visitas ao site">
-            <div className="lp-shell lp-visits-inner">
-              <div className="lp-visits-headline">
-                <TrendingUp size={18} strokeWidth={2.4} aria-hidden="true" />
-                <span><strong><ContadorAnimado valor={totalVisitasLanding} /></strong> visitas nos últimos 30 dias</span>
-              </div>
-            </div>
-          </section>
-        )}
-
 <section className="lp-section lp-category-section" aria-labelledby="lp-categories" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Pesquisar</span><h2 id="lp-categories">Escolhe a categoria</h2></div></div><div className="lp-category-grid"><Link className="lp-category-card lp-category-card-auto" to="/carros"><img src="/social/noxvelia-drive-photo-premium.webp" alt="Automóvel anunciado na Noxvelia" /><span><small>Automóveis</small><strong>Ver automóveis</strong><em>Marca, modelo, km, combustível e preço.</em></span></Link><Link className="lp-category-card lp-category-card-estate" to="/imoveis"><img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia" /><span><small>Imóveis</small><strong>Ver imóveis</strong><em>Tipologia, localização, área e valor.</em></span></Link></div></div></section>
 
         <section className="lp-section lp-brand-section" id="marcas" aria-labelledby="lp-brands" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Marcas</span><h2 id="lp-brands">Automóveis por marca</h2></div><div className="lp-brand-controls"><button type="button" onClick={() => rolarMarcas(-1)} aria-label="Ver marcas anteriores">‹</button><button type="button" onClick={() => rolarMarcas(1)} aria-label="Ver mais marcas">›</button></div></div><div className="lp-brand-rail" ref={brandRailRef}><div className="lp-brand-grid">{MARCAS_HOME.map((marca) => { const marcaSlug = slugMarca(marca); return <Link className="lp-brand-card" to={`/carros?marca=${encodeURIComponent(marca)}`} key={marca} aria-label={`Ver anúncios ${marca}`}><span className={`lp-brand-mark ${LOGOS_COM_TEXTO_EMBUTIDO.has(marcaSlug) ? 'lp-brand-mark-clean' : ''}`}><span className="lp-brand-fallback" aria-hidden="true">{iniciaisMarca(marca)}</span><img src={logoMarca(marca)} alt="" loading="lazy" draggable="false" onError={(evento) => { evento.currentTarget.style.display = 'none'; evento.currentTarget.parentElement?.classList.add('logo-error'); }} /></span><strong>{marca}</strong></Link>; })}</div></div></div></section>

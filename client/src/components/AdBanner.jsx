@@ -429,32 +429,6 @@ function AdBannerStyles() {
       .nx-ad-banner-adsense .adsbygoogle {
         min-height: var(--nx-ad-min-height);
       }
-      .dark .nx-ad-banner-card {
-        background: #071326;
-        border-color: rgba(240, 223, 187, 0.16);
-        color: #fffaf0;
-      }
-      .dark .nx-ad-banner-label {
-        background: rgba(7, 19, 38, .86);
-        border-color: rgba(217, 196, 156, .42);
-        color: #f0dfbb;
-      }
-      .dark .nx-ad-banner-empty {
-        background: linear-gradient(135deg, #071326 0%, #0d1d33 70%, rgba(217, 196, 156, .12) 100%);
-        border-color: rgba(240, 223, 187, .22);
-      }
-      .dark .nx-ad-banner-empty:hover {
-        border-color: rgba(240, 223, 187, .42);
-        box-shadow: 0 18px 44px -32px rgba(0, 0, 0, .7);
-      }
-      .dark .nx-ad-empty-copy {
-        color: #fffaf0;
-      }
-      .dark .nx-ad-empty-copy span {
-        background: rgba(217, 196, 156, .14);
-        border-color: rgba(240, 223, 187, .3);
-        color: #f0dfbb;
-      }
       /* Layout profissional para espaços vendidos diretamente. */
       .nx-ad-banner-card {
         border-radius: 8px;
@@ -574,8 +548,9 @@ function AdBannerStyles() {
       }
       .nx-ad-banner--landing .nx-ad-banner-empty {
         padding: 20px;
-        background: linear-gradient(135deg, #071326 0%, #102f50 62%, #ffffff 62%, #ffffff 100%) !important;
-        border-color: rgba(217, 196, 156, .34);
+        background: #f7f5ef !important;
+        border-color: #e6e1d6;
+        border-left: 5px solid #d9c391;
       }
       .nx-ad-banner--landing .nx-ad-banner-label {
         background: rgba(255, 250, 240, .96);
@@ -590,21 +565,19 @@ function AdBannerStyles() {
       }
       .nx-ad-banner--landing .nx-ad-empty-copy strong {
         max-width: 680px;
-        color: #fffaf0;
+        color: #071326;
         font-size: clamp(23px, 2.8vw, 36px);
       }
-      .nx-ad-banner--landing .nx-ad-empty-eyebrow,
-      .nx-ad-banner--landing .nx-ad-empty-body {
-        color: rgba(255, 250, 240, .78) !important;
-      }
+      .nx-ad-banner--landing .nx-ad-empty-eyebrow { color: #9b7b3f !important; }
+      .nx-ad-banner--landing .nx-ad-empty-body { color: #5d6b78 !important; }
       .nx-ad-banner--landing .nx-ad-empty-preview {
         min-height: 112px;
-        background: rgba(255, 250, 240, .96);
-        box-shadow: 0 18px 38px -34px rgba(0, 0, 0, .75);
+        background: #ffffff;
+        box-shadow: none;
       }
       .nx-ad-banner--landing .nx-ad-empty-cta {
-        background: #d9c49c;
-        color: #071326;
+        background: #071326;
+        color: #ffffff;
       }
       .nx-ad-banner--landing .nx-ad-banner-direct img {
         max-height: 320px;
@@ -658,34 +631,6 @@ function AdBannerStyles() {
       .pesquisa-bottom-ad .nx-ad-banner-card {
         min-height: max(var(--nx-ad-min-height), 110px) !important;
       }
-      .dark .nx-ad-empty-layout .nx-ad-empty-copy strong {
-        color: #fffaf0 !important;
-      }
-      .dark .nx-ad-empty-body,
-      .dark .nx-ad-empty-layout .nx-ad-empty-copy > span {
-        color: rgba(255, 250, 240, .76) !important;
-      }
-      .dark .nx-ad-empty-eyebrow {
-        color: #f0dfbb !important;
-      }
-      .dark .nx-ad-empty-preview {
-        background: #071326 !important;
-        border-color: rgba(217, 196, 156, .22) !important;
-      }
-      .dark .nx-ad-preview-lines i {
-        background: rgba(255, 250, 240, .16);
-      }
-      .dark .nx-ad-preview-lines i:nth-child(3) {
-        background: rgba(217, 196, 156, .72);
-      }
-      .dark .nx-ad-empty-cta {
-        background: #d9c49c !important;
-        color: #071326 !important;
-      }
-      .dark .nx-ad-banner--landing .nx-ad-banner-empty {
-        background: linear-gradient(135deg, #040b16 0%, #102f50 62%, #0d1d33 62%, #0d1d33 100%) !important;
-        border-color: rgba(217, 196, 156, .3) !important;
-      }
       /* Correções anti-overlap: o selo de publicidade nunca pode tapar texto. */
       .nx-ad-banner-empty {
         flex-direction: column !important;
@@ -715,11 +660,6 @@ function AdBannerStyles() {
       }
       .nx-ad-banner--sidebar .nx-ad-banner-label {
         align-self: flex-start !important;
-      }
-      .dark .nx-ad-banner-empty > .nx-ad-banner-label {
-        background: #ffffff !important;
-        border-color: rgba(217, 196, 156, .74) !important;
-        color: #071326 !important;
       }
 
       /* Slot vazio com aspeto final, sem wireframe de conteúdo por preencher. */

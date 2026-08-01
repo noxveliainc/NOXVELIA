@@ -312,14 +312,6 @@ export default function Patrocinios() {
         .sponsor-alert.ok { background: rgba(22,139,130,.12); color: #0f766e; }
         .sponsor-alert.err { background: rgba(239,68,68,.1); color: #b91c1c; }
         .sponsor-help { color: #596b7c; font-size: 12px; align-self: center; }
-        .dark .sponsor-page { background: #071326; color: #fffaf0; }
-        .dark .sponsor-hero { background: linear-gradient(180deg, #071326, #102f50); border-color: rgba(240,223,187,.14); }
-        .dark .sponsor-hero p, .dark .sponsor-panel-intro, .dark .sponsor-price-card span, .dark .sponsor-price-meta div, .dark .sponsor-step span, .dark .sponsor-rule-card li, .dark .sponsor-example p, .dark .sponsor-preview-note, .dark .sponsor-choice span { color: rgba(255,250,240,.72); }
-        .dark .sponsor-panel, .dark .sponsor-price-card, .dark .sponsor-browser-top { background: #0d1d33; border-color: rgba(240,223,187,.16); }
-        .dark .sponsor-step, .dark .sponsor-rule-card, .dark .sponsor-example, .dark .sponsor-browser, .dark .sponsor-mock-card { background: #071326; border-color: rgba(240,223,187,.14); }
-        .dark .sponsor-field input, .dark .sponsor-field select, .dark .sponsor-choice, .dark .sponsor-preview { background: #071326; border-color: rgba(240,223,187,.18); color: #fffaf0; }
-        .dark .sponsor-example dd, .dark .sponsor-empty-creative { color: #fffaf0; }
-        .dark .sponsor-help { color: rgba(255,250,240,.7); }
         @media (max-width: 980px) { .sponsor-hero-grid, .sponsor-grid { grid-template-columns: 1fr; } .sponsor-position-grid { grid-template-columns: 1fr; } }
         @media (max-width: 720px) { .sponsor-steps, .sponsor-duration-grid { grid-template-columns: 1fr; } .sponsor-mock-layout { grid-template-columns: 1fr; } }
         @media (max-width: 620px) { .sponsor-shell { width: min(100% - 24px, 1180px); } .sponsor-panel { padding: 16px; } .sponsor-hero { padding-top: 36px; } .sponsor-hero h1 { font-size: clamp(32px, 11vw, 48px); } .sponsor-example div { grid-template-columns: 1fr; gap: 2px; } .sponsor-ad-content strong { font-size: 15px; } }

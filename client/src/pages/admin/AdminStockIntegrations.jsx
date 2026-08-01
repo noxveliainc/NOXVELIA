@@ -241,7 +241,6 @@ export default function AdminStockIntegrations({ colors, fonts, utilizadores = [
         .nx-stock-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .nx-stock-btn { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid ${palette.borderStrong || '#b9cac4'}; background: #fff; color: ${palette.text || '#102326'}; padding: 0 13px; cursor: pointer; font-size: 12px; font-weight: 850; font-family: ${typo.body || 'sans-serif'}; }
         .nx-stock-btn.primary { background: ${palette.gold || '#9d7b3f'}; border-color: ${palette.gold || '#9d7b3f'}; color: #fffaf0; }
-        .nx-stock-btn.dark { background: #102f50; border-color: #102f50; color: #fffaf0; }
         .nx-stock-btn.danger { color: ${palette.red || '#ef4444'}; border-color: rgba(239,68,68,.35); }
         .nx-stock-list { display: grid; gap: 12px; }
         .nx-stock-row { display: grid; gap: 14px; border: 1px solid ${palette.border || '#dfe8e4'}; border-radius: 12px; padding: 16px; background: #fff; }
@@ -377,7 +376,7 @@ export default function AdminStockIntegrations({ colors, fonts, utilizadores = [
                   </div>
                 )}
                 <div className="nx-stock-actions">
-                  {integracao.provider !== 'manual' && <button className="nx-stock-btn dark" type="button" onClick={() => sincronizar(integracao)} disabled={syncingId === integracao._id}>{syncingId === integracao._id ? 'A sincronizar...' : 'Sincronizar agora'}</button>}
+                  {integracao.provider !== 'manual' && <button className="nx-stock-btn navy" type="button" onClick={() => sincronizar(integracao)} disabled={syncingId === integracao._id}>{syncingId === integracao._id ? 'A sincronizar...' : 'Sincronizar agora'}</button>}
                   <button className="nx-stock-btn" type="button" onClick={() => editar(integracao)}>Editar</button>
                   <button className="nx-stock-btn danger" type="button" onClick={() => desativar(integracao)}>Desativar</button>
                 </div>

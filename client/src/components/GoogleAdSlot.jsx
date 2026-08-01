@@ -70,7 +70,7 @@ export default function GoogleAdSlot({
         }
       `}</style>
       <aside className={`nx-ad-slot mx-auto my-8 w-full max-w-7xl px-4 sm:px-6 ${className}`} style={slotStyle} aria-label="Publicidade">
-        <div className="nx-ad-slot-card overflow-hidden rounded-xl border border-slate-200/80 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
+        <div className="nx-ad-slot-card overflow-hidden rounded-xl border border-slate-200/80 bg-white p-3">
           <div className="nx-ad-slot-label mb-2 text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">Publicidade</div>
           <ins
             ref={adRef}

@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import ThemeToggle from '../ThemeToggle';
 import { Car, House } from 'lucide-react';
 
 export default function NavbarImovel() {
@@ -305,7 +304,6 @@ export default function NavbarImovel() {
 
         {/* 🌟 DESKTOP ACTIONS */}
         <div className="nim-actions">
-          <ThemeToggle />
           <button type="button" onClick={handleIrParaHome} className="nim-btn-menu nim-btn-home" aria-label="Voltar à página inicial">
             <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10.5V20h13v-9.5" /><path d="M9.5 20v-5h5v5" /></svg>
             Início
@@ -417,7 +415,6 @@ export default function NavbarImovel() {
             <div className="nim-drawer-menu">
               <div className="nim-drawer-theme-row">
                 <span className="nim-drawer-theme-label">Aspeto</span>
-                <ThemeToggle />
               </div>
               <button type="button" className="nim-drawer-link nim-drawer-link-home" onClick={handleIrParaHome}>
                 <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10.5V20h13v-9.5" /><path d="M9.5 20v-5h5v5" /></svg>

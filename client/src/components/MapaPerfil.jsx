@@ -210,7 +210,5 @@ const mapStyles = `
   .nx-profile-map-card em, .nx-profile-map-card small { color: rgba(255,250,240,.76); font-size: 12px; font-style: normal; line-height: 1.35; }
   .nx-profile-map-card a { justify-self: start; margin-top: 6px; min-height: 30px; display: inline-flex; align-items: center; padding: 0 10px; border-radius: 8px; background: #d9c49c; color: #071326; font-size: 11px; font-weight: 900; text-decoration: none; text-transform: uppercase; letter-spacing: .06em; }
   .nx-profile-map-empty { display: flex; align-items: flex-end; background: linear-gradient(135deg, #dbe3ea, #edf2f7); }
-  .dark .nx-profile-map { background: #0f172a; border-color: #334155; }
-  .dark .nx-profile-map-card { background: rgba(7, 19, 38, .94); border-color: rgba(217,196,156,.24); }
   @media (max-width: 640px) { .nx-profile-map { min-height: 300px; } .nx-profile-map-card { left: 12px; right: 12px; bottom: 12px; min-width: 0; } }
 `;

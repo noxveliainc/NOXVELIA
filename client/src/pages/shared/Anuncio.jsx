@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { getFunnelSessionId, trackFunnelEvent } from '../../utils/funnelAnalytics';
