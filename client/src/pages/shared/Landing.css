@@ -103,8 +103,7 @@
 .lp-soft-cta,
 .lp-secondary-button,
 .lp-column-top button,
-.lp-listing-state button,
-.lp-brand-controls button {
+.lp-listing-state button {
   min-height: 48px;
   display: inline-flex;
   align-items: center;
@@ -432,97 +431,9 @@
   content: none;
 }
 
-.lp-brand-section,
 .lp-news-section,
 .lp-cv-section { background: #ffffff; }
 
-.lp-brand-controls {
-  display: flex;
-  gap: 10px;
-}
-
-.lp-brand-controls button {
-  width: 44px;
-  min-height: 44px;
-  padding: 0;
-  border: 1px solid var(--cor-borda);
-  background: #ffffff;
-  color: var(--cor-navy);
-  cursor: pointer;
-  font-size: 24px;
-}
-
-.lp-brand-rail {
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  padding-bottom: 8px;
-}
-
-.lp-brand-rail::-webkit-scrollbar { height: 6px; }
-.lp-brand-rail::-webkit-scrollbar-thumb { background: var(--cor-borda); border-radius: 999px; }
-
-.lp-brand-grid {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(148px, 1fr);
-  grid-template-rows: repeat(2, 112px);
-  gap: 14px;
-  min-width: max-content;
-}
-
-.lp-brand-card {
-  scroll-snap-align: start;
-  min-width: 148px;
-  display: grid;
-  place-items: center;
-  gap: 8px;
-  padding: 16px;
-  border: 1px solid var(--cor-borda);
-  border-radius: 18px;
-  background: #ffffff;
-  text-decoration: none;
-  color: var(--cor-texto);
-  transition: border-color .18s ease, transform .18s ease, background .18s ease;
-}
-
-.lp-brand-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--cor-champagne);
-  background: #fffdf8;
-}
-
-.lp-brand-mark {
-  position: relative;
-  width: 74px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-}
-
-.lp-brand-mark img {
-  max-width: 70px;
-  max-height: 38px;
-  object-fit: contain;
-}
-
-.lp-brand-fallback {
-  position: absolute;
-  inset: 0;
-  display: none;
-  place-items: center;
-  color: var(--cor-texto-secundario);
-  font-size: 17px;
-  font-weight: 900;
-}
-
-.logo-error .lp-brand-fallback { display: grid; }
-
-.lp-brand-card strong {
-  color: var(--cor-texto);
-  font-size: 12px;
-  font-weight: 800;
-  text-align: center;
-}
 
 .lp-news-grid {
   display: grid;
@@ -827,8 +738,6 @@
   .lp-tabs { width: 100%; }
   .lp-tabs button { flex: 1; justify-content: center; padding-inline: 10px; }
   .lp-search-box { padding: 18px; }
-  .lp-brand-grid { grid-template-rows: repeat(2, 98px); grid-auto-columns: 132px; }
-  .lp-brand-card { min-width: 132px; padding: 12px; }
   .lp-section-head { align-items: flex-start; flex-direction: column; }
   .lp-listing-fallback { grid-template-columns: 1fr; }
 }

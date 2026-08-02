@@ -11,7 +11,7 @@ import {
   mdiMap, mdiViewGrid, mdiMagnify, mdiLoading, mdiFilterVariant, mdiChevronLeft,
   mdiChevronRight, mdiShieldCheckOutline, mdiCloseCircleOutline
 } from '@mdi/js';
-import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
+import { MARCAS, OPCAO_OUTRO_VEICULO, getNomesModelosComOutro, isOpcaoOutroVeiculo, rotuloOpcaoVeiculo } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 import { publishIntentState } from '../../utils/navigationState';
 import { trackFunnelEvent } from '../../utils/funnelAnalytics';
@@ -62,7 +62,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   }), [searchParamsKey, seoParamsKey]);
   const getParam = useCallback((name) => parametrosRota.seo?.get(name) || parametrosRota.search.get(name) || '', [parametrosRota]);
   const marcaUrl = getParam('marca');
-  const marcaInicial = tipoSeguro === 'carro' && MARCAS.includes(marcaUrl) ? marcaUrl : '';
+  const marcaInicial = tipoSeguro === 'carro' && (MARCAS.includes(marcaUrl) || isOpcaoOutroVeiculo(marcaUrl)) ? marcaUrl : '';
   const queryInicial = getParam('q');
   const obterFiltrosDaRota = useCallback(() => ({
     tipo: tipoSeguro,
@@ -346,7 +346,9 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     setSidebarMobileAberta(false);
   };
 
-  const modelosDisponiveis = filtros.marca ? getModelosPorMarca(filtros.marca) : [];
+  const modelosDisponiveis = filtros.marca
+    ? (isOpcaoOutroVeiculo(filtros.marca) ? [OPCAO_OUTRO_VEICULO] : getNomesModelosComOutro(filtros.marca))
+    : [];
   const cidadesDisponiveis = (filtros.distrito && filtros.distrito !== 'Todos') ? DISTRITOS_CIDADES_PT[filtros.distrito] : [];
   const accent = tipoSeguro === 'imovel' ? '#2ac1b4' : '#3ecf8e';
   const accentText = '#071326';
@@ -426,12 +428,13 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     if (tipoSeguro === 'carro') {
       MARCAS.forEach((marca) => {
         opcoes.push({ label: marca, detail: 'Marca automóvel', patch: { marca, modelo: '' } });
-        getModelosPorMarca(marca).forEach((modeloOriginal) => {
+        getNomesModelosComOutro(marca).forEach((modeloOriginal) => {
           const modelo = normalizarModeloPesquisa(modeloOriginal);
           if (!modelo) return;
-          opcoes.push({ label: `${marca} ${modelo}`, detail: 'Modelo automóvel', patch: { marca, modelo } });
+          opcoes.push({ label: `${marca} ${rotuloOpcaoVeiculo(modelo, 'modelo')}`, detail: 'Modelo automóvel', patch: { marca, modelo } });
         });
       });
+      opcoes.push({ label: 'Outra marca', detail: 'Marca fora da lista', patch: { marca: OPCAO_OUTRO_VEICULO, modelo: '' } });
     } else {
       TIPOS_IMOVEL.forEach((tipo) => opcoes.push({ label: tipo.label, detail: 'Tipo de imóvel', patch: { tiposImovel: [tipo.value] } }));
       TIPOLOGIAS.forEach((tipologia) => opcoes.push({ label: tipologia, detail: 'Tipologia', patch: { tipologias: [tipologia] } }));
@@ -482,8 +485,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     if (filtro === (filtros.precoMax && `Até ${formatarNumero(filtros.precoMax)} EUR`)) patch.precoMax = '';
     if (filtro === filtros.distrito) { patch.distrito = 'Todos'; patch.cidade = ''; }
     if (filtro === filtros.cidade) patch.cidade = '';
-    if (filtro === filtros.marca) { patch.marca = ''; patch.modelo = ''; }
-    if (filtro === filtros.modelo) patch.modelo = '';
+    if (filtro === rotuloOpcaoVeiculo(filtros.marca, 'marca')) { patch.marca = ''; patch.modelo = ''; }
+    if (filtro === rotuloOpcaoVeiculo(filtros.modelo, 'modelo')) patch.modelo = '';
     if ((filtros.tiposImovel || []).map(tipo => TIPOS_IMOVEL.find(item => item.value === tipo)?.label || tipo).includes(filtro)) {
       patch.tiposImovel = (filtros.tiposImovel || []).filter((tipo) => (TIPOS_IMOVEL.find(item => item.value === tipo)?.label || tipo) !== filtro);
     }
@@ -1227,6 +1230,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                   <select className="pesquisa-filter-input" value={filtros.marca} onChange={(e) => setFiltros(f => ({ ...f, marca: e.target.value, modelo: '' }))}>
                     <option value="">Todas as marcas</option>
                     {MARCAS.map(m => <option key={m} value={m}>{m}</option>)}
+                    <option value={OPCAO_OUTRO_VEICULO}>Outra marca</option>
                   </select>
                 </div>
                 <div className="pesquisa-filter-group">
@@ -1235,7 +1239,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                     <option value="">{filtros.marca ? 'Todos os modelos' : 'Escolhe primeiro a marca'}</option>
                     {modelosDisponiveis.map((mod, idx) => {
                       const nomeModelo = typeof mod === 'object' ? (mod.modelo || mod.nome || '') : mod;
-                      return <option key={`mod-${idx}`} value={nomeModelo}>{nomeModelo}</option>;
+                      return <option key={`mod-${idx}`} value={nomeModelo}>{rotuloOpcaoVeiculo(nomeModelo, 'modelo')}</option>;
                     })}
                   </select>
                 </div>
@@ -1524,5 +1528,3 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     </>
   );
 }
-
-

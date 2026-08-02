@@ -1,4 +1,4 @@
-// src/data/marcasModelos.js  –  v2.0
+﻿// src/data/marcasModelos.js  –  v2.0
 //
 // Catálogo de marcas e modelos de automóveis disponíveis na NOXVELIA.
 //
@@ -1546,6 +1546,20 @@ export const MARCAS = Object.keys(MARCAS_CARROS).sort((a, b) =>
   sem_acentos(a).localeCompare(sem_acentos(b), 'pt')
 );
 
+export const OPCAO_OUTRO_VEICULO = '__outro__';
+
+const normalizarOpcaoOutro = (valor) => sem_acentos(String(valor || '')).replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+export function isOpcaoOutroVeiculo(valor) {
+  const texto = normalizarOpcaoOutro(valor);
+  return texto === 'outro' || texto === 'outra' || texto === 'outra marca' || texto === 'outro modelo';
+}
+
+export function rotuloOpcaoVeiculo(valor, tipo = 'marca') {
+  if (!isOpcaoOutroVeiculo(valor)) return valor || '';
+  return tipo === 'modelo' ? 'Outro modelo' : 'Outra marca';
+}
+
 // ─── FUNÇÕES UTILITÁRIAS ────────────────────────────────────────────────────
 
 /**
@@ -1562,12 +1576,52 @@ export function getNomesModelosPorMarca(marca) {
   return (MARCAS_CARROS[marca] || []).map(m => m.modelo);
 }
 
+export function getNomesModelosComOutro(marca) {
+  const modelos = getNomesModelosPorMarca(marca);
+  return [...modelos, OPCAO_OUTRO_VEICULO];
+}
+
 /**
  * Verifica se a combinação marca/modelo é válida.
  */
 export function combinacaoValida(marca, modelo) {
   const lista = MARCAS_CARROS[marca];
   return Array.isArray(lista) && lista.some(m => m.modelo === modelo);
+}
+
+export function marcaExisteNoCatalogo(marca) {
+  return Boolean(marca && normalizarMarca(marca));
+}
+
+export function modeloExisteNoCatalogo(marca, modelo) {
+  if (!marca || !modelo) return false;
+  const marcaCanonica = normalizarMarca(marca);
+  if (!marcaCanonica) return false;
+  const modeloNormalizado = sem_acentos(modelo);
+  return getNomesModelosPorMarca(marcaCanonica).some((nome) => sem_acentos(nome) === modeloNormalizado);
+}
+
+export function formatarMarcaVeiculo(carro = {}) {
+  const marca = String(carro?.marca || '').trim();
+  if (!marca) return '';
+  return marcaExisteNoCatalogo(marca) ? marca : `Outra marca (${marca})`;
+}
+
+export function formatarModeloVeiculo(carro = {}) {
+  const marca = String(carro?.marca || '').trim();
+  const modelo = String(carro?.modelo || '').trim();
+  if (!modelo) return '';
+  if (!marcaExisteNoCatalogo(marca)) return modelo;
+  return modeloExisteNoCatalogo(marca, modelo) ? modelo : `Outro (${modelo})`;
+}
+
+export function formatarMarcaModeloVeiculo(carro = {}) {
+  const marca = String(carro?.marca || '').trim();
+  const modelo = String(carro?.modelo || '').trim();
+  if (!marca) return modelo;
+  if (!marcaExisteNoCatalogo(marca)) return modelo ? `Outra marca (${marca} ${modelo})` : `Outra marca (${marca})`;
+  if (modelo && !modeloExisteNoCatalogo(marca, modelo)) return `${marca} Outro (${modelo})`;
+  return [marca, modelo].filter(Boolean).join(' ');
 }
 
 /**

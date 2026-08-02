@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { anuncioPath } from '../../utils/seo';
 import { getImageDimensions, getImageSrcSet, getImageUrl } from '../../utils/images';
+import { formatarMarcaModeloVeiculo } from '../../data/marcasModelos';
 
 const CARD_ICON_PATHS = {
   camera: 'M4 8h3l1.5-2h7L17 8h3v10H4V8zm8 8a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
@@ -78,6 +79,9 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const isProfissional = anuncio?.utilizador?.tipoConta === 'profissional' || anuncio?.utilizador?.tipo === 'admin';
   const isCarro = anuncio?.tipo === 'carro';
   const isImovel = !isCarro;
+  const marcaModeloFormatado = isCarro ? formatarMarcaModeloVeiculo(anuncio?.carro) : '';
+  const tituloCard = anuncio?.titulo || marcaModeloFormatado || (isCarro ? 'Automóvel' : 'Imóvel');
+  const mostrarMarcaModeloExtra = isCarro && marcaModeloFormatado && marcaModeloFormatado !== tituloCard;
   const imagemPrincipal = anuncio?.fotos?.[0] || anuncio?.imagens?.[0] || anuncio?.imagem;
   // Tenta primeiro a variante sem corte (original); só recua para 'large'/'medium'
   // se essa variante não existir. O contentor já usa object-fit: contain, por isso
@@ -362,6 +366,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           display: flex; flex-direction: column; flex: 1; gap: 10px;
         }
         .nxc-title { font-size: 14px; font-weight: 800; color: #0f172a; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .nxc-subtitle { margin-top: -4px; font-size: 11.5px; font-weight: 700; color: #64748b; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 
         /* ── ESPECIFICAÇÕES: uma linha de texto corrido, sem caixas nem ícones —
            nunca corta, quebra a palavra inteira para a linha seguinte se precisar. */
@@ -441,7 +446,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
                   sizes="(max-width: 720px) 100vw, 360px"
                   width={imagemPrincipalDims.width}
                   height={imagemPrincipalDims.height}
-                  alt={anuncio.titulo}
+                  alt={tituloCard}
                   loading="lazy"
                   decoding="async"
                   onLoad={() => setImgCarregada(true)}
@@ -487,7 +492,8 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         {/* ── BODY ── */}
         <div className="nxc-body">
-          <div className="nxc-title">{anuncio?.titulo}</div>
+          <div className="nxc-title">{tituloCard}</div>
+          {mostrarMarcaModeloExtra && <div className="nxc-subtitle">{marcaModeloFormatado}</div>}
 
           {destaques.length > 0 && (
             <div className="nxc-specs">

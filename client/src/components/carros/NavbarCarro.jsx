@@ -14,10 +14,6 @@ export default function NavbarCarro() {
   const [dropdownAberto, setDropdownAberto] = useState(false);
   const logoRef = useRef(null);
 
-  const [notificacoes, setNotificacoes] = useState([]);
-  const [sinoAberto, setSinoAberto] = useState(false);
-  const sinoRef = useRef(null);
-  const naoLidasSino = notificacoes.filter(n => !n.lida).length;
 
   const [userMenuAberto, setUserMenuAberto] = useState(false);
   const userMenuRef = useRef(null);
@@ -42,34 +38,13 @@ export default function NavbarCarro() {
   useEffect(() => {
     const cliqueFora = (e) => {
       if (logoRef.current && !logoRef.current.contains(e.target)) setDropdownAberto(false);
-      if (sinoRef.current && !sinoRef.current.contains(e.target)) setSinoAberto(false);
       if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setUserMenuAberto(false);
     };
     window.addEventListener('click', cliqueFora);
     return () => window.removeEventListener('click', cliqueFora);
   }, []);
 
-  useEffect(() => {
-    if (!signed) return;
-    const fetchNotificacoes = async () => {
-      try {
-        const resNotif = await api.get('/notificacoes').catch(() => ({ data: [] }));
-        setNotificacoes(resNotif.data || []);
-      } catch {}
-    };
-    fetchNotificacoes();
-    const id = setInterval(fetchNotificacoes, 8000);
-    return () => clearInterval(id);
-  }, [signed]);
 
-  const handleLerNotificacao = async (notif) => {
-    if (!notif.lida) {
-      setNotificacoes(prev => prev.map(n => n._id === notif._id ? { ...n, lida: true } : n));
-      api.put(`/notificacoes/${notif._id}/ler`).catch(() => {});
-    }
-    setSinoAberto(false);
-    if (notif.link) navigate(notif.link);
-  };
 
   const handleIrParaHome = (e) => {
     e.preventDefault();
@@ -77,14 +52,6 @@ export default function NavbarCarro() {
     navigate('/');
   };
 
-  const handleIrParaMarcas = (e) => {
-    e.preventDefault();
-    setMenuMobileAberto(false);
-    navigate('/#marcas');
-    setTimeout(() => {
-      document.getElementById('marcas')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 80);
-  };
 
   const handlePremium = (e) => {
     e.preventDefault();
@@ -185,7 +152,6 @@ export default function NavbarCarro() {
         .ncr-icon-btn svg { width: 20px; height: 20px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
         .ncr-icon-btn.admin { color: #102f50; }
         .ncr-icon-btn.admin:hover { background: rgba(217, 196, 156, 0.16); color: #102f50; }
-        .ncr-badge { position: absolute; top: -2px; right: -2px; min-width: 16px; height: 16px; background: #ef4444; color: #ffffff; font-size: 9px; font-weight: 700; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #ffffff; line-height: 1; padding: 0 4px; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); }
         .ncr-btn-premium { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: transparent; border: none; cursor: pointer; color: #eab308; text-decoration: none; transition: all 0.2s ease; }
         .ncr-btn-premium:hover { background: rgba(234, 179, 8, 0.1); color: #ca8a04; }
         .ncr-btn-premium svg { width: 20px; height: 20px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
@@ -197,15 +163,6 @@ export default function NavbarCarro() {
         .ncr-ud-pro { margin-left: 6px; padding: 2px 7px; background: #d9c49c; color: #040711; font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
         .ncr-ud-admin-badge { margin-left: 6px; padding: 2px 7px; background: #102f50; color: #fffaf0; border: 1px solid rgba(217,196,156,.36); font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 20px; line-height: 1; flex-shrink: 0; }
 
-        .ncr-sino-dropdown { position: absolute; top: calc(100% + 12px); right: -6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); width: 320px; display: flex; flex-direction: column; z-index: 1020; overflow: hidden; }
-        .ncr-sino-header { padding: 14px 16px; font-weight: 800; font-size: 14px; border-bottom: 1px solid #e2e8f0; color: #0f172a; background: #f8fafc; }
-        .ncr-sino-body { max-height: 320px; overflow-y: auto; }
-        .ncr-sino-item { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s; text-align: left; }
-        .ncr-sino-item:hover { background: #f8fafc; }
-        .ncr-sino-item.unread { background: rgba(217, 196, 156, 0.05); border-left: 3px solid #d9c49c; padding-left: 13px; }
-        .ncr-sino-text { font-size: 13px; color: #334155; margin-bottom: 6px; line-height: 1.4; }
-        .ncr-sino-date { font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-        .ncr-sino-empty { padding: 32px 16px; text-align: center; font-size: 13px; color: #94a3b8; }
 
         .ncr-user-trigger { display: inline-flex; align-items: center; gap: 8px; background: transparent; padding: 4px 10px 4px 4px; border-radius: 20px; transition: background 0.2s ease; border: 1px solid transparent; cursor: pointer; }
         .ncr-user-trigger:hover, .ncr-user-trigger.active { background: #f8fafc; border-color: #e2e8f0; }
@@ -309,10 +266,6 @@ export default function NavbarCarro() {
             <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10.5V20h13v-9.5" /><path d="M9.5 20v-5h5v5" /></svg>
             Início
           </button>
-          <button type="button" onClick={handleIrParaMarcas} className="ncr-btn-menu">
-            <svg viewBox="0 0 24 24"><path d="M4 6h16" /><path d="M4 12h10" /><path d="M4 18h16" /></svg>
-            Marcas
-          </button>
           <Link to="/profissionais" className="ncr-btn-menu">
             <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
             Profissionais
@@ -335,25 +288,6 @@ export default function NavbarCarro() {
               <button type="button" onClick={handlePremium} className={`ncr-btn-premium${isPremium ? ' active' : ''}`}><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" /></svg></button>
               <Link to="/favoritos" className="ncr-icon-btn"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg></Link>
               
-              <div ref={sinoRef} style={{ position: 'relative' }}>
-                <button type="button" className="ncr-icon-btn" onClick={() => setSinoAberto(!sinoAberto)}>
-                  <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                  {naoLidasSino > 0 && <span className="ncr-badge">{naoLidasSino}</span>}
-                </button>
-                {sinoAberto && (
-                  <div className="ncr-sino-dropdown" onClick={e => e.stopPropagation()}>
-                    <div className="ncr-sino-header">Notificações</div>
-                    <div className="ncr-sino-body">
-                      {notificacoes.length > 0 ? notificacoes.map(n => (
-                        <div key={n._id} className={`ncr-sino-item ${!n.lida ? 'unread' : ''}`} onClick={() => handleLerNotificacao(n)}>
-                          <div className="ncr-sino-text">{n.mensagem}</div>
-                          <div className="ncr-sino-date">{new Date(n.createdAt).toLocaleDateString()}</div>
-                        </div>
-                      )) : <div className="ncr-sino-empty">Sem notificações</div>}
-                    </div>
-                  </div>
-                )}
-              </div>
               <div className="ncr-divider" />
               <div ref={userMenuRef} style={{ position: 'relative' }}>
                 <button className={`ncr-user-trigger ${userMenuAberto ? 'active' : ''}`} onClick={() => setUserMenuAberto(!userMenuAberto)}>
@@ -414,16 +348,9 @@ export default function NavbarCarro() {
             </div>
 
             <div className="ncr-drawer-menu">
-              <div className="ncr-drawer-theme-row">
-                <span className="ncr-drawer-theme-label">Aspeto</span>
-              </div>
               <button type="button" className="ncr-drawer-link ncr-drawer-link-home" onClick={handleIrParaHome}>
                 <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10.5V20h13v-9.5" /><path d="M9.5 20v-5h5v5" /></svg>
                 Página inicial
-              </button>
-              <button type="button" className="ncr-drawer-link ncr-drawer-link-marcas" onClick={handleIrParaMarcas}>
-                <svg viewBox="0 0 24 24"><path d="M4 6h16" /><path d="M4 12h10" /><path d="M4 18h16" /></svg>
-                Marcas
               </button>
               <Link to="/profissionais" className="ncr-drawer-link" onClick={() => setMenuMobileAberto(false)}>
                 <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>

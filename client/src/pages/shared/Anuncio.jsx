@@ -9,6 +9,7 @@ import Seo from '../../components/Seo';
 import { absoluteUrl, anuncioPath } from '../../utils/seo';
 import { normalizarExtras } from '../../utils/extras';
 import { getImageDimensions, getImageSrcSet, getImageUrl } from '../../utils/images';
+import { formatarMarcaVeiculo, formatarModeloVeiculo } from '../../data/marcasModelos';
 import { Icon } from '@mdi/react';
 import {
   mdiCheckDecagram, mdiShareVariantOutline, mdiHeartOutline, mdiHeart,
@@ -334,8 +335,8 @@ export default function Anuncio() {
     : 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 
   const specs = isCarro ? [
-    { label: 'Marca', value: anuncio.carro?.marca, icon: mdiCar },
-    { label: 'Modelo', value: anuncio.carro?.modelo, icon: mdiCar },
+    { label: 'Marca', value: formatarMarcaVeiculo(anuncio.carro), icon: mdiCar },
+    { label: 'Modelo', value: formatarModeloVeiculo(anuncio.carro), icon: mdiCar },
     { label: 'Versão', value: anuncio.carro?.versao, icon: mdiFileDocumentOutline },
     { label: 'Mês / Ano', value: valorAnoMes, icon: mdiCalendarBlank },
     { label: 'Quilometragem', value: anuncio.carro?.km != null ? new Intl.NumberFormat('pt-PT').format(anuncio.carro.km) + ' km' : null, icon: mdiSpeedometer },
@@ -391,7 +392,7 @@ export default function Anuncio() {
     : null;
   const resumoDecisao = [
     { label: 'Localização', value: localizacaoString, icon: mdiMapMarkerOutline },
-    { label: isCarro ? 'Marca' : 'Preço / m²', value: isCarro ? (anuncio.carro?.marca || 'Viatura') : (precoPorM2 || 'A confirmar'), icon: isCarro ? mdiCar : mdiRulerSquare },
+    { label: isCarro ? 'Marca' : 'Preço / m²', value: isCarro ? (formatarMarcaVeiculo(anuncio.carro) || 'Viatura') : (precoPorM2 || 'A confirmar'), icon: isCarro ? mdiCar : mdiRulerSquare },
     { label: 'Vendedor', value: vendedorVerificado ? 'Verificado' : (rating > 0 ? `${rating.toFixed(1)} estrelas` : 'Novo vendedor'), icon: mdiShieldCheckOutline },
     { label: 'Contacto', value: temTelefoneContacto ? 'Telefone' : (temEmailContacto ? 'Email' : 'Por mensagem'), icon: temTelefoneContacto ? mdiPhone : mdiEmailOutline },
   ];

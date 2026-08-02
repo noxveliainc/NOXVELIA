@@ -558,7 +558,6 @@ export default function NavbarLanding() {
           <div className="nl-links">
             <a href="#pesquisa">Pesquisar</a>
             <a href="#anunciar">Criar anúncio</a>
-            <a href="#marcas">Marcas</a>
             <Link to="/profissionais">Profissionais</Link>
             <Link to="/enviar-stock">Enviar stock</Link>
             <Link to="/patrocinios">Patrocinar</Link>
@@ -640,7 +639,6 @@ export default function NavbarLanding() {
             </div>
             <a href="#pesquisa" onClick={() => setMenuMobileAberto(false)}>Pesquisar</a>
             <a href="#anunciar" onClick={() => setMenuMobileAberto(false)}>Criar anúncio</a>
-            <a href="#marcas" onClick={() => setMenuMobileAberto(false)}>Marcas</a>
             <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Automóveis</Link>
             <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Imóveis</Link>
             <Link to="/profissionais" onClick={() => setMenuMobileAberto(false)}>Profissionais</Link>

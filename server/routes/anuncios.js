@@ -11,6 +11,7 @@ import { parsePagination } from '../utils/pagination.js';
 import { analisarPreco, calcularQualidadeAnuncio } from '../utils/anuncioInsights.js';
 import { normalizarCarro, normalizarEquipamento, normalizarImovel } from '../utils/anuncioNormalize.js';
 import { attachImagesToOwnerByUrls, deleteImagesByOwner } from '../services/imageService.js';
+import { MARCAS, getNomesModelosPorMarca, isOpcaoOutroVeiculo } from '../../client/src/data/marcasModelos.js';
 
 const router = express.Router();
 const LIMITE_ANUNCIOS_GRATUITOS = 3;
@@ -61,6 +62,22 @@ const dividirTipoImovelFiltro = (valor) => {
 };
 
 const filtroBooleanoAtivo = (valor) => ['true', '1', 'sim', 'yes'].includes(normalizarFiltroTexto(valor));
+const escapeRegex = (valor) => String(valor || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const regexTextoExato = (valor) => new RegExp(`^${escapeRegex(String(valor || '').trim())}$`, 'i');
+const adicionarCondicaoAnd = (query, condicao) => {
+  query.$and = Array.isArray(query.$and) ? [...query.$and, condicao] : [condicao];
+};
+const MARCAS_CATALOGO_NORMALIZADAS = new Set(MARCAS.map(normalizarFiltroTexto));
+const marcaCatalogoConhecida = (marca) => MARCAS_CATALOGO_NORMALIZADAS.has(normalizarFiltroTexto(marca));
+const obterMarcaCatalogo = (marca) => MARCAS.find((item) => normalizarFiltroTexto(item) === normalizarFiltroTexto(marca));
+const modeloCatalogoConhecido = (marca, modelo) => {
+  const marcaCatalogo = obterMarcaCatalogo(marca);
+  if (!marcaCatalogo || !modelo) return false;
+  return getNomesModelosPorMarca(marcaCatalogo).some((item) => normalizarFiltroTexto(item) === normalizarFiltroTexto(modelo));
+};
+const condicoesCampoForaCatalogo = (campo, valores) => ({
+  $nor: valores.map((valor) => ({ [campo]: regexTextoExato(valor) })),
+});
 
 const normalizarContactosAnuncio = ({ telefone, email }, { ehAdmin }) => {
   const telefoneLimpo = String(telefone || '').trim();
@@ -132,8 +149,22 @@ const aplicarFiltrosPesquisa = async (query, filtros = {}) => {
   }
 
   if (tipoFiltro === 'carro') {
-    if (marca) query['carro.marca'] = marca;
-    if (modelo) query['carro.modelo'] = modelo;
+    if (marca) {
+      if (isOpcaoOutroVeiculo(marca)) {
+        adicionarCondicaoAnd(query, condicoesCampoForaCatalogo('carro.marca', MARCAS));
+      } else {
+        query['carro.marca'] = marca;
+      }
+    }
+    if (modelo) {
+      if (isOpcaoOutroVeiculo(modelo)) {
+        const marcaCatalogo = marca && !isOpcaoOutroVeiculo(marca) ? obterMarcaCatalogo(marca) : null;
+        const modelosCatalogo = marcaCatalogo ? getNomesModelosPorMarca(marcaCatalogo) : [];
+        if (modelosCatalogo.length) adicionarCondicaoAnd(query, condicoesCampoForaCatalogo('carro.modelo', modelosCatalogo));
+      } else {
+        query['carro.modelo'] = modelo;
+      }
+    }
     if (combustivel) query['carro.combustivel'] = { $in: dividirFiltroTexto(combustivel) };
     if (transmissao) query['carro.transmissao'] = { $in: dividirFiltroTexto(transmissao) };
     if (tipoVeiculo) query['carro.tipoVeiculo'] = { $in: dividirFiltroTexto(tipoVeiculo) };
@@ -173,8 +204,16 @@ const alertaCombinaComAnuncio = (alerta, anuncio) => {
   }
 
   if (anuncio.tipo === 'carro') {
-    if (filtros.marca && !compararTexto(filtros.marca, anuncio.carro?.marca)) return false;
-    if (filtros.modelo && !compararTexto(filtros.modelo, anuncio.carro?.modelo)) return false;
+    if (filtros.marca) {
+      if (isOpcaoOutroVeiculo(filtros.marca)) {
+        if (marcaCatalogoConhecida(anuncio.carro?.marca)) return false;
+      } else if (!compararTexto(filtros.marca, anuncio.carro?.marca)) return false;
+    }
+    if (filtros.modelo) {
+      if (isOpcaoOutroVeiculo(filtros.modelo)) {
+        if (modeloCatalogoConhecido(anuncio.carro?.marca, anuncio.carro?.modelo)) return false;
+      } else if (!compararTexto(filtros.modelo, anuncio.carro?.modelo)) return false;
+    }
     if (filtros.kmMax && Number(anuncio.carro?.km || 0) > Number(filtros.kmMax)) return false;
     if (filtros.combustiveis?.length && !listaIncluiTexto(filtros.combustiveis, anuncio.carro?.combustivel)) return false;
     if (filtros.transmissao?.length && !listaIncluiTexto(filtros.transmissao, anuncio.carro?.transmissao)) return false;

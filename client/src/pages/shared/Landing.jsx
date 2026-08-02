@@ -6,7 +6,7 @@ import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
 import NavbarLanding from './NavbarLanding';
 import api from '../../services/api';
-import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
+import { MARCAS, OPCAO_OUTRO_VEICULO, getNomesModelosComOutro, rotuloOpcaoVeiculo } from '../../data/marcasModelos';
 import { DISTRITOS } from '../../data/localizacoes';
 import { getImageUrl } from '../../utils/images';
 import { anuncioPath, homePageJsonLd, siteIdentityJsonLd } from '../../utils/seo';
@@ -21,11 +21,11 @@ const COMBUSTIVEIS_POPULARES = ['Diesel', 'Gasolina', 'Eléctrico', 'Híbrido', 
 const TIPOLOGIAS_POPULARES = ['T1', 'T2', 'T3', 'T4', 'T5+'];
 const PRECOS_CARROS = [{ label: 'Até 10.000 €', value: '10000' }, { label: 'Até 20.000 €', value: '20000' }, { label: 'Até 30.000 €', value: '30000' }];
 const PRECOS_IMOVEIS = [{ label: 'Até 150.000 €', value: '150000' }, { label: 'Até 250.000 €', value: '250000' }, { label: 'Até 400.000 €', value: '400000' }];
-const LOGOS_COM_TEXTO_EMBUTIDO = new Set(['aiways', 'aston-martin', 'bentley']);
 const MARCAS_POPULARES_PT = ['Renault', 'Peugeot', 'Volkswagen', 'Mercedes-Benz', 'Toyota', 'Opel', 'Fiat', 'BMW', 'Audi', 'Citroën', 'Seat', 'Ford', 'Nissan', 'Hyundai', 'Kia', 'Dacia', 'Skoda', 'Volvo'];
-const MARCAS_HOME = [
+const MARCAS_PESQUISA = [
   ...MARCAS_POPULARES_PT.filter((marca) => MARCAS.includes(marca)),
   ...MARCAS.filter((marca) => !MARCAS_POPULARES_PT.includes(marca)),
+  OPCAO_OUTRO_VEICULO,
 ];
 const LandingListingsCarousel = lazy(() => import('./LandingListingsCarousel'));
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -33,16 +33,12 @@ const prefersReducedMotion = () => typeof window !== 'undefined' && window.match
 const formatarMoeda = (valor) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
 const formatarNumero = (valor) => new Intl.NumberFormat('pt-PT').format(valor || 0);
 const formatarDataCurta = (valor) => { const data = valor ? new Date(valor) : null; return data && !Number.isNaN(data.getTime()) ? new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: 'short' }).format(data) : ''; };
-const slugMarca = (marca) => marca.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-const logoMarca = (marca) => `/marcas/${slugMarca(marca)}.${marca === 'Jaecoo' ? 'svg' : 'png'}`;
-const iniciaisMarca = (marca) => marca.split(/[\s&-]+/).filter(Boolean).slice(0, 2).map((parte) => parte[0]).join('').toUpperCase();
 
 export default function Landing() {
   const navigate = useNavigate();
   const location = useLocation();
   const { signed } = useAuth();
   const landingViewTrackedRef = useRef(false);
-  const brandRailRef = useRef(null);
   const heroTitleRef = useRef(null);
   const aosRef = useRef(null);
   const animeRef = useRef(null);
@@ -63,7 +59,7 @@ export default function Landing() {
   };
 
   const modelosPesquisa = pesquisa.tipo === 'carro' && pesquisa.marca
-    ? getModelosPorMarca(pesquisa.marca).map((modelo) => (typeof modelo === 'object' ? modelo.modelo || modelo.nome : modelo)).filter(Boolean)
+    ? (pesquisa.marca === OPCAO_OUTRO_VEICULO ? [OPCAO_OUTRO_VEICULO] : getNomesModelosComOutro(pesquisa.marca))
     : [];
 
   const temProfissionaisAtivos = Number(resumoPublico?.profissionais || 0) > 0;
@@ -85,11 +81,6 @@ export default function Landing() {
     navigate(criarLinkPesquisa(tipo, filtros));
   };
 
-  const rolarMarcas = (direcao) => {
-    const rail = brandRailRef.current;
-    if (!rail) return;
-    rail.scrollBy({ left: direcao * Math.max(320, rail.clientWidth * 0.82), behavior: 'smooth' });
-  };
 
   const carregarAnime = () => {
     if (!animeRef.current) animeRef.current = import('animejs').then((modulo) => modulo.animate);
@@ -247,7 +238,7 @@ export default function Landing() {
               <form className="lp-search-box" id="pesquisa" onSubmit={submeterPesquisa}>
                 <div className="lp-tabs" role="tablist" aria-label="Tipo de pesquisa"><button type="button" role="tab" aria-selected={pesquisa.tipo === 'carro'} data-vertical="carro" className={pesquisa.tipo === 'carro' ? 'active' : ''} onClick={() => atualizarPesquisa('tipo', 'carro')}><Car size={16} /> Automóveis</button><button type="button" role="tab" aria-selected={pesquisa.tipo === 'imovel'} data-vertical="imovel" className={pesquisa.tipo === 'imovel' ? 'active' : ''} onClick={() => atualizarPesquisa('tipo', 'imovel')}><HomeIcon size={16} /> Imóveis</button></div>
                 <div className="lp-search-grid">
-                  {pesquisa.tipo === 'carro' ? <><label>Marca<select value={pesquisa.marca} onChange={(evento) => atualizarPesquisa('marca', evento.target.value)}><option value="">Todas as marcas</option>{MARCAS_HOME.map((marca) => <option key={marca} value={marca}>{marca}</option>)}</select></label><label>Modelo<select value={pesquisa.modelo} onChange={(evento) => atualizarPesquisa('modelo', evento.target.value)} disabled={!pesquisa.marca}><option value="">{pesquisa.marca ? 'Todos os modelos' : 'Escolhe a marca'}</option>{modelosPesquisa.map((modelo) => <option key={modelo} value={modelo}>{modelo}</option>)}</select></label><label>Combustível<select value={pesquisa.combustivel} onChange={(evento) => atualizarPesquisa('combustivel', evento.target.value)}><option value="">Todos</option>{COMBUSTIVEIS_POPULARES.map((combustivel) => <option key={combustivel} value={combustivel}>{combustivel}</option>)}</select></label><label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_CARROS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label></> : <><label>Tipologia<select value={pesquisa.tipologia} onChange={(evento) => atualizarPesquisa('tipologia', evento.target.value)}><option value="">Todas</option>{TIPOLOGIAS_POPULARES.map((tipologia) => <option key={tipologia} value={tipologia}>{tipologia}</option>)}</select></label><label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_IMOVEIS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label></>}
+                  {pesquisa.tipo === 'carro' ? <><label>Marca<select value={pesquisa.marca} onChange={(evento) => atualizarPesquisa('marca', evento.target.value)}><option value="">Todas as marcas</option>{MARCAS_PESQUISA.map((marca) => <option key={marca} value={marca}>{rotuloOpcaoVeiculo(marca, 'marca')}</option>)}</select></label><label>Modelo<select value={pesquisa.modelo} onChange={(evento) => atualizarPesquisa('modelo', evento.target.value)} disabled={!pesquisa.marca}><option value="">{pesquisa.marca ? 'Todos os modelos' : 'Escolhe a marca'}</option>{modelosPesquisa.map((modelo) => <option key={modelo} value={modelo}>{rotuloOpcaoVeiculo(modelo, 'modelo')}</option>)}</select></label><label>Combustível<select value={pesquisa.combustivel} onChange={(evento) => atualizarPesquisa('combustivel', evento.target.value)}><option value="">Todos</option>{COMBUSTIVEIS_POPULARES.map((combustivel) => <option key={combustivel} value={combustivel}>{combustivel}</option>)}</select></label><label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_CARROS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label></> : <><label>Tipologia<select value={pesquisa.tipologia} onChange={(evento) => atualizarPesquisa('tipologia', evento.target.value)}><option value="">Todas</option>{TIPOLOGIAS_POPULARES.map((tipologia) => <option key={tipologia} value={tipologia}>{tipologia}</option>)}</select></label><label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_IMOVEIS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label></>}
                   <label>Distrito<select value={pesquisa.distrito} onChange={(evento) => atualizarPesquisa('distrito', evento.target.value)}><option value="">Portugal inteiro</option>{DISTRITOS.map((distrito) => <option key={distrito} value={distrito}>{distrito}</option>)}</select></label>
                   <button type="submit"><Search size={17} /> Ver anúncios</button>
                 </div>
@@ -256,8 +247,6 @@ export default function Landing() {
           </div>
         </section>
 <section className="lp-section lp-category-section" aria-labelledby="lp-categories" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Pesquisar</span><h2 id="lp-categories">Escolhe a categoria</h2></div></div><div className="lp-category-grid"><Link className="lp-category-card lp-category-card-auto" to="/carros"><img src="/social/noxvelia-drive-photo-premium.webp" alt="Automóvel anunciado na Noxvelia" /><span><small>Automóveis</small><strong>Ver automóveis</strong><em>Marca, modelo, km, combustível e preço.</em></span></Link><Link className="lp-category-card lp-category-card-estate" to="/imoveis"><img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia" /><span><small>Imóveis</small><strong>Ver imóveis</strong><em>Tipologia, localização, área e valor.</em></span></Link></div></div></section>
-
-        <section className="lp-section lp-brand-section" id="marcas" aria-labelledby="lp-brands" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Marcas</span><h2 id="lp-brands">Automóveis por marca</h2></div><div className="lp-brand-controls"><button type="button" onClick={() => rolarMarcas(-1)} aria-label="Ver marcas anteriores">‹</button><button type="button" onClick={() => rolarMarcas(1)} aria-label="Ver mais marcas">›</button></div></div><div className="lp-brand-rail" ref={brandRailRef}><div className="lp-brand-grid">{MARCAS_HOME.map((marca) => { const marcaSlug = slugMarca(marca); return <Link className="lp-brand-card" to={`/carros?marca=${encodeURIComponent(marca)}`} key={marca} aria-label={`Ver anúncios ${marca}`}><span className={`lp-brand-mark ${LOGOS_COM_TEXTO_EMBUTIDO.has(marcaSlug) ? 'lp-brand-mark-clean' : ''}`}><span className="lp-brand-fallback" aria-hidden="true">{iniciaisMarca(marca)}</span><img src={logoMarca(marca)} alt="" loading="lazy" draggable="false" onError={(evento) => { evento.currentTarget.style.display = 'none'; evento.currentTarget.parentElement?.classList.add('logo-error'); }} /></span><strong>{marca}</strong></Link>; })}</div></div></div></section>
 
         {noticiasMercado.length > 0 && <section className="lp-section lp-news-section" id="atualidade" aria-labelledby="lp-news" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker"><Newspaper size={13} /> Atualidade</span><h2 id="lp-news">Mercado em Portugal</h2><p className="lp-section-copy">Notícias recentes sobre automóveis, habitação e crédito.</p></div></div><div className="lp-news-grid">{noticiasMercado.map((noticia) => { const dataNoticia = formatarDataCurta(noticia.publishedAt); return <a className="lp-news-card" href={noticia.url} target="_blank" rel="noopener noreferrer" key={noticia.id || noticia.url}><span className={`lp-news-pill ${noticia.vertical === 'automoveis' ? 'cars' : 'homes'}`}>{noticia.verticalLabel || 'Mercado'}</span><h3>{noticia.title}</h3>{noticia.summary && <p>{noticia.summary}</p>}<span className="lp-news-meta">{noticia.source}{dataNoticia ? ` · ${dataNoticia}` : ''}</span></a>; })}</div></div></section>}
         {mostrarDestaques && <section className="lp-section lp-listing-section" id="destaques" aria-labelledby="lp-featured" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Anúncios</span><h2 id="lp-featured">Recentes na Noxvelia</h2></div></div><div className="lp-listing-columns">{(loadingExemplos || exemplos.carro.length > 0) && <div className="lp-listing-column"><div className="lp-column-top"><h3><Car size={16} /> Automóveis</h3><button type="button" onClick={() => navigate('/carros')}>Ver automóveis</button></div><div className="lp-listing-list">{exemplos.carro.length > 0 ? renderAnunciosSwiper(exemplos.carro, '/carros') : renderEstadoLista('automóveis', '/carros')}</div></div>}{(loadingExemplos || exemplos.imovel.length > 0) && <div className="lp-listing-column"><div className="lp-column-top"><h3><HomeIcon size={16} /> Imóveis</h3><button type="button" onClick={() => navigate('/imoveis')}>Ver imóveis</button></div><div className="lp-listing-list">{exemplos.imovel.length > 0 ? renderAnunciosSwiper(exemplos.imovel, '/imoveis') : renderEstadoLista('imóveis', '/imoveis')}</div></div>}</div></div></section>}
