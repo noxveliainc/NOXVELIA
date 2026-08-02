@@ -11,6 +11,28 @@ const formatos = [
   { value: 'outro', label: 'Outro' },
 ];
 
+const volumes = [
+  { value: '1-10', label: '1 a 10 anúncios' },
+  { value: '11-30', label: '11 a 30 anúncios' },
+  { value: '31-80', label: '31 a 80 anúncios' },
+  { value: '80+', label: 'Mais de 80 anúncios' },
+  { value: 'nao_sei', label: 'Ainda não sei' },
+];
+
+const origensStock = [
+  { value: 'excel', label: 'Excel / CSV' },
+  { value: 'mystand', label: 'MyStand / XML / API' },
+  { value: 'website', label: 'Website do stand' },
+  { value: 'outro', label: 'Outro sistema' },
+  { value: 'nao_sei', label: 'Ainda não sei' },
+];
+
+const urgencias = [
+  { value: 'esta_semana', label: 'Esta semana' },
+  { value: 'este_mes', label: 'Este mês' },
+  { value: 'sem_pressa', label: 'Sem pressa' },
+];
+
 const estadoInicial = {
   empresa: '',
   nome: '',
@@ -18,6 +40,9 @@ const estadoInicial = {
   telefone: '',
   website: '',
   formato: 'csv',
+  volume: '11-30',
+  origemStock: 'excel',
+  urgencia: 'este_mes',
   mensagem: '',
 };
 
@@ -222,29 +247,29 @@ export default function StockSubmeter() {
 
       <div className="stock-wrap">
         <section className="stock-hero">
-          <div className="stock-kicker">Stock de stands</div>
-          <h1 className="stock-title">Coloca vários automóveis na NOXVELIA sem teres de os inserir um a um.</h1>
+          <div className="stock-kicker">Avaliação gratuita de stock</div>
+          <h1 className="stock-title">Envia-nos o stock do teu stand em Excel, XML ou CSV.</h1>
           <p className="stock-lead">
-            Envia o ficheiro de stock do teu stand. A equipa valida o formato, prepara a importação e responde-te com os próximos passos.
+            Validamos o formato, confirmamos fotos e campos importantes e dizemos-te como colocar os automóveis na NOXVELIA com menos trabalho manual.
           </p>
           <div className="stock-points">
-            <div className="stock-point"><strong>Rápido</strong><span>CSV, Excel, XML ou JSON num único envio.</span></div>
-            <div className="stock-point"><strong>Sem API</strong><span>Funciona mesmo antes de existir integração automática.</span></div>
-            <div className="stock-point"><strong>Controlado</strong><span>Os anúncios só entram depois de validação.</span></div>
+            <div className="stock-point"><strong>1. Envia</strong><span>Excel, CSV, XML, JSON ou exportação do teu software.</span></div>
+            <div className="stock-point"><strong>2. Validamos</strong><span>Vemos duplicados, fotos, preços, marca, modelo e contactos.</span></div>
+            <div className="stock-point"><strong>3. Publicamos</strong><span>Entramos em contacto antes de qualquer importação ficar ativa.</span></div>
           </div>
         </section>
 
         <section className="stock-card" aria-label="Enviar ficheiro de stock">
           <div className="stock-card-head">
-            <h1>Enviar stock</h1>
-            <p>Preenche os contactos e anexa o ficheiro. Se tiveres dúvidas, usa o modelo recomendado.</p>
+            <h1>Pedir avaliação</h1>
+            <p>Preenche os contactos, indica a origem do stock e anexa o ficheiro. A resposta chega pelo email indicado.</p>
           </div>
 
           <form className="stock-form" onSubmit={submeter}>
             {sucesso && (
               <div className="stock-success">
                 <strong>Pedido recebido.</strong>
-                Vamos analisar o ficheiro e responder pelo email indicado.
+                Vamos avaliar gratuitamente o ficheiro e responder pelo email indicado com o melhor caminho de importa??o.
               </div>
             )}
             {erro && <div className="stock-error">{erro}</div>}
@@ -276,11 +301,29 @@ export default function StockSubmeter() {
                   {formatos.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                 </select>
               </div>
+              <div className="stock-field">
+                <label htmlFor="volume">Volume</label>
+                <select id="volume" value={form.volume} onChange={atualizar('volume')}>
+                  {volumes.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                </select>
+              </div>
+              <div className="stock-field">
+                <label htmlFor="origemStock">Origem do stock</label>
+                <select id="origemStock" value={form.origemStock} onChange={atualizar('origemStock')}>
+                  {origensStock.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                </select>
+              </div>
+              <div className="stock-field">
+                <label htmlFor="urgencia">Prazo ideal</label>
+                <select id="urgencia" value={form.urgencia} onChange={atualizar('urgencia')}>
+                  {urgencias.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                </select>
+              </div>
             </div>
 
             <div className="stock-field">
               <label htmlFor="mensagem">Notas</label>
-              <textarea id="mensagem" value={form.mensagem} onChange={atualizar('mensagem')} placeholder="Ex: todos os automóveis estão disponíveis, imagens no ficheiro, preços com IVA incluído..." />
+              <textarea id="mensagem" value={form.mensagem} onChange={atualizar('mensagem')} placeholder="Ex: software usado, campo das fotos, se os preços incluem IVA, se há viaturas vendidas a excluir..." />
             </div>
 
             <div className="stock-file">
@@ -292,10 +335,10 @@ export default function StockSubmeter() {
             </div>
 
             <p className="stock-note">
-              Modelo recomendado: <a href="/templates/importacao-stock-noxvelia.csv" download>descarregar CSV da NOXVELIA</a>. Não partilhamos o ficheiro com terceiros; é usado apenas para preparar a publicação dos anúncios.
+              Modelo recomendado: <a href="/templates/importacao-stock-noxvelia.csv" download>descarregar CSV da NOXVELIA</a>. O ficheiro é usado apenas para avaliar e preparar a importação dos anúncios.
             </p>
 
-            <button className="stock-submit" type="submit" disabled={enviando}>{enviando ? 'A enviar...' : 'Enviar ficheiro de stock'}</button>
+            <button className="stock-submit" type="submit" disabled={enviando}>{enviando ? 'A enviar...' : 'Pedir avaliação gratuita'}</button>
             <Link className="stock-secondary" to="/publicar">Prefiro criar apenas um anúncio</Link>
           </form>
         </section>

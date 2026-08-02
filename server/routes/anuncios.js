@@ -310,7 +310,7 @@ router.get('/', async (req, res) => {
       .sort(sortOption)
       .skip(skip)
       .limit(limit)
-      .populate('utilizador', 'nome avatarUrl tipo tipoConta premiumAtivo')
+      .populate('utilizador', 'nome avatarUrl tipo tipoConta premiumAtivo verificado')
       .lean();
 
     const [totalAnuncios, resumoPrecoAgregado] = await Promise.all([
@@ -505,7 +505,7 @@ router.get('/favoritos', verificarToken, async (req, res) => {
     const anunciosFavoritos = await Anuncio.find({
       _id: { $in: user.favoritos },
       estado: 'ativo'
-    }).populate('utilizador', 'nome avatarUrl').lean();
+    }).populate('utilizador', 'nome avatarUrl tipo tipoConta premiumAtivo verificado').lean();
 
     res.json(anunciosFavoritos);
   } catch (error) {
@@ -548,7 +548,7 @@ router.get('/:id', async (req, res) => {
     const anuncio = await Anuncio.findOne({
       _id: req.params.id,
       estado: { $ne: 'apagado' }
-    }).populate('utilizador', 'nome email avatarUrl tipo telefone mostrarTelefonePublico premiumAtivo').lean();
+    }).populate('utilizador', 'nome email avatarUrl tipo tipoConta telefone mostrarTelefonePublico premiumAtivo verificado rating totalAvaliacoes createdAt').lean();
 
     if (!anuncio)
       return res.status(404).json({ erro: 'Anúncio removido.' });

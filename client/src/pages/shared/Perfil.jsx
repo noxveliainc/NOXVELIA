@@ -255,6 +255,10 @@ export default function Perfil() {
     || totalGuardadosPerfil > 0
     || mediaQualidadePerfil > 0;
   const premiumAtivoPerfil = utilizador?.premiumAtivo === true || utilizador?.tipo === 'admin';
+  const anunciosParaMelhorarPerfil = anunciosAtivosPerfil
+    .filter((anuncio) => Number(anuncio.scoreQualidade || 0) < 8)
+    .sort((a, b) => Number(a.scoreQualidade || 0) - Number(b.scoreQualidade || 0))
+    .slice(0, 3);
   const formatarMetricaPerfil = (valor) => new Intl.NumberFormat('pt-PT').format(Number(valor || 0));
 
   if (loading) return <LoadingScreen label="A carregar perfil" detail="A preparar a tua área." minHeight="100vh" tone="light" />;
@@ -327,6 +331,18 @@ export default function Perfil() {
         
         .perfil-premium-btn { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d9c49c; background: #d9c49c; color: #071326; font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; text-transform: uppercase; }
         .perfil-premium-btn.secondary { background: #ffffff; color: #102f50; border-color: rgba(16,47,80,.18); }
+
+        .perfil-quality-panel { margin: 0 0 24px; border: 1px solid rgba(16,47,80,.12); border-radius: 16px; padding: 20px; background: #ffffff; width: 100%; }
+        .perfil-quality-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+        .perfil-quality-kicker { color: #102f50; font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .perfil-quality-title { margin: 5px 0 0; color: #071326; font-size: 20px; line-height: 1.2; font-weight: 900; }
+        .perfil-quality-copy { margin: 6px 0 0; color: #64748b; font-size: 13px; line-height: 1.5; }
+        .perfil-quality-list { display: grid; gap: 10px; }
+        .perfil-quality-item { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; text-align: left; font: inherit; cursor: pointer; }
+        .perfil-quality-item strong { display: block; color: #0f172a; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .perfil-quality-item span span { display: block; margin-top: 4px; color: #64748b; font-size: 12px; line-height: 1.4; }
+        .perfil-quality-score { min-width: 62px; display: inline-flex; justify-content: center; padding: 8px 10px; border-radius: 999px; border: 1px solid rgba(217,196,156,.45); background: #fff9eb; color: #102f50; font-size: 12px; font-weight: 900; }
+        .perfil-quality-ok { padding: 14px; border: 1px dashed rgba(217,196,156,.52); border-radius: 12px; color: #102f50; background: #fffaf0; font-size: 13px; font-weight: 750; line-height: 1.5; }
 
         /* MODAIS PADRÃO */
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; width: 100%; height: 100%; }
@@ -491,6 +507,34 @@ export default function Perfil() {
             </div>
           </div>
         </section>
+
+        {anunciosAtivosPerfil.length > 0 && (
+          <section className="perfil-quality-panel" aria-labelledby="perfil-quality-title">
+            <div className="perfil-quality-head">
+              <div>
+                <span className="perfil-quality-kicker">Qualidade dos anúncios</span>
+                <h2 id="perfil-quality-title" className="perfil-quality-title">Pequenas melhorias geram mais contactos.</h2>
+                <p className="perfil-quality-copy">A pontuação considera fotos, descrição, preço, localização e contacto.</p>
+              </div>
+            </div>
+
+            {anunciosParaMelhorarPerfil.length > 0 ? (
+              <div className="perfil-quality-list">
+                {anunciosParaMelhorarPerfil.map((anuncio) => (
+                  <button type="button" key={anuncio._id} className="perfil-quality-item" onClick={() => navigate(`/editar/${anuncio._id}`)}>
+                    <span>
+                      <strong>{anuncio.titulo || 'Anúncio sem título'}</strong>
+                      <span>Reforça fotos, descrição, localização ou contacto para aumentar a confiança antes do primeiro clique.</span>
+                    </span>
+                    <span className="perfil-quality-score">{Number(anuncio.scoreQualidade || 0).toFixed(1)}/10</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="perfil-quality-ok">Os teus anúncios ativos já têm informação suficiente para uma boa decisão. Mantém fotos e disponibilidade atualizadas.</div>
+            )}
+          </section>
+        )}
 
         <div className="tabs-row">
           <button className={`tab-btn${abaActiva === 'imovel' ? ' active-imovel' : ''}`} onClick={() => setAbaActiva('imovel')}>

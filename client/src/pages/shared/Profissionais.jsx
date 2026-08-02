@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BadgeCheck, Building2, Car, ExternalLink, Home, MapPin, Search, Star, Trophy } from 'lucide-react';
+import { ArrowRight, BadgeCheck, Building2, Car, ExternalLink, Home, MapPin, Search, ShieldCheck, Star, Trophy, UploadCloud } from 'lucide-react';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
 import { DISTRITOS } from '../../data/localizacoes';
@@ -80,6 +80,15 @@ export default function Profissionais() {
         .pro-summary-note { min-height: 84px; display: grid; align-content: center; gap: 6px; padding: 16px; border: 1px solid rgba(7,19,38,0.1); border-radius: 10px; background: #ffffff; }
         .pro-summary-note strong { color: #071326; font-size: 18px; font-weight: 950; }
         .pro-summary-note span { color: #66717d; font-size: 13px; line-height: 1.45; font-weight: 700; }
+        .pro-business-strip { margin: 18px auto 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 18px; border: 1px solid rgba(217,196,156,.38); border-radius: 14px; background: #f7f5ef; }
+        .pro-business-copy { display: flex; align-items: flex-start; gap: 14px; min-width: 0; }
+        .pro-business-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: #102f50; color: #fff; flex: 0 0 auto; }
+        .pro-business-copy strong { display: block; color: #071326; font-size: 18px; line-height: 1.2; font-weight: 950; }
+        .pro-business-copy span { display: block; margin-top: 5px; color: #5d6b78; font-size: 13px; line-height: 1.45; font-weight: 650; }
+        .pro-business-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+        .pro-cta, .pro-cta-secondary { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 14px; border-radius: 10px; font-size: 12px; font-weight: 900; text-decoration: none; }
+        .pro-cta { background: #102f50; color: #fff; border: 1px solid #102f50; }
+        .pro-cta-secondary { background: #fff; color: #102f50; border: 1px solid rgba(16,47,80,.18); }
         .pro-toolbar { position: sticky; top: 72px; z-index: 20; padding: 14px 0; background: rgba(255,255,255,0.94); border-bottom: 1px solid rgba(7,19,38,0.08); backdrop-filter: blur(14px); }
         .pro-tools { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 260px); gap: 10px; }
         .pro-search, .pro-select { min-height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border: 1px solid rgba(7,19,38,0.14); border-radius: 10px; background: #ffffff; color: #071326; }
@@ -96,7 +105,11 @@ export default function Profissionais() {
         .pro-card { overflow: hidden; min-height: 314px; display: flex; flex-direction: column; border: 1px solid rgba(7,19,38,0.1); border-radius: 10px; background: #ffffff; color: inherit; text-decoration: none; transition: border-color .18s ease, transform .18s ease; }
         .pro-card:hover { border-color: rgba(217,196,156,0.64); transform: translateY(-2px); }
         .pro-card.is-featured { border-color: rgba(217,196,156,0.58); box-shadow: 0 14px 30px -26px rgba(7,19,38,0.45); }
-        .pro-cover { height: 108px; position: relative; background: radial-gradient(circle at 18% 24%, rgba(217,196,156,.35), transparent 30%), linear-gradient(135deg, #102f50, #071326); }
+        .pro-cover { height: 108px; position: relative; background: #f7f5ef; }
+        .pro-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,19,38,0.02), rgba(7,19,38,0.18)); pointer-events: none; opacity: 0; }
+        .pro-cover.has-image::after { opacity: 1; }
+        .pro-cover.is-empty { background: #f7f5ef; border-bottom: 1px solid rgba(217,196,156,.38); }
+        .pro-cover.is-empty::before { content: ""; position: absolute; left: 18px; right: 18px; bottom: 18px; height: 1px; background: linear-gradient(90deg, rgba(217,196,156,.72), rgba(217,196,156,0)); }
         .pro-cover img { width: 100%; height: 100%; display: block; object-fit: cover; }
         .pro-rank { position: absolute; top: 12px; right: 12px; display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 10px; border-radius: 999px; background: rgba(7,19,38,0.9); color: #ffffff; font-size: 10px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }
         .pro-avatar { position: absolute; left: 16px; bottom: -28px; width: 62px; height: 62px; display: grid; place-items: center; overflow: hidden; border: 3px solid #ffffff; border-radius: 50%; background: #ffffff; color: #102f50; font-size: 22px; font-weight: 900; }
@@ -106,7 +119,9 @@ export default function Profissionais() {
         .pro-name { min-width: 0; }
         .pro-name strong { display: block; color: #071326; font-size: 18px; line-height: 1.15; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .pro-location { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; color: #60767c; font-size: 12px; font-weight: 750; }
+        .pro-badges-stack { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
         .pro-badge { display: inline-flex; align-items: center; gap: 5px; min-height: 26px; padding: 0 9px; border-radius: 999px; background: #071326; color: #ffffff; font-size: 10px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+        .pro-badge.trust { background: #fffaf0; color: #102f50; border: 1px solid rgba(217,196,156,.5); }
         .pro-bio { min-height: 42px; margin: 0; color: #435363; font-size: 13px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .pro-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
         .pro-stat { min-width: 0; padding: 9px; border: 1px solid #eadfc9; border-radius: 8px; background: #ffffff; }
@@ -115,7 +130,8 @@ export default function Profissionais() {
         .pro-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 4px; color: #102f50; font-size: 12px; font-weight: 900; }
         .pro-rating { display: inline-flex; align-items: center; gap: 5px; color: #9d7b3f; }
         .pro-state { padding: 62px 20px; text-align: center; color: #60767c; font-size: 14px; font-weight: 750; }
-        @media (max-width: 980px) { .pro-hero-grid, .pro-tools { grid-template-columns: 1fr; } .pro-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pro-toolbar { top: 64px; } }
+        .pro-state .pro-cta { margin-top: 16px; }
+        @media (max-width: 980px) { .pro-hero-grid, .pro-business-strip, .pro-tools { grid-template-columns: 1fr; } .pro-business-actions { justify-content: flex-start; } .pro-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pro-toolbar { top: 64px; } }
         @media (max-width: 640px) { .pro-shell { width: min(100% - 24px, 1220px); } .pro-hero { padding-top: 30px; } .pro-hero h1 { font-size: 36px; } .pro-grid, .pro-summary { grid-template-columns: 1fr; } .pro-list-head { align-items: flex-start; flex-direction: column; } .pro-list-note { text-align: left; } .pro-card { min-height: 0; } .pro-summary-item { min-height: 72px; } }
       `}</style>
 
@@ -137,6 +153,20 @@ export default function Profissionais() {
               <span>As montras profissionais aparecem aqui à medida que publicam anúncios ativos.</span>
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="pro-shell pro-business-strip" aria-label="Enviar stock para a Noxvelia">
+        <div className="pro-business-copy">
+          <span className="pro-business-icon"><UploadCloud size={22} /></span>
+          <div>
+            <strong>Tens stock para publicar?</strong>
+            <span>Envia Excel, XML ou CSV. Validamos gratuitamente e indicamos o melhor caminho para colocar vários anúncios ativos.</span>
+          </div>
+        </div>
+        <div className="pro-business-actions">
+          <Link className="pro-cta" to="/enviar-stock">Pedir avaliação <ArrowRight size={15} /></Link>
+          <Link className="pro-cta-secondary" to="/publicar">Criar anúncio manual</Link>
         </div>
       </section>
 
@@ -167,7 +197,13 @@ export default function Profissionais() {
         <div className="pro-shell">
           {error && <div className="pro-state">{error}</div>}
           {!error && loading && <div className="pro-state">A carregar profissionais...</div>}
-          {!error && !loading && profissionais.length === 0 && <div className="pro-state">Não encontrámos montras profissionais com estes filtros. Podes limpar a pesquisa ou explorar diretamente carros e imóveis.</div>}
+          {!error && !loading && profissionais.length === 0 && (
+            <div className="pro-state">
+              Não encontrámos montras profissionais com estes filtros. Se tens um stand ou imobiliária, podes enviar o stock para avaliação gratuita.
+              <br />
+              <Link className="pro-cta" to="/enviar-stock">Enviar stock</Link>
+            </div>
+          )}
           {!error && !loading && profissionais.length > 0 && (
             <div className="pro-results">
               <div className="pro-list-head">
@@ -187,7 +223,7 @@ export default function Profissionais() {
 
                   return (
                     <Link className={`pro-card${index < 3 ? ' is-featured' : ''}`} to={`/vendedor/${profissional._id}`} key={profissional._id}>
-                      <div className="pro-cover">
+                      <div className={`pro-cover${capa ? ' has-image' : ' is-empty'}`}>
                         {capa && <img src={capa} alt="" loading="lazy" />}
                         {index < 3 && <span className="pro-rank"><Trophy size={13} /> {rankLabel}</span>}
                         <span className="pro-avatar">{avatar ? <img src={avatar} alt="" loading="lazy" /> : inicial}</span>
@@ -198,7 +234,10 @@ export default function Profissionais() {
                             <strong>{profissional.nome || 'Profissional'}</strong>
                             <span className="pro-location"><MapPin size={13} /> {profissional.localidade || 'Portugal'}</span>
                           </div>
-                          {(profissional.tipoConta === 'profissional' || profissional.tipo === 'admin') && <span className="pro-badge"><BadgeCheck size={13} /> Empresa</span>}
+                          <div className="pro-badges-stack">
+                            {(profissional.tipoConta === 'profissional' || profissional.tipo === 'admin') && <span className="pro-badge"><BadgeCheck size={13} /> Empresa</span>}
+                            {profissional.verificado && <span className="pro-badge trust"><ShieldCheck size={13} /> Email</span>}
+                          </div>
                         </div>
                         <p className="pro-bio">{profissional.bio || 'Perfil com anúncios ativos na Noxvelia.'}</p>
                         <div className="pro-stats">

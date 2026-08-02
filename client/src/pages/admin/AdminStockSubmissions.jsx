@@ -16,6 +16,28 @@ const estadoLabels = {
   rejeitado: 'Rejeitado',
 };
 
+const volumeLabels = {
+  '1-10': '1 a 10 anúncios',
+  '11-30': '11 a 30 anúncios',
+  '31-80': '31 a 80 anúncios',
+  '80+': 'Mais de 80 anúncios',
+  nao_sei: 'Volume a confirmar',
+};
+
+const origemStockLabels = {
+  excel: 'Excel / CSV',
+  mystand: 'MyStand / XML / API',
+  website: 'Website do stand',
+  outro: 'Outro sistema',
+  nao_sei: 'Origem a confirmar',
+};
+
+const urgenciaLabels = {
+  esta_semana: 'Esta semana',
+  este_mes: 'Este mês',
+  sem_pressa: 'Sem pressa',
+};
+
 export default function AdminStockSubmissions({ colors, fonts }) {
   const c = colors;
   const f = fonts;
@@ -119,7 +141,7 @@ export default function AdminStockSubmissions({ colors, fonts }) {
         <div>
           <h2 className="stock-admin-title">Pedidos de stock</h2>
           <p className="stock-admin-copy">
-            Recebe ficheiros de stands em CSV, Excel, XML ou JSON. Depois descarregas, validas e usas a importação manual em Integrações.
+            Recebe ficheiros de stands em CSV, Excel, XML ou JSON, com volume, origem e prazo pretendido para acelerar a resposta comercial.
           </p>
         </div>
         <div className="stock-admin-actions">
@@ -158,6 +180,9 @@ export default function AdminStockSubmissions({ colors, fonts }) {
                 <div className="stock-meta">
                   <span>{formatarData(pedido.createdAt)}</span>
                   <span>{pedido.formato?.toUpperCase()}</span>
+                  <span>{volumeLabels[pedido.volume] || volumeLabels.nao_sei}</span>
+                  <span>{origemStockLabels[pedido.origemStock] || origemStockLabels.nao_sei}</span>
+                  <span>{urgenciaLabels[pedido.urgencia] || urgenciaLabels.este_mes}</span>
                 </div>
               </div>
 

@@ -342,6 +342,7 @@ router.get('/profissionais', async (req, res) => {
                 website: '$profissional.website',
                 linksPerfil: '$profissional.linksPerfil',
                 premiumAtivo: '$profissional.premiumAtivo',
+                verificado: '$profissional.verificado',
                 rating: '$profissional.rating',
                 totalAvaliacoes: '$profissional.totalAvaliacoes',
                 createdAt: '$profissional.createdAt',
@@ -391,7 +392,7 @@ router.get('/profissionais', async (req, res) => {
 router.get('/vendedor/:id', async (req, res) => {
   try {
     const vendedor = await User.findById(req.params.id).select(
-      'nome email telefone mostrarTelefonePublico mostrarMapaPerfil localidade standNome standMorada standCodigoPostal avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo rating totalAvaliacoes createdAt'
+      'nome email telefone mostrarTelefonePublico mostrarMapaPerfil localidade standNome standMorada standCodigoPostal avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo verificado rating totalAvaliacoes createdAt'
     ).lean();
     if (!vendedor) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
     if (vendedor.tipo === 'admin') {
@@ -403,7 +404,7 @@ router.get('/vendedor/:id', async (req, res) => {
     const anuncios = await Anuncio.find({ utilizador: req.params.id, estado: 'ativo' })
       .select('_id titulo preco fotos tipo estado destacado utilizador scoreQualidade scoreDetalhes carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area imovel.areaTerreno imovel.quartos imovel.casasBanho localizacao.cidade localizacao.distrito createdAt')
       .sort({ destacado: -1, createdAt: -1 })
-      .populate('utilizador', 'nome avatarUrl tipo premiumAtivo')
+      .populate('utilizador', 'nome avatarUrl tipo tipoConta premiumAtivo verificado')
       .lean();
     res.json({ vendedor, anuncios });
   } catch (erro) {

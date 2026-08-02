@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { getFunnelSessionId, trackFunnelEvent } from '../../utils/funnelAnalytics';
@@ -29,8 +29,10 @@ const formatarMoeda = (valor) =>
 
 const numeroParaWhatsapp = (raw) => {
   if (!raw) return null;
-  const digitos = String(raw).replace(/\D/g, '');
+  let digitos = String(raw).replace(/\D/g, '');
   if (!digitos) return null;
+  if (digitos.startsWith('00')) digitos = digitos.slice(2);
+  if (digitos.startsWith('0') && digitos.length === 10) digitos = digitos.slice(1);
   if (digitos.length === 9) return `351${digitos}`;
   return digitos;
 };
@@ -386,6 +388,12 @@ export default function Anuncio() {
   const totalAvaliacoes = donoDoAnuncio?.totalAvaliacoes || 0;
   const anoRegistoUser = donoDoAnuncio?.createdAt ? new Date(donoDoAnuncio.createdAt).getFullYear() : new Date().getFullYear();
   const vendedorVerificado = donoDoAnuncio?.tipo === 'admin';
+  const contactoConfirmado = donoDoAnuncio?.verificado === true || vendedorVerificado;
+  const contaProfissionalConfirmada = donoDoAnuncio?.tipoConta === 'profissional' || donoDoAnuncio?.tipo === 'profissional' || vendedorVerificado;
+  const nomePublicoVendedor = vendedorVerificado
+    ? (donoDoAnuncio.nome?.toUpperCase().includes('NOXVELIA') ? donoDoAnuncio.nome : `NOXVELIA ${donoDoAnuncio?.nome}`)
+    : (donoDoAnuncio?.nome || 'Utilizador Particular');
+  const mensagemWhatsapp = encodeURIComponent(`Olá, vi o anúncio "${anuncio.titulo}" na Noxvelia (${preco}, ${localizacaoString}) e queria saber se ainda está disponível.`);
   const referencia = anuncio._id?.slice(-6).toUpperCase();
   const dataPublicacao = anuncio.createdAt
     ? new Date(anuncio.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -393,7 +401,7 @@ export default function Anuncio() {
   const resumoDecisao = [
     { label: 'Localização', value: localizacaoString, icon: mdiMapMarkerOutline },
     { label: isCarro ? 'Marca' : 'Preço / m²', value: isCarro ? (formatarMarcaVeiculo(anuncio.carro) || 'Viatura') : (precoPorM2 || 'A confirmar'), icon: isCarro ? mdiCar : mdiRulerSquare },
-    { label: 'Vendedor', value: vendedorVerificado ? 'Verificado' : (rating > 0 ? `${rating.toFixed(1)} estrelas` : 'Novo vendedor'), icon: mdiShieldCheckOutline },
+    { label: 'Vendedor', value: contactoConfirmado ? 'Email confirmado' : (rating > 0 ? `${rating.toFixed(1)} estrelas` : 'Novo vendedor'), icon: mdiShieldCheckOutline },
     { label: 'Contacto', value: temTelefoneContacto ? 'Telefone' : (temEmailContacto ? 'Email' : 'Por mensagem'), icon: temTelefoneContacto ? mdiPhone : mdiEmailOutline },
   ];
 
@@ -590,6 +598,7 @@ export default function Anuncio() {
 
         .trust-strip { display: flex; gap: 18px; padding: 16px 4px 0; margin-top: 4px; border-top: 1px solid #e2e8f0; justify-content: center; flex-wrap: wrap; }
         .trust-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #64748b; }
+        .trust-item.verified { color: #102f50; font-weight: 850; }
 
         .seller-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; transition: all .2s; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); width: 100%; min-width: 0; }
         .seller-panel:hover { border-color: #cbd5e1; background: #f8fafc; transform: translateY(-2px); box-shadow: 0 14px 20px -5px rgba(0,0,0,0.08); }
@@ -601,6 +610,7 @@ export default function Anuncio() {
         .seller-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .seller-rating { display: flex; align-items: center; gap: 2px; font-size: 13px; font-weight: 800; color: #0f172a; background: #fffbeb; padding: 2px 8px 2px 6px; border-radius: 6px; border: 1px solid #fef3c7; }
         .seller-reviews { font-weight: 600; color: #64748b; font-size: 11.5px; margin-left: 2px; }
+        .seller-rating-empty.verified, .seller-rating-empty.company { background: rgba(217,196,156,.16); color: #102f50; border-color: rgba(217,196,156,.42); }
         .seller-rating-empty { font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
         .seller-date { font-size: 12px; font-weight: 600; color: #64748b; }
 
@@ -936,11 +946,11 @@ export default function Anuncio() {
                           </a>
                           {whatsappNumero && (
                             <a
-                              href={`https://wa.me/${whatsappNumero}?text=${encodeURIComponent(`Olá, estou interessado/a no anúncio "${anuncio.titulo}" na Noxvelia.`)}`}
+                              href={`https://wa.me/${whatsappNumero}?text=${mensagemWhatsapp}`}
                               onClick={() => trackFunnelEvent('whatsapp_click', { listingId: anuncio._id, vertical: anuncio.tipo })}
                               target="_blank" rel="noopener noreferrer" className="btn-whatsapp"
                             >
-                              <Icon path={mdiWhatsapp} size={0.85} /> Enviar mensagem
+                              <Icon path={mdiWhatsapp} size={0.85} /> Contactar por WhatsApp
                             </a>
                           )}
                         </>
@@ -953,6 +963,8 @@ export default function Anuncio() {
                       
                       <div className="trust-strip">
                         <span className="trust-item"><Icon path={mdiShieldCheckOutline} size={0.6} />Contacto direto</span>
+                        {contactoConfirmado && <span className="trust-item verified"><Icon path={mdiCheckDecagram} size={0.6} />Email confirmado</span>}
+                        {contaProfissionalConfirmada && <span className="trust-item verified"><Icon path={mdiShieldCheckOutline} size={0.6} />Conta profissional</span>}
                         <span className="trust-item"><Icon path={mdiClockOutline} size={0.6} />Sem comissão</span>
                       </div>
                     </>
@@ -1018,11 +1030,8 @@ export default function Anuncio() {
                   <div className="seller-avatar">{donoDoAnuncio?.avatarUrl ? <img src={donoDoAnuncio.avatarUrl} alt="" /> : inicial}</div>
                   <div className="seller-info">
                     <div className="seller-name">
-                      {vendedorVerificado
-                        ? (donoDoAnuncio.nome?.toUpperCase().includes('NOXVELIA') ? donoDoAnuncio.nome : `NOXVELIA ${donoDoAnuncio?.nome}`)
-                        : (donoDoAnuncio?.nome || 'Utilizador Particular')
-                      }
-                      {vendedorVerificado && <Icon path={mdiCheckDecagram} size={0.8} color="#3b82f6" />}
+                      {nomePublicoVendedor}
+                      {contactoConfirmado && <Icon path={mdiCheckDecagram} size={0.8} color="#d9c49c" title="Email confirmado" />}
                     </div>
 
                     <div className="seller-meta">
@@ -1037,9 +1046,10 @@ export default function Anuncio() {
                           <span className="seller-reviews">({totalAvaliacoes})</span>
                         </div>
                       ) : (
-                        <div className="seller-rating-empty">Novo Vendedor</div>
+                        <div className={`seller-rating-empty${contactoConfirmado ? ' verified' : ''}`}>{contactoConfirmado ? 'Email confirmado' : 'Novo vendedor'}</div>
                       )}
-                      <span className="meta-dot">·</span>
+                      {contaProfissionalConfirmada && <div className="seller-rating-empty company">Conta profissional</div>}
+                      <span className="meta-dot">&middot;</span>
                       <div className="seller-date">Desde {anoRegistoUser}</div>
                     </div>
                   </div>

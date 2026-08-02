@@ -10,6 +10,9 @@ const router = express.Router();
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const allowedExtensions = new Set(['.csv', '.xls', '.xlsx', '.json', '.xml', '.txt']);
 const allowedFormats = new Set(['csv', 'xlsx', 'xls', 'json', 'xml', 'outro']);
+const allowedVolumes = new Set(['1-10', '11-30', '31-80', '80+', 'nao_sei']);
+const allowedStockOrigins = new Set(['excel', 'mystand', 'website', 'outro', 'nao_sei']);
+const allowedUrgencies = new Set(['esta_semana', 'este_mes', 'sem_pressa']);
 const allowedStates = new Set(['novo', 'em_analise', 'importado', 'rejeitado']);
 
 const upload = multer({
@@ -44,6 +47,9 @@ const publicSubmission = (item) => ({
   telefone: item.telefone,
   website: item.website,
   mensagem: item.mensagem,
+  volume: item.volume,
+  origemStock: item.origemStock,
+  urgencia: item.urgencia,
   formato: item.formato,
   estado: item.estado,
   notasAdmin: item.notasAdmin,
@@ -65,6 +71,12 @@ router.post('/', submissionLimiter, upload.single('ficheiro'), async (req, res) 
     const telefone = cleanString(req.body.telefone, 40);
     const website = cleanString(req.body.website, 300);
     const mensagem = cleanString(req.body.mensagem, 1200);
+    const volumeRaw = cleanString(req.body.volume, 20);
+    const volume = allowedVolumes.has(volumeRaw) ? volumeRaw : 'nao_sei';
+    const origemStockRaw = cleanString(req.body.origemStock, 30);
+    const origemStock = allowedStockOrigins.has(origemStockRaw) ? origemStockRaw : 'nao_sei';
+    const urgenciaRaw = cleanString(req.body.urgencia, 30);
+    const urgencia = allowedUrgencies.has(urgenciaRaw) ? urgenciaRaw : 'este_mes';
     const formatoRaw = cleanString(req.body.formato, 20).toLowerCase();
     const formato = allowedFormats.has(formatoRaw) ? formatoRaw : 'outro';
 
@@ -85,6 +97,9 @@ router.post('/', submissionLimiter, upload.single('ficheiro'), async (req, res) 
       telefone,
       website,
       mensagem,
+      volume,
+      origemStock,
+      urgencia,
       formato,
       ficheiro: {
         nomeOriginal: cleanString(req.file.originalname, 220),

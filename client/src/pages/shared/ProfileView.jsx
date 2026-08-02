@@ -1,9 +1,9 @@
-import React, { Suspense, lazy } from 'react';
+﻿import React, { Suspense, lazy } from 'react';
 import { Icon } from '@mdi/react';
 import {
   mdiCheckDecagram, mdiCrown, mdiDomain, mdiPencil, mdiShareVariantOutline,
   mdiStar, mdiWeb, mdiInstagram, mdiFacebook, mdiLinkedin, mdiYoutube,
-  mdiMusicNote, mdiWhatsapp, mdiEarth, mdiEmailOutline, mdiPhone, mdiMapMarker
+  mdiMusicNote, mdiWhatsapp, mdiEarth, mdiEmailOutline, mdiPhone, mdiMapMarker, mdiShieldCheckOutline
 } from '@mdi/js';
 
 const MapaPerfil = lazy(() => import('../../components/MapaPerfil'));
@@ -85,6 +85,7 @@ export default function ProfileView({
   const isAdmin = user?.tipo === 'admin';
   const isPremium = user?.premiumAtivo === true;
   const isProfissional = user?.tipoConta === 'profissional' || isAdmin;
+  const contactoConfirmado = user?.verificado === true || isAdmin;
   const nomeExibicao = isAdmin
     ? (user?.nome?.toUpperCase().includes('NOXVELIA') ? user?.nome : `NOXVELIA ${user?.nome}`)
     : user?.nome;
@@ -211,6 +212,7 @@ export default function ProfileView({
           color: #475569;
         }
         .profile-badge.profissional { background: rgba(217,196,156,0.14); color: #102f50; border-color: rgba(217,196,156,0.34); }
+        .profile-badge.contacto { background: #ffffff; color: #102f50; border-color: rgba(16,47,80,0.18); }
         .profile-badge.premium { background: rgba(217,196,156,0.16); color: #7a612e; border-color: rgba(217,196,156,0.42); }
         .profile-upgrade {
           background: #d9c49c;
@@ -363,6 +365,11 @@ export default function ProfileView({
               <div className={`profile-badge ${isProfissional ? 'profissional' : ''}`}>
                 {isProfissional ? 'Conta Empresa' : 'Conta Particular'}
               </div>
+              {contactoConfirmado && (
+                <div className="profile-badge contacto">
+                  <Icon path={mdiShieldCheckOutline} size={0.5} /> Email confirmado
+                </div>
+              )}
               {isPremium && (
                 <div className="profile-badge premium">
                   <Icon path={mdiStar} size={0.45} /> Plano Premium
@@ -378,6 +385,7 @@ export default function ProfileView({
             <h1 className="profile-name">
               {nomeExibicao}
               {isAdmin && <Icon path={mdiCheckDecagram} size={1} color="#d9c49c" />}
+              {!isAdmin && contactoConfirmado && <Icon path={mdiCheckDecagram} size={1} color="#d9c49c" title="Email confirmado" />}
               {!isAdmin && isPremium && <Icon path={mdiCrown} size={1} color="#d9c49c" title="Plano Premium" />}
             </h1>
 
