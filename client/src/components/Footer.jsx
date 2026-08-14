@@ -19,7 +19,7 @@ export default function Footer() {
         .nx-footer-col a:hover, .nx-footer-col button:hover { color: #102f50; }
         .nx-footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 32px; border-top: 1px solid rgba(16, 47, 80, 0.12); flex-wrap: wrap; gap: 20px; }
         .nx-footer-copy { color: #5d6f80; font-size: 13px; }
-        
+
         .nx-social-links { display: flex; gap: 16px; }
         .nx-social-btn { width: 40px; height: 40px; border-radius: 10px; background: #ffffff; border: 1px solid rgba(16, 47, 80, 0.14); display: flex; align-items: center; justify-content: center; color: #102f50; transition: background-color 0.16s, border-color 0.16s, color 0.16s; text-decoration: none; }
         .nx-social-btn:hover { background: rgba(217, 196, 156, 0.28); border-color: rgba(217, 196, 156, 0.8); color: #071326; }
@@ -28,11 +28,53 @@ export default function Footer() {
         /* 🌟 CSS DO MODAL DE SUPORTE */
         .suporte-modal-overlay { position: fixed; inset: 0; background: rgba(4, 7, 17, 0.78); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px; }
         .suporte-modal-card { background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; width: 100%; max-width: 460px; padding: 32px; box-sizing: border-box; color: #f8fafc; }
-        
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        
+
         @media (max-width: 768px) { .nx-footer-top { flex-direction: column; } .nx-footer-links { flex-direction: column; gap: 32px; } .nx-footer-bottom { flex-direction: column-reverse; justify-content: center; text-align: center; } }
+
+        /* Noxvelia navy footer - alinhado com a navbar */
+        .nx-footer {
+          background: #102f50 !important;
+          border-top: 1px solid rgba(217, 196, 156, .42) !important;
+          color: #fffaf0 !important;
+        }
+
+        .nx-footer-brand p,
+        .nx-footer-copy {
+          color: rgba(255, 250, 240, .72) !important;
+        }
+
+        .nx-footer-col h4 {
+          color: #f0dfbb !important;
+        }
+
+        .nx-footer-col a,
+        .nx-footer-col button {
+          color: rgba(255, 250, 240, .74) !important;
+        }
+
+        .nx-footer-col a:hover,
+        .nx-footer-col button:hover {
+          color: #ffffff !important;
+        }
+
+        .nx-footer-bottom {
+          border-top-color: rgba(255, 250, 240, .16) !important;
+        }
+
+        .nx-social-btn {
+          background: rgba(255, 250, 240, .06) !important;
+          border-color: rgba(255, 250, 240, .2) !important;
+          color: #f0dfbb !important;
+        }
+
+        .nx-social-btn:hover {
+          background: #d9c49c !important;
+          border-color: #d9c49c !important;
+          color: #071326 !important;
+        }
       `}</style>
 
       {/* 🌟 O MODAL DE TICKETS */}
@@ -47,9 +89,9 @@ export default function Footer() {
                 Pedido enviado com sucesso.
               </div>
             ) : (
-              <form 
-                action="https://formspree.io/f/xzdqlwvj" 
-                method="POST" 
+              <form
+                action="https://formspree.io/f/xzdqlwvj"
+                method="POST"
                 style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
               >
                 <div>
@@ -98,7 +140,7 @@ export default function Footer() {
       <footer className="nx-footer">
         <div className="nx-footer-inner">
           <div className="nx-footer-top">
-            
+
             <div className="nx-footer-brand">
               <img src="/logo-noxvelia.png" alt="NOXVELIA" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
               <p>Carros e imóveis em Portugal, com pesquisa simples e contacto direto.</p>
@@ -126,7 +168,7 @@ export default function Footer() {
             <div className="nx-footer-copy">
               &copy; {new Date().getFullYear()} NOXVELIA. Todos os direitos reservados.
             </div>
-            
+
             <div className="nx-social-links">
               {/* FACEBOOK */}
               <a href="https://www.facebook.com/share/18vFY6qwK6/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="nx-social-btn" aria-label="Facebook">

@@ -232,6 +232,79 @@ export default function NavbarImovel() {
         .nim-pwm-submit { margin-top: 4px; background: #102f50; color: #ffffff; border: none; border-radius: 8px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
         .nim-pwm-submit:hover { background: #071326; }
         .nim-pwm-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Noxvelia navy shell - referencia premium com CTA dourado */
+        .nim-root,
+        .nim-root.scrolled {
+          background: #102f50 !important;
+          border-bottom: 1px solid rgba(217, 196, 156, .42) !important;
+          box-shadow: 0 16px 34px -30px rgba(7, 19, 38, .9) !important;
+        }
+
+        .nim-logo-brand-text,
+        .nim-btn-menu,
+        .nim-icon-btn,
+        .nim-btn-premium,
+        .nim-btn-login,
+        .nim-user-trigger,
+        .nim-username,
+        .nim-burger-btn {
+          color: #fffaf0 !important;
+        }
+
+        .nim-section-links,
+        .nim-user-trigger {
+          border-color: rgba(255, 250, 240, .22) !important;
+          background: rgba(255, 250, 240, .06) !important;
+        }
+
+        .nim-section-link {
+          color: rgba(255, 250, 240, .72) !important;
+        }
+
+        .nim-section-link:hover,
+        .nim-section-link.active {
+          color: #f0dfbb !important;
+          background: rgba(217, 196, 156, .16) !important;
+        }
+
+        .nim-btn-menu,
+        .nim-btn-login,
+        .nim-icon-btn,
+        .nim-btn-premium {
+          border-color: rgba(255, 250, 240, .22) !important;
+          background: transparent !important;
+        }
+
+        .nim-btn-menu:hover,
+        .nim-btn-login:hover,
+        .nim-icon-btn:hover,
+        .nim-btn-premium:hover,
+        .nim-user-trigger:hover,
+        .nim-user-trigger.active {
+          color: #fffaf0 !important;
+          border-color: #d9c49c !important;
+          background: rgba(255, 250, 240, .08) !important;
+        }
+
+        .nim-btn-publish {
+          background: #d9c49c !important;
+          border: 1px solid #d9c49c !important;
+          color: #071326 !important;
+          box-shadow: 0 12px 24px -18px rgba(217, 196, 156, .8) !important;
+        }
+
+        .nim-btn-publish:hover {
+          background: #f0dfbb !important;
+          border-color: #f0dfbb !important;
+          color: #071326 !important;
+        }
+
+        .nim-divider { background: rgba(255, 250, 240, .24) !important; }
+        .nim-avatar { background: #fffaf0 !important; border-color: rgba(217, 196, 156, .82) !important; }
+        .nim-avatar-initial { color: #102f50 !important; }
+        .nim-pro-badge,
+        .nim-ud-pro { background: #d9c49c !important; color: #071326 !important; }
       `}</style>
 
       <nav className={`nim-root${scrolled ? ' scrolled' : ''}`}>

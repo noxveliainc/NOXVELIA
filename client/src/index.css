@@ -1040,3 +1040,230 @@ html.nx-light {
     gap: 18px !important;
   }
 }
+
+/* ==========================================================================
+   NOXVELIA · NAVY SHELL FINAL PASS
+   Navbar/footer navy, CTA dourado, cards e pesquisa mais fortes.
+   ========================================================================== */
+:root {
+  --nx-shell-navy: #102f50;
+  --nx-shell-navy-deep: #071326;
+  --nx-shell-gold: #d9c49c;
+  --nx-shell-gold-soft: #f0dfbb;
+}
+
+.nl-root,
+.ncr-root,
+.nim-root,
+.nl-root.scrolled,
+.ncr-root.scrolled,
+.nim-root.scrolled {
+  background: var(--nx-shell-navy) !important;
+  border-bottom-color: rgba(217, 196, 156, .42) !important;
+  color: #fffaf0 !important;
+  box-shadow: 0 16px 34px -30px rgba(7, 19, 38, .9) !important;
+}
+
+.nl-brand,
+.nl-wordmark,
+.nl-links a,
+.nl-btn-ghost,
+.nl-user-trigger,
+.ncr-logo-brand-text,
+.nim-logo-brand-text,
+.ncr-btn-menu,
+.nim-btn-menu,
+.ncr-icon-btn,
+.nim-icon-btn,
+.ncr-btn-premium,
+.nim-btn-premium,
+.ncr-btn-login,
+.nim-btn-login,
+.ncr-user-trigger,
+.nim-user-trigger,
+.ncr-username,
+.nim-username,
+.ncr-burger-btn,
+.nim-burger-btn {
+  color: #fffaf0 !important;
+}
+
+.nl-links a:hover,
+.ncr-btn-menu:hover,
+.nim-btn-menu:hover,
+.ncr-icon-btn:hover,
+.nim-icon-btn:hover,
+.ncr-btn-premium:hover,
+.nim-btn-premium:hover,
+.ncr-btn-login:hover,
+.nim-btn-login:hover {
+  color: #ffffff !important;
+}
+
+.nl-btn-ghost,
+.ncr-btn-menu,
+.nim-btn-menu,
+.ncr-icon-btn,
+.nim-icon-btn,
+.ncr-btn-premium,
+.nim-btn-premium,
+.ncr-btn-login,
+.nim-btn-login,
+.ncr-user-trigger,
+.nim-user-trigger,
+.ncr-section-links,
+.nim-section-links {
+  background: rgba(255, 250, 240, .055) !important;
+  border-color: rgba(255, 250, 240, .22) !important;
+}
+
+.nl-btn-ghost:hover,
+.ncr-btn-menu:hover,
+.nim-btn-menu:hover,
+.ncr-icon-btn:hover,
+.nim-icon-btn:hover,
+.ncr-btn-premium:hover,
+.nim-btn-premium:hover,
+.ncr-btn-login:hover,
+.nim-btn-login:hover,
+.ncr-user-trigger:hover,
+.nim-user-trigger:hover,
+.ncr-user-trigger.active,
+.nim-user-trigger.active {
+  background: rgba(255, 250, 240, .1) !important;
+  border-color: var(--nx-shell-gold) !important;
+}
+
+.nl-btn-solid,
+.ncr-btn-publish,
+.nim-btn-publish {
+  background: var(--nx-shell-gold) !important;
+  border-color: var(--nx-shell-gold) !important;
+  color: var(--nx-shell-navy-deep) !important;
+  box-shadow: 0 12px 24px -18px rgba(217, 196, 156, .8) !important;
+}
+
+.nl-btn-solid:hover,
+.ncr-btn-publish:hover,
+.nim-btn-publish:hover {
+  background: var(--nx-shell-gold-soft) !important;
+  border-color: var(--nx-shell-gold-soft) !important;
+  color: var(--nx-shell-navy-deep) !important;
+}
+
+.ncr-section-link,
+.nim-section-link {
+  color: rgba(255, 250, 240, .72) !important;
+}
+
+.ncr-section-link:hover,
+.nim-section-link:hover,
+.ncr-section-link.active,
+.nim-section-link.active {
+  background: rgba(217, 196, 156, .16) !important;
+  color: var(--nx-shell-gold-soft) !important;
+}
+
+.ncr-divider,
+.nim-divider {
+  background: rgba(255, 250, 240, .2) !important;
+}
+
+.nx-footer {
+  background: var(--nx-shell-navy) !important;
+  border-top-color: rgba(217, 196, 156, .42) !important;
+  color: #fffaf0 !important;
+}
+
+.nx-footer-brand p,
+.nx-footer-copy,
+.nx-footer-col a,
+.nx-footer-col button {
+  color: rgba(255, 250, 240, .72) !important;
+}
+
+.nx-footer-col h4,
+.nx-social-btn {
+  color: var(--nx-shell-gold-soft) !important;
+}
+
+.nx-footer-col a:hover,
+.nx-footer-col button:hover {
+  color: #ffffff !important;
+}
+
+.nx-footer-bottom {
+  border-top-color: rgba(255, 250, 240, .16) !important;
+}
+
+.nx-social-btn {
+  background: rgba(255, 250, 240, .06) !important;
+  border-color: rgba(255, 250, 240, .2) !important;
+}
+
+.nx-social-btn:hover {
+  background: var(--nx-shell-gold) !important;
+  border-color: var(--nx-shell-gold) !important;
+  color: var(--nx-shell-navy-deep) !important;
+}
+
+.nxc-wrap {
+  border: 2px solid rgba(16, 47, 80, .18) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 18px 38px -34px rgba(7, 19, 38, .55) !important;
+}
+
+.nxc-wrap:hover {
+  border-color: rgba(16, 47, 80, .42) !important;
+  box-shadow: 0 20px 42px -34px rgba(7, 19, 38, .62) !important;
+}
+
+.nxc-wrap.premium {
+  border: 3px solid var(--nx-shell-navy) !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 2px var(--nx-shell-gold), 0 22px 44px -34px rgba(7, 19, 38, .72) !important;
+}
+
+.nxc-wrap.premium::before {
+  height: 0 !important;
+  animation: none !important;
+}
+
+.nxc-wrap.premium .nxc-img {
+  border-bottom: 2px solid var(--nx-shell-navy) !important;
+}
+
+.nxc-badge-premium {
+  background: linear-gradient(90deg, var(--nx-shell-gold), var(--nx-shell-gold-soft)) !important;
+  color: var(--nx-shell-navy-deep) !important;
+  border-color: rgba(255, 250, 240, .85) !important;
+  box-shadow: 0 12px 24px -18px rgba(7, 19, 38, .55) !important;
+}
+
+.nxc-price-row {
+  border-top: 1px solid rgba(217, 196, 156, .6) !important;
+  padding-top: 10px !important;
+}
+
+.nxc-footer {
+  border-top: 2px solid rgba(16, 47, 80, .08) !important;
+}
+
+@media (min-width: 1025px) {
+  .pesquisa-layout {
+    padding-inline: clamp(22px, 2.8vw, 52px) !important;
+  }
+
+  .pesquisa-layout.filters-closed .pesquisa-grid,
+  .pesquisa-layout.filters-closed .pesquisa-skeleton-grid,
+  .pesquisa-grid,
+  .pesquisa-skeleton-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)) !important;
+    gap: 20px !important;
+  }
+
+  .pesquisa-grid .nxc-wrap {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}

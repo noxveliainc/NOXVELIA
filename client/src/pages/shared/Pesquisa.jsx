@@ -535,7 +535,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           min-height: 100vh;
           display: flex;
           flex-direction: column;
-          background: var(--cor-fundo);
+          background: #ffffff;
           color: var(--cor-texto);
           font-family: var(--nx-font-body);
         }
@@ -544,14 +544,14 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           width: 100%;
           display: flex;
           align-items: flex-start;
-          gap: clamp(18px, 2vw, 32px);
-          padding: clamp(22px, 3.2vw, 54px);
+          gap: clamp(20px, 2vw, 36px);
+          padding: clamp(22px, 2.8vw, 46px);
           flex: 1;
           transition: padding .22s ease, gap .22s ease;
         }
 
         .pesquisa-layout.filters-closed {
-          padding-inline: clamp(24px, 4.2vw, 76px);
+          padding-inline: clamp(22px, 3vw, 54px);
         }
 
         .pesquisa-sidebar {

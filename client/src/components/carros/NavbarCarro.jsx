@@ -10,14 +10,14 @@ export default function NavbarCarro() {
   const navigate = useNavigate();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
-  
+
   const [dropdownAberto, setDropdownAberto] = useState(false);
   const logoRef = useRef(null);
 
 
   const [userMenuAberto, setUserMenuAberto] = useState(false);
   const userMenuRef = useRef(null);
-  
+
   const [menuMobileAberto, setMenuMobileAberto] = useState(false);
 
   // 🔐 MODAL ALTERAR PALAVRA-PASSE
@@ -130,7 +130,7 @@ export default function NavbarCarro() {
         .ncr-switcher-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; color: #475569; }
         .ncr-switcher-item:hover { background: #f1f5f9; color: #0f172a; }
         .ncr-switcher-item.current { background: rgba(217, 196, 156, 0.08); color: #d9c49c; pointer-events: none; }
-        
+
         .ncr-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
         .ncr-section-links { display: flex; align-items: center; gap: 3px; margin-left: 2px; padding: 3px; border: 1px solid rgba(148, 163, 184, 0.24); border-radius: 999px; background: rgba(255, 255, 255, 0.06); box-shadow: none; }
         .ncr-section-link { display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: auto; min-width: 34px; height: 34px; padding: 0 11px; border-radius: 999px; color: #64748b; text-decoration: none; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; font-size: 11px; font-weight: 850; }
@@ -177,7 +177,7 @@ export default function NavbarCarro() {
         .ncr-ud-divider { height: 1px; background: #e2e8f0; margin: 6px 0; }
         .ncr-ud-item.logout:hover { background: #fff1f2; color: #be123c; }
         .ncr-btn-login { display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; color: #0f172a; font-size: 13px; font-weight: 600; padding: 9px 20px; text-decoration: none; }
-        
+
         .ncr-burger-btn { display: none; margin-left: auto; background: none; border: none; color: #475569; cursor: pointer; padding: 6px; align-items: center; justify-content: center; }
         .ncr-burger-btn.with-avatar { padding: 3px; border: 1px solid #e2e8f0; border-radius: 999px; background: #ffffff; box-shadow: 0 8px 18px -16px rgba(15,23,42,0.5); }
         .ncr-burger-btn.with-avatar .ncr-avatar { width: 34px; height: 34px; }
@@ -185,7 +185,7 @@ export default function NavbarCarro() {
         .ncr-mobile-drawer.active { visibility: visible; pointer-events: auto; }
         .ncr-drawer-overlay { position: absolute; inset: 0; background: rgba(4, 7, 17, 0.4); opacity: 0; backdrop-filter: blur(4px); transition: opacity 0.3s ease; pointer-events: none; }
         .ncr-drawer-content { position: fixed; top: 0; right: 0; width: min(290px, 85vw); height: 100vh; height: 100dvh; background: #ffffff; box-shadow: -10px 0 40px rgba(0,0,0,0.15); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); padding: 24px; box-sizing: border-box; display: flex; flex-direction: column; pointer-events: auto; will-change: transform; }
-        
+
         .ncr-mobile-drawer.active .ncr-drawer-overlay { opacity: 1; pointer-events: auto; }
         .ncr-mobile-drawer.active .ncr-drawer-content { transform: translateX(0); }
 
@@ -233,6 +233,79 @@ export default function NavbarCarro() {
         .ncr-pwm-submit { margin-top: 4px; background: #0f172a; color: #ffffff; border: none; border-radius: 8px; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
         .ncr-pwm-submit:hover { background: #1e293b; }
         .ncr-pwm-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Noxvelia navy shell - referencia premium com CTA dourado */
+        .ncr-root,
+        .ncr-root.scrolled {
+          background: #102f50 !important;
+          border-bottom: 1px solid rgba(217, 196, 156, .42) !important;
+          box-shadow: 0 16px 34px -30px rgba(7, 19, 38, .9) !important;
+        }
+
+        .ncr-logo-brand-text,
+        .ncr-btn-menu,
+        .ncr-icon-btn,
+        .ncr-btn-premium,
+        .ncr-btn-login,
+        .ncr-user-trigger,
+        .ncr-username,
+        .ncr-burger-btn {
+          color: #fffaf0 !important;
+        }
+
+        .ncr-section-links,
+        .ncr-user-trigger {
+          border-color: rgba(255, 250, 240, .22) !important;
+          background: rgba(255, 250, 240, .06) !important;
+        }
+
+        .ncr-section-link {
+          color: rgba(255, 250, 240, .72) !important;
+        }
+
+        .ncr-section-link:hover,
+        .ncr-section-link.active {
+          color: #f0dfbb !important;
+          background: rgba(217, 196, 156, .16) !important;
+        }
+
+        .ncr-btn-menu,
+        .ncr-btn-login,
+        .ncr-icon-btn,
+        .ncr-btn-premium {
+          border-color: rgba(255, 250, 240, .22) !important;
+          background: transparent !important;
+        }
+
+        .ncr-btn-menu:hover,
+        .ncr-btn-login:hover,
+        .ncr-icon-btn:hover,
+        .ncr-btn-premium:hover,
+        .ncr-user-trigger:hover,
+        .ncr-user-trigger.active {
+          color: #fffaf0 !important;
+          border-color: #d9c49c !important;
+          background: rgba(255, 250, 240, .08) !important;
+        }
+
+        .ncr-btn-publish {
+          background: #d9c49c !important;
+          border: 1px solid #d9c49c !important;
+          color: #071326 !important;
+          box-shadow: 0 12px 24px -18px rgba(217, 196, 156, .8) !important;
+        }
+
+        .ncr-btn-publish:hover {
+          background: #f0dfbb !important;
+          border-color: #f0dfbb !important;
+          color: #071326 !important;
+        }
+
+        .ncr-divider { background: rgba(255, 250, 240, .24) !important; }
+        .ncr-avatar { background: #fffaf0 !important; border-color: rgba(217, 196, 156, .82) !important; }
+        .ncr-avatar-initial { color: #102f50 !important; }
+        .ncr-pro-badge,
+        .ncr-ud-pro { background: #d9c49c !important; color: #071326 !important; }
       `}</style>
 
       <nav className={`ncr-root${scrolled ? ' scrolled' : ''}`}>
@@ -287,7 +360,7 @@ export default function NavbarCarro() {
               )}
               <button type="button" onClick={handlePremium} className={`ncr-btn-premium${isPremium ? ' active' : ''}`}><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" /></svg></button>
               <Link to="/favoritos" className="ncr-icon-btn"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg></Link>
-              
+
               <div className="ncr-divider" />
               <div ref={userMenuRef} style={{ position: 'relative' }}>
                 <button className={`ncr-user-trigger ${userMenuAberto ? 'active' : ''}`} onClick={() => setUserMenuAberto(!userMenuAberto)}>

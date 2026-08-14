@@ -481,3 +481,9 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - `server/utils/jwt.js` — Utilitário backend: jwt.
 - `server/utils/pagination.js` — Utilitário backend: pagination.
 - `server/utils/seo.js` — Utilitário backend: seo.
+
+## Atualização visual - navy shell e card premium (2026-08-14)
+- A NOXVELIA passou a usar navbar e footer em navy #102f50, com texto claro e separadores champagne, seguindo uma presença mais forte e menos frágil.
+- O CTA principal de publicação nas navbars usa dourado/champagne #d9c49c com texto navy, apresentado como ação de destaque para criar anúncio.
+- Os cards de anúncio ganharam moldura mais marcada; os anúncios em destaque usam contorno navy com aro champagne e badge champagne, mantendo transparência sem usar rótulos enganosos de plano.
+- A grelha de pesquisa foi ajustada para aproveitar melhor a largura em desktop e eliminar o limite visual que deixava os resultados demasiado estreitos quando os filtros estavam ocultos.

@@ -546,6 +546,79 @@ export default function NavbarLanding() {
           border-color: #102f50 !important;
         }
 
+
+        /* Noxvelia navy shell - referencia premium com CTA dourado */
+        .nl-root {
+          background: #102f50 !important;
+          border-bottom: 1px solid rgba(217, 196, 156, .42) !important;
+          box-shadow: 0 16px 34px -30px rgba(7, 19, 38, .9) !important;
+        }
+
+        .nl-brand,
+        .nl-wordmark,
+        .nl-links a,
+        .nl-btn-ghost,
+        .nl-user-trigger {
+          color: #fffaf0 !important;
+        }
+
+        .nl-links a:hover {
+          color: #f0dfbb !important;
+        }
+
+        .nl-links a::after {
+          background: #d9c49c !important;
+        }
+
+        .nl-btn-ghost {
+          border-color: rgba(255, 250, 240, .24) !important;
+          background: rgba(255, 250, 240, .05) !important;
+        }
+
+        .nl-btn-ghost:hover {
+          color: #071326 !important;
+          border-color: #fffaf0 !important;
+          background: #fffaf0 !important;
+        }
+
+        .nl-btn-solid {
+          color: #071326 !important;
+          border-color: #d9c49c !important;
+          background: #d9c49c !important;
+          box-shadow: 0 12px 24px -18px rgba(217, 196, 156, .8) !important;
+        }
+
+        .nl-btn-solid::before {
+          content: '+';
+          margin-right: 7px;
+          font-weight: 900;
+        }
+
+        .nl-btn-solid:hover {
+          color: #071326 !important;
+          border-color: #f0dfbb !important;
+          background: #f0dfbb !important;
+        }
+
+        .nl-menu-toggle {
+          color: #fffaf0 !important;
+          border-color: rgba(255, 250, 240, .22) !important;
+          background: rgba(255, 250, 240, .06) !important;
+        }
+
+        .nl-user-trigger:hover,
+        .nl-user-trigger.active {
+          border-color: rgba(217, 196, 156, .72) !important;
+          background: rgba(255, 250, 240, .08) !important;
+        }
+
+        .nl-avatar {
+          color: #102f50 !important;
+          border-color: rgba(217, 196, 156, .82) !important;
+          background: #fffaf0 !important;
+        }
+
+        .nl-chevron { stroke: #f0dfbb !important; }
       `}</style>
 
       <nav className="nl-root" aria-label="Navegação principal" ref={navRef}>
