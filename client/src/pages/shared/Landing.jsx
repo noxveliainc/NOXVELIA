@@ -1,6 +1,6 @@
 ﻿import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, Building2, Car, Home as HomeIcon, MapPin, Music2, Newspaper, Search, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Building2, Car, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck } from 'lucide-react';
 import AdBanner from '../../components/AdBanner';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
@@ -13,7 +13,7 @@ import { anuncioPath, homePageJsonLd, siteIdentityJsonLd } from '../../utils/seo
 import { useAuth } from '../../context/AuthContext';
 import { publishIntentState } from '../../utils/navigationState';
 import { trackFunnelEvent } from '../../utils/funnelAnalytics';
-import { COOKIE_CONSENT_CHANGED_EVENT, OPEN_COOKIE_SETTINGS_EVENT, readCookieConsent } from '../../utils/cookieConsent';
+import { COOKIE_CONSENT_CHANGED_EVENT, readCookieConsent } from '../../utils/cookieConsent';
 import './Landing.css';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
@@ -28,16 +28,6 @@ const MARCAS_PESQUISA = [
   OPCAO_OUTRO_VEICULO,
 ];
 const LandingListingsCarousel = lazy(() => import('./LandingListingsCarousel'));
-const TIKTOK_HANDLE = '@noxvelia7';
-const TIKTOK_PROFILE_URL = 'https://www.tiktok.com/@noxvelia7';
-const TIKTOK_VIDEO_URLS = String(import.meta.env.VITE_TIKTOK_VIDEO_URLS || '')
-  .split(/[,\n]/)
-  .map((url) => url.trim())
-  .filter(Boolean);
-const obterTikTokVideoId = (url) => String(url || '').match(/(?:\/video\/|player\/v1\/)(\d+)/)?.[1] || '';
-const TIKTOK_VIDEOS = TIKTOK_VIDEO_URLS
-  .map((url, index) => ({ url, id: obterTikTokVideoId(url), title: `Vídeo NOXVELIA ${index + 1}` }))
-  .filter((video) => video.id);
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const formatarMoeda = (valor) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
@@ -59,7 +49,6 @@ export default function Landing() {
   const [loadingExemplos, setLoadingExemplos] = useState(true);
   const [erroExemplos, setErroExemplos] = useState(false);
   const [noticiasMercado, setNoticiasMercado] = useState([]);
-  const [externalConsent, setExternalConsent] = useState(() => readCookieConsent()?.external === true);
   const [pesquisa, setPesquisa] = useState({ tipo: 'carro', marca: '', modelo: '', combustivel: '', tipologia: '', distrito: '', precoMax: '' });
 
   const criarLinkPesquisa = (tipo, filtros = {}) => {
@@ -106,10 +95,6 @@ export default function Landing() {
       .catch(() => {});
   };
 
-  const abrirPreferenciasCookies = () => {
-    window.dispatchEvent(new Event(OPEN_COOKIE_SETTINGS_EVENT));
-  };
-
   useEffect(() => {
     let ativo = true;
     Promise.all([import('aos'), import('aos/dist/aos.css')])
@@ -137,30 +122,6 @@ export default function Landing() {
     const frame = window.requestAnimationFrame(() => aosRef.current?.refresh());
     return () => window.cancelAnimationFrame(frame);
   }, [loadingExemplos, noticiasMercado.length]);
-
-  useEffect(() => {
-    const sincronizarConsentimento = (event) => {
-      const record = event?.detail || readCookieConsent();
-      setExternalConsent(record?.external === true);
-    };
-    window.addEventListener(COOKIE_CONSENT_CHANGED_EVENT, sincronizarConsentimento);
-    return () => window.removeEventListener(COOKIE_CONSENT_CHANGED_EVENT, sincronizarConsentimento);
-  }, []);
-
-  useEffect(() => {
-    if (!externalConsent) {
-      document.querySelectorAll('script[data-noxvelia-tiktok="true"]').forEach((script) => script.remove());
-      return undefined;
-    }
-
-    if (TIKTOK_VIDEOS.length > 0 || document.querySelector('script[data-noxvelia-tiktok="true"]')) return undefined;
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = 'https://www.tiktok.com/embed.js';
-    script.dataset.noxveliaTikTok = 'true';
-    document.body.appendChild(script);
-    return undefined;
-  }, [externalConsent]);
 
   useEffect(() => {
     const trackLandingViewOnce = () => {
@@ -246,59 +207,6 @@ export default function Landing() {
     </div>
   );
 
-  const renderTikTokSection = () => (
-    <section className="lp-section lp-tiktok-section" id="tiktok" aria-labelledby="lp-tiktok" data-aos="fade-up">
-      <div className="lp-shell lp-tiktok-layout">
-        <div className="lp-tiktok-copy">
-          <span className="lp-kicker"><Music2 size={13} /> TikTok</span>
-          <h2 id="lp-tiktok">A Noxvelia em vídeo</h2>
-          <p>Atualizações curtas sobre anúncios, stock, novidades e bastidores da plataforma.</p>
-          <a className="lp-soft-cta" href={TIKTOK_PROFILE_URL} target="_blank" rel="noopener noreferrer" onPointerEnter={animarCta}>
-            Ver perfil {TIKTOK_HANDLE} <ArrowRight size={16} />
-          </a>
-        </div>
-
-        <div className="lp-tiktok-stage">
-          {!externalConsent ? (
-            <div className="lp-tiktok-consent" role="status">
-              <span><Music2 size={22} /></span>
-              <strong>Vídeos disponíveis após autorização.</strong>
-              <p>Para mostrar vídeos do TikTok, precisamos de carregar conteúdo externo. Podes ativar essa opção nas preferências de cookies.</p>
-              <button type="button" className="lp-main-cta" onClick={abrirPreferenciasCookies}>Permitir vídeos</button>
-            </div>
-          ) : TIKTOK_VIDEOS.length > 0 ? (
-            <div className="lp-tiktok-grid">
-              {TIKTOK_VIDEOS.map((video) => (
-                <iframe
-                  key={video.id}
-                  className="lp-tiktok-player"
-                  src={`https://www.tiktok.com/player/v1/${video.id}?autoplay=0&muted=1&controls=1&description=1`}
-                  title={video.title}
-                  allow="encrypted-media; fullscreen; autoplay"
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                />
-              ))}
-            </div>
-          ) : (
-            <blockquote
-              className="tiktok-embed lp-tiktok-profile"
-              cite={TIKTOK_PROFILE_URL}
-              data-unique-id="noxvelia7"
-              data-embed-type="creator"
-              data-embed-from="oembed"
-              style={{ maxWidth: '720px', minWidth: '288px' }}
-            >
-              <section>
-                <a target="_blank" rel="noopener noreferrer" href={`${TIKTOK_PROFILE_URL}?refer=creator_embed`}>{TIKTOK_HANDLE}</a>
-              </section>
-            </blockquote>
-          )}
-        </div>
-      </div>
-    </section>
-  );
   const mostrarDestaques = loadingExemplos || exemplos.carro.length > 0 || exemplos.imovel.length > 0;
 
   return (
@@ -341,7 +249,6 @@ export default function Landing() {
 <section className="lp-section lp-category-section" aria-labelledby="lp-categories" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Pesquisar</span><h2 id="lp-categories">Escolhe a categoria</h2></div></div><div className="lp-category-grid"><Link className="lp-category-card lp-category-card-auto" to="/carros"><img src="/social/noxvelia-drive-photo-premium.webp" alt="Automóvel anunciado na Noxvelia" /><span><small>Automóveis</small><strong>Ver automóveis</strong><em>Marca, modelo, km, combustível e preço.</em></span></Link><Link className="lp-category-card lp-category-card-estate" to="/imoveis"><img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia" /><span><small>Imóveis</small><strong>Ver imóveis</strong><em>Tipologia, localização, área e valor.</em></span></Link></div></div></section>
 
         {noticiasMercado.length > 0 && <section className="lp-section lp-news-section" id="atualidade" aria-labelledby="lp-news" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker"><Newspaper size={13} /> Atualidade</span><h2 id="lp-news">Mercado em Portugal</h2><p className="lp-section-copy">Notícias recentes sobre automóveis, habitação e crédito.</p></div></div><div className="lp-news-grid">{noticiasMercado.map((noticia) => { const dataNoticia = formatarDataCurta(noticia.publishedAt); return <a className="lp-news-card" href={noticia.url} target="_blank" rel="noopener noreferrer" key={noticia.id || noticia.url}><span className={`lp-news-pill ${noticia.vertical === 'automoveis' ? 'cars' : 'homes'}`}>{noticia.verticalLabel || 'Mercado'}</span><h3>{noticia.title}</h3>{noticia.summary && <p>{noticia.summary}</p>}<span className="lp-news-meta">{noticia.source}{dataNoticia ? ` · ${dataNoticia}` : ''}</span></a>; })}</div></div></section>}
-        {renderTikTokSection()}
         {mostrarDestaques && <section className="lp-section lp-listing-section" id="destaques" aria-labelledby="lp-featured" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Anúncios</span><h2 id="lp-featured">Recentes na Noxvelia</h2></div></div><div className="lp-listing-columns">{(loadingExemplos || exemplos.carro.length > 0) && <div className="lp-listing-column"><div className="lp-column-top"><h3><Car size={16} /> Automóveis</h3><button type="button" onClick={() => navigate('/carros')}>Ver automóveis</button></div><div className="lp-listing-list">{exemplos.carro.length > 0 ? renderAnunciosSwiper(exemplos.carro, '/carros') : renderEstadoLista('automóveis', '/carros')}</div></div>}{(loadingExemplos || exemplos.imovel.length > 0) && <div className="lp-listing-column"><div className="lp-column-top"><h3><HomeIcon size={16} /> Imóveis</h3><button type="button" onClick={() => navigate('/imoveis')}>Ver imóveis</button></div><div className="lp-listing-list">{exemplos.imovel.length > 0 ? renderAnunciosSwiper(exemplos.imovel, '/imoveis') : renderEstadoLista('imóveis', '/imoveis')}</div></div>}</div></div></section>}
 
         <section className="lp-section lp-sell-section" id="anunciar" aria-labelledby="lp-sell" data-aos="fade-up"><div className="lp-shell lp-sell-box"><div><span className="lp-kicker">Anunciar</span><h2 id="lp-sell">Tens algo para vender?</h2><p>Publica grátis e recebe contactos no anúncio.</p></div><Link className="lp-main-cta" to={publicarTo} state={publicarState} onPointerEnter={animarCta}>Criar anúncio <ArrowRight size={16} /></Link>{temProfissionaisAtivos && <Link className="lp-soft-cta" to="/profissionais"><Building2 size={16} /> Ver profissionais</Link>}</div></section>

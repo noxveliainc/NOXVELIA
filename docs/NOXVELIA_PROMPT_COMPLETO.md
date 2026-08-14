@@ -81,7 +81,6 @@ Trabalha na NOXVELIA, uma plataforma portuguesa de anúncios classificados focad
 - CarVertical: bloco comercial com 20% de desconto e link/código NOXVELIA.
 - Google News/RSS mercado: endpoint `/api/market-news` para notícias automóveis/imóveis.
 - OpenStreetMap/Nominatim: geocoding/mapas sem chaves quando possível.
-- TikTok: landing pode mostrar vídeos do perfil `@noxvelia7`. Usa `VITE_TIKTOK_VIDEO_URLS` com URLs públicas separadas por vírgula para iframes oficiais; sem URLs, cai para embed de perfil. Só carrega conteúdo TikTok quando o consentimento de cookies externos está ativo.
 
 ### Comandos Locais CMD
 
@@ -130,7 +129,6 @@ curl https://www.noxvelia.com/api/system/health
 - Imagens: `IMAGE_STORAGE_DRIVER`, `IMAGE_PUBLIC_BASE_URL`, `S3_*` quando produção usa storage compatível S3.
 - Segurança opcional: `TURNSTILE_ENABLED`, `TURNSTILE_SECRET_KEY`.
 - Monitorização frontend: `CLIENT_ISSUES_ENABLED`, `CLIENT_ISSUE_SALT`.
-- Landing/TikTok: `VITE_TIKTOK_VIDEO_URLS` no cliente, opcional, com URLs públicas separadas por vírgula.
 
 ### Checklist Antes de Dar Como Fechado
 
@@ -141,7 +139,6 @@ curl https://www.noxvelia.com/api/system/health
 - Confirmar que páginas críticas abrem: `/`, `/carros`, `/imoveis`, `/publicar`, `/perfil`, `/planos`, `/premium-confirmar`, `/admin`, `/enviar-stock`, `/profissionais`, `/patrocinios`.
 - Confirmar mobile em listagens e detalhe de anúncio.
 - Confirmar que a avaliação de vendedor no anúncio exige login, impede autoavaliação e atualiza média no perfil.
-- Confirmar que TikTok na landing só carrega após consentimento externo e que a CSP de produção permite `www.tiktok.com`.
 - Confirmar webhook Stripe produção em `https://www.noxvelia.com/api/stripe/webhook`.
 
 ## Inventário 1 a 1 dos Ficheiros
@@ -300,8 +297,6 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - `client/src/pages/shared/Editar.jsx` — Página partilhada do site/aplicação: Editar.
 - `client/src/pages/shared/Favoritos.jsx` — Página partilhada do site/aplicação: Favoritos.
 - `client/src/pages/shared/ForgotPassword.jsx` — Página partilhada do site/aplicação: Forgot Password.
-- `client/src/pages/shared/Landing.css` — Estilos da landing minimalista clara, incluindo Noxvelia Lens, notícias, TikTok, carVertical e responsividade.
-- `client/src/pages/shared/Landing.jsx` — Landing pública: hero, pesquisa central, categorias, notícias de mercado, secção TikTok com consentimento externo, anúncios recentes e CTAs comerciais.
 - `client/src/pages/shared/LandingListingsCarousel.jsx` — Página partilhada do site/aplicação: Landing Listings Carousel.
 - `client/src/pages/shared/Login.jsx` — Página partilhada do site/aplicação: Login.
 - `client/src/pages/shared/Mensagens.jsx` — Página partilhada do site/aplicação: Mensagens.
@@ -487,3 +482,7 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - O CTA principal de publicação nas navbars usa dourado/champagne #d9c49c com texto navy, apresentado como ação de destaque para criar anúncio.
 - Os cards de anúncio ganharam moldura mais marcada; os anúncios em destaque usam contorno navy com aro champagne e badge champagne, mantendo transparência sem usar rótulos enganosos de plano.
 - A grelha de pesquisa foi ajustada para aproveitar melhor a largura em desktop e eliminar o limite visual que deixava os resultados demasiado estreitos quando os filtros estavam ocultos.
+## Atualização landing sem TikTok (2026-08-15)
+- A landing foi reposta ao estado anterior à experiência TikTok, removendo embeds, consentimento específico de vídeos e CSS associado.
+- A navbar/footer navy permanecem ativos como identidade visual global pedida, com o CTA principal em champagne/dourado.
+- A CSP do backend e o exemplo de ambiente deixaram de declarar permissões/variáveis TikTok.
