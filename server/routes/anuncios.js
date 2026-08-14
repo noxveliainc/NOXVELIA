@@ -14,7 +14,14 @@ import { attachImagesToOwnerByUrls, deleteImagesByOwner } from '../services/imag
 import { MARCAS, getNomesModelosPorMarca, isOpcaoOutroVeiculo } from '../../client/src/data/marcasModelos.js';
 
 const router = express.Router();
-const LIMITE_ANUNCIOS_GRATUITOS = 3;
+const LIMITE_ANUNCIOS_GRATUITOS = 5;
+const obterLimiteAnunciosGratuitos = (user) => {
+  const limiteDefinido = Number(user?.limiteAnuncios);
+  if (Number.isFinite(limiteDefinido) && limiteDefinido > LIMITE_ANUNCIOS_GRATUITOS) {
+    return Math.floor(limiteDefinido);
+  }
+  return LIMITE_ANUNCIOS_GRATUITOS;
+};
 const visitLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 120,
@@ -518,12 +525,13 @@ router.get('/favoritos', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.get('/limite-publicacao', verificarToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('tipo premiumAtivo');
+    const user = await User.findById(req.user.id).select('tipo premiumAtivo limiteAnuncios');
     if (!user) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
 
     const ilimitado = user.tipo === 'admin' || user.premiumAtivo === true;
     const ativos = await Anuncio.countDocuments({ utilizador: req.user.id, estado: 'ativo' });
-    const limite = ilimitado ? null : LIMITE_ANUNCIOS_GRATUITOS;
+    const limiteGratis = obterLimiteAnunciosGratuitos(user);
+    const limite = ilimitado ? null : limiteGratis;
     const restantes = ilimitado ? null : Math.max(0, limite - ativos);
 
     res.json({
@@ -582,7 +590,7 @@ router.get('/:id/check-guardado', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 // 6. CRIAR NOVO ANÚNCIO
 //    Regras:
-//    - Conta gratuita  → máx 3 anúncios ativos
+//    - Conta gratuita  → máx 5 anúncios ativos
 //    - Conta Premium → ilimitado + destaque automático
 //    - Admin → ilimitado + destaque opcional pelo painel
 //
@@ -599,6 +607,7 @@ router.post('/', verificarToken, async (req, res) => {
 
     const ehAdmin   = user.tipo === 'admin';
     const ehPremium = user.premiumAtivo === true;
+    const limiteGratis = obterLimiteAnunciosGratuitos(user);
 
     // ── Verificar limite para utilizadores FREE ──────────────
     if (!ehAdmin && !ehPremium) {
@@ -607,10 +616,10 @@ router.post('/', verificarToken, async (req, res) => {
         estado: 'ativo'
       });
 
-      if (totalAtivos >= LIMITE_ANUNCIOS_GRATUITOS) {
+      if (totalAtivos >= limiteGratis) {
         return res.status(403).json({
           erro: 'LIMITE_ATINGIDO',
-          mensagem: `Atingiste o limite de ${LIMITE_ANUNCIOS_GRATUITOS} anúncios ativos gratuitos. Adere ao Premium para publicares sem limite enquanto o plano estiver ativo.`
+          mensagem: `Atingiste o limite de ${limiteGratis} anúncios ativos gratuitos. Adere ao Premium para publicares sem limite enquanto o plano estiver ativo.`
         });
       }
     }

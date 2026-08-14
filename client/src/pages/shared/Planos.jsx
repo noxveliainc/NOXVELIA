@@ -71,7 +71,7 @@ export default function Planos() {
   };
 
   const featuresParticular = [
-    'Até 3 anúncios ativos',
+    'Até 5 anúncios ativos',
     'Suporte base por email',
   ];
 

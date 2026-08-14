@@ -461,7 +461,7 @@ export default function Publicar() {
   const ehPremium = user?.premiumAtivo === true;
   const usoGratisAtivo = limitePublicacao && !limitePublicacao.ilimitado;
   const anunciosAtivosGratis = Number(limitePublicacao?.ativos || 0);
-  const limiteGratis = Number(limitePublicacao?.limite || 3);
+  const limiteGratis = Number(limitePublicacao?.limite || 5);
   const restantesGratis = Number(limitePublicacao?.restantes ?? Math.max(0, limiteGratis - anunciosAtivosGratis));
   const proximoAnuncioGratis = Math.min(Number(limitePublicacao?.proximo || anunciosAtivosGratis + 1), limiteGratis);
   const limiteGratisAtingido = usoGratisAtivo && restantesGratis <= 0;
@@ -633,7 +633,7 @@ export default function Publicar() {
             </div>
             <h2 className="premium-title">Limite atingido</h2>
             <p className="premium-desc">
-              O plano gratuito permite manter até <strong>3 anúncios ativos</strong>. Os anúncios existentes continuam online; para publicar sem limite enquanto o plano estiver ativo, adere ao <strong>Premium</strong>.
+              O plano gratuito permite manter até <strong>{limiteGratis} anúncios ativos</strong>. Os anúncios existentes continuam online; para publicar sem limite enquanto o plano estiver ativo, adere ao <strong>Premium</strong>.
             </p>
             <button className="premium-btn" onClick={() => navigate('/premium-confirmar')}>
               Aderir ao Premium
@@ -686,7 +686,7 @@ export default function Publicar() {
             <section className="pub-limit-card">
               <h2>Limite gratuito atingido</h2>
               <p>
-                O plano gratuito permite 3 anúncios ativos. Mantemos os teus anúncios online, mas novas publicações ficam disponíveis quando passares para Premium ou ficares abaixo do limite gratuito.
+                O plano gratuito permite {limiteGratis} anúncios ativos. Mantemos os teus anúncios online, mas novas publicações ficam disponíveis quando passares para Premium ou ficares abaixo do limite gratuito.
               </p>
               <div className="pub-limit-actions">
                 <button type="button" className="pub-limit-primary" onClick={() => navigate('/premium-confirmar')}>Ver Premium</button>

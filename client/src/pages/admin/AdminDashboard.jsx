@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -234,6 +234,15 @@ export default function AdminDashboard() {
     { key: 'respostasProfissionais', label: 'Respostas profissionais', detail: 'respostas às parcerias', color: '#fb7185' },
   ];
   const formatMetric = (value) => new Intl.NumberFormat('pt-PT').format(value || 0);
+  const visitasReais = funnel?.visitasReais || {};
+  const visitantesHoje = Number(visitasReais.hoje || 0);
+  const visitantesOntem = Number(visitasReais.ontem || 0);
+  const diferencaVisitantesHoje = visitantesHoje - visitantesOntem;
+  const visitantesHojeDetalhe = visitantesOntem > 0
+    ? `${diferencaVisitantesHoje >= 0 ? '+' : ''}${diferencaVisitantesHoje} vs ontem · sessões únicas`
+    : 'sessões únicas registadas hoje';
+  const diasVisitantesReais = Array.isArray(visitasReais.diario) ? visitasReais.diario.slice(-10) : [];
+  const maxVisitantesDia = Math.max(1, ...diasVisitantesReais.map((day) => Number(day.visitantes || 0)));
 
   // ---- Loading state ---------------------------------------------------
 
@@ -453,6 +462,7 @@ export default function AdminDashboard() {
         }}>
           {[
             { label: 'Utilizadores reais', value: totalUtilizadoresReais, sub: `+${novosUtilizadoresReais7d} nos últimos 7 dias · ${contasInternasTexto}`, color: COLORS.blue, icon: <Icon path={mdiAccountMultiple} size={0.8} /> },
+            { label: 'Visitantes hoje', value: formatMetric(visitantesHoje), sub: visitantesHojeDetalhe, color: COLORS.green, icon: <Icon path={mdiChartTimelineVariant} size={0.8} /> },
             { label: 'Anúncios ativos', value: stats?.anunciosAtivos ?? 0, sub: `${stats?.anunciosPendentes ?? 0} pendentes`, color: COLORS.purple, icon: <Icon path={mdiFileDocumentOutline} size={0.8} /> },
             { label: 'Visualizações', value: new Intl.NumberFormat('pt-PT').format(stats?.totalVisitas ?? 0), sub: 'interesse acumulado', color: COLORS.blue, icon: <Icon path={mdiEyeOutline} size={0.8} /> },
             { label: 'Drive', value: stats?.carrosAtivos ?? 0, sub: 'carros ativos', color: '#2ac1b4', icon: <Icon path={mdiCar} size={0.8} /> },
@@ -624,6 +634,46 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              <section className="nx-overview-card" style={{ marginBottom: '22px', background: '#ffffff' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '14px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                  <div>
+                    <h3 className="nx-overview-title" style={{ marginBottom: '5px' }}>Pessoas reais por dia</h3>
+                    <p style={{ margin: 0, color: COLORS.textDim, fontSize: '12.5px', lineHeight: 1.55, maxWidth: '760px' }}>
+                      Sessões anónimas únicas. A mesma pessoa pode pesquisar, abrir anúncios e voltar à página, mas no mesmo dia continua a contar uma vez.
+                    </p>
+                  </div>
+                  <span className="nx-status-chip ativo">Números reais</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
+                  {[
+                    ['Hoje', visitantesHoje],
+                    ['Ontem', visitantesOntem],
+                    ['Média diária', visitasReais.mediaDiaria || 0],
+                    ['Únicos no período', visitasReais.periodo || 0],
+                  ].map(([label, value]) => (
+                    <div key={label} style={{ border: `1px solid ${COLORS.border}`, borderRadius: '12px', padding: '14px', background: COLORS.panelAlt }}>
+                      <span style={{ display: 'block', color: COLORS.textFaint, fontFamily: FONT_MONO, fontSize: '10px', fontWeight: 850, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '8px' }}>{label}</span>
+                      <strong style={{ color: COLORS.text, fontFamily: FONT_DISPLAY, fontSize: '26px', lineHeight: 1 }}>{formatMetric(value)}</strong>
+                    </div>
+                  ))}
+                </div>
+                {diasVisitantesReais.length > 0 && (
+                  <div style={{ display: 'grid', gap: '8px', marginTop: '16px' }}>
+                    {diasVisitantesReais.map((day) => {
+                      const visitantes = Number(day.visitantes || 0);
+                      return (
+                        <div key={day.day} style={{ display: 'grid', gridTemplateColumns: '92px minmax(0, 1fr) 54px', alignItems: 'center', gap: '10px', color: COLORS.textDim, fontSize: '12px' }}>
+                          <span style={{ fontFamily: FONT_MONO, color: COLORS.text }}>{day.day}</span>
+                          <span style={{ height: '8px', borderRadius: '999px', background: COLORS.border, overflow: 'hidden' }}>
+                            <span style={{ display: 'block', height: '100%', width: `${Math.max(5, (visitantes / maxVisitantesDia) * 100)}%`, borderRadius: 'inherit', background: COLORS.green }} />
+                          </span>
+                          <strong style={{ color: COLORS.text, textAlign: 'right' }}>{formatMetric(visitantes)}</strong>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '22px' }}>
                 {funnelCards.map((card) => {
                   const value = funnelMetric(card.key);
@@ -670,16 +720,17 @@ export default function AdminDashboard() {
               <section className="nx-overview-card" style={{ marginTop: '18px' }}>
                 <h3 className="nx-overview-title">Evolução diária</h3>
                 <div className="nx-scroll" style={{ overflowX: 'auto' }}>
-                  <table className="nx-admin-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '760px', textAlign: 'left' }}>
+                  <table className="nx-admin-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '860px', textAlign: 'left' }}>
                     <thead>
                       <tr style={{ color: COLORS.textFaint, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '.08em', fontFamily: FONT_MONO }}>
-                        {['Dia', 'Entradas', 'Pesquisas', 'Anúncios', 'WhatsApp', 'Publicações', 'Concluídas'].map((label) => <th key={label} style={{ padding: '10px 8px', borderBottom: `1px solid ${COLORS.border}` }}>{label}</th>)}
+                        {['Dia', 'Pessoas reais', 'Entradas', 'Pesquisas', 'Anúncios', 'WhatsApp', 'Publicações', 'Concluídas'].map((label) => <th key={label} style={{ padding: '10px 8px', borderBottom: `1px solid ${COLORS.border}` }}>{label}</th>)}
                       </tr>
                     </thead>
                     <tbody>
                       {(funnel?.diario || []).slice(-14).reverse().map((day) => (
                         <tr key={day.data} style={{ borderBottom: `1px solid ${COLORS.border}`, color: COLORS.textDim, fontSize: '12px' }}>
                           <td data-label="Dia" style={{ padding: '10px 8px', color: COLORS.text, fontFamily: FONT_MONO }}>{day.data}</td>
+                          <td data-label="Pessoas reais" style={{ padding: '10px 8px', color: COLORS.text, fontWeight: 800 }}>{formatMetric(day.visitantesReais)}</td>
                           <td data-label="Entradas" style={{ padding: '10px 8px' }}>{formatMetric(day.landing_view?.sessoes)}</td>
                           <td data-label="Pesquisas" style={{ padding: '10px 8px' }}>{formatMetric(day.search_start?.sessoes)}</td>
                           <td data-label="Anúncios" style={{ padding: '10px 8px' }}>{formatMetric(day.listing_view?.sessoes)}</td>

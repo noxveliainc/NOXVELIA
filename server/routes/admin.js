@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import User from '../models/User.js';
 import Anuncio from '../models/Anuncio.js';
 import FunnelEvent from '../models/FunnelEvent.js';
@@ -159,7 +159,15 @@ router.get('/dashboard/funnel', async (req, res) => {
     const days = [7, 30, 90].includes(requestedDays) ? requestedDays : 30;
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-    const [eventRows, dailyRows, professionalReplyCount, professionalReplyPeopleRows, professionalContacts] = await Promise.all([
+    const [
+      eventRows,
+      dailyRows,
+      dailyVisitorsRows,
+      periodVisitorsRows,
+      professionalReplyCount,
+      professionalReplyPeopleRows,
+      professionalContacts,
+    ] = await Promise.all([
       FunnelEvent.aggregate([
         { $match: { occurredAt: { $gte: since } } },
         { $group: { _id: '$event', total: { $sum: 1 }, sessions: { $addToSet: '$sessionId' } } },
@@ -170,6 +178,17 @@ router.get('/dashboard/funnel', async (req, res) => {
         { $group: { _id: { day: '$dayKey', event: '$event' }, total: { $sum: 1 }, sessions: { $addToSet: '$sessionId' } } },
         { $project: { _id: 0, day: '$_id.day', event: '$_id.event', total: 1, sessoes: { $size: '$sessions' } } },
         { $sort: { day: 1 } },
+      ]),
+      FunnelEvent.aggregate([
+        { $match: { occurredAt: { $gte: since }, sessionId: { $type: 'string', $ne: '' } } },
+        { $group: { _id: '$dayKey', sessions: { $addToSet: '$sessionId' }, eventos: { $sum: 1 } } },
+        { $project: { _id: 0, day: '$_id', visitantes: { $size: '$sessions' }, eventos: 1 } },
+        { $sort: { day: 1 } },
+      ]),
+      FunnelEvent.aggregate([
+        { $match: { occurredAt: { $gte: since }, sessionId: { $type: 'string', $ne: '' } } },
+        { $group: { _id: null, sessions: { $addToSet: '$sessionId' } } },
+        { $project: { _id: 0, visitantes: { $size: '$sessions' } } },
       ]),
       PartnershipReply.countDocuments({ receivedAt: { $gte: since } }),
       PartnershipReply.aggregate([
@@ -189,11 +208,24 @@ router.get('/dashboard/funnel', async (req, res) => {
     }]));
     const metric = (event) => byEvent[event] || { total: 0, sessoes: 0 };
 
-    const daily = Object.values(dailyRows.reduce((acc, row) => {
+    const dailyMap = dailyRows.reduce((acc, row) => {
       if (!acc[row.day]) acc[row.day] = { data: row.day };
       acc[row.day][row.event] = { total: row.total || 0, sessoes: row.sessoes || 0 };
       return acc;
-    }, {}));
+    }, {});
+
+    dailyVisitorsRows.forEach((row) => {
+      if (!dailyMap[row.day]) dailyMap[row.day] = { data: row.day };
+      dailyMap[row.day].visitantesReais = row.visitantes || 0;
+      dailyMap[row.day].eventosTotais = row.eventos || 0;
+    });
+
+    const daily = Object.values(dailyMap).sort((a, b) => String(a.data).localeCompare(String(b.data)));
+    const visitantesPorDia = Object.fromEntries(dailyVisitorsRows.map((row) => [row.day, row.visitantes || 0]));
+    const hojeKey = new Date().toISOString().slice(0, 10);
+    const ontemKey = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const somaVisitantesDiarios = dailyVisitorsRows.reduce((total, row) => total + (row.visitantes || 0), 0);
+    const mediaDiaria = Number((somaVisitantesDiarios / Math.max(dailyVisitorsRows.length || days, 1)).toFixed(1));
 
     const entradas = metric('landing_view').sessoes;
     const pesquisas = metric('search_start').sessoes;
@@ -204,6 +236,15 @@ router.get('/dashboard/funnel', async (req, res) => {
 
     res.json({
       periodo: { dias: days, desde: since.toISOString() },
+      visitasReais: {
+        hoje: visitantesPorDia[hojeKey] || 0,
+        ontem: visitantesPorDia[ontemKey] || 0,
+        periodo: periodVisitorsRows[0]?.visitantes || 0,
+        somaDiaria: somaVisitantesDiarios,
+        mediaDiaria,
+        diario: dailyVisitorsRows,
+        explicacao: 'Sessões anónimas únicas por dia. Refreshes e múltiplas ações da mesma sessão no mesmo dia contam uma vez.',
+      },
       metricas: {
         entradas: metric('landing_view'),
         pesquisas: metric('search_start'),
@@ -227,7 +268,6 @@ router.get('/dashboard/funnel', async (req, res) => {
     res.status(500).json({ erro: 'Erro ao compilar o funil.' });
   }
 });
-
 router.put('/anuncios/:id/estado', async (req, res) => {
   try {
     const estadosPermitidos = ['ativo', 'pendente', 'pausado', 'expirado'];

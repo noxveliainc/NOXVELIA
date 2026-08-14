@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema({
   // ── PREMIUM ────────────────────────────────────────────────
   premiumAtivo:         { type: Boolean, default: false },
   dataExpiracaoPremium: { type: Date,    default: null },
-  limiteAnuncios:       { type: Number,  default: 3 },
+  limiteAnuncios:       { type: Number,  default: 5 },
 
   // ── STRIPE (subscrição mensal) ─────────────────────────────
   stripeCustomerId:     { type: String, default: null },
