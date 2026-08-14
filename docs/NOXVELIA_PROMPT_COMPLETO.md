@@ -28,6 +28,7 @@ Trabalha na NOXVELIA, uma plataforma portuguesa de anúncios classificados focad
 - Admin pode criar anúncios indicando apenas telefone ou email; utilizadores normais precisam dos contactos exigidos pelo formulário.
 - Destaque não deve ser apresentado como Premium se for apenas destaque comprado/manual.
 - Selos de confiança devem representar factos verificáveis, como email confirmado; não inventar verificações.
+- Avaliações de vendedor: apenas utilizadores autenticados podem votar; cada utilizador tem uma avaliação ativa por vendedor (`avaliador + anunciante` único), não pode avaliar a própria conta, pode atualizar a própria nota, e a média 0-5 é recalculada em `User.rating` / `User.totalAvaliacoes` para aparecer no perfil e no anúncio.
 - Publicidade/patrocínios devem parecer produto real, com página própria, preços, regras, link do patrocinador e tracking de cliques/impressões.
 - Stock de stands deve poder chegar por Excel/XML/CSV/feed, com importação por admin e pedidos públicos em /enviar-stock.
 
@@ -38,6 +39,15 @@ Trabalha na NOXVELIA, uma plataforma portuguesa de anúncios classificados focad
 - Visitantes reais por dia = quantidade de sessionIds únicos por `dayKey` em todos os eventos do funil.
 - Não usar apenas `landing_view`, porque um visitante pode entrar diretamente em /carros, /imoveis ou num anúncio.
 - Evitar mostrar estatísticas pequenas na landing se parecerem artificiais ou prejudicarem confiança.
+
+
+### Monitorização e Estabilidade Operacional
+
+- Auditoria de funil: monitorizar `/admin` e `FunnelEvent` para perceber onde os utilizadores abandonam o fluxo, incluindo landing, pesquisa, publicação, contacto e checkout Stripe.
+- Visitantes diários devem ser números reais por sessão única (`sessionId`/`dayKey`), sem inflacionar métricas para parecer maior.
+- Em cada atualização de código, manter a rotina `npm run check` no servidor e `npm run build` no cliente.
+- Performance visual: preservar tema claro, base #ffffff / #f7f5ef, animações contidas, sem efeitos pesados que prejudiquem mobile.
+- Antes de fechar trabalho visual, rever páginas críticas em desktop e telemóvel.
 
 ### Frontend
 
@@ -71,6 +81,7 @@ Trabalha na NOXVELIA, uma plataforma portuguesa de anúncios classificados focad
 - CarVertical: bloco comercial com 20% de desconto e link/código NOXVELIA.
 - Google News/RSS mercado: endpoint `/api/market-news` para notícias automóveis/imóveis.
 - OpenStreetMap/Nominatim: geocoding/mapas sem chaves quando possível.
+- TikTok: landing pode mostrar vídeos do perfil `@noxvelia7`. Usa `VITE_TIKTOK_VIDEO_URLS` com URLs públicas separadas por vírgula para iframes oficiais; sem URLs, cai para embed de perfil. Só carrega conteúdo TikTok quando o consentimento de cookies externos está ativo.
 
 ### Comandos Locais CMD
 
@@ -119,6 +130,7 @@ curl https://www.noxvelia.com/api/system/health
 - Imagens: `IMAGE_STORAGE_DRIVER`, `IMAGE_PUBLIC_BASE_URL`, `S3_*` quando produção usa storage compatível S3.
 - Segurança opcional: `TURNSTILE_ENABLED`, `TURNSTILE_SECRET_KEY`.
 - Monitorização frontend: `CLIENT_ISSUES_ENABLED`, `CLIENT_ISSUE_SALT`.
+- Landing/TikTok: `VITE_TIKTOK_VIDEO_URLS` no cliente, opcional, com URLs públicas separadas por vírgula.
 
 ### Checklist Antes de Dar Como Fechado
 
@@ -128,6 +140,8 @@ curl https://www.noxvelia.com/api/system/health
 - Confirmar que `client/dist` não foi commitado por acidente se o objetivo era só fonte.
 - Confirmar que páginas críticas abrem: `/`, `/carros`, `/imoveis`, `/publicar`, `/perfil`, `/planos`, `/premium-confirmar`, `/admin`, `/enviar-stock`, `/profissionais`, `/patrocinios`.
 - Confirmar mobile em listagens e detalhe de anúncio.
+- Confirmar que a avaliação de vendedor no anúncio exige login, impede autoavaliação e atualiza média no perfil.
+- Confirmar que TikTok na landing só carrega após consentimento externo e que a CSP de produção permite `www.tiktok.com`.
 - Confirmar webhook Stripe produção em `https://www.noxvelia.com/api/stripe/webhook`.
 
 ## Inventário 1 a 1 dos Ficheiros
@@ -281,13 +295,13 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - `client/src/pages/auth/ResetPassword.jsx` — Página React da aplicação: Reset Password.
 - `client/src/pages/carros/PesquisaCarro.jsx` — Página React da aplicação: Pesquisa Carro.
 - `client/src/pages/imoveis/PesquisaImovel.jsx` — Página React da aplicação: Pesquisa Imovel.
-- `client/src/pages/shared/Anuncio.jsx` — Página partilhada do site/aplicação: Anuncio.
+- `client/src/pages/shared/Anuncio.jsx` — Página de detalhe do anúncio: galeria, contactos, WhatsApp, publicidade lateral, vendedor, avaliação por estrelas única por utilizador e média pública do vendedor.
 - `client/src/pages/shared/AnuncioCard.jsx` — Página partilhada do site/aplicação: Anuncio Card.
 - `client/src/pages/shared/Editar.jsx` — Página partilhada do site/aplicação: Editar.
 - `client/src/pages/shared/Favoritos.jsx` — Página partilhada do site/aplicação: Favoritos.
 - `client/src/pages/shared/ForgotPassword.jsx` — Página partilhada do site/aplicação: Forgot Password.
-- `client/src/pages/shared/Landing.css` — Página partilhada do site/aplicação: Landing.
-- `client/src/pages/shared/Landing.jsx` — Página partilhada do site/aplicação: Landing.
+- `client/src/pages/shared/Landing.css` — Estilos da landing minimalista clara, incluindo Noxvelia Lens, notícias, TikTok, carVertical e responsividade.
+- `client/src/pages/shared/Landing.jsx` — Landing pública: hero, pesquisa central, categorias, notícias de mercado, secção TikTok com consentimento externo, anúncios recentes e CTAs comerciais.
 - `client/src/pages/shared/LandingListingsCarousel.jsx` — Página partilhada do site/aplicação: Landing Listings Carousel.
 - `client/src/pages/shared/Login.jsx` — Página partilhada do site/aplicação: Login.
 - `client/src/pages/shared/Mensagens.jsx` — Página partilhada do site/aplicação: Mensagens.
@@ -374,7 +388,7 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - `server/controllers/mensagemController.js` — Ficheiro do projeto: mensagem Controller.
 - `server/controllers/notificacaoController.js` — Ficheiro do projeto: notificacao Controller.
 - `server/iaWorker.js` — Ficheiro do projeto: ia Worker.
-- `server/index.js` — Entrada da API Express; liga middleware, rotas, MongoDB, jobs e servidor HTTP.
+- `server/index.js` — Entrada da API Express; liga middleware, CSP/Helmet, rotas, MongoDB, jobs e servidor HTTP.
 - `server/middleware/auth.js` — Middleware Express para auth.
 - `server/middleware/cron.js` — Middleware Express para cron.
 - `server/middleware/errorHandler.js` — Middleware Express para error Handler.
@@ -390,7 +404,7 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - `server/models/Alerta.js` — Modelo Mongoose/MongoDB para Alerta.
 - `server/models/Anuncio.js` — Modelo Mongoose/MongoDB para Anuncio.
 - `server/models/AnuncioView.js` — Modelo Mongoose/MongoDB para Anuncio View.
-- `server/models/Avaliacao.js` — Modelo Mongoose/MongoDB para Avaliacao.
+- `server/models/Avaliacao.js` — Modelo Mongoose para avaliações de vendedor; uma avaliação ativa por avaliador/anunciante, usada para recalcular média e total no User.
 - `server/models/BannerPatrocinado.js` — Modelo Mongoose/MongoDB para Banner Patrocinado.
 - `server/models/ClientIssue.js` — Modelo Mongoose/MongoDB para Client Issue.
 - `server/models/Conversa.js` — Modelo Mongoose/MongoDB para Conversa.

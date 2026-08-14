@@ -121,7 +121,15 @@ export default function Anuncio() {
   const [entrada, setEntrada] = useState(0);
 
   const [sugeridos, setSugeridos] = useState([]);
+  const [minhaAvaliacao, setMinhaAvaliacao] = useState(null);
+  const [avaliacaoSelecionada, setAvaliacaoSelecionada] = useState(0);
+  const [avaliandoVendedor, setAvaliandoVendedor] = useState(false);
+  const [erroAvaliacao, setErroAvaliacao] = useState('');
+  const [sucessoAvaliacao, setSucessoAvaliacao] = useState('');
   const touchStartX = useRef(null);
+
+  const vendedorIdAvaliacao = anuncio?.utilizador?._id || anuncio?.user?._id;
+  const userIdAtual = user?.id || user?._id;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -171,6 +179,29 @@ export default function Anuncio() {
         .catch(() => {});
     }
   }, [signed, id]);
+  useEffect(() => {
+    if (!signed || !vendedorIdAvaliacao || userIdAtual === vendedorIdAvaliacao) {
+      setMinhaAvaliacao(null);
+      setAvaliacaoSelecionada(0);
+      return undefined;
+    }
+
+    let ativo = true;
+    api.get(`/users/${vendedorIdAvaliacao}/minha-avaliacao`)
+      .then(({ data }) => {
+        if (!ativo) return;
+        setMinhaAvaliacao(data || null);
+        setAvaliacaoSelecionada(Number(data?.nota || 0));
+      })
+      .catch(() => {
+        if (ativo) {
+          setMinhaAvaliacao(null);
+          setAvaliacaoSelecionada(0);
+        }
+      });
+
+    return () => { ativo = false; };
+  }, [signed, vendedorIdAvaliacao, userIdAtual]);
 
   const fotosArrayRaw = anuncio?.fotos || anuncio?.imagens;
   const fotos = fotosArrayRaw?.length > 0 ? fotosArrayRaw : [null];
@@ -235,6 +266,45 @@ export default function Anuncio() {
       const { data } = await api.post(`/anuncios/${id}/guardar`);
       setGuardado(data.guardado);
     } catch {}
+  };
+
+
+  const submeterAvaliacaoVendedor = async (nota) => {
+    if (!signed) {
+      setErroAvaliacao('Inicia sessão para avaliar este vendedor.');
+      return;
+    }
+    if (!vendedorIdAvaliacao || userIdAtual === vendedorIdAvaliacao) {
+      setErroAvaliacao('Não podes avaliar o teu próprio anúncio.');
+      return;
+    }
+
+    setAvaliandoVendedor(true);
+    setErroAvaliacao('');
+    setSucessoAvaliacao('');
+    setAvaliacaoSelecionada(nota);
+
+    try {
+      const { data } = await api.post(`/users/${vendedorIdAvaliacao}/avaliar`, { nota, anuncioId: id });
+      setMinhaAvaliacao((atual) => ({ ...(atual || {}), nota }));
+      setAnuncio((atual) => {
+        if (!atual) return atual;
+        const chaveVendedor = atual.utilizador ? 'utilizador' : 'user';
+        return {
+          ...atual,
+          [chaveVendedor]: {
+            ...atual[chaveVendedor],
+            rating: data.rating,
+            totalAvaliacoes: data.totalAvaliacoes,
+          },
+        };
+      });
+      setSucessoAvaliacao(data.mensagem || 'Avaliação registada.');
+    } catch (error) {
+      setErroAvaliacao(error.response?.data?.erro || 'Não foi possível registar a avaliação.');
+    } finally {
+      setAvaliandoVendedor(false);
+    }
   };
 
   const handleConfirmarVendido = async () => {
@@ -613,6 +683,19 @@ export default function Anuncio() {
         .seller-rating-empty.verified, .seller-rating-empty.company { background: rgba(217,196,156,.16); color: #102f50; border-color: rgba(217,196,156,.42); }
         .seller-rating-empty { font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
         .seller-date { font-size: 12px; font-weight: 600; color: #64748b; }
+        .seller-vote-panel { width: 100%; margin-top: 12px; padding: 18px; border: 1px solid #e6e1d6; border-radius: 18px; background: #fffdf8; display: grid; gap: 12px; }
+        .seller-vote-copy { display: grid; gap: 4px; }
+        .seller-vote-copy strong { color: #102f50; font-size: 14px; font-weight: 900; }
+        .seller-vote-copy span { color: #64748b; font-size: 12px; line-height: 1.45; }
+        .seller-vote-stars { display: inline-flex; align-items: center; gap: 5px; }
+        .seller-vote-stars button { width: 34px; height: 34px; border-radius: 999px; border: 1px solid #e6e1d6; background: #ffffff; color: #cbd5e1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform .18s ease, border-color .18s ease, color .18s ease, background .18s ease; }
+        .seller-vote-stars button:hover:not(:disabled), .seller-vote-stars button.active { color: #d9a441; border-color: rgba(217, 195, 145, .78); background: #fff8e7; transform: translateY(-1px); }
+        .seller-vote-stars button:disabled { cursor: not-allowed; opacity: .62; }
+        .seller-vote-login { color: #102f50; font-size: 12px; font-weight: 850; text-decoration: none; }
+        .seller-vote-login:hover { text-decoration: underline; }
+        .seller-vote-status { color: #64748b; font-size: 12px; font-weight: 750; }
+        .seller-vote-status.success { color: #0f766e; }
+        .seller-vote-status.error { color: #b91c1c; }
 
         .owner-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 14px; padding: 18px; margin-top: 4px; width: 100%; min-width: 0; }
         .owner-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #2563eb; margin-bottom: 12px; }
@@ -1055,6 +1138,38 @@ export default function Anuncio() {
                   </div>
                   <Icon path={mdiChevronRight} size={1} color="#94a3b8" />
                 </Link>
+                {!isDono && (
+                  <div className="seller-vote-panel">
+                    <div className="seller-vote-copy">
+                      <strong>{minhaAvaliacao ? 'A tua avaliação do vendedor' : 'Avaliar vendedor'}</strong>
+                      <span>Uma votação por utilizador. Podes atualizar a tua nota mais tarde.</span>
+                    </div>
+                    <div className="seller-vote-stars" role="radiogroup" aria-label="Avaliação do vendedor">
+                      {Array.from({ length: 5 }).map((_, index) => {
+                        const valor = index + 1;
+                        const ativo = valor <= avaliacaoSelecionada;
+                        return (
+                          <button
+                            key={valor}
+                            type="button"
+                            className={ativo ? 'active' : ''}
+                            onClick={() => submeterAvaliacaoVendedor(valor)}
+                            disabled={!signed || avaliandoVendedor}
+                            aria-label={`${valor} ${valor === 1 ? 'estrela' : 'estrelas'}`}
+                            aria-checked={avaliacaoSelecionada === valor}
+                            role="radio"
+                          >
+                            <Icon path={mdiStar} size={0.82} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {!signed && <Link className="seller-vote-login" to="/login">Entrar para avaliar</Link>}
+                    {avaliandoVendedor && <span className="seller-vote-status">A guardar avaliação...</span>}
+                    {erroAvaliacao && <span className="seller-vote-status error">{erroAvaliacao}</span>}
+                    {sucessoAvaliacao && <span className="seller-vote-status success">{sucessoAvaliacao}</span>}
+                  </div>
+                )}
               </div>
             </div>
           </div>
