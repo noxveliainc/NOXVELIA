@@ -215,11 +215,12 @@ export default function Landing() {
       <NavbarLanding />
       <main>
         <section className="lp-hero" aria-labelledby="lp-title">
+          <img className="lp-hero-bg" src="/noxvelia-hero-coast.webp" alt="" aria-hidden="true" />
           <div className="lp-shell lp-hero-shell">
             <div className="lp-hero-copy">
-              <span className="lp-kicker lp-hero-kicker">Noxvelia Lens</span>
+              <span className="lp-kicker lp-hero-kicker">Pesquisa em Portugal</span>
               <h1 id="lp-title" ref={heroTitleRef}>Automóveis e imóveis em Portugal</h1>
-              <p>Fotografias fortes, preço claro e contacto direto ao anunciante.</p>
+              <p>Filtra por localização, preço e características com contacto direto ao anunciante.</p>
               <div className="lp-hero-actions" aria-label="Ações principais">
                 <a className="lp-main-cta" href="#pesquisa">Pesquisar agora</a>
                 <Link className="lp-soft-cta" to={publicarTo} state={publicarState}>Criar anúncio</Link>
@@ -236,6 +237,11 @@ export default function Landing() {
               </div>
 
               <form className="lp-search-box" id="pesquisa" onSubmit={submeterPesquisa}>
+                <div className="lp-search-head">
+                  <span>Começa por aqui</span>
+                  <strong>Pesquisa direta.</strong>
+                  <p>Filtra por tipo, localização e preço. Podes afinar mais depois.</p>
+                </div>
                 <div className="lp-tabs" role="tablist" aria-label="Tipo de pesquisa"><button type="button" role="tab" aria-selected={pesquisa.tipo === 'carro'} data-vertical="carro" className={pesquisa.tipo === 'carro' ? 'active' : ''} onClick={() => atualizarPesquisa('tipo', 'carro')}><Car size={16} /> Automóveis</button><button type="button" role="tab" aria-selected={pesquisa.tipo === 'imovel'} data-vertical="imovel" className={pesquisa.tipo === 'imovel' ? 'active' : ''} onClick={() => atualizarPesquisa('tipo', 'imovel')}><HomeIcon size={16} /> Imóveis</button></div>
                 <div className="lp-search-grid">
                   {pesquisa.tipo === 'carro' ? <><label>Marca<select value={pesquisa.marca} onChange={(evento) => atualizarPesquisa('marca', evento.target.value)}><option value="">Todas as marcas</option>{MARCAS_PESQUISA.map((marca) => <option key={marca} value={marca}>{rotuloOpcaoVeiculo(marca, 'marca')}</option>)}</select></label><label>Modelo<select value={pesquisa.modelo} onChange={(evento) => atualizarPesquisa('modelo', evento.target.value)} disabled={!pesquisa.marca}><option value="">{pesquisa.marca ? 'Todos os modelos' : 'Escolhe a marca'}</option>{modelosPesquisa.map((modelo) => <option key={modelo} value={modelo}>{rotuloOpcaoVeiculo(modelo, 'modelo')}</option>)}</select></label><label>Combustível<select value={pesquisa.combustivel} onChange={(evento) => atualizarPesquisa('combustivel', evento.target.value)}><option value="">Todos</option>{COMBUSTIVEIS_POPULARES.map((combustivel) => <option key={combustivel} value={combustivel}>{combustivel}</option>)}</select></label><label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_CARROS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label></> : <><label>Tipologia<select value={pesquisa.tipologia} onChange={(evento) => atualizarPesquisa('tipologia', evento.target.value)}><option value="">Todas</option>{TIPOLOGIAS_POPULARES.map((tipologia) => <option key={tipologia} value={tipologia}>{tipologia}</option>)}</select></label><label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_IMOVEIS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label></>}

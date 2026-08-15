@@ -434,7 +434,6 @@
 .lp-news-section,
 .lp-cv-section { background: #ffffff; }
 
-
 .lp-news-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -740,4 +739,216 @@
   .lp-search-box { padding: 18px; }
   .lp-section-head { align-items: flex-start; flex-direction: column; }
   .lp-listing-fallback { grid-template-columns: 1fr; }
+}
+/* Hero restaurado: fotografia forte, pesquisa clara e barra azul preservada. */
+.lp-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: clamp(620px, calc(100vh - 74px), 760px);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: clamp(58px, 7vw, 104px) 0 clamp(46px, 5vw, 72px);
+  border-bottom: 0;
+  background: #102f50;
+  color: #fffaf0;
+}
+
+.lp-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: 62% center;
+}
+
+.lp-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(7, 19, 38, .95) 0%, rgba(7, 19, 38, .86) 38%, rgba(7, 19, 38, .44) 70%, rgba(7, 19, 38, .2) 100%),
+    linear-gradient(0deg, rgba(7, 19, 38, .72), rgba(7, 19, 38, .04) 58%);
+}
+
+.lp-hero .lp-shell.lp-hero-shell {
+  width: min(1220px, calc(100% - 48px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 470px);
+  gap: clamp(32px, 5vw, 76px);
+  align-items: center;
+}
+
+.lp-hero-copy {
+  max-width: 720px;
+  gap: 22px;
+  color: #fffaf0;
+}
+
+.lp-hero-copy h1 {
+  max-width: 760px;
+  color: #fffaf0;
+  font-size: clamp(48px, 5.8vw, 88px);
+  line-height: .92;
+  text-wrap: balance;
+}
+
+.lp-hero-copy p {
+  max-width: 620px;
+  color: rgba(255, 250, 240, .86);
+  font-size: clamp(17px, 1.25vw, 21px);
+  line-height: 1.55;
+}
+
+.lp-hero .lp-kicker {
+  color: #f0dfbb;
+}
+
+.lp-hero .lp-kicker::before,
+.lp-hero-kicker::before {
+  background: #d9c49c;
+}
+
+.lp-hero .lp-main-cta {
+  border-color: #d9c49c;
+  background: #d9c49c;
+  color: #071326;
+}
+
+.lp-hero .lp-main-cta:hover {
+  border-color: #f0dfbb;
+  background: #f0dfbb;
+}
+
+.lp-hero .lp-soft-cta {
+  border-color: rgba(240, 223, 187, .45);
+  background: rgba(255, 250, 240, .08);
+  color: #fffaf0;
+}
+
+.lp-hero .lp-soft-cta:hover {
+  border-color: #f0dfbb;
+  background: rgba(255, 250, 240, .14);
+}
+
+.lp-lens-card {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(240, 223, 187, .42);
+  border-radius: 20px;
+  background: rgba(255, 250, 240, .97);
+  box-shadow: 0 34px 92px -64px rgba(0, 0, 0, .92);
+  backdrop-filter: blur(16px);
+}
+
+.lp-lens-media {
+  display: none;
+}
+
+.lp-search-box {
+  padding: clamp(18px, 2.3vw, 28px);
+  background: transparent;
+}
+
+.lp-tabs {
+  margin-bottom: 18px;
+  border-color: rgba(7, 19, 38, .12);
+  background: rgba(217, 196, 156, .2);
+}
+
+.lp-tabs button.active[data-vertical="carro"],
+.lp-tabs button.active[data-vertical="imovel"] {
+  background: #d9c49c;
+  color: #071326;
+}
+
+.lp-search-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.lp-search-grid button[type="submit"] {
+  grid-column: 1 / -1;
+  border-color: #102f50;
+  background: #102f50;
+  color: #ffffff;
+}
+
+@media (max-width: 920px) {
+  .lp-hero {
+    min-height: auto;
+    padding: 56px 0 44px;
+  }
+
+  .lp-hero .lp-shell.lp-hero-shell {
+    width: min(100% - 28px, 620px);
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .lp-hero-copy h1 {
+    font-size: clamp(42px, 13vw, 64px);
+  }
+
+  .lp-hero-copy p {
+    font-size: 16px;
+  }
+
+  .lp-search-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .lp-hero-actions {
+    align-items: stretch;
+  }
+
+  .lp-hero-actions .lp-main-cta,
+  .lp-hero-actions .lp-soft-cta {
+    width: 100%;
+  }
+
+.lp-search-head {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.lp-search-head span {
+  width: fit-content;
+  color: #a8894a;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.lp-search-head strong {
+  color: #071326;
+  font-size: clamp(24px, 2.2vw, 34px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.lp-search-head p {
+  max-width: 360px;
+  margin: 0;
+  color: #5d6b78;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.lp-tabs {
+    width: 100%;
+  }
+
+  .lp-tabs button {
+    flex: 1;
+    justify-content: center;
+  }
 }
