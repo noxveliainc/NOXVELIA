@@ -5,7 +5,7 @@
   font-family: var(--nx-font-body);
 }
 
-.lp-root a { color: inherit; }
+.lp-root a:not(.lp-main-cta):not(.lp-soft-cta) { color: inherit; }
 
 .lp-shell {
   width: min(100% - clamp(28px, 5vw, 96px), 1680px);
@@ -747,4 +747,233 @@
   .lp-secondary-button,
   .lp-listing-card,
   .lp-news-card { transition: none; }
+}
+
+/* Refinamento de escala: mantém a pesquisa principal forte e reduz secções secundárias. */
+.lp-root .lp-main-cta {
+  color: #ffffff;
+}
+
+.lp-root .lp-hero .lp-main-cta {
+  color: #071326;
+}
+
+.lp-root .lp-soft-cta,
+.lp-root .lp-secondary-button,
+.lp-root .lp-column-top button,
+.lp-root .lp-listing-state button {
+  color: var(--cor-navy);
+}
+
+.lp-section {
+  padding: clamp(52px, 6vw, 92px) 0;
+}
+
+.lp-category-section {
+  padding-top: clamp(52px, 6vw, 86px);
+}
+
+.lp-section-head {
+  margin-bottom: clamp(22px, 3vw, 40px);
+}
+
+.lp-section-head h2,
+.lp-sell-box h2,
+.lp-cv-card h2 {
+  font-size: clamp(30px, 3.2vw, 48px);
+  line-height: .98;
+}
+
+.lp-section-copy,
+.lp-sell-box p,
+.lp-cv-card p {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.lp-category-card {
+  min-height: clamp(240px, 20vw, 360px);
+  border-radius: 20px;
+}
+
+.lp-category-card span {
+  gap: 7px;
+}
+
+.lp-category-card strong {
+  font-size: clamp(24px, 2.4vw, 38px);
+}
+
+.lp-category-card em {
+  font-size: 13px;
+}
+
+.lp-news-card {
+  min-height: 174px;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 16px;
+}
+
+.lp-news-card h3 {
+  font-size: clamp(17px, 1.25vw, 22px);
+}
+
+.lp-news-card p,
+.lp-news-meta {
+  font-size: 13px;
+}
+
+.lp-listing-section .lp-shell {
+  width: min(100% - clamp(28px, 5vw, 96px), 1320px);
+}
+
+.lp-listing-columns {
+  max-width: 1180px;
+  gap: clamp(18px, 2.4vw, 32px);
+}
+
+.lp-listing-column {
+  max-width: 620px;
+}
+
+.lp-column-top h3 {
+  font-size: 18px;
+}
+
+.lp-listing-img {
+  aspect-ratio: 16 / 9;
+}
+
+.lp-listing-body {
+  gap: 6px;
+  padding: 14px 16px 16px;
+}
+
+.lp-listing-price {
+  font-size: 21px;
+}
+
+.lp-listing-title {
+  font-size: 15px;
+}
+
+.lp-listing-meta,
+.lp-listing-location {
+  font-size: 12px;
+}
+
+.lp-listing-swiper {
+  padding-bottom: 34px;
+}
+
+.lp-sell-box,
+.lp-cv-card {
+  gap: clamp(18px, 3vw, 42px);
+  padding: clamp(26px, 3.2vw, 48px);
+  border-radius: 22px;
+}
+
+.lp-sell-box > div:first-child,
+.lp-cv-card > div:first-child {
+  max-width: 620px;
+}
+
+.lp-cv-card .lp-main-cta {
+  justify-self: start;
+  min-width: 220px;
+  max-width: 360px;
+  color: #ffffff;
+}
+
+.lp-cv-panel {
+  flex-basis: min(300px, 100%);
+  min-height: 180px;
+  gap: 10px;
+  padding: 22px;
+  border-radius: 18px;
+}
+
+.lp-cv-panel img {
+  width: min(180px, 72%);
+}
+
+.lp-cv-panel strong {
+  font-size: clamp(44px, 3.6vw, 64px);
+}
+
+.lp-cv-panel span {
+  font-size: 13px;
+}
+
+@media (max-width: 860px) {
+  .lp-section {
+    padding: 48px 0;
+  }
+
+  .lp-category-card {
+    min-height: 260px;
+  }
+
+  .lp-listing-section .lp-shell,
+  .lp-listing-columns,
+  .lp-listing-column {
+    max-width: none;
+  }
+
+  .lp-cv-card .lp-main-cta {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .lp-section-head h2,
+  .lp-sell-box h2,
+  .lp-cv-card h2 {
+    font-size: clamp(28px, 9vw, 36px);
+  }
+
+  .lp-category-card {
+    min-height: 240px;
+  }
+}
+
+/* Cores de botões blindadas contra herança de links. */
+.lp-root a.lp-main-cta,
+.lp-root a.lp-main-cta:visited,
+.lp-root button.lp-main-cta,
+.lp-root .lp-search-grid button[type="submit"] {
+  color: #ffffff;
+}
+
+.lp-root a.lp-soft-cta,
+.lp-root a.lp-soft-cta:visited,
+.lp-root button.lp-soft-cta,
+.lp-root .lp-secondary-button,
+.lp-root .lp-column-top button,
+.lp-root .lp-listing-state button {
+  color: var(--cor-navy);
+}
+
+.lp-root .lp-hero a.lp-main-cta,
+.lp-root .lp-hero a.lp-main-cta:visited,
+.lp-root .lp-hero button.lp-main-cta {
+  color: #071326;
+}
+
+.lp-root .lp-hero a.lp-soft-cta,
+.lp-root .lp-hero a.lp-soft-cta:visited,
+.lp-root .lp-hero button.lp-soft-cta {
+  color: #fffaf0;
+}
+
+.lp-root .lp-main-cta svg,
+.lp-root .lp-soft-cta svg,
+.lp-root .lp-secondary-button svg,
+.lp-root .lp-column-top button svg,
+.lp-root .lp-listing-state button svg,
+.lp-root .lp-search-grid button[type="submit"] svg {
+  color: currentColor;
+  stroke: currentColor;
 }

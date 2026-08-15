@@ -227,8 +227,7 @@ export default function Landing() {
               <h1 id="lp-title" ref={heroTitleRef}>Automóveis e imóveis, sem intermediários.</h1>
               <p>Filtra por localização, preço e características e fala diretamente com quem anuncia, sem comissões pelo caminho.</p>
               <div className="lp-hero-actions" aria-label="Ações principais">
-                <a className="lp-main-cta" href="#pesquisa">Pesquisar agora</a>
-                <Link className="lp-soft-cta" to={publicarTo} state={publicarState}>Criar anúncio</Link>
+                <Link className="lp-main-cta" to={publicarTo} state={publicarState}>Criar anúncio</Link>
               </div>
               <ul className="lp-trust-row">
                 {TRUST_POINTS.map((ponto) => <li key={ponto.texto}><CheckCircle2 size={15} strokeWidth={2.4} aria-hidden="true" /> {ponto.texto}</li>)}
