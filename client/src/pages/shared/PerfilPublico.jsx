@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import { absoluteUrl } from '../../utils/seo';
 import api from '../../services/api';
@@ -22,7 +22,6 @@ export default function PerfilPublico() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
   const [linkCopiado, setLinkCopiado] = useState(false);
-  const [categoriaAtiva, setCategoriaAtiva] = useState('todos');
 
   const voltarDaMontra = () => {
     if (adminAVerPerfil) {
@@ -84,13 +83,7 @@ export default function PerfilPublico() {
   const totalImoveis = anuncios.filter((anuncio) => anuncio.tipo === 'imovel').length;
   const totalCarros = anuncios.filter((anuncio) => anuncio.tipo === 'carro').length;
   const totalDestacados = anuncios.filter((anuncio) => anuncio.destacado).length;
-  const anunciosFiltrados = anuncios.filter((anuncio) => {
-    if (categoriaAtiva === 'carro') return anuncio.tipo === 'carro';
-    if (categoriaAtiva === 'imovel') return anuncio.tipo === 'imovel';
-    if (categoriaAtiva === 'destacados') return anuncio.destacado;
-    return true;
-  });
-  const categoriaLabel = categoriaAtiva === 'carro' ? 'automóveis' : categoriaAtiva === 'imovel' ? 'imóveis' : categoriaAtiva === 'destacados' ? 'destaques' : 'ativos';
+  const anunciosPreview = anuncios.slice(0, 3);
   return (
     <>
       <Seo
@@ -113,20 +106,22 @@ export default function PerfilPublico() {
         .pp-admin-back:hover { border-color: #94a3b8; transform: translateY(-1px); }
         .pp-admin-note { display: inline-flex; align-items: center; gap: 8px; margin-left: 10px; color: #475569; font-size: 12px; font-weight: 700; }
         .pp-main { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-        .pp-section-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid #e2e8f0; }
-        .pp-section-kicker { display: block; margin-bottom: 6px; color: #102f50; font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
-        .pp-section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; margin: 0; color: #0f172a; }
-        .pp-section-copy { margin: 7px 0 0; max-width: 620px; color: #64748b; font-size: 13px; line-height: 1.55; font-weight: 650; }
-        .pp-count { flex-shrink: 0; font-size: 13px; color: #475569; font-weight: 800; background: #e2e8f0; padding: 7px 12px; border-radius: 20px; }
         .pp-showcase-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: -20px 0 24px; }
         .pp-summary-item { min-height: 86px; display: grid; align-content: center; gap: 7px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff; box-shadow: 0 18px 42px -36px rgba(15,23,42,.5); }
         .pp-summary-item strong { color: #0f172a; font-size: 28px; line-height: 1; font-family: 'Plus Jakarta Sans', sans-serif; }
         .pp-summary-item span { color: #64748b; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-        .pp-showcase-tabs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: -8px 0 24px; }
-        .pp-showcase-tab { min-height: 40px; display: inline-flex; align-items: center; gap: 7px; padding: 0 13px; border: 1px solid #e2e8f0; border-radius: 999px; background: #ffffff; color: #475569; font-size: 12px; font-weight: 900; cursor: pointer; transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease; }
-        .pp-showcase-tab:hover { transform: translateY(-1px); border-color: #d9c49c; color: #0f172a; }
-        .pp-showcase-tab.active { background: #102f50; border-color: #102f50; color: #fffaf0; }
-        .pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 32px; }
+        .pp-stock-panel { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px; padding: clamp(22px, 3vw, 34px); border: 1px solid #e6e1d6; border-radius: 22px; background: #ffffff; box-shadow: 0 22px 55px -45px rgba(15,23,42,.5); }
+        .pp-section-kicker { display: block; margin-bottom: 6px; color: #102f50; font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+        .pp-section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(26px, 3vw, 42px); line-height: 1; font-weight: 900; margin: 0; color: #0f172a; letter-spacing: -.03em; }
+        .pp-section-copy { margin: 7px 0 0; max-width: 620px; color: #64748b; font-size: 13px; line-height: 1.55; font-weight: 650; }
+        .pp-stock-cta { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; padding: 0 18px; border-radius: 12px; background: #102f50; color: #ffffff; border: 1px solid #102f50; font-size: 13px; font-weight: 900; text-decoration: none; white-space: nowrap; }
+        .pp-stock-cta:hover { background: #0a223b; }
+        .pp-stock-cta:focus-visible { outline: 2px solid #102f50; outline-offset: 3px; }
+        .pp-preview-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 26px 0 18px; }
+        .pp-preview-title { margin: 0; color: #0f172a; font-size: 17px; font-weight: 900; }
+        .pp-preview-link { color: #102f50; font-size: 12px; font-weight: 900; text-decoration: none; }
+        .pp-preview-link:hover { text-decoration: underline; }
+        .pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 22px; }
         .pp-empty { min-height: 220px; display: grid; place-items: center; padding: 38px 20px; border: 1px dashed #cbd5e1; border-radius: 14px; background: #ffffff; text-align: center; }
         .pp-empty-inner { max-width: 520px; }
         .pp-empty h3 { margin: 0; color: #0f172a; font-size: 22px; line-height: 1.2; font-weight: 900; }
@@ -136,8 +131,8 @@ export default function PerfilPublico() {
         .pp-empty-standalone { margin-top: 4px; }
         @media (max-width: 860px) {
           .pp-showcase-summary { grid-template-columns: 1fr; margin-top: 0; }
-          .pp-section-header { align-items: flex-start; flex-direction: column; }
-          .pp-count { align-self: flex-start; }
+          .pp-stock-panel { grid-template-columns: 1fr; align-items: start; }
+          .pp-stock-cta { width: 100%; }
         }
       `}</style>
 
@@ -176,46 +171,37 @@ export default function PerfilPublico() {
                 <div className="pp-summary-item"><strong>{totalDestacados}</strong><span>destaques</span></div>
               </div>
 
-              <div className="pp-section-header">
+              <div className="pp-stock-panel">
                 <div>
-                  <span className="pp-section-kicker">Montra pública</span>
-                  <h2 className="pp-section-title">Anúncios ativos</h2>
-                  <p className="pp-section-copy">Filtra a montra por categoria e encontra primeiro os anúncios mais relevantes deste vendedor.</p>
+                  <span className="pp-section-kicker">Stock público</span>
+                  <h2 className="pp-section-title">Anúncios de {nomeExibicao}</h2>
+                  <p className="pp-section-copy">Abre a página de stock para pesquisar apenas dentro dos anúncios deste vendedor, com filtros por categoria, preço, marca, modelo e localização.</p>
                 </div>
-                <div className="pp-count">{anunciosFiltrados.length} {categoriaLabel}</div>
+                <Link className="pp-stock-cta" to={`/vendedor/${id}/stock`}>Ver stock completo</Link>
               </div>
 
-              <div className="pp-showcase-tabs" aria-label="Filtrar anúncios da montra">
-                <button type="button" className={`pp-showcase-tab ${categoriaAtiva === 'todos' ? 'active' : ''}`} onClick={() => setCategoriaAtiva('todos')}>Todos <span>{anuncios.length}</span></button>
-                <button type="button" className={`pp-showcase-tab ${categoriaAtiva === 'carro' ? 'active' : ''}`} onClick={() => setCategoriaAtiva('carro')}>Automóveis <span>{totalCarros}</span></button>
-                <button type="button" className={`pp-showcase-tab ${categoriaAtiva === 'imovel' ? 'active' : ''}`} onClick={() => setCategoriaAtiva('imovel')}>Imóveis <span>{totalImoveis}</span></button>
-                <button type="button" className={`pp-showcase-tab ${categoriaAtiva === 'destacados' ? 'active' : ''}`} onClick={() => setCategoriaAtiva('destacados')}>Destaques <span>{totalDestacados}</span></button>
-              </div>
-
-              {anunciosFiltrados.length > 0 ? (
-                <div className="pp-grid">
-                  {anunciosFiltrados.map((anuncio) => {
-                    const utilizadorPopulado = anuncio?.utilizador && typeof anuncio.utilizador === 'object'
-                      ? anuncio.utilizador
-                      : vendedor;
-
-                    return (
-                      <AnuncioCard
-                        key={anuncio._id}
-                        anuncio={{ ...anuncio, utilizador: utilizadorPopulado }}
-                        forceSellerIdentity
-                      />
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="pp-empty">
-                  <div className="pp-empty-inner">
-                    <h3>Sem anúncios nesta categoria</h3>
-                    <p>Experimenta outra categoria da montra ou contacta o profissional através dos dados apresentados no perfil.</p>
-                    <button type="button" className="pp-empty-btn" onClick={() => setCategoriaAtiva('todos')}>Ver todos</button>
+              {anunciosPreview.length > 0 && (
+                <>
+                  <div className="pp-preview-head">
+                    <h3 className="pp-preview-title">Últimos anúncios</h3>
+                    <Link className="pp-preview-link" to={`/vendedor/${id}/stock`}>Ver todos</Link>
                   </div>
-                </div>
+                  <div className="pp-grid">
+                    {anunciosPreview.map((anuncio) => {
+                      const utilizadorPopulado = anuncio?.utilizador && typeof anuncio.utilizador === 'object'
+                        ? anuncio.utilizador
+                        : vendedor;
+
+                      return (
+                        <AnuncioCard
+                          key={anuncio._id}
+                          anuncio={{ ...anuncio, utilizador: utilizadorPopulado }}
+                          forceSellerIdentity
+                        />
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </>
           ) : (
