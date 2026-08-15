@@ -1,6 +1,6 @@
 ﻿import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, Building2, Car, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Building2, Car, CheckCircle2, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck } from 'lucide-react';
 import AdBanner from '../../components/AdBanner';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
@@ -27,11 +27,16 @@ const MARCAS_PESQUISA = [
   ...MARCAS.filter((marca) => !MARCAS_POPULARES_PT.includes(marca)),
   OPCAO_OUTRO_VEICULO,
 ];
+const TRUST_POINTS = [
+  { texto: 'Publicação gratuita' },
+  { texto: 'Contacto direto, sem intermediários' },
+  { texto: 'Todos os distritos de Portugal' },
+];
+
 const LandingListingsCarousel = lazy(() => import('./LandingListingsCarousel'));
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const formatarMoeda = (valor) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
-const formatarNumero = (valor) => new Intl.NumberFormat('pt-PT').format(valor || 0);
 const formatarDataCurta = (valor) => { const data = valor ? new Date(valor) : null; return data && !Number.isNaN(data.getTime()) ? new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: 'short' }).format(data) : ''; };
 
 export default function Landing() {
@@ -81,7 +86,6 @@ export default function Landing() {
     navigate(criarLinkPesquisa(tipo, filtros));
   };
 
-
   const carregarAnime = () => {
     if (!animeRef.current) animeRef.current = import('animejs').then((modulo) => modulo.animate);
     return animeRef.current;
@@ -107,6 +111,7 @@ export default function Landing() {
       .catch(() => {});
     return () => { ativo = false; };
   }, []);
+
   useEffect(() => {
     if (prefersReducedMotion() || !heroTitleRef.current) return undefined;
     let ativo = true;
@@ -187,7 +192,7 @@ export default function Landing() {
 
     return (
       <button type="button" key={anuncio._id} className="lp-listing-card" onClick={() => abrirExemplo(anuncio, origem)}>
-        <span className="lp-listing-img">{foto ? <img src={foto} width="800" height="600" alt={anuncio.titulo || (isCarro ? 'Automóvel' : 'Imóvel')} loading="lazy" /> : <span className={`lp-listing-no-photo ${isCarro ? 'is-carro' : 'is-imovel'}`}>{isCarro ? <Car size={34} /> : <HomeIcon size={34} />}<em>{isCarro ? 'Automóvel sem foto' : 'Imóvel sem foto'}</em></span>}</span>
+        <span className="lp-listing-img">{foto ? <img src={foto} width="800" height="600" alt={anuncio.titulo || (isCarro ? 'Automóvel' : 'Imóvel')} loading="lazy" /> : <span className={`lp-listing-no-photo ${isCarro ? 'is-carro' : 'is-imovel'}`}>{isCarro ? <Car size={34} /> : <HomeIcon size={34} />}<em>{isCarro ? 'Automóvel sem foto' : 'Imóvel sem foto'}</em></span>}<span className="lp-listing-tag">{isCarro ? 'Automóvel' : 'Imóvel'}</span></span>
         <span className="lp-listing-body"><span className="lp-listing-price">{formatarMoeda(anuncio.preco)}</span><span className="lp-listing-title">{anuncio.titulo}</span><span className="lp-listing-meta">{detalhe || (isCarro ? 'Dados técnicos disponíveis' : 'Detalhes do imóvel')}</span><span className="lp-listing-location"><MapPin size={12} strokeWidth={2.4} aria-hidden="true" /> {anuncio.localizacao?.cidade || 'Portugal'}</span></span>
       </button>
     );
@@ -219,49 +224,140 @@ export default function Landing() {
           <div className="lp-shell lp-hero-shell">
             <div className="lp-hero-copy">
               <span className="lp-kicker lp-hero-kicker">Pesquisa em Portugal</span>
-              <h1 id="lp-title" ref={heroTitleRef}>Automóveis e imóveis em Portugal</h1>
-              <p>Filtra por localização, preço e características com contacto direto ao anunciante.</p>
+              <h1 id="lp-title" ref={heroTitleRef}>Automóveis e imóveis, sem intermediários.</h1>
+              <p>Filtra por localização, preço e características e fala diretamente com quem anuncia, sem comissões pelo caminho.</p>
               <div className="lp-hero-actions" aria-label="Ações principais">
                 <a className="lp-main-cta" href="#pesquisa">Pesquisar agora</a>
                 <Link className="lp-soft-cta" to={publicarTo} state={publicarState}>Criar anúncio</Link>
               </div>
+              <ul className="lp-trust-row">
+                {TRUST_POINTS.map((ponto) => <li key={ponto.texto}><CheckCircle2 size={15} strokeWidth={2.4} aria-hidden="true" /> {ponto.texto}</li>)}
+              </ul>
             </div>
 
-            <div className="lp-lens-card">
-              <div className="lp-lens-media" aria-hidden="true">
-                <img src="/social/noxvelia-drive-photo-premium.webp" alt="" />
-                <div className="lp-lens-caption">
-                  <strong>Vista antes da visita.</strong>
-                  <span>Imagem grande, dados essenciais e decisão mais rápida.</span>
-                </div>
+            <form className="lp-search-box" id="pesquisa" onSubmit={submeterPesquisa} aria-label="Pesquisar anúncios">
+              <div className="lp-search-head">
+                <span>Começa por aqui</span>
+                <strong>Pesquisa direta</strong>
+                <p>Filtra por tipo, localização e preço. Podes afinar mais depois.</p>
               </div>
+              <div className="lp-tabs" role="tablist" aria-label="Tipo de pesquisa">
+                <button type="button" role="tab" aria-selected={pesquisa.tipo === 'carro'} data-vertical="carro" className={pesquisa.tipo === 'carro' ? 'active' : ''} onClick={() => atualizarPesquisa('tipo', 'carro')}><Car size={16} /> Automóveis</button>
+                <button type="button" role="tab" aria-selected={pesquisa.tipo === 'imovel'} data-vertical="imovel" className={pesquisa.tipo === 'imovel' ? 'active' : ''} onClick={() => atualizarPesquisa('tipo', 'imovel')}><HomeIcon size={16} /> Imóveis</button>
+              </div>
+              <div className="lp-search-grid">
+                {pesquisa.tipo === 'carro' ? (
+                  <>
+                    <label>Marca<select value={pesquisa.marca} onChange={(evento) => atualizarPesquisa('marca', evento.target.value)}><option value="">Todas as marcas</option>{MARCAS_PESQUISA.map((marca) => <option key={marca} value={marca}>{rotuloOpcaoVeiculo(marca, 'marca')}</option>)}</select></label>
+                    <label>Modelo<select value={pesquisa.modelo} onChange={(evento) => atualizarPesquisa('modelo', evento.target.value)} disabled={!pesquisa.marca}><option value="">{pesquisa.marca ? 'Todos os modelos' : 'Escolhe a marca'}</option>{modelosPesquisa.map((modelo) => <option key={modelo} value={modelo}>{rotuloOpcaoVeiculo(modelo, 'modelo')}</option>)}</select></label>
+                    <label>Combustível<select value={pesquisa.combustivel} onChange={(evento) => atualizarPesquisa('combustivel', evento.target.value)}><option value="">Todos</option>{COMBUSTIVEIS_POPULARES.map((combustivel) => <option key={combustivel} value={combustivel}>{combustivel}</option>)}</select></label>
+                    <label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_CARROS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label>
+                  </>
+                ) : (
+                  <>
+                    <label>Tipologia<select value={pesquisa.tipologia} onChange={(evento) => atualizarPesquisa('tipologia', evento.target.value)}><option value="">Todas</option>{TIPOLOGIAS_POPULARES.map((tipologia) => <option key={tipologia} value={tipologia}>{tipologia}</option>)}</select></label>
+                    <label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_IMOVEIS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label>
+                  </>
+                )}
+                <label>Distrito<select value={pesquisa.distrito} onChange={(evento) => atualizarPesquisa('distrito', evento.target.value)}><option value="">Portugal inteiro</option>{DISTRITOS.map((distrito) => <option key={distrito} value={distrito}>{distrito}</option>)}</select></label>
+                <button type="submit"><Search size={17} /> Ver anúncios</button>
+              </div>
+            </form>
+          </div>
+        </section>
 
-              <form className="lp-search-box" id="pesquisa" onSubmit={submeterPesquisa}>
-                <div className="lp-search-head">
-                  <span>Começa por aqui</span>
-                  <strong>Pesquisa direta.</strong>
-                  <p>Filtra por tipo, localização e preço. Podes afinar mais depois.</p>
-                </div>
-                <div className="lp-tabs" role="tablist" aria-label="Tipo de pesquisa"><button type="button" role="tab" aria-selected={pesquisa.tipo === 'carro'} data-vertical="carro" className={pesquisa.tipo === 'carro' ? 'active' : ''} onClick={() => atualizarPesquisa('tipo', 'carro')}><Car size={16} /> Automóveis</button><button type="button" role="tab" aria-selected={pesquisa.tipo === 'imovel'} data-vertical="imovel" className={pesquisa.tipo === 'imovel' ? 'active' : ''} onClick={() => atualizarPesquisa('tipo', 'imovel')}><HomeIcon size={16} /> Imóveis</button></div>
-                <div className="lp-search-grid">
-                  {pesquisa.tipo === 'carro' ? <><label>Marca<select value={pesquisa.marca} onChange={(evento) => atualizarPesquisa('marca', evento.target.value)}><option value="">Todas as marcas</option>{MARCAS_PESQUISA.map((marca) => <option key={marca} value={marca}>{rotuloOpcaoVeiculo(marca, 'marca')}</option>)}</select></label><label>Modelo<select value={pesquisa.modelo} onChange={(evento) => atualizarPesquisa('modelo', evento.target.value)} disabled={!pesquisa.marca}><option value="">{pesquisa.marca ? 'Todos os modelos' : 'Escolhe a marca'}</option>{modelosPesquisa.map((modelo) => <option key={modelo} value={modelo}>{rotuloOpcaoVeiculo(modelo, 'modelo')}</option>)}</select></label><label>Combustível<select value={pesquisa.combustivel} onChange={(evento) => atualizarPesquisa('combustivel', evento.target.value)}><option value="">Todos</option>{COMBUSTIVEIS_POPULARES.map((combustivel) => <option key={combustivel} value={combustivel}>{combustivel}</option>)}</select></label><label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_CARROS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label></> : <><label>Tipologia<select value={pesquisa.tipologia} onChange={(evento) => atualizarPesquisa('tipologia', evento.target.value)}><option value="">Todas</option>{TIPOLOGIAS_POPULARES.map((tipologia) => <option key={tipologia} value={tipologia}>{tipologia}</option>)}</select></label><label>Preço máximo<select value={pesquisa.precoMax} onChange={(evento) => atualizarPesquisa('precoMax', evento.target.value)}><option value="">Qualquer preço</option>{PRECOS_IMOVEIS.map((preco) => <option key={preco.value} value={preco.value}>{preco.label}</option>)}</select></label></>}
-                  <label>Distrito<select value={pesquisa.distrito} onChange={(evento) => atualizarPesquisa('distrito', evento.target.value)}><option value="">Portugal inteiro</option>{DISTRITOS.map((distrito) => <option key={distrito} value={distrito}>{distrito}</option>)}</select></label>
-                  <button type="submit"><Search size={17} /> Ver anúncios</button>
-                </div>
-              </form>
+        <section className="lp-section lp-category-section" aria-labelledby="lp-categories" data-aos="fade-up">
+          <div className="lp-shell">
+            <div className="lp-section-head">
+              <div><span className="lp-kicker">Pesquisar</span><h2 id="lp-categories">Escolhe a categoria</h2></div>
+            </div>
+            <div className="lp-category-grid">
+              <Link className="lp-category-card lp-category-card-auto" to="/carros">
+                <img src="/social/noxvelia-drive-photo-premium.webp" alt="Automóvel anunciado na Noxvelia" />
+                <span><small>Automóveis</small><strong>Ver automóveis</strong><em>Marca, modelo, km, combustível e preço.</em></span>
+              </Link>
+              <Link className="lp-category-card lp-category-card-estate" to="/imoveis">
+                <img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia" />
+                <span><small>Imóveis</small><strong>Ver imóveis</strong><em>Tipologia, localização, área e valor.</em></span>
+              </Link>
             </div>
           </div>
         </section>
-<section className="lp-section lp-category-section" aria-labelledby="lp-categories" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Pesquisar</span><h2 id="lp-categories">Escolhe a categoria</h2></div></div><div className="lp-category-grid"><Link className="lp-category-card lp-category-card-auto" to="/carros"><img src="/social/noxvelia-drive-photo-premium.webp" alt="Automóvel anunciado na Noxvelia" /><span><small>Automóveis</small><strong>Ver automóveis</strong><em>Marca, modelo, km, combustível e preço.</em></span></Link><Link className="lp-category-card lp-category-card-estate" to="/imoveis"><img src="/social/noxvelia-estate-photo-premium.webp" alt="Imóvel anunciado na Noxvelia" /><span><small>Imóveis</small><strong>Ver imóveis</strong><em>Tipologia, localização, área e valor.</em></span></Link></div></div></section>
 
-        {noticiasMercado.length > 0 && <section className="lp-section lp-news-section" id="atualidade" aria-labelledby="lp-news" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker"><Newspaper size={13} /> Atualidade</span><h2 id="lp-news">Mercado em Portugal</h2><p className="lp-section-copy">Notícias recentes sobre automóveis, habitação e crédito.</p></div></div><div className="lp-news-grid">{noticiasMercado.map((noticia) => { const dataNoticia = formatarDataCurta(noticia.publishedAt); return <a className="lp-news-card" href={noticia.url} target="_blank" rel="noopener noreferrer" key={noticia.id || noticia.url}><span className={`lp-news-pill ${noticia.vertical === 'automoveis' ? 'cars' : 'homes'}`}>{noticia.verticalLabel || 'Mercado'}</span><h3>{noticia.title}</h3>{noticia.summary && <p>{noticia.summary}</p>}<span className="lp-news-meta">{noticia.source}{dataNoticia ? ` · ${dataNoticia}` : ''}</span></a>; })}</div></div></section>}
-        {mostrarDestaques && <section className="lp-section lp-listing-section" id="destaques" aria-labelledby="lp-featured" data-aos="fade-up"><div className="lp-shell"><div className="lp-section-head"><div><span className="lp-kicker">Anúncios</span><h2 id="lp-featured">Recentes na Noxvelia</h2></div></div><div className="lp-listing-columns">{(loadingExemplos || exemplos.carro.length > 0) && <div className="lp-listing-column"><div className="lp-column-top"><h3><Car size={16} /> Automóveis</h3><button type="button" onClick={() => navigate('/carros')}>Ver automóveis</button></div><div className="lp-listing-list">{exemplos.carro.length > 0 ? renderAnunciosSwiper(exemplos.carro, '/carros') : renderEstadoLista('automóveis', '/carros')}</div></div>}{(loadingExemplos || exemplos.imovel.length > 0) && <div className="lp-listing-column"><div className="lp-column-top"><h3><HomeIcon size={16} /> Imóveis</h3><button type="button" onClick={() => navigate('/imoveis')}>Ver imóveis</button></div><div className="lp-listing-list">{exemplos.imovel.length > 0 ? renderAnunciosSwiper(exemplos.imovel, '/imoveis') : renderEstadoLista('imóveis', '/imoveis')}</div></div>}</div></div></section>}
+        {noticiasMercado.length > 0 && (
+          <section className="lp-section lp-news-section" id="atualidade" aria-labelledby="lp-news" data-aos="fade-up">
+            <div className="lp-shell">
+              <div className="lp-section-head">
+                <div><span className="lp-kicker"><Newspaper size={13} /> Atualidade</span><h2 id="lp-news">Mercado em Portugal</h2><p className="lp-section-copy">Notícias recentes sobre automóveis, habitação e crédito.</p></div>
+              </div>
+              <div className="lp-news-grid">
+                {noticiasMercado.map((noticia) => {
+                  const dataNoticia = formatarDataCurta(noticia.publishedAt);
+                  return (
+                    <a className="lp-news-card" href={noticia.url} target="_blank" rel="noopener noreferrer" key={noticia.id || noticia.url}>
+                      <span className={`lp-news-pill ${noticia.vertical === 'automoveis' ? 'cars' : 'homes'}`}>{noticia.verticalLabel || 'Mercado'}</span>
+                      <h3>{noticia.title}</h3>
+                      {noticia.summary && <p>{noticia.summary}</p>}
+                      <span className="lp-news-meta">{noticia.source}{dataNoticia ? ` · ${dataNoticia}` : ''}</span>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
 
-        <section className="lp-section lp-sell-section" id="anunciar" aria-labelledby="lp-sell" data-aos="fade-up"><div className="lp-shell lp-sell-box"><div><span className="lp-kicker">Anunciar</span><h2 id="lp-sell">Tens algo para vender?</h2><p>Publica grátis e recebe contactos no anúncio.</p></div><Link className="lp-main-cta" to={publicarTo} state={publicarState} onPointerEnter={animarCta}>Criar anúncio <ArrowRight size={16} /></Link>{temProfissionaisAtivos && <Link className="lp-soft-cta" to="/profissionais"><Building2 size={16} /> Ver profissionais</Link>}</div></section>
+        {mostrarDestaques && (
+          <section className="lp-section lp-listing-section" id="destaques" aria-labelledby="lp-featured" data-aos="fade-up">
+            <div className="lp-shell">
+              <div className="lp-section-head">
+                <div><span className="lp-kicker">Anúncios</span><h2 id="lp-featured">Recentes na Noxvelia</h2></div>
+              </div>
+              <div className="lp-listing-columns">
+                {(loadingExemplos || exemplos.carro.length > 0) && (
+                  <div className="lp-listing-column">
+                    <div className="lp-column-top"><h3><Car size={16} /> Automóveis</h3><button type="button" onClick={() => navigate('/carros')}>Ver automóveis</button></div>
+                    <div className="lp-listing-list">{exemplos.carro.length > 0 ? renderAnunciosSwiper(exemplos.carro, '/carros') : renderEstadoLista('automóveis', '/carros')}</div>
+                  </div>
+                )}
+                {(loadingExemplos || exemplos.imovel.length > 0) && (
+                  <div className="lp-listing-column">
+                    <div className="lp-column-top"><h3><HomeIcon size={16} /> Imóveis</h3><button type="button" onClick={() => navigate('/imoveis')}>Ver imóveis</button></div>
+                    <div className="lp-listing-list">{exemplos.imovel.length > 0 ? renderAnunciosSwiper(exemplos.imovel, '/imoveis') : renderEstadoLista('imóveis', '/imoveis')}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="lp-section lp-sell-section" id="anunciar" aria-labelledby="lp-sell" data-aos="fade-up">
+          <div className="lp-shell lp-sell-box">
+            <div><span className="lp-kicker">Anunciar</span><h2 id="lp-sell">Tens algo para vender?</h2><p>Publica grátis e recebe contactos diretamente no teu anúncio.</p></div>
+            <div className="lp-sell-actions">
+              <Link className="lp-main-cta" to={publicarTo} state={publicarState} onPointerEnter={animarCta}>Criar anúncio <ArrowRight size={16} /></Link>
+              {temProfissionaisAtivos && <Link className="lp-soft-cta" to="/profissionais"><Building2 size={16} /> Ver profissionais</Link>}
+            </div>
+          </div>
+        </section>
 
         <AdBanner mode="direct" placement="landing_between_highlights" minHeight={176} mobileMinHeight={150} />
 
-        <section className="lp-section lp-cv-section" id="carvertical" aria-labelledby="lp-cv" data-aos="fade-up"><div className="lp-shell lp-cv-card"><div><span className="lp-kicker"><ShieldCheck size={12} /> Histórico automóvel</span><h2 id="lp-cv">20% de desconto na carVertical</h2><p>Consulta dados disponíveis sobre histórico, quilometragem e registos do veículo antes de fechar negócio.</p><a className="lp-main-cta" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer" onPointerEnter={animarCta}>Verificar veículo <ArrowRight size={16} /></a></div><div className="lp-cv-panel"><img src="/carvertical-logo.png" alt="carVertical" /><strong>20%</strong><span>de desconto através do link Noxvelia.</span></div></div></section>
+        <section className="lp-section lp-cv-section" id="carvertical" aria-labelledby="lp-cv" data-aos="fade-up">
+          <div className="lp-shell lp-cv-card">
+            <div>
+              <span className="lp-kicker"><ShieldCheck size={12} /> Histórico automóvel</span>
+              <h2 id="lp-cv">20% de desconto na carVertical</h2>
+              <p>Consulta dados disponíveis sobre histórico, quilometragem e registos do veículo antes de fechar negócio.</p>
+              <a className="lp-main-cta" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer" onPointerEnter={animarCta}>Verificar veículo <ArrowRight size={16} /></a>
+            </div>
+            <div className="lp-cv-panel">
+              <img src="/carvertical-logo.png" alt="carVertical" />
+              <strong>20%</strong>
+              <span>de desconto através do link Noxvelia.</span>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </div>
