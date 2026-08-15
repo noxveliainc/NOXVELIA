@@ -5,7 +5,7 @@
   font-family: var(--nx-font-body);
 }
 
-.lp-root a:not(.lp-main-cta):not(.lp-soft-cta) { color: inherit; }
+.lp-root a:not(.lp-main-cta):not(.lp-soft-cta):not(.lp-category-card):not(.lp-news-card) { color: inherit; }
 
 .lp-shell {
   width: min(100% - clamp(28px, 5vw, 96px), 1680px);
@@ -976,4 +976,130 @@
 .lp-root .lp-search-grid button[type="submit"] svg {
   color: currentColor;
   stroke: currentColor;
+}
+
+/* Ajuste final: secções secundárias mais compactas e cards com texto legível. */
+.lp-root .lp-category-card,
+.lp-root .lp-category-card:visited {
+  color: #ffffff;
+}
+
+.lp-root .lp-category-card small {
+  color: rgba(255, 255, 255, .78);
+}
+
+.lp-root .lp-category-card strong {
+  color: #ffffff;
+  font-size: clamp(22px, 2.05vw, 34px);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, .34);
+}
+
+.lp-root .lp-category-card em {
+  color: rgba(255, 255, 255, .86);
+  font-size: 12px;
+}
+
+.lp-section {
+  padding: clamp(42px, 4.8vw, 74px) 0;
+}
+
+.lp-category-section {
+  padding-top: clamp(40px, 4.8vw, 68px);
+}
+
+.lp-section-head {
+  margin-bottom: clamp(18px, 2.4vw, 30px);
+}
+
+.lp-section-head h2,
+.lp-sell-box h2,
+.lp-cv-card h2 {
+  font-size: clamp(28px, 2.75vw, 42px);
+  line-height: 1;
+}
+
+.lp-category-card {
+  min-height: clamp(205px, 17vw, 300px);
+  border-radius: 18px;
+}
+
+.lp-category-card span {
+  left: clamp(18px, 2.2vw, 32px);
+  right: clamp(18px, 2.2vw, 32px);
+  bottom: clamp(18px, 2.2vw, 30px);
+  gap: 6px;
+}
+
+.lp-category-card::after {
+  background: linear-gradient(180deg, rgba(7, 19, 38, .05), rgba(7, 19, 38, .72));
+}
+
+.lp-news-card {
+  min-height: 152px;
+  padding: 16px;
+}
+
+.lp-news-card h3 {
+  font-size: clamp(16px, 1.08vw, 20px);
+}
+
+.lp-listing-section .lp-shell {
+  width: min(100% - clamp(28px, 5vw, 96px), 1180px);
+}
+
+.lp-listing-columns {
+  max-width: 1040px;
+  gap: clamp(16px, 2vw, 26px);
+}
+
+.lp-listing-column {
+  max-width: 540px;
+}
+
+.lp-listing-card {
+  border-radius: 16px;
+}
+
+.lp-listing-body {
+  padding: 12px 14px 14px;
+}
+
+.lp-listing-price {
+  font-size: 19px;
+}
+
+.lp-sell-box,
+.lp-cv-card {
+  padding: clamp(22px, 2.6vw, 40px);
+  border-radius: 20px;
+}
+
+.lp-cv-panel {
+  flex-basis: min(270px, 100%);
+  min-height: 160px;
+  padding: 20px;
+}
+
+.lp-cv-panel img {
+  width: min(160px, 70%);
+}
+
+.lp-cv-panel strong {
+  font-size: clamp(40px, 3.1vw, 56px);
+}
+
+@media (max-width: 860px) {
+  .lp-section {
+    padding: 42px 0;
+  }
+
+  .lp-category-card {
+    min-height: 230px;
+  }
+}
+
+@media (max-width: 560px) {
+  .lp-category-card {
+    min-height: 215px;
+  }
 }
