@@ -56,7 +56,7 @@ export default function Planos() {
     navigate('/premium-confirmar');
   };
 
-  // Abre o Billing Portal da Stripe para quem já é Premium gerir a subscrição
+  // Abre o Billing Portal da Stripe para quem já é PRO gerir a subscrição
   const abrirPortalCliente = async () => {
     setLoadingStripe(true);
     try {
@@ -80,13 +80,13 @@ export default function Planos() {
     'Destaque automático nos anúncios publicados',
     'Prioridade nos resultados de pesquisa',
     'Montra pública com contactos, links e mapa opcional',
-    'Painel Premium com métricas da tua carteira',
+    'Painel PRO com métricas da tua carteira',
     'Edição de anúncios ativos depois de publicados',
     'Regras claras: se cancelares, os anúncios ativos continuam online',
   ];
 
   const premiumHighlights = [
-    { title: 'Mais visibilidade', text: 'Os anúncios do plano Premium aparecem com prioridade e sinalização própria.' },
+    { title: 'Mais visibilidade', text: 'Os anúncios do plano PRO aparecem com prioridade e sinalização própria.' },
     { title: 'Montra completa', text: 'Perfil público preparado para stands, mediadores e vendedores ativos.' },
     { title: 'Leitura rápida', text: 'Métricas simples para perceber visitas, contactos e qualidade dos anúncios.' },
     { title: 'Sem surpresas', text: 'Antes do pagamento mostramos exatamente o que acontece se cancelares.' },
@@ -388,7 +388,7 @@ export default function Planos() {
             <span className={`pl-badge ${user?.premiumAtivo ? 'pl-badge--active' : ''}`}>
               {user?.premiumAtivo ? 'O teu plano atual' : 'Mais escolhido'}
             </span>
-            <div className="pl-plan-name">Premium</div>
+            <div className="pl-plan-name">PRO</div>
             <p className="pl-plan-desc">Para stands e imobiliárias que operam nos dois mundos NOXVELIA.</p>
             <div className="pl-price">10.99€ <span>/mês</span></div>
             <ul className="pl-features">
@@ -400,7 +400,7 @@ export default function Planos() {
             {temAcessoProfissionalManual ? (
               <>
                 <button className="pl-btn pl-btn--outline-pro pl-btn--manual" disabled>
-                  Plano Premium ativo
+                  Plano PRO ativo
                 </button>
                 <p className="pl-manual-note">
                   Este acesso foi atribuído pela administração e não tem portal de faturação Stripe.

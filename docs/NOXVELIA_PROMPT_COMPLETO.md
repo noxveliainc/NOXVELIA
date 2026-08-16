@@ -1,6 +1,6 @@
 # NOXVELIA — Prompt Mestre Completo
 
-Última atualização deste documento: 2026-08-14.
+Última atualização deste documento: 2026-08-16.
 
 Este ficheiro serve para entregar a qualquer programador, agente de IA ou futura sessão Codex uma visão completa da NOXVELIA. Deve ser lido antes de mexer no projeto.
 
@@ -22,11 +22,12 @@ Trabalha na NOXVELIA, uma plataforma portuguesa de anúncios classificados focad
 ### Regras de Negócio Atuais
 
 - Conta normal/particular: até 5 anúncios ativos gratuitos.
-- Premium ativo ou admin: publicação sem limite enquanto o plano estiver ativo.
+- Plano PRO/Premium ativo ou admin: publicação sem limite enquanto o plano estiver ativo.
 - Quando o Premium termina: anúncios existentes continuam online, mas perdem destaque automático, prioridade, edição de anúncios ativos e métricas avançadas; o utilizador só publica novamente quando voltar ao limite gratuito ou renovar.
 - Só Premium ou admin pode editar anúncios já ativos.
 - Admin pode criar anúncios indicando apenas telefone ou email; utilizadores normais precisam dos contactos exigidos pelo formulário.
 - Destaque não deve ser apresentado como Premium se for apenas destaque comprado/manual.
+- Não existe sistema interno de mensagens/inbox no site. O contacto deve ser direto e medido por telefone, email e WhatsApp.
 - Selos de confiança devem representar factos verificáveis, como email confirmado; não inventar verificações.
 - Avaliações de vendedor: apenas utilizadores autenticados podem votar; cada utilizador tem uma avaliação ativa por vendedor (`avaliador + anunciante` único), não pode avaliar a própria conta, pode atualizar a própria nota, e a média 0-5 é recalculada em `User.rating` / `User.totalAvaliacoes` para aparecer no perfil e no anúncio.
 - Publicidade/patrocínios devem parecer produto real, com página própria, preços, regras, link do patrocinador e tracking de cliques/impressões.
@@ -39,6 +40,19 @@ Trabalha na NOXVELIA, uma plataforma portuguesa de anúncios classificados focad
 - Visitantes reais por dia = quantidade de sessionIds únicos por `dayKey` em todos os eventos do funil.
 - Não usar apenas `landing_view`, porque um visitante pode entrar diretamente em /carros, /imoveis ou num anúncio.
 - Evitar mostrar estatísticas pequenas na landing se parecerem artificiais ou prejudicarem confiança.
+
+### Estado Atual do Website
+
+- A landing atual é a primeira experiência do produto, não uma página genérica: hero com imagem real `noxvelia-hero-coast.webp`, headline "Automóveis e imóveis, sem intermediários.", CTA único forte para criar anúncio e formulário de pesquisa direto para carros/imóveis.
+- A pesquisa da landing suporta troca entre automóveis e imóveis, filtros iniciais por marca/modelo/combustível/preço/distrito ou tipologia/preço/distrito, e envia o utilizador para `/carros` ou `/imoveis` com query params.
+- A landing mostra categorias visuais com imagens reais Drive/Estate, notícias recentes via `/api/market-news`, anúncios recentes/em alta via `/api/anuncios/em-alta/semana`, CTA de publicação, espaço de patrocínio direto e bloco carVertical.
+- O visual principal está estabilizado em shell navy/champagne: navbars e footer com navy #102f50, texto claro, separadores champagne e CTA de publicação em champagne com texto navy.
+- As navbars internas de carros/imóveis já não têm dropdown na logo. A logo volta à página inicial, e a troca entre Automóveis/Imóveis fica em controlo segmentado ao lado da marca.
+- As páginas de pesquisa e detalhe preservam cards de anúncio com moldura mais forte; anúncios destacados usam contorno navy/champagne e badge de destaque, sem confundir destaque com Premium.
+- O perfil público do vendedor (`/vendedor/:id`) funciona como montra: mostra dados públicos, totais de anúncios ativos, automóveis, imóveis e destaques, últimos anúncios e CTA para stock completo.
+- A página pública de stock do vendedor (`/vendedor/:id/stock` e alias `/vendedor/:id/inventario`) lista todos os anúncios ativos desse vendedor e permite filtrar por texto, categoria, distrito, marca, modelo, preço mínimo/máximo e ordenação.
+- O stock público reutiliza `AnuncioCard` com `forceSellerIdentity`, mantém SEO próprio com JSON-LD `Person`/`Organization` e tem estados de carregamento, erro e vazio.
+- A landing foi afinada em escala e responsividade: largura mais controlada em desktop, cards de categoria/listagens com proporções mais legíveis, CTAs com cores corrigidas e mobile com grelhas de uma coluna sem texto comprimido.
 
 
 ### Monitorização e Estabilidade Operacional
@@ -54,6 +68,10 @@ Trabalha na NOXVELIA, uma plataforma portuguesa de anúncios classificados focad
 - React + Vite.
 - Rotas no `client/src/App.jsx`.
 - Páginas principais em `client/src/pages/shared`.
+- Landing atual: `client/src/pages/shared/Landing.jsx` + `client/src/pages/shared/Landing.css`.
+- Navbar da landing: `client/src/pages/shared/NavbarLanding.jsx`.
+- Navbars internas: `client/src/components/carros/NavbarCarro.jsx` e `client/src/components/imoveis/NavbarImovel.jsx`.
+- Stock público do vendedor: `client/src/pages/shared/VendedorStock.jsx`, com rotas `/vendedor/:id/stock` e `/vendedor/:id/inventario`.
 - Admin em `client/src/pages/admin/AdminDashboard.jsx`.
 - API central em `client/src/services/api.js`.
 - Componentes partilhados em `client/src/components`.
@@ -299,7 +317,6 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - `client/src/pages/shared/ForgotPassword.jsx` — Página partilhada do site/aplicação: Forgot Password.
 - `client/src/pages/shared/LandingListingsCarousel.jsx` — Página partilhada do site/aplicação: Landing Listings Carousel.
 - `client/src/pages/shared/Login.jsx` — Página partilhada do site/aplicação: Login.
-- `client/src/pages/shared/Mensagens.jsx` — Página partilhada do site/aplicação: Mensagens.
 - `client/src/pages/shared/NavbarLanding.jsx` — Página partilhada do site/aplicação: Navbar Landing.
 - `client/src/pages/shared/Notificacoes.jsx` — Página partilhada do site/aplicação: Notificacoes.
 - `client/src/pages/shared/Patrocinios.jsx` — Página partilhada do site/aplicação: Patrocinios.
@@ -380,7 +397,6 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - `server/config/imageStorage.js` — Configuração backend: image Storage.
 - `server/controllers/authController.js` — Ficheiro do projeto: auth Controller.
 - `server/controllers/iaController.js` — Ficheiro do projeto: ia Controller.
-- `server/controllers/mensagemController.js` — Ficheiro do projeto: mensagem Controller.
 - `server/controllers/notificacaoController.js` — Ficheiro do projeto: notificacao Controller.
 - `server/iaWorker.js` — Ficheiro do projeto: ia Worker.
 - `server/index.js` — Entrada da API Express; liga middleware, CSP/Helmet, rotas, MongoDB, jobs e servidor HTTP.
@@ -402,10 +418,8 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - `server/models/Avaliacao.js` — Modelo Mongoose para avaliações de vendedor; uma avaliação ativa por avaliador/anunciante, usada para recalcular média e total no User.
 - `server/models/BannerPatrocinado.js` — Modelo Mongoose/MongoDB para Banner Patrocinado.
 - `server/models/ClientIssue.js` — Modelo Mongoose/MongoDB para Client Issue.
-- `server/models/Conversa.js` — Modelo Mongoose/MongoDB para Conversa.
 - `server/models/FunnelEvent.js` — Modelo Mongoose/MongoDB para Funnel Event.
 - `server/models/ImageAsset.js` — Modelo Mongoose/MongoDB para Image Asset.
-- `server/models/Mensagem.js` — Modelo Mongoose/MongoDB para Mensagem.
 - `server/models/Migration.js` — Modelo Mongoose/MongoDB para Migration.
 - `server/models/Notificacao.js` — Modelo Mongoose/MongoDB para Notificacao.
 - `server/models/Pagamento.js` — Modelo Mongoose/MongoDB para Pagamento.
@@ -435,8 +449,6 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - `server/routes/ia.js` — Rotas Express da API para ia.
 - `server/routes/marketNews.js` — Rotas Express da API para market News.
 - `server/routes/media.js` — Rotas Express da API para media.
-- `server/routes/mensagemRoutes.js` — Rotas Express da API para mensagem Routes.
-- `server/routes/mensagens.js` — Rotas Express da API para mensagens.
 - `server/routes/notificacoes.js` — Rotas Express da API para notificacoes.
 - `server/routes/pagamentos.js` — Rotas Express da API para pagamentos.
 - `server/routes/partnerships.js` — Rotas Express da API para partnerships.
@@ -486,3 +498,18 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - A landing foi reposta ao estado anterior à experiência TikTok, removendo embeds, consentimento específico de vídeos e CSS associado.
 - A navbar/footer navy permanecem ativos como identidade visual global pedida, com o CTA principal em champagne/dourado.
 - A CSP do backend e o exemplo de ambiente deixaram de declarar permissões/variáveis TikTok.
+
+## Atualização landing, navbars e stock público do vendedor (2026-08-16)
+- A landing foi consolidada como entrada principal do produto, com hero visual, pesquisa direta, categorias com imagens reais, notícias de mercado, anúncios recentes, patrocínio direto e carVertical.
+- Foram feitos ajustes sucessivos de escala, legibilidade, proporções e mobile na landing, incluindo largura dos blocos, cartões de categoria/listagem, CTAs e estados responsivos.
+- As navbars internas de automóveis e imóveis foram simplificadas: a logo deixou de abrir dropdown e passou a navegar para a home; a alternância entre carros/imóveis fica visível ao lado da marca.
+- Foi criada a página pública de stock do vendedor em `/vendedor/:id/stock`, com alias `/vendedor/:id/inventario`, filtros locais e ordenação por destaque, data ou preço.
+- O perfil público do vendedor ganhou resumo de montra, preview dos últimos anúncios e CTA para abrir o stock completo do vendedor.
+- O stock público deve continuar a usar anúncios ativos vindos de `/api/users/vendedor/:id`, sem expor anúncios inativos nem inventar métricas.
+## Atualização PRO, contactos diretos e Quality Score (2026-08-16)
+- Plano Particular consolidado com limite de 5 anúncios ativos; PRO/admin publica sem limite enquanto ativo.
+- O sistema de mensagens/inbox foi removido do site e do build: sem /mensagens, sem /api/mensagens, sem modelos/rotas de conversa/mensagem e sem socket.io-client no frontend.
+- Contacto direto no anúncio passa a registar eventos por canal: phone_reveal, mail_reveal e whatsapp_click, com histórico diário para comparação por períodos.
+- A área PRO v1.1 mostra visitas/contactos hoje, 7 dias e 30 dias, variação vs. período anterior, canais de contacto, favoritos quando disponível, estado do stock e rankings top 5.
+- Quality Score PRO passou a 0-100 com categorias Conteúdo, Informação, Fotografias e Conversão, incluindo recomendações práticas para chegar aos 90/100.
+- O checkout Stripe foi preservado no contrato atual: POST /api/stripe/criar-checkout-premium com { aceitouTermosPremium: true }.

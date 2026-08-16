@@ -27,6 +27,7 @@ const Anuncio        = lazy(() => import('./pages/shared/Anuncio'));
 const Publicar       = lazy(() => import('./pages/shared/Publicar'));
 const Editar         = lazy(() => import('./pages/shared/Editar'));
 const Perfil         = lazy(() => import('./pages/shared/Perfil'));
+const ProDashboard   = lazy(() => import('./pages/shared/ProDashboard'));
 const Favoritos      = lazy(() => import('./pages/shared/Favoritos'));
 const PerfilPublico  = lazy(() => import('./pages/shared/PerfilPublico'));
 const VendedorStock  = lazy(() => import('./pages/shared/VendedorStock'));
@@ -109,6 +110,7 @@ function AppShell() {
             <Route path="/publicar" element={<ProtectedRoute><Publicar /></ProtectedRoute>} />
             <Route path="/editar/:id" element={<ProtectedRoute><Editar /></ProtectedRoute>} />
             <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+            <Route path="/pro" element={<ProtectedRoute><ProDashboard /></ProtectedRoute>} />
             <Route path="/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/sucesso/:id" element={<ProtectedRoute><SucessoUpsell /></ProtectedRoute>} />

@@ -49,10 +49,10 @@ export default function NavbarCarro() {
   };
 
 
-  const handlePremium = (e) => {
+  const handlePRO = (e) => {
     e.preventDefault();
     setMenuMobileAberto(false);
-    navigate('/planos');
+    navigate(isPRO || isAdmin ? '/pro' : '/planos');
   };
 
   const fecharModalPass = () => {
@@ -105,7 +105,7 @@ export default function NavbarCarro() {
   const avatarImg = dadosUser?.avatarUrl || dadosUser?.avatar;
   const inicial = dadosUser?.nome?.charAt(0).toUpperCase() || 'U';
   const primeiroNome = dadosUser?.nome?.split(' ')[0] || '';
-  const isPremium = dadosUser?.premiumAtivo === true;
+  const isPRO = dadosUser?.premiumAtivo === true;
   const isAdmin = dadosUser?.tipo === 'admin';
 
   return (
@@ -340,19 +340,19 @@ export default function NavbarCarro() {
                   <svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
                 </Link>
               )}
-              <button type="button" onClick={handlePremium} className={`ncr-btn-premium${isPremium ? ' active' : ''}`}><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" /></svg></button>
+              <button type="button" onClick={handlePRO} className={`ncr-btn-premium${isPRO ? ' active' : ''}`}><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" /></svg></button>
               <Link to="/favoritos" className="ncr-icon-btn"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg></Link>
 
               <div className="ncr-divider" />
               <div ref={userMenuRef} style={{ position: 'relative' }}>
                 <button className={`ncr-user-trigger ${userMenuAberto ? 'active' : ''}`} onClick={() => setUserMenuAberto(!userMenuAberto)}>
                   <div className="ncr-avatar">{avatarImg ? <img src={avatarImg} alt="Perfil" /> : <span className="ncr-avatar-initial">{inicial}</span>}</div>
-                  {primeiroNome && <span className="ncr-username">{primeiroNome} {isPremium && <span className="ncr-pro-badge">Premium</span>}</span>}
+                  {primeiroNome && <span className="ncr-username">{primeiroNome} {isPRO && <span className="ncr-pro-badge">PRO</span>}</span>}
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
                 </button>
                 {userMenuAberto && (
                   <div className="ncr-user-dropdown" onClick={(e) => e.stopPropagation()}>
-                    <Link to="/perfil" onClick={() => setUserMenuAberto(false)} className="ncr-ud-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>O Meu Perfil {isPremium && <span className="ncr-ud-pro">Premium</span>}</Link>
+                    <Link to="/perfil" onClick={() => setUserMenuAberto(false)} className="ncr-ud-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>O Meu Perfil {isPRO && <span className="ncr-ud-pro">PRO</span>}</Link>
                     {isAdmin && (
                       <Link to="/admin" onClick={() => setUserMenuAberto(false)} className="ncr-ud-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>Painel Admin <span className="ncr-ud-admin-badge">ADMIN</span></Link>
                     )}
@@ -433,11 +433,11 @@ export default function NavbarCarro() {
                   )}
                   <Link to="/perfil" className="ncr-drawer-link" onClick={() => setMenuMobileAberto(false)}>
                     <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    O Meu Perfil {isPremium && <span className="ncr-ud-pro">Premium</span>}
+                    O Meu Perfil {isPRO && <span className="ncr-ud-pro">PRO</span>}
                   </Link>
-                  <button type="button" className="ncr-drawer-link" onClick={handlePremium}>
+                  <button type="button" className="ncr-drawer-link" onClick={handlePRO}>
                     <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" /></svg>
-                    Plano Premium {isPremium && <span className="ncr-ud-pro">Premium</span>}
+                    Plano PRO {isPRO && <span className="ncr-ud-pro">PRO</span>}
                   </button>
                   <Link to="/favoritos" className="ncr-drawer-link" onClick={() => setMenuMobileAberto(false)}>
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>

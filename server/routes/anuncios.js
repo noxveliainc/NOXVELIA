@@ -11,23 +11,24 @@ import { parsePagination } from '../utils/pagination.js';
 import { analisarPreco, calcularQualidadeAnuncio } from '../utils/anuncioInsights.js';
 import { normalizarCarro, normalizarEquipamento, normalizarImovel } from '../utils/anuncioNormalize.js';
 import { attachImagesToOwnerByUrls, deleteImagesByOwner } from '../services/imageService.js';
+import { buildPlanPayloadForUser, getFreeListingLimit, userHasProAccess } from '../config/plans.js';
 import { MARCAS, getNomesModelosPorMarca, isOpcaoOutroVeiculo } from '../../client/src/data/marcasModelos.js';
 
 const router = express.Router();
-const LIMITE_ANUNCIOS_GRATUITOS = 5;
-const obterLimiteAnunciosGratuitos = (user) => {
-  const limiteDefinido = Number(user?.limiteAnuncios);
-  if (Number.isFinite(limiteDefinido) && limiteDefinido > LIMITE_ANUNCIOS_GRATUITOS) {
-    return Math.floor(limiteDefinido);
-  }
-  return LIMITE_ANUNCIOS_GRATUITOS;
-};
+const obterLimiteAnunciosGratuitos = getFreeListingLimit;
 const visitLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 120,
   standardHeaders: true,
   legacyHeaders: false,
   message: { erro: 'Limite de visitas atingido temporariamente.' },
+});
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 80,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { erro: 'Limite de contactos atingido temporariamente.' },
 });
 
 const normalizarFiltroTexto = (valor) => String(valor || '')
@@ -44,6 +45,25 @@ const dividirFiltroTexto = (valor) => String(valor || '')
 const normalizarSessionIdVisita = (valor) => {
   const texto = String(valor || '').trim();
   return /^[A-Za-z0-9_-]{12,120}$/.test(texto) ? texto : '';
+};
+const CANAIS_CONTACTO_VALIDOS = ['phone_reveal', 'email_reveal', 'whatsapp_click'];
+const normalizarCanalContacto = (valor) => {
+  const canal = String(valor || '').trim().toLowerCase();
+  const aliases = {
+    contacto: 'phone_reveal',
+    telefone: 'phone_reveal',
+    phone: 'phone_reveal',
+    revelar_telefone: 'phone_reveal',
+    phone_reveal: 'phone_reveal',
+    email: 'email_reveal',
+    mail: 'email_reveal',
+    revelar_email: 'email_reveal',
+    email_reveal: 'email_reveal',
+    whatsapp: 'whatsapp_click',
+    whats_app: 'whatsapp_click',
+    whatsapp_click: 'whatsapp_click',
+  };
+  return CANAIS_CONTACTO_VALIDOS.includes(aliases[canal]) ? aliases[canal] : 'phone_reveal';
 };
 
 const obterIpCliente = (req) => String(
@@ -525,10 +545,10 @@ router.get('/favoritos', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.get('/limite-publicacao', verificarToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('tipo premiumAtivo limiteAnuncios');
+    const user = await User.findById(req.user.id).select('tipo tipoConta premiumAtivo limiteAnuncios');
     if (!user) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
 
-    const ilimitado = user.tipo === 'admin' || user.premiumAtivo === true;
+    const ilimitado = userHasProAccess(user);
     const ativos = await Anuncio.countDocuments({ utilizador: req.user.id, estado: 'ativo' });
     const limiteGratis = obterLimiteAnunciosGratuitos(user);
     const limite = ilimitado ? null : limiteGratis;
@@ -542,6 +562,7 @@ router.get('/limite-publicacao', verificarToken, async (req, res) => {
       ilimitado,
       premiumAtivo: user.premiumAtivo === true,
       admin: user.tipo === 'admin',
+      plano: buildPlanPayloadForUser(user),
     });
   } catch {
     res.status(500).json({ erro: 'Erro ao verificar limite de publicação.' });
@@ -591,7 +612,7 @@ router.get('/:id/check-guardado', verificarToken, async (req, res) => {
 // 6. CRIAR NOVO ANÚNCIO
 //    Regras:
 //    - Conta gratuita  → máx 5 anúncios ativos
-//    - Conta Premium → ilimitado + destaque automático
+//    - Conta PRO → ilimitado + destaque automático
 //    - Admin → ilimitado + destaque opcional pelo painel
 //
 //    Segurança:
@@ -606,7 +627,7 @@ router.post('/', verificarToken, async (req, res) => {
     if (!user) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
 
     const ehAdmin   = user.tipo === 'admin';
-    const ehPremium = user.premiumAtivo === true;
+    const ehPremium = userHasProAccess(user);
     const limiteGratis = obterLimiteAnunciosGratuitos(user);
 
     // ── Verificar limite para utilizadores FREE ──────────────
@@ -619,7 +640,7 @@ router.post('/', verificarToken, async (req, res) => {
       if (totalAtivos >= limiteGratis) {
         return res.status(403).json({
           erro: 'LIMITE_ATINGIDO',
-          mensagem: `Atingiste o limite de ${limiteGratis} anúncios ativos gratuitos. Adere ao Premium para publicares sem limite enquanto o plano estiver ativo.`
+          mensagem: `Atingiste o limite de ${limiteGratis} anúncios ativos gratuitos. Adere ao PRO para publicares sem limite enquanto o plano estiver ativo.`
         });
       }
     }
@@ -646,13 +667,16 @@ router.post('/', verificarToken, async (req, res) => {
       guardados: _ignore5,
       estado: _ignore6,
       contactos: _ignore7,
+      contactosPorCanal: _ignore7b,
       historicoVisitas: _ignore8,
+      historicoContactos: _ignore8b,
       scoreQualidade: _ignore9,
       scoreDetalhes: _ignore10,
       scoreAnaliseAssistida: _ignore11,
       planoPublicacao: _ignore12,
       expiresAt: _ignore13,
       apagadoEm: _ignore14,
+      vendidoEm: _ignore15,
       ...bodyLimpo
     } = req.body;
 
@@ -676,7 +700,7 @@ router.post('/', verificarToken, async (req, res) => {
         distrito,
         ...(coordenadas ? { coordenadas } : {}),
       },
-      // Destaque: Premium destaca automaticamente; admin escolhe no painel.
+      // Destaque: PRO destaca automaticamente; admin escolhe no painel.
       ...((ehAdmin ? req.body.destacado === true : ehPremium)
         ? { destacado: true, dataExpiracaoDestaque: null }
         : { destacado: false }
@@ -700,7 +724,7 @@ router.post('/', verificarToken, async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 // 7. ATUALIZAR ANÚNCIO
 //    Nota: também protege o campo `destacado` contra alteração
-//    direta pelo utilizador (apenas admin/premium via lógica
+//    direta pelo utilizador (apenas admin/PRO via lógica
 //    interna pode promover anúncios).
 // ─────────────────────────────────────────────────────────────
 router.put('/:id', verificarToken, async (req, res) => {
@@ -718,7 +742,7 @@ router.put('/:id', verificarToken, async (req, res) => {
     if (anuncio.estado === 'ativo' && !ehAdmin && utilizadorAtual.premiumAtivo !== true) {
       return res.status(403).json({
         erro: 'EDICAO_ATIVA_PREMIUM',
-        mensagem: 'Editar anúncios ativos é uma funcionalidade Premium. Podes marcar como vendido ou aderir ao Premium para atualizar dados publicados.'
+        mensagem: 'Editar anúncios ativos é uma funcionalidade PRO. Podes marcar como vendido ou aderir ao PRO para atualizar dados publicados.'
       });
     }
 
@@ -731,13 +755,16 @@ router.put('/:id', verificarToken, async (req, res) => {
       guardados: _ig5,
       estado: _ig6,
       contactos: _ig7,
+      contactosPorCanal: _ig7b,
       historicoVisitas: _ig8,
+      historicoContactos: _ig8b,
       scoreQualidade: _ig9,
       scoreDetalhes: _ig10,
       scoreAnaliseAssistida: _ig11,
       planoPublicacao: _ig12,
       expiresAt: _ig13,
       apagadoEm: _ig14,
+      vendidoEm: _ig15,
       ...bodyLimpo
     } = req.body;
 
@@ -788,6 +815,44 @@ router.put('/:id', verificarToken, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
+// 7.1 ALTERAR ESTADO DO ANÚNCIO
+// ─────────────────────────────────────────────────────────────
+router.patch('/:id/estado', verificarToken, async (req, res) => {
+  try {
+    const estado = String(req.body?.estado || '').trim();
+    if (!['ativo', 'pausado', 'vendido'].includes(estado)) {
+      return res.status(400).json({ erro: 'Estado inválido.' });
+    }
+
+    const anuncio = await Anuncio.findOne({ _id: req.params.id, estado: { $ne: 'apagado' } });
+    if (!anuncio) return res.status(404).json({ erro: 'Anúncio não encontrado.' });
+
+    const user = await User.findById(req.user.id).select('tipo premiumAtivo limiteAnuncios');
+    if (!user) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
+
+    const ehAdmin = user.tipo === 'admin' || req.user.tipo === 'admin';
+    const ehDono = String(anuncio.utilizador) === req.user.id;
+    if (!ehDono && !ehAdmin) return res.status(403).json({ erro: 'Acesso negado.' });
+
+    const temPro = userHasProAccess(user);
+    if (estado !== 'vendido' && !temPro) {
+      return res.status(403).json({
+        erro: 'PRO_NECESSARIO',
+        mensagem: 'Pausar e reativar anúncios faz parte do plano PRO. Podes marcar como vendido a qualquer momento.',
+        plano: buildPlanPayloadForUser(user),
+      });
+    }
+
+    anuncio.estado = estado;
+    anuncio.vendidoEm = estado === 'vendido' ? new Date() : null;
+    await anuncio.save();
+
+    res.json({ anuncio });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao alterar estado do anúncio.' });
+  }
+});
+// ─────────────────────────────────────────────────────────────
 // 8. ELIMINAR ANÚNCIO
 // ─────────────────────────────────────────────────────────────
 router.delete('/:id', verificarToken, async (req, res) => {
@@ -831,6 +896,83 @@ router.post('/:id/guardar', verificarToken, async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────
+// 9.1 REGISTAR CONTACTO DIRETO
+// ─────────────────────────────────────────────────────────────
+router.post('/:id/contacto', contactLimiter, async (req, res) => {
+  try {
+    const hoje = new Date().toISOString().slice(0, 10);
+    const canal = normalizarCanalContacto(req.body?.canal);
+    const incrementoCanal = {
+      phone_reveal: canal === 'phone_reveal' ? 1 : 0,
+      email_reveal: canal === 'email_reveal' ? 1 : 0,
+      whatsapp_click: canal === 'whatsapp_click' ? 1 : 0,
+    };
+
+    const atualizado = await Anuncio.findOneAndUpdate(
+      { _id: req.params.id, estado: { $ne: 'apagado' } },
+      [
+        {
+          $set: {
+            contactos: { $add: [{ $ifNull: ['$contactos', 0] }, 1] },
+            [`contactosPorCanal.${canal}`]: { $add: [{ $ifNull: [`$contactosPorCanal.${canal}`, 0] }, 1] },
+            historicoContactos: {
+              $let: {
+                vars: { historico: { $ifNull: ['$historicoContactos', []] } },
+                in: {
+                  $cond: [
+                    { $in: [hoje, { $map: { input: '$$historico', as: 'contacto', in: '$$contacto.data' } }] },
+                    {
+                      $map: {
+                        input: '$$historico',
+                        as: 'contacto',
+                        in: {
+                          $cond: [
+                            { $eq: ['$$contacto.data', hoje] },
+                            {
+                              $mergeObjects: [
+                                '$$contacto',
+                                {
+                                  phone_reveal: { $add: [{ $ifNull: ['$$contacto.phone_reveal', 0] }, incrementoCanal.phone_reveal] },
+                                  email_reveal: { $add: [{ $ifNull: ['$$contacto.email_reveal', 0] }, incrementoCanal.email_reveal] },
+                                  whatsapp_click: { $add: [{ $ifNull: ['$$contacto.whatsapp_click', 0] }, incrementoCanal.whatsapp_click] },
+                                  total: { $add: [{ $ifNull: ['$$contacto.total', 0] }, 1] },
+                                }
+                              ]
+                            },
+                            '$$contacto'
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      $concatArrays: [
+                        '$$historico',
+                        [{
+                          data: hoje,
+                          phone_reveal: incrementoCanal.phone_reveal,
+                          email_reveal: incrementoCanal.email_reveal,
+                          whatsapp_click: incrementoCanal.whatsapp_click,
+                          total: 1,
+                        }]
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ],
+      { new: false }
+    );
+
+    if (!atualizado) return res.status(404).json({ erro: 'Anúncio removido.' });
+    res.json({ success: true, canal, evento: canal });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao contabilizar contacto.' });
+  }
+});
 // ─────────────────────────────────────────────────────────────
 // 10. REGISTAR VISITA
 // ─────────────────────────────────────────────────────────────
@@ -892,5 +1034,3 @@ router.post('/:id/visita', visitLimiter, async (req, res) => {
 });
 
 export default router;
-
-

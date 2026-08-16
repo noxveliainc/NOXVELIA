@@ -2,7 +2,6 @@ const PRIVATE_ROUTE_PREFIXES = [
   '/admin',
   '/editar',
   '/favoritos',
-  '/mensagens',
   '/perfil',
   '/planos',
   '/publicar',

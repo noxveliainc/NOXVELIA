@@ -476,11 +476,11 @@ export default function Perfil() {
         <section className="perfil-premium-panel">
           <div className="perfil-premium-head">
             <div>
-              <span className="perfil-premium-kicker"><Icon path={mdiCrown} size={0.62} /> Centro Premium</span>
+              <span className="perfil-premium-kicker"><Icon path={mdiCrown} size={0.62} /> Centro PRO</span>
               <h2 className="perfil-premium-title">Visibilidade e carteira num só lugar.</h2>
             </div>
             <span className="perfil-premium-state" style={{ background: premiumAtivoPerfil ? '#102f50' : '#f8fafc', color: premiumAtivoPerfil ? '#fff' : '#64748b' }}>
-              {premiumAtivoPerfil ? 'Premium Ativo' : 'Prévia Premium'}
+              {premiumAtivoPerfil ? 'PRO Ativo' : 'Prévia PRO'}
             </span>
           </div>
 
@@ -503,7 +503,8 @@ export default function Perfil() {
           <div className="perfil-premium-bottom">
             <div className="perfil-premium-actions">
               <button type="button" className="perfil-premium-btn" onClick={() => navigate('/publicar')}><Icon path={mdiPlus} size={0.6} /> Publicar</button>
-              <button type="button" className="perfil-premium-btn secondary" onClick={() => navigate('/planos')}><Icon path={mdiChartBar} size={0.6} /> Plano</button>
+              <button type="button" className="perfil-premium-btn secondary" onClick={() => navigate('/pro')}><Icon path={mdiChartBar} size={0.6} /> Área PRO</button>
+              <button type="button" className="perfil-premium-btn secondary" onClick={() => navigate('/planos')}><Icon path={mdiCrown} size={0.6} /> Plano</button>
             </div>
           </div>
         </section>

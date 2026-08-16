@@ -68,6 +68,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
     pausado:  { bg: 'rgba(239,68,68,.12)',   color: '#ef4444', border: 'rgba(239,68,68,.2)',  label: 'Pausado' },
     expirado: { bg: 'rgba(245,158,11,.12)',  color: '#f59e0b', border: 'rgba(245,158,11,.2)', label: 'A expirar' },
     pendente: { bg: 'rgba(59,130,246,.12)',  color: '#3b82f6', border: 'rgba(59,130,246,.2)', label: 'Pendente' },
+    vendido:  { bg: 'rgba(16,47,80,.12)',   color: '#102f50', border: 'rgba(16,47,80,.2)', label: 'Vendido' },
   };
   const status = statusConfig[anuncio?.estado] || statusConfig.pendente;
 

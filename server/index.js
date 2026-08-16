@@ -26,6 +26,7 @@ import partnershipsRoutes from './routes/partnerships.js';
 import marketNewsRoutes from './routes/marketNews.js';
 import bannersRoutes from './routes/banners.js';
 import stockSubmissionsRoutes from './routes/stockSubmissions.js';
+import proRoutes from './routes/pro.js';
 import { requestMetrics } from './middleware/metrics.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { verificarJwt } from './utils/jwt.js';
@@ -133,6 +134,7 @@ app.use('/api/partnerships', partnershipsRoutes);
 app.use('/api/market-news', marketNewsRoutes);
 app.use('/api/banners', bannersRoutes);
 app.use('/api/stock-submissions', stockSubmissionsRoutes);
+app.use('/api/pro', proRoutes);
 
 app.get('/', (req, res) => res.status(200).json({ status: 'OK', mensagem: 'API NOXVELIA ativa!' }));
 

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { getFunnelSessionId, trackFunnelEvent } from '../../utils/funnelAnalytics';
@@ -267,6 +267,23 @@ export default function Anuncio() {
       setGuardado(data.guardado);
     } catch {}
   };
+  const registarContacto = (canal = 'contacto') => {
+    const listingId = anuncio?._id || id;
+    if (!listingId) return;
+    const key = `@Noxvelia:contact:${listingId}:${canal}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+    } catch {}
+    api.post(`/anuncios/${listingId}/contacto`, { canal, sessionId: getFunnelSessionId() }).catch(() => {
+      try { sessionStorage.removeItem(key); } catch {}
+    });
+  };
+
+  const revelarContactos = () => {
+    setMostrarTelefone(true);
+    registarContacto(temTelefoneContacto ? 'phone_reveal' : 'email_reveal');
+  };
 
 
   const submeterAvaliacaoVendedor = async (nota) => {
@@ -310,7 +327,7 @@ export default function Anuncio() {
   const handleConfirmarVendido = async () => {
     setEliminandoVendido(true);
     try {
-      await api.delete(`/anuncios/${id}`);
+      await api.patch(`/anuncios/${id}/estado`, { estado: 'vendido' });
       setMostrarModalVendido(false);
       navigate('/perfil');
     } catch {
@@ -472,7 +489,7 @@ export default function Anuncio() {
     { label: 'Localização', value: localizacaoString, icon: mdiMapMarkerOutline },
     { label: isCarro ? 'Marca' : 'Preço / m²', value: isCarro ? (formatarMarcaVeiculo(anuncio.carro) || 'Viatura') : (precoPorM2 || 'A confirmar'), icon: isCarro ? mdiCar : mdiRulerSquare },
     { label: 'Vendedor', value: contactoConfirmado ? 'Email confirmado' : (rating > 0 ? `${rating.toFixed(1)} estrelas` : 'Novo vendedor'), icon: mdiShieldCheckOutline },
-    { label: 'Contacto', value: temTelefoneContacto ? 'Telefone' : (temEmailContacto ? 'Email' : 'Por mensagem'), icon: temTelefoneContacto ? mdiPhone : mdiEmailOutline },
+    { label: 'Contacto', value: temTelefoneContacto ? 'Telefone' : (temEmailContacto ? 'Email' : 'Sem contacto'), icon: temTelefoneContacto ? mdiPhone : mdiEmailOutline },
   ];
 
   const jsonLd = {
@@ -799,7 +816,7 @@ export default function Anuncio() {
             <div className="nx-modal-footer">
               <button type="button" className="nx-btn-cancel" disabled={eliminandoVendido} onClick={() => setMostrarModalVendido(false)}>Cancelar</button>
               <button type="button" className="nx-btn-danger" disabled={eliminandoVendido} onClick={handleConfirmarVendido}>
-                {eliminandoVendido ? 'A eliminar...' : 'Sim, Eliminar'}
+                {eliminandoVendido ? 'A marcar...' : 'Marcar como vendido'}
               </button>
             </div>
           </div>
@@ -1005,21 +1022,21 @@ export default function Anuncio() {
                         {podeEditarAnuncioAtivo ? (
                           <Link to={`/editar/${id}`} className="btn-owner-edit">Editar Dados</Link>
                         ) : (
-                          <Link to="/premium-confirmar" className="btn-owner-edit is-locked">Premium para editar</Link>
+                          <Link to="/premium-confirmar" className="btn-owner-edit is-locked">PRO para editar</Link>
                         )}
                         <button type="button" className="btn-owner-sold" onClick={() => setMostrarModalVendido(true)}>
                           <Icon path={mdiCheck} size={0.7} style={{marginRight: 4}} /> Vendido
                         </button>
                       </div>
                       {!podeEditarAnuncioAtivo && (
-                        <div className="owner-note">Anúncios ativos só podem ser editados com Premium. Podes marcar como vendido a qualquer momento.</div>
+                        <div className="owner-note">Anúncios ativos só podem ser editados com PRO. Podes marcar como vendido a qualquer momento.</div>
                       )}
                     </div>
                   ) : (
                     <>
                       {mostrarTelefone ? (
                         <>
-                          <a href={temTelefoneContacto ? `tel:${telefoneContacto}` : `mailto:${emailContacto}`} className="contact-revealed">
+                          <a href={temTelefoneContacto ? `tel:${telefoneContacto}` : `mailto:${emailContacto}`} className="contact-revealed" onClick={() => registarContacto(temTelefoneContacto ? 'phone_reveal' : 'email_reveal')}>
                             <span className="contact-label">Contactar via</span>
                             <div className="contact-phone">
                               <Icon path={temTelefoneContacto ? mdiPhone : mdiEmailOutline} size={0.9} color={accent} />
@@ -1030,7 +1047,7 @@ export default function Anuncio() {
                           {whatsappNumero && (
                             <a
                               href={`https://wa.me/${whatsappNumero}?text=${mensagemWhatsapp}`}
-                              onClick={() => trackFunnelEvent('whatsapp_click', { listingId: anuncio._id, vertical: anuncio.tipo })}
+                              onClick={() => { registarContacto('whatsapp_click'); trackFunnelEvent('whatsapp_click', { listingId: anuncio._id, vertical: anuncio.tipo }); }}
                               target="_blank" rel="noopener noreferrer" className="btn-whatsapp"
                             >
                               <Icon path={mdiWhatsapp} size={0.85} /> Contactar por WhatsApp
@@ -1038,7 +1055,7 @@ export default function Anuncio() {
                           )}
                         </>
                       ) : (
-                        <button type="button" className="btn-contact" onClick={() => setMostrarTelefone(true)}>
+                        <button type="button" className="btn-contact" onClick={revelarContactos}>
                           <Icon path={temTelefoneContacto ? mdiPhone : mdiEmailOutline} size={0.85} />
                           {temTelefoneContacto ? 'Revelar Contactos' : 'Mostrar Email'}
                         </button>

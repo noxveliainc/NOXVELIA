@@ -29,7 +29,6 @@
     "react-helmet-async": "^3.0.0",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.23.1",
-    "socket.io-client": "^4.8.3",
     "swiper": "^14.0.6"
   },
   "devDependencies": {

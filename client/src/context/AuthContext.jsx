@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }) => {
     try { googleLogout(); } catch { /* Google pode não estar carregado. */ }
     clearAuth();
     delete api.defaults.headers.common['Authorization'];
-    const rotasPrivadas = ['/perfil', '/publicar', '/mensagens', '/favoritos', '/admin'];
+    const rotasPrivadas = ['/perfil', '/publicar', '/favoritos', '/admin'];
     const pathAtual = window.location.pathname;
     const estaNumaRotaPrivada = rotasPrivadas.some(rota => pathAtual.startsWith(rota));
     if (estaNumaRotaPrivada) {

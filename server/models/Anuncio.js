@@ -41,10 +41,22 @@ const anuncioSchema = new mongoose.Schema({
   visitas: { type: Number, default: 0 },
   guardados: { type: Number, default: 0 },
   contactos: { type: Number, default: 0 },
+  contactosPorCanal: {
+    phone_reveal: { type: Number, default: 0 },
+    email_reveal: { type: Number, default: 0 },
+    whatsapp_click: { type: Number, default: 0 }
+  },
 
   historicoVisitas: [{
     data: { type: String },
     quantidade: { type: Number, default: 0 }
+  }],
+  historicoContactos: [{
+    data: { type: String },
+    phone_reveal: { type: Number, default: 0 },
+    email_reveal: { type: Number, default: 0 },
+    whatsapp_click: { type: Number, default: 0 },
+    total: { type: Number, default: 0 }
   }],
   
   // 🌟 Campos de Confiança (Badges)
@@ -131,7 +143,8 @@ const anuncioSchema = new mongoose.Schema({
     removidoNoFeedEm: Date,
     rawHash: { type: String, trim: true, maxlength: 80 },
   },
-  estado: { type: String, enum: ['ativo','pausado','expirado','pendente','apagado'], default: 'ativo' },
+  estado: { type: String, enum: ['ativo','pausado','expirado','pendente','vendido','apagado'], default: 'ativo' },
+  vendidoEm: Date,
   apagadoEm: Date, 
   
   // 🌟 Motor de Destaques

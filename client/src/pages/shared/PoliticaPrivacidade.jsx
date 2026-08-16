@@ -134,7 +134,7 @@ export default function PoliticaPrivacidade() {
               <li><strong>Dados de Anúncio e Transacionais:</strong> Fotos, localizações (cidade/distrito), descrições, VIN (Número de Chassi). A finalidade é a publicação da oferta na plataforma.</li>
               <li><strong>Partilha de Contactos:</strong> Ao publicar um anúncio, o Utilizador consente de forma explícita que o seu número de telemóvel e endereço de e-mail sejam <strong>exibidos publicamente</strong> aos visitantes da plataforma que solicitem ver os contactos do vendedor.</li>
               <li><strong>Dados Técnicos e de Segurança:</strong> Endereço IP, data e hora, agente do navegador, pedidos efetuados e registos de erro ou segurança, quando disponíveis. Servem para proteger a plataforma, diagnosticar falhas e prevenir abuso ou fraude.</li>
-              <li><strong>Mensagens e Suporte:</strong> Nome, e-mail e conteúdo enviado através dos formulários ou canais de suporte, necessários para responder ao pedido.</li>
+              <li><strong>Suporte:</strong> Nome, e-mail e conteúdo enviado através dos formulários ou canais de suporte, necessários para responder ao pedido.</li>
               <li><strong>Pagamentos e Serviços Premium:</strong> Plano, referência da transação, estado do pagamento e identificadores técnicos Stripe. Os dados completos do cartão são tratados diretamente pelo prestador de pagamentos e não pela NOXVELIA.</li>
               <li><strong>Funcionalidades assistidas:</strong> Pesquisa, matrícula, descrições, características e restante conteúdo submetido quando o Utilizador decide usar uma ferramenta de apoio, com a finalidade exclusiva de produzir o resultado solicitado.</li>
             </ul>
@@ -145,7 +145,7 @@ export default function PoliticaPrivacidade() {
               <li><strong>Autoridades Judiciais e Policiais:</strong> Em caso de suspeita de fraude informática, lavagem de dinheiro ou ordem judicial, a NOXVELIA cooperará integralmente, fornecendo os IPs e dados de registo às autoridades competentes (Polícia Judiciária, Ministério Público).</li>
               <li><strong>Stripe:</strong> Pagamentos, subscrições, portal de faturação e prevenção de fraude. Recebe os dados necessários para criar e reconciliar a operação.</li>
               <li><strong>Infraestrutura de imagens:</strong> Armazenamento, transformação e entrega das fotografias carregadas nos anúncios e perfis através da storage configurada pela NOXVELIA.</li>
-              <li><strong>Resend:</strong> Envio de mensagens de verificação de e-mail e recuperação de palavra-passe, incluindo endereço do destinatário e conteúdo técnico da mensagem.</li>
+              <li><strong>Resend:</strong> Envio de emails de verificação de e-mail e recuperação de palavra-passe, incluindo endereço do destinatário e conteúdo técnico da comunicação.</li>
               <li><strong>Formspree:</strong> Receção dos dados enviados voluntariamente através do formulário de suporte no rodapé.</li>
               <li><strong>Fornecedor externo de processamento:</strong> Tratamento técnico do conteúdo enviado às ferramentas de apoio, apenas quando essas funções são utilizadas.</li>
               <li><strong>CARTO e OpenStreetMap/Nominatim:</strong> Apresentação dos mapas e geocodificação das localizações pesquisadas ou associadas a anúncios. Os pedidos de mosaicos podem incluir IP e informação técnica do navegador.</li>
@@ -157,7 +157,7 @@ export default function PoliticaPrivacidade() {
 
             <h3>3.3. Fundamentos Jurídicos</h3>
             <ul>
-              <li><strong>Execução de contrato e diligências pré-contratuais:</strong> criação e gestão da conta, publicação e gestão de anúncios, mensagens entre Utilizadores e prestação de serviços premium solicitados.</li>
+              <li><strong>Execução de contrato e diligências pré-contratuais:</strong> criação e gestão da conta, publicação e gestão de anúncios e prestação de serviços premium solicitados.</li>
               <li><strong>Consentimento:</strong> utilização de serviços externos opcionais e outros tratamentos em que seja apresentada uma escolha específica. O consentimento pode ser retirado a qualquer momento, sem afetar a licitude do tratamento anterior.</li>
               <li><strong>Interesse legítimo:</strong> segurança da plataforma, prevenção de fraude e abuso, diagnóstico de erros, defesa de direitos e medição interna do funcionamento do serviço, após ponderação com os direitos do Utilizador.</li>
               <li><strong>Obrigação legal:</strong> faturação, contabilidade, resposta a autoridades competentes e conservação de elementos exigidos por lei.</li>
@@ -166,7 +166,7 @@ export default function PoliticaPrivacidade() {
             <h3>3.4. Conservação e Transferências Internacionais</h3>
             <p>Os dados são conservados apenas durante o período necessário à finalidade correspondente, segundo os seguintes critérios:</p>
             <ul>
-              <li>Dados de conta, anúncios e mensagens são mantidos enquanto a conta ou o conteúdo estiver ativo e durante o período adicional necessário para responder a pedidos, prevenir abuso ou exercer e defender direitos.</li>
+              <li>Dados de conta e anúncios são mantidos enquanto a conta ou o conteúdo estiver ativo e durante o período adicional necessário para responder a pedidos, prevenir abuso ou exercer e defender direitos.</li>
               <li>A credencial de autenticação tem validade máxima de sete dias no servidor; a cópia local é removida quando o Utilizador termina sessão ou apaga os dados do navegador.</li>
               <li>Registos de pagamento e faturação são conservados durante os prazos impostos pela legislação fiscal e contabilística aplicável.</li>
               <li>Pedidos de suporte são conservados até à resolução do assunto e, quando necessário, durante o prazo aplicável à defesa de direitos.</li>
@@ -309,4 +309,3 @@ export default function PoliticaPrivacidade() {
     </>
   );
 }
-

@@ -15,7 +15,7 @@ const ArrowIcon = () => (
   </svg>
 );
 
-export default function PremiumConfirmar() {
+export default function PROConfirmar() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -44,7 +44,7 @@ export default function PremiumConfirmar() {
   };
 
   const beneficios = [
-    'Podes publicar acima do limite gratuito de 5 anúncios ativos enquanto o Premium estiver ativo.',
+    'Podes publicar acima do limite gratuito de 5 anúncios ativos enquanto o PRO estiver ativo.',
     'Os anúncios ativos têm destaque automático e prioridade nos resultados.',
     'Podes editar os dados de anúncios que já estão ativos.',
     'Tens acesso a uma montra pública mais completa, com contactos, links e mapa opcional.',
@@ -53,10 +53,10 @@ export default function PremiumConfirmar() {
 
   const regrasCancelamento = [
     'Os anúncios já ativos continuam online; não são apagados por deixares de pagar.',
-    'Perdes os benefícios Premium: destaque automático, prioridade, edição de anúncios ativos e métricas avançadas.',
+    'Perdes os benefícios PRO: destaque automático, prioridade, edição de anúncios ativos e métricas avançadas.',
     'Se tiveres mais de 5 anúncios ativos, não consegues publicar novos até renovares ou ficares dentro do limite gratuito.',
     'Continuas a poder marcar anúncios como vendidos ou apagar anúncios da tua conta.',
-    'Destaques comprados à parte mantêm o prazo pago; só removemos o destaque automático do Premium.',
+    'Destaques comprados à parte mantêm o prazo pago; só removemos o destaque automático do PRO.',
   ];
 
   return (
@@ -110,9 +110,9 @@ export default function PremiumConfirmar() {
           <div className="pc-hero">
             <section className="pc-panel pc-main" aria-labelledby="premium-confirmar-title">
               <span className="pc-kicker">Antes do pagamento</span>
-              <h1 className="pc-title" id="premium-confirmar-title">Premium claro, sem surpresas depois.</h1>
+              <h1 className="pc-title" id="premium-confirmar-title">PRO claro, sem surpresas depois.</h1>
               <p className="pc-lead">
-                A adesão ao Premium é mensal. Antes de passares para o pagamento seguro da Stripe, confirma exatamente o que fica ativo enquanto pagas e o que acontece se cancelares ou se o pagamento falhar.
+                A adesão ao PRO é mensal. Antes de passares para o pagamento seguro da Stripe, confirma exatamente o que fica ativo enquanto pagas e o que acontece se cancelares ou se o pagamento falhar.
               </p>
 
               {cancelado && (
@@ -121,7 +121,7 @@ export default function PremiumConfirmar() {
 
               <div className="pc-grid">
                 <article className="pc-card">
-                  <h2>Enquanto o Premium está ativo</h2>
+                  <h2>Enquanto o PRO está ativo</h2>
                   <ul className="pc-list">
                     {beneficios.map((item) => <li key={item}><CheckIcon /> <span>{item}</span></li>)}
                   </ul>
@@ -136,9 +136,9 @@ export default function PremiumConfirmar() {
               </div>
             </section>
 
-            <aside className="pc-panel pc-side" aria-label="Resumo do Premium">
+            <aside className="pc-panel pc-side" aria-label="Resumo do PRO">
               <div className="pc-price">
-                <span className="pc-price-label">Plano Premium</span>
+                <span className="pc-price-label">Plano PRO</span>
                 <strong>10,99€ <span>/mês</span></strong>
                 <p>Subscrição mensal com pagamento seguro através da Stripe. Podes cancelar pelo portal de gestão da subscrição.</p>
               </div>
@@ -150,7 +150,7 @@ export default function PremiumConfirmar() {
 
               <label className="pc-check">
                 <input type="checkbox" checked={aceitou} onChange={(event) => setAceitou(event.target.checked)} />
-                <span>Li e compreendi que, ao terminar o Premium, os anúncios continuam online, mas perdem os benefícios Premium e a publicação volta ao limite gratuito.</span>
+                <span>Li e compreendi que, ao terminar o PRO, os anúncios continuam online, mas perdem os benefícios PRO e a publicação volta ao limite gratuito.</span>
               </label>
 
               {erro && <div className="pc-error">{erro}</div>}

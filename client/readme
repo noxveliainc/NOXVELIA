@@ -8,15 +8,15 @@ Foram desenvolvidos **3 componentes principais** reutilizáveis e de qualidade d
 - Visualização completa de imóvel ou automóvel
 - Galeria de fotos com thumbnails
 - Sistema de specs dinâmicos (imóvel vs carro)
-- Score IA integrado (0-10)
+- Quality Score integrado
 - Informações do vendedor com badge de verificação
-- Formulário de mensagem direto
+- Contactos diretos por telefone, email e WhatsApp
 - Button guardar favoritos
 - Responsivo e acessível
 
 ### 2. **Pesquisa.jsx** — Página de Busca
 - Sidebar com filtros avançados (categoria, preço, distrito, tipologia/combustível)
-- Pesquisa inteligente com resumo IA
+- Pesquisa direta com filtros úteis
 - Grid responsivo com cards de anúncios
 - Ordenação (relevância, preço, data)
 - Loading states com placeholders
@@ -28,7 +28,7 @@ Foram desenvolvidos **3 componentes principais** reutilizáveis e de qualidade d
 - Upload multi-file através da API backend de imagens
 - Formulários dinâmicos (imovel vs carro)
 - Validação de campos obrigatórios
-- Score IA automático após publicação
+- Quality Score automático após publicação
 - Notificação de sucesso
 
 ---
@@ -173,20 +173,20 @@ Todos os componentes usam `api` (axios) para:
 **Anuncio.jsx:**
 ```javascript
 GET /anuncios/:id                    // Carregar detalhe
-POST /mensagens                      // Enviar mensagem
+POST /anuncios/:id/contacto          // Registar revelação/clique de contacto
 POST /anuncios/:id/guardar          // Guardar favorito
 ```
 
 **Pesquisa.jsx:**
 ```javascript
 GET /anuncios?tipo=...&precoMin=... // Listar com filtros
-POST /ia/search                      // Busca inteligente
+
 ```
 
 **Publicar.jsx:**
 ```javascript
 POST /anuncios                       // Criar anúncio
-POST /ia/score/:id                   // Avaliar com IA
+// Quality Score calculado pelo backend ao criar/editar anúncio
 ```
 
 ---
@@ -254,8 +254,8 @@ VITE_API_URL=http://localhost:3000/api
 - [ ] Testar login/autenticação
 - [ ] Testar filtros de pesquisa
 - [ ] Testar publicação de anúncios
-- [ ] Testar envio de mensagens
-- [ ] Testar score IA
+- [ ] Testar contactos diretos
+- [ ] Testar Quality Score
 
 ---
 
