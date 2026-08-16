@@ -325,7 +325,7 @@ export default function ProDashboard() {
             <h1 className="pro-title">Performance com contexto</h1>
             <p className="pro-subtitle">Compara períodos, entende canais de contacto e melhora anúncios até aos 90/100.</p>
           </div>
-          <div className="pro-actions"><Link className="pro-btn" to="/perfil">Perfil</Link><Link className="pro-btn" to={`/vendedor/${user?._id || user?.id}/stock`}><Icon path={mdiOpenInNew} size={0.65} /> Montra</Link><Link className="pro-btn gold" to="/publicar"><Icon path={mdiPlus} size={0.7} /> Publicar</Link></div>
+          <div className="pro-actions"><Link className="pro-btn" to="/perfil">Perfil</Link><Link className="pro-btn" to={`/vendedor/${user?._id || user?.id}`}><Icon path={mdiOpenInNew} size={0.65} /> Montra</Link><Link className="pro-btn gold" to="/publicar"><Icon path={mdiPlus} size={0.7} /> Publicar</Link></div>
         </section>
 
         {!temPro ? (

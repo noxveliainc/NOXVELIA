@@ -32,6 +32,18 @@ const isSafeUrl = (value, { allowRelative = false } = {}) => {
   }
 };
 const tipoCriativoFromUrl = (url = '') => (/\.gif(\?|#|$)/i.test(url) ? 'gif' : (url.startsWith('http') ? 'externo' : 'imagem'));
+const obterProximoPagamentoPremium = (subscription = {}) => {
+  const timestamp = subscription?.current_period_end || subscription?.items?.data?.[0]?.current_period_end;
+  return timestamp ? new Date(Number(timestamp) * 1000) : null;
+};
+const obterUserIdPorSubscricao = async (subscription = {}) => {
+  const userId = subscription?.metadata?.userId;
+  if (userId) return userId;
+  const customerId = typeof subscription?.customer === 'string' ? subscription.customer : subscription?.customer?.id;
+  if (!customerId) return null;
+  const user = await User.findOne({ stripeCustomerId: customerId }).select('_id').lean();
+  return user?._id ? String(user._id) : null;
+};
 // ─────────────────────────────────────────────────────────────
 // ROTA 1 — BUMP / DESTAQUE 7 DIAS / DESTAQUE GOLD (pagamento único)
 // Preços em cêntimos: bump = 1.49€, destaque5 = 1.99€, gold = 7.99€
@@ -274,12 +286,20 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
     if (session.mode === 'subscription') {
       const userId = meta.userId;
-      const subscriptionId = session.subscription;
+      const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
 
       try {
+        let subscription = null;
+        try {
+          if (subscriptionId) subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        } catch (subscriptionErr) {
+          console.warn('⚠️ Não foi possível obter o próximo ciclo da subscrição:', subscriptionErr.message);
+        }
+
         await ativarPremiumUtilizador(userId, {
           stripeSubscriptionId: subscriptionId,
           dataExpiracaoPremium: null,
+          proximoPagamentoPremium: obterProximoPagamentoPremium(subscription),
         });
 
         await Pagamento.create({
@@ -394,7 +414,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
   if (event.type === 'customer.subscription.deleted') {
     const subscription = event.data.object;
-    const userId = subscription.metadata?.userId;
+    const userId = await obterUserIdPorSubscricao(subscription);
 
     if (userId) {
       await desativarPremiumUtilizador(userId, {
@@ -407,7 +427,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
   if (event.type === 'customer.subscription.updated') {
     const subscription = event.data.object;
-    const userId = subscription.metadata?.userId;
+    const userId = await obterUserIdPorSubscricao(subscription);
     const ativo  = subscription.status === 'active' || subscription.status === 'trialing';
 
     if (userId) {
@@ -415,6 +435,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         await ativarPremiumUtilizador(userId, {
           stripeSubscriptionId: subscription.id,
           dataExpiracaoPremium: null,
+          proximoPagamentoPremium: obterProximoPagamentoPremium(subscription),
         });
       } else {
         await desativarPremiumUtilizador(userId, {

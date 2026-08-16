@@ -44,9 +44,10 @@ const userSchema = new mongoose.Schema({
   anunciosGuardados: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Anuncio' }],
 
   // ── PREMIUM ────────────────────────────────────────────────
-  premiumAtivo:         { type: Boolean, default: false },
-  dataExpiracaoPremium: { type: Date,    default: null },
-  limiteAnuncios:       { type: Number,  default: 5 },
+  premiumAtivo:             { type: Boolean, default: false },
+  dataExpiracaoPremium:     { type: Date,    default: null },
+  proximoPagamentoPremium:  { type: Date,    default: null },
+  limiteAnuncios:           { type: Number,  default: 5 },
 
   // ── STRIPE (subscrição mensal) ─────────────────────────────
   stripeCustomerId:     { type: String, default: null },

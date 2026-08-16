@@ -19,6 +19,7 @@ export const ativarPremiumUtilizador = async (userId, camposExtra = {}) => {
         $set: {
           premiumAtivo: true,
           dataExpiracaoPremium: null,
+          proximoPagamentoPremium: null,
           ...camposExtra,
         },
       },
@@ -54,6 +55,7 @@ export const desativarPremiumUtilizador = async (userId, camposExtra = {}) => {
           premiumAtivo: false,
           dataExpiracaoPremium: new Date(),
           ...camposExtra,
+          proximoPagamentoPremium: null,
         },
       },
       { new: true }

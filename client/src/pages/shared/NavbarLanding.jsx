@@ -619,6 +619,29 @@ export default function NavbarLanding() {
         }
 
         .nl-chevron { stroke: #f0dfbb !important; }
+
+        .nl-user-dropdown {
+          background: #fffaf0 !important;
+          border-color: rgba(217, 196, 156, .38) !important;
+        }
+
+        .nl-ud-item {
+          color: #102f50 !important;
+        }
+
+        .nl-ud-item:hover {
+          color: #071326 !important;
+          background: rgba(16, 47, 80, .08) !important;
+        }
+
+        .nl-ud-divider {
+          background: rgba(16, 47, 80, .12) !important;
+        }
+
+        .nl-ud-item.logout:hover {
+          color: #b42318 !important;
+          background: #fff3f1 !important;
+        }
       `}</style>
 
       <nav className="nl-root" aria-label="Navegação principal" ref={navRef}>

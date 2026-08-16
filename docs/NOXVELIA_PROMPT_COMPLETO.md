@@ -50,7 +50,7 @@ Trabalha na NOXVELIA, uma plataforma portuguesa de anúncios classificados focad
 - As navbars internas de carros/imóveis já não têm dropdown na logo. A logo volta à página inicial, e a troca entre Automóveis/Imóveis fica em controlo segmentado ao lado da marca.
 - As páginas de pesquisa e detalhe preservam cards de anúncio com moldura mais forte; anúncios destacados usam contorno navy/champagne e badge de destaque, sem confundir destaque com Premium.
 - O perfil público do vendedor (`/vendedor/:id`) funciona como montra: mostra dados públicos, totais de anúncios ativos, automóveis, imóveis e destaques, últimos anúncios e CTA para stock completo.
-- A página pública de stock do vendedor (`/vendedor/:id/stock` e alias `/vendedor/:id/inventario`) lista todos os anúncios ativos desse vendedor e permite filtrar por texto, categoria, distrito, marca, modelo, preço mínimo/máximo e ordenação.
+- O perfil público do vendedor (`/vendedor/:id`) concentra agora todo o stock ativo do vendedor, com filtros por texto, categoria, distrito, marca, modelo, preço mínimo/máximo e ordenação; `/vendedor/:id/stock` e `/vendedor/:id/inventario` apenas redirecionam para o perfil.
 - O stock público reutiliza `AnuncioCard` com `forceSellerIdentity`, mantém SEO próprio com JSON-LD `Person`/`Organization` e tem estados de carregamento, erro e vazio.
 - A landing foi afinada em escala e responsividade: largura mais controlada em desktop, cards de categoria/listagens com proporções mais legíveis, CTAs com cores corrigidas e mobile com grelhas de uma coluna sem texto comprimido.
 
@@ -71,7 +71,7 @@ Trabalha na NOXVELIA, uma plataforma portuguesa de anúncios classificados focad
 - Landing atual: `client/src/pages/shared/Landing.jsx` + `client/src/pages/shared/Landing.css`.
 - Navbar da landing: `client/src/pages/shared/NavbarLanding.jsx`.
 - Navbars internas: `client/src/components/carros/NavbarCarro.jsx` e `client/src/components/imoveis/NavbarImovel.jsx`.
-- Stock público do vendedor: `client/src/pages/shared/VendedorStock.jsx`, com rotas `/vendedor/:id/stock` e `/vendedor/:id/inventario`.
+- Stock público do vendedor: integrado em `client/src/pages/shared/PerfilPublico.jsx`; as rotas antigas `/vendedor/:id/stock` e `/vendedor/:id/inventario` redirecionam para `/vendedor/:id`.
 - Admin em `client/src/pages/admin/AdminDashboard.jsx`.
 - API central em `client/src/services/api.js`.
 - Componentes partilhados em `client/src/components`.
@@ -503,7 +503,7 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - A landing foi consolidada como entrada principal do produto, com hero visual, pesquisa direta, categorias com imagens reais, notícias de mercado, anúncios recentes, patrocínio direto e carVertical.
 - Foram feitos ajustes sucessivos de escala, legibilidade, proporções e mobile na landing, incluindo largura dos blocos, cartões de categoria/listagem, CTAs e estados responsivos.
 - As navbars internas de automóveis e imóveis foram simplificadas: a logo deixou de abrir dropdown e passou a navegar para a home; a alternância entre carros/imóveis fica visível ao lado da marca.
-- Foi criada a página pública de stock do vendedor em `/vendedor/:id/stock`, com alias `/vendedor/:id/inventario`, filtros locais e ordenação por destaque, data ou preço.
+- O stock público deixou de ter página separada e passou a viver dentro do perfil do vendedor, preservando filtros locais e ordenação por destaque, data ou preço.
 - O perfil público do vendedor ganhou resumo de montra, preview dos últimos anúncios e CTA para abrir o stock completo do vendedor.
 - O stock público deve continuar a usar anúncios ativos vindos de `/api/users/vendedor/:id`, sem expor anúncios inativos nem inventar métricas.
 ## Atualização PRO, contactos diretos e Quality Score (2026-08-16)
@@ -513,3 +513,11 @@ Nota: este inventário lista os ficheiros de fonte, configuração, documentaç�
 - A área PRO v1.1 mostra visitas/contactos hoje, 7 dias e 30 dias, variação vs. período anterior, canais de contacto, favoritos quando disponível, estado do stock e rankings top 5.
 - Quality Score PRO passou a 0-100 com categorias Conteúdo, Informação, Fotografias e Conversão, incluindo recomendações práticas para chegar aos 90/100.
 - O checkout Stripe foi preservado no contrato atual: POST /api/stripe/criar-checkout-premium com { aceitouTermosPremium: true }.
+- Balanço financeiro manual no admin: GET/PUT /api/admin/financeiro guarda gasto no site, dinheiro que entrou, notas internas e saldo calculado, sem alterar Stripe.
+## Atualização navegação e planos PRO (2026-08-16)
+- As navbars internas de automóveis e imóveis deixaram de mostrar o botão "Início"; a logo NOXVELIA é o caminho para voltar à página inicial.
+- Os menus de perfil nas navbars ganharam contraste reforçado para evitar texto claro sobre fundo claro em sessão iniciada.
+- A página `/planos` mostra apenas os dois planos para comparação quando o utilizador não tem PRO ativo.
+- Quando o utilizador tem PRO ativo, `/planos` passa a mostrar uma zona de estado do plano com dias restantes até ao próximo pagamento, data da próxima cobrança quando disponível e acesso ao portal Stripe.
+- O modelo `User` passou a guardar `proximoPagamentoPremium`, preenchido por webhooks/checkout Stripe sem alterar o contrato do checkout premium.
+- A página `/premium-confirmar` ficou mais direta, com menos texto e CTA "Continuar para o pagamento".

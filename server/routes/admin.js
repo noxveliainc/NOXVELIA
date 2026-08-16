@@ -5,6 +5,7 @@ import FunnelEvent from '../models/FunnelEvent.js';
 import PartnershipReply from '../models/PartnershipReply.js';
 import PartnershipContact from '../models/PartnershipContact.js';
 import Pagamento from '../models/Pagamento.js';
+import AdminFinance from '../models/AdminFinance.js';
 import { verificarToken, verificarAdmin } from '../middleware/auth.js';
 import { criarNotificacao } from '../controllers/notificacaoController.js';
 import adminPartnershipsRoutes from './adminPartnerships.js';
@@ -13,12 +14,71 @@ import adminStockIntegrationsRoutes from './adminStockIntegrations.js';
 
 const router = express.Router();
 
+const FINANCE_KEY = 'principal';
+
+const arredondarEuro = (valor) => Math.round(valor * 100) / 100;
+
+const normalizarValorFinanceiro = (valor) => {
+  const numero = Number(String(valor ?? 0).replace(',', '.'));
+  if (!Number.isFinite(numero) || numero < 0 || numero > 999999999) return null;
+  return arredondarEuro(numero);
+};
+
+const serializarFinanceiro = (doc) => {
+  const gastoSite = arredondarEuro(Number(doc?.gastoSite || 0));
+  const entradaSite = arredondarEuro(Number(doc?.entradaSite || 0));
+  return {
+    gastoSite,
+    entradaSite,
+    saldo: arredondarEuro(entradaSite - gastoSite),
+    notas: doc?.notas || '',
+    atualizadoEm: doc?.updatedAt || null,
+    atualizadoPor: doc?.atualizadoPor || null,
+  };
+};
+
+const obterFinanceiro = async () => {
+  const existente = await AdminFinance.findOne({ chave: FINANCE_KEY }).lean();
+  if (existente) return existente;
+  return AdminFinance.create({ chave: FINANCE_KEY });
+};
 router.use(verificarToken);
 router.use(verificarAdmin);
 router.use('/partnerships', adminPartnershipsRoutes);
 router.use('/banners', adminBannersRoutes);
 router.use('/stock-integrations', adminStockIntegrationsRoutes);
 
+
+router.get('/financeiro', async (req, res) => {
+  try {
+    const financeiro = await obterFinanceiro();
+    res.json({ financeiro: serializarFinanceiro(financeiro) });
+  } catch (erro) {
+    res.status(500).json({ erro: 'Erro ao carregar balanço financeiro.' });
+  }
+});
+
+router.put('/financeiro', async (req, res) => {
+  try {
+    const gastoSite = normalizarValorFinanceiro(req.body?.gastoSite);
+    const entradaSite = normalizarValorFinanceiro(req.body?.entradaSite);
+    const notas = String(req.body?.notas || '').trim().slice(0, 1000);
+
+    if (gastoSite === null || entradaSite === null) {
+      return res.status(400).json({ erro: 'Valores financeiros inválidos.' });
+    }
+
+    const financeiro = await AdminFinance.findOneAndUpdate(
+      { chave: FINANCE_KEY },
+      { gastoSite, entradaSite, notas, atualizadoPor: req.user.id },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    res.json({ sucesso: true, financeiro: serializarFinanceiro(financeiro) });
+  } catch (erro) {
+    res.status(500).json({ erro: 'Erro ao guardar balanço financeiro.' });
+  }
+});
 // 1. MÉTRICAS GLOBAIS E RECEITA
 router.get('/dashboard/stats', async (req, res) => {
   try {
@@ -353,7 +413,7 @@ router.put('/anuncios/:id/rejeitar-destaque', async (req, res) => {
       anuncio.utilizador._id,
       "Pedido de Destaque Revisto",
       `O teu pedido de destaque para "${anuncio.titulo}" não foi aprovado. Contacta o suporte para mais info.`,
-      'alerta_sistema',
+      'sistema',
       `/anuncio/${anuncio._id}`,
       req.io
     );

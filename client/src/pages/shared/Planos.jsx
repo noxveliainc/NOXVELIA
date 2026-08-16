@@ -23,6 +23,21 @@ export default function Planos() {
   const [aSincronizar, setASincronizar] = useState(false);
   const temSubscricaoStripe = Boolean(user?.stripeCustomerId || user?.stripeSubscriptionId);
   const temAcessoProfissionalManual = Boolean(user?.premiumAtivo && !temSubscricaoStripe);
+  const proximoPagamento = user?.proximoPagamentoPremium ? new Date(user.proximoPagamentoPremium) : null;
+  const proximoPagamentoValido = proximoPagamento && !Number.isNaN(proximoPagamento.getTime());
+  const diasAteProximoPagamento = proximoPagamentoValido
+    ? Math.max(0, Math.ceil((proximoPagamento.getTime() - Date.now()) / 86400000))
+    : null;
+  const textoDiasRestantes = diasAteProximoPagamento === null
+    ? null
+    : diasAteProximoPagamento === 0
+      ? 'hoje'
+      : diasAteProximoPagamento === 1
+        ? '1 dia'
+        : `${diasAteProximoPagamento} dias`;
+  const dataProximoPagamento = proximoPagamentoValido
+    ? proximoPagamento.toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
+    : null;
 
   // Quando o Stripe devolve com sucesso, sincroniza o estado premium
   useEffect(() => {
@@ -85,12 +100,6 @@ export default function Planos() {
     'Regras claras: se cancelares, os anúncios ativos continuam online',
   ];
 
-  const premiumHighlights = [
-    { title: 'Mais visibilidade', text: 'Os anúncios do plano PRO aparecem com prioridade e sinalização própria.' },
-    { title: 'Montra completa', text: 'Perfil público preparado para stands, mediadores e vendedores ativos.' },
-    { title: 'Leitura rápida', text: 'Métricas simples para perceber visitas, contactos e qualidade dos anúncios.' },
-    { title: 'Sem surpresas', text: 'Antes do pagamento mostramos exatamente o que acontece se cancelares.' },
-  ];
 
   return (
     <>
@@ -138,6 +147,91 @@ export default function Planos() {
           margin-bottom: 20px;
         }
 
+        .pl-active-panel {
+          max-width: 780px;
+          margin: 0 auto;
+          padding: 26px;
+          border: 1px solid #e2e8f0;
+          border-radius: 24px;
+          background: #ffffff;
+          box-shadow: 0 20px 45px -30px rgba(15, 23, 42, 0.32);
+        }
+        .pl-active-head {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 20px;
+        }
+        .pl-active-head h2 {
+          margin: 6px 0 4px;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 25px;
+          letter-spacing: 0;
+        }
+        .pl-active-head p {
+          margin: 0;
+          color: #64748b;
+          font-size: 13.5px;
+          line-height: 1.5;
+        }
+        .pl-active-status {
+          flex: 0 0 auto;
+          padding: 8px 12px;
+          border-radius: 999px;
+          background: rgba(16, 47, 80, .08);
+          color: #102f50;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+        .pl-active-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 14px;
+          margin-bottom: 18px;
+        }
+        .pl-active-metric {
+          padding: 18px;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          background: #fbfaf7;
+        }
+        .pl-active-label {
+          display: block;
+          margin-bottom: 8px;
+          color: #64748b;
+          font-size: 11px;
+          font-weight: 850;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+        .pl-active-value {
+          display: block;
+          color: #071326;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 24px;
+          font-weight: 850;
+          line-height: 1.1;
+        }
+        .pl-active-small {
+          display: block;
+          margin-top: 7px;
+          color: #64748b;
+          font-size: 12px;
+          line-height: 1.45;
+        }
+        .pl-active-actions {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .pl-active-actions .pl-btn {
+          width: auto;
+          min-width: 190px;
+          padding-inline: 18px;
+        }
         .pl-grid {
           max-width: 780px;
           margin: 0 auto;
@@ -344,6 +438,10 @@ export default function Planos() {
         @media (max-width: 720px) {
           .pl-grid { grid-template-columns: 1fr; max-width: 380px; }
           .pl-premium-strip { grid-template-columns: 1fr; max-width: 380px; }
+          .pl-active-panel { max-width: 380px; padding: 20px; }
+          .pl-active-head, .pl-active-actions { flex-direction: column; }
+          .pl-active-grid { grid-template-columns: 1fr; }
+          .pl-active-actions .pl-btn { width: 100%; }
         }
       `}</style>
 
@@ -357,15 +455,50 @@ export default function Planos() {
         {aSincronizar && (
           <p className="pl-sync">A confirmar o teu pagamento...</p>
         )}
-        <div className="pl-premium-strip">
-          {premiumHighlights.map((item) => (
-            <div className="pl-premium-note" key={item.title}>
-              <strong>{item.title}</strong>
-              <span>{item.text}</span>
-            </div>
-          ))}
-        </div>
 
+
+        {user?.premiumAtivo ? (
+          <section className="pl-active-panel" aria-label="Estado do plano PRO">
+            <div className="pl-active-head">
+              <div>
+                <span className="pl-badge pl-badge--active">Plano atual</span>
+                <h2>PRO ativo</h2>
+                <p>{temAcessoProfissionalManual ? 'Acesso atribuído pela administração.' : 'A tua subscrição está ativa na Stripe.'}</p>
+              </div>
+              <span className="pl-active-status">Ativo</span>
+            </div>
+
+            <div className="pl-active-grid">
+              <div className="pl-active-metric">
+                <span className="pl-active-label">Próximo pagamento</span>
+                <strong className="pl-active-value">
+                  {temAcessoProfissionalManual ? 'Sem cobrança' : textoDiasRestantes || 'A confirmar'}
+                </strong>
+                <span className="pl-active-small">
+                  {temAcessoProfissionalManual
+                    ? 'Este plano não tem portal Stripe associado.'
+                    : dataProximoPagamento || 'A data aparece após sincronização da subscrição.'}
+                </span>
+              </div>
+              <div className="pl-active-metric">
+                <span className="pl-active-label">Renovação</span>
+                <strong className="pl-active-value">10,99€ / mês</strong>
+                <span className="pl-active-small">Cobrança automática no método de pagamento guardado na Stripe.</span>
+              </div>
+            </div>
+
+            <div className="pl-active-actions">
+              {!temAcessoProfissionalManual && (
+                <button className="pl-btn pl-btn--outline-pro" onClick={abrirPortalCliente} disabled={loadingStripe}>
+                  {loadingStripe ? <SpinnerIcon /> : 'Gerir subscrição'}
+                </button>
+              )}
+              <button className="pl-btn pl-btn--primary" type="button" onClick={() => navigate('/pro')}>
+                Abrir painel PRO
+              </button>
+            </div>
+          </section>
+        ) : (
         <div className="pl-grid">
           {/* PLANO GRATUITO */}
           <div className="pl-card">
@@ -417,8 +550,7 @@ export default function Planos() {
             )}
           </div>
         </div>
-
-        <p className="pl-note">Podes cancelar a qualquer momento através do portal de gestão da subscrição.</p>
+        )}
       </div>
     </>
   );

@@ -56,6 +56,9 @@ export default function AdminDashboard() {
 
   const [stats, setStats] = useState(null);
   const [funnel, setFunnel] = useState(null);
+  const [financeiro, setFinanceiro] = useState(null);
+  const [financeiroForm, setFinanceiroForm] = useState({ gastoSite: '', entradaSite: '', notas: '' });
+  const [savingFinanceiro, setSavingFinanceiro] = useState(false);
   const [funnelDays, setFunnelDays] = useState(30);
   const [utilizadores, setUtilizadores] = useState([]);
   const [anuncios, setAnuncios] = useState([]);
@@ -100,6 +103,12 @@ export default function AdminDashboard() {
       setUtilizadores(resUsers.data);
       setAnuncios(resAnuncios.data);
       setFunnel(resFunnel.data);
+      setFinanceiro(resFinanceiro.data?.financeiro || null);
+      setFinanceiroForm({
+        gastoSite: String(resFinanceiro.data?.financeiro?.gastoSite ?? ''),
+        entradaSite: String(resFinanceiro.data?.financeiro?.entradaSite ?? ''),
+        notas: resFinanceiro.data?.financeiro?.notas || ''
+      });
       setUltimaAtualizacao(new Date());
     } catch {
       setErro('Não foi possível atualizar os dados operacionais. Tenta novamente.');
@@ -143,6 +152,28 @@ export default function AdminDashboard() {
     }
   };
 
+
+  const alterarFinanceiro = (campo) => (event) => {
+    setFinanceiroForm((atual) => ({ ...atual, [campo]: event.target.value }));
+  };
+
+  const guardarFinanceiro = async (event) => {
+    event.preventDefault();
+    setSavingFinanceiro(true);
+    try {
+      const { data } = await api.put('/admin/financeiro', financeiroForm);
+      setFinanceiro(data.financeiro);
+      setFinanceiroForm({
+        gastoSite: String(data.financeiro?.gastoSite ?? ''),
+        entradaSite: String(data.financeiro?.entradaSite ?? ''),
+        notas: data.financeiro?.notas || ''
+      });
+    } catch (err) {
+      alert(err.response?.data?.erro || 'Não foi possível guardar o balanço financeiro.');
+    } finally {
+      setSavingFinanceiro(false);
+    }
+  };
   const alterarEstadoAnuncio = async (id, estado) => {
     setIsUpdatingStatus(id);
     try {
@@ -234,7 +265,11 @@ export default function AdminDashboard() {
     { key: 'respostasProfissionais', label: 'Respostas profissionais', detail: 'respostas às parcerias', color: '#fb7185' },
   ];
   const formatMetric = (value) => new Intl.NumberFormat('pt-PT').format(value || 0);
-  const visitasReais = funnel?.visitasReais || {};
+  const moeda = (value) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(Number(value || 0));
+  const gastoSite = Number(financeiro?.gastoSite || 0);
+  const entradaSite = Number(financeiro?.entradaSite || 0);
+  const saldoSite = Number(financeiro?.saldo ?? (entradaSite - gastoSite));
+  const retornoSite = gastoSite > 0 ? `${(((entradaSite - gastoSite) / gastoSite) * 100).toFixed(1)}% retorno` : 'sem base de gasto';  const visitasReais = funnel?.visitasReais || {};
   const visitantesHoje = Number(visitasReais.hoje || 0);
   const visitantesOntem = Number(visitasReais.ontem || 0);
   const diferencaVisitantesHoje = visitantesHoje - visitantesOntem;
@@ -502,6 +537,7 @@ export default function AdminDashboard() {
             { id: 'contas', label: 'Gestão & Auditoria', icon: <Icon path={mdiAccountMultiple} size={0.7} />, count: totalUtilizadoresTabela },
             { id: 'anuncios', label: 'Moderação de Anúncios', icon: <Icon path={mdiFileDocumentOutline} size={0.7} />, count: anuncios.length },
             { id: 'criativos', label: 'Criativos', icon: <Icon path={mdiImageMultipleOutline} size={0.7} /> },
+            { id: 'financas', label: 'Finanças', icon: <Icon path={mdiCurrencyEur} size={0.7} /> },
             { id: 'publicidade', label: 'Publicidade', icon: <Icon path={mdiCurrencyEur} size={0.7} /> },
             { id: 'stock-pedidos', label: 'Pedidos de stock', icon: <Icon path={mdiFileDocumentOutline} size={0.7} /> },
             { id: 'integracoes', label: 'Integrações de stock', icon: <Icon path={mdiRefresh} size={0.7} /> },
@@ -1019,6 +1055,19 @@ export default function AdminDashboard() {
             <AdminPostImages anuncios={anuncios} colors={COLORS} fonts={{ display: FONT_DISPLAY, body: FONT_BODY, mono: FONT_MONO }} />
           )}
 
+
+          {activeTab === 'financas' && (
+            <AdminFinancePanel
+              financeiro={financeiro}
+              form={financeiroForm}
+              onChange={alterarFinanceiro}
+              onSubmit={guardarFinanceiro}
+              saving={savingFinanceiro}
+              moeda={moeda}
+              saldo={saldoSite}
+              retorno={retornoSite}
+            />
+          )}
           {activeTab === 'publicidade' && (
             <AdminBanners colors={COLORS} fonts={{ display: FONT_DISPLAY, body: FONT_BODY, mono: FONT_MONO }} />
           )}
@@ -1054,6 +1103,92 @@ export default function AdminDashboard() {
 /* Sub-components                                                     */
 /* ------------------------------------------------------------------ */
 
+function AdminFinancePanel({ financeiro, form, onChange, onSubmit, saving, moeda, saldo, retorno }) {
+  const atualizado = financeiro?.atualizadoEm
+    ? new Date(financeiro.atualizadoEm).toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' })
+    : 'Ainda sem registo';
+
+  return (
+    <div className="nx-overview-grid">
+      <section className="nx-overview-card" style={{ background: '#ffffff' }}>
+        <h2 className="nx-overview-title">Balanço manual do site</h2>
+        <p style={{ margin: '0 0 18px', color: COLORS.textDim, fontSize: 13, lineHeight: 1.55 }}>
+          Regista aqui, manualmente, quanto já gastaste no projeto e quanto entrou. Isto não altera Stripe nem pagamentos: é só controlo interno.
+        </p>
+        <form onSubmit={onSubmit} style={{ display: 'grid', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
+            <label style={{ display: 'grid', gap: 7, color: COLORS.textDim, fontSize: 12, fontWeight: 800 }}>
+              Gasto no site (€)
+              <input
+                className="nx-input"
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.gastoSite}
+                onChange={onChange('gastoSite')}
+                placeholder="0.00"
+                style={{ minHeight: 44, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: '0 12px', color: COLORS.text, background: COLORS.panelAlt, fontFamily: FONT_BODY }}
+              />
+            </label>
+            <label style={{ display: 'grid', gap: 7, color: COLORS.textDim, fontSize: 12, fontWeight: 800 }}>
+              Dinheiro que entrou (€)
+              <input
+                className="nx-input"
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.entradaSite}
+                onChange={onChange('entradaSite')}
+                placeholder="0.00"
+                style={{ minHeight: 44, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: '0 12px', color: COLORS.text, background: COLORS.panelAlt, fontFamily: FONT_BODY }}
+              />
+            </label>
+          </div>
+          <label style={{ display: 'grid', gap: 7, color: COLORS.textDim, fontSize: 12, fontWeight: 800 }}>
+            Notas internas
+            <textarea
+              className="nx-input"
+              value={form.notas}
+              onChange={onChange('notas')}
+              placeholder="Ex: domínio, servidor, publicidade, ferramentas, entradas manuais..."
+              rows={4}
+              style={{ border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: 12, color: COLORS.text, background: COLORS.panelAlt, fontFamily: FONT_BODY, resize: 'vertical' }}
+            />
+          </label>
+          <button
+            type="submit"
+            className="nx-btn"
+            disabled={saving}
+            style={{ justifySelf: 'start', minHeight: 42, padding: '0 16px', borderRadius: 10, border: `1px solid ${COLORS.gold}`, background: COLORS.goldDim, color: COLORS.gold, fontFamily: FONT_MONO, fontSize: 12, fontWeight: 900, letterSpacing: '.06em', cursor: saving ? 'wait' : 'pointer' }}
+          >
+            {saving ? 'A guardar...' : 'Guardar balanço'}
+          </button>
+        </form>
+      </section>
+
+      <section className="nx-overview-card">
+        <h2 className="nx-overview-title">Resumo</h2>
+        <div className="nx-signal-list">
+          <div className="nx-signal">
+            <div><strong>Entrou</strong><span style={{ display: 'block', marginTop: 3 }}>Valor manual acumulado</span></div>
+            <span style={{ color: COLORS.green, fontWeight: 900 }}>{moeda(financeiro?.entradaSite || 0)}</span>
+          </div>
+          <div className="nx-signal">
+            <div><strong>Gasto</strong><span style={{ display: 'block', marginTop: 3 }}>Custos manuais acumulados</span></div>
+            <span style={{ color: COLORS.red, fontWeight: 900 }}>{moeda(financeiro?.gastoSite || 0)}</span>
+          </div>
+          <div className="nx-signal">
+            <div><strong>Saldo</strong><span style={{ display: 'block', marginTop: 3 }}>{retorno}</span></div>
+            <span className={`nx-status-chip ${saldo >= 0 ? 'ativo' : 'pendente'}`}>{moeda(saldo)}</span>
+          </div>
+          <div className="nx-signal">
+            <div><strong>Atualizado</strong><span style={{ display: 'block', marginTop: 3 }}>{atualizado}</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
 function Avatar({ nome, isSoberano, premium }) {
   const inicial = nome ? nome.charAt(0).toUpperCase() : '?';
   let bg = '#e8f0ed', border = COLORS.border, color = COLORS.text;

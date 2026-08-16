@@ -42,13 +42,6 @@ export default function NavbarCarro() {
 
 
 
-  const handleIrParaHome = (e) => {
-    e.preventDefault();
-    setMenuMobileAberto(false);
-    navigate('/');
-  };
-
-
   const handlePRO = (e) => {
     e.preventDefault();
     setMenuMobileAberto(false);
@@ -292,6 +285,11 @@ export default function NavbarCarro() {
         .ncr-divider { background: rgba(255, 250, 240, .24) !important; }
         .ncr-avatar { background: #fffaf0 !important; border-color: rgba(217, 196, 156, .82) !important; }
         .ncr-avatar-initial { color: #102f50 !important; }
+        .ncr-user-dropdown { background: #fffaf0 !important; border-color: rgba(217, 196, 156, .38) !important; }
+        .ncr-ud-item { color: #102f50 !important; }
+        .ncr-ud-item:hover { color: #071326 !important; background: rgba(16, 47, 80, .08) !important; }
+        .ncr-ud-divider { background: rgba(16, 47, 80, .12) !important; }
+        .ncr-ud-item.logout:hover { color: #b42318 !important; background: #fff3f1 !important; }
         .ncr-pro-badge,
         .ncr-ud-pro { background: #d9c49c !important; color: #071326 !important; }
       `}</style>
@@ -317,10 +315,6 @@ export default function NavbarCarro() {
 
         {/* 🌟 DESKTOP ACTIONS */}
         <div className="ncr-actions">
-          <button type="button" onClick={handleIrParaHome} className="ncr-btn-menu ncr-btn-home" aria-label="Voltar à página inicial">
-            <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10.5V20h13v-9.5" /><path d="M9.5 20v-5h5v5" /></svg>
-            Início
-          </button>
           <Link to="/profissionais" className="ncr-btn-menu">
             <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
             Profissionais
@@ -403,10 +397,6 @@ export default function NavbarCarro() {
             </div>
 
             <div className="ncr-drawer-menu">
-              <button type="button" className="ncr-drawer-link ncr-drawer-link-home" onClick={handleIrParaHome}>
-                <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10.5V20h13v-9.5" /><path d="M9.5 20v-5h5v5" /></svg>
-                Página inicial
-              </button>
               <Link to="/profissionais" className="ncr-drawer-link" onClick={() => setMenuMobileAberto(false)}>
                 <svg viewBox="0 0 24 24"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-3" /><path d="M9 9h1M9 13h1M9 17h1" /></svg>
                 Profissionais

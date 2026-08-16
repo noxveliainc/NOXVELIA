@@ -67,7 +67,7 @@ const normalizarLinksPerfil = (links = []) => {
 // ─────────────────────────────────────────────────────────────
 router.get('/me', verificarToken, async (req, res) => {
   try {
-    const utilizador = await User.findById(req.user.id).select('+premiumAtivo +dataExpiracaoPremium');
+    const utilizador = await User.findById(req.user.id).select('+premiumAtivo +dataExpiracaoPremium +proximoPagamentoPremium');
     if (!utilizador) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
 
     // Fallback para acessos Premium atribuídos manualmente com data de expiração.
@@ -171,7 +171,7 @@ router.put('/me', verificarToken, async (req, res) => {
       req.user.id,
       { $set: camposParaAtualizar },
       { new: true, runValidators: true }
-    ).select('+premiumAtivo +dataExpiracaoPremium');
+    ).select('+premiumAtivo +dataExpiracaoPremium +proximoPagamentoPremium');
 
     if (avatarUrl !== undefined) {
       if (avatarUrl) {

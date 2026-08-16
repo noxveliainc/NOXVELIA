@@ -40,6 +40,7 @@ export const buildPlanPayloadForUser = (user) => {
     ilimitado: proAtivo,
     proAtivo,
     premiumAtivo: user?.premiumAtivo === true,
+    proximoPagamentoPremium: user?.proximoPagamentoPremium || null,
     admin: user?.tipo === 'admin',
     tipoConta: user?.tipoConta || 'particular',
   };

@@ -25,7 +25,7 @@ const arredondar = (valor) => Math.round(numero(valor));
 const contarPalavras = (texto = '') => String(texto).trim().split(/\s+/).filter(Boolean).length;
 
 const obterUtilizadorAtual = (req) => User.findById(req.user.id)
-  .select('nome email telefone localidade tipo tipoConta premiumAtivo limiteAnuncios verificado rating totalAvaliacoes stripeCustomerId stripeSubscriptionId');
+  .select('nome email telefone localidade tipo tipoConta premiumAtivo proximoPagamentoPremium limiteAnuncios verificado rating totalAvaliacoes stripeCustomerId stripeSubscriptionId');
 
 const exigirPlanoPro = (user, res) => {
   if (userHasProAccess(user)) return true;

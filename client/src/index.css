@@ -481,18 +481,6 @@ h1, h2, h3, h4 {
    NOXVELIA · THEME, NAV AND FOOTER POLISH
    ========================================================================== */
 
-:where(.ncr-btn-home, .nim-btn-home) {
-  background: #ffffff !important;
-  border-color: rgba(217, 196, 156, 0.62) !important;
-  color: #102f50 !important;
-  font-weight: 850 !important;
-}
-
-:where(.ncr-btn-home, .nim-btn-home):hover {
-  background: #f0dfbb !important;
-  border-color: #d9c49c !important;
-}
-
 
 :where(.ncr-drawer-title, .nim-drawer-title) {
   color: #0f172a;
@@ -520,11 +508,6 @@ h1, h2, h3, h4 {
   text-transform: uppercase;
 }
 
-:where(.ncr-drawer-link-home, .nim-drawer-link-home) {
-  background: rgba(217, 196, 156, 0.18) !important;
-  border: 1px solid rgba(217, 196, 156, 0.42) !important;
-  color: #102f50 !important;
-}
 
 /* ==========================================================================
    Noxvelia refresh global: navegação, pesquisa e cartões.
@@ -612,10 +595,6 @@ body {
   color: #102f50 !important;
 }
 
-.ncr-btn-home,
-.nim-btn-home {
-  background: #ffffff !important;
-}
 
 .pesquisa-layout {
   max-width: 1280px !important;

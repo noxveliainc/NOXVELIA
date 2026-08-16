@@ -1,5 +1,5 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext'; 
 import { HelmetProvider } from 'react-helmet-async'; 
 
@@ -30,7 +30,6 @@ const Perfil         = lazy(() => import('./pages/shared/Perfil'));
 const ProDashboard   = lazy(() => import('./pages/shared/ProDashboard'));
 const Favoritos      = lazy(() => import('./pages/shared/Favoritos'));
 const PerfilPublico  = lazy(() => import('./pages/shared/PerfilPublico'));
-const VendedorStock  = lazy(() => import('./pages/shared/VendedorStock'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const SucessoUpsell  = lazy(() => import('./pages/shared/SucessoUpsell'));
 const Planos         = lazy(() => import('./pages/shared/Planos'));
@@ -44,6 +43,10 @@ const StockSubmeter  = lazy(() => import('./pages/shared/StockSubmeter'));
 const PoliticaPrivacidade = lazy(() => import('./pages/shared/PoliticaPrivacidade'));
 const SobreNos = lazy(() => import('./pages/shared/SobreNos'));
 
+function RedirectToVendedorProfile() {
+  const { id } = useParams();
+  return <Navigate to={`/vendedor/${id}`} replace />;
+}
 function LoadingFallback() {
   return (
     <LoadingScreen label="A preparar a NOXVELIA" detail="A carregar a experiência." minHeight="60vh" />
@@ -96,8 +99,8 @@ function AppShell() {
             <Route path="/carros/:marca/:modelo/:cidade/:id" element={<Anuncio />} />
             <Route path="/imoveis/:categoria/:cidade/:id" element={<Anuncio />} />
             <Route path="/vendedor/:id" element={<PerfilPublico />} />
-            <Route path="/vendedor/:id/stock" element={<VendedorStock />} />
-            <Route path="/vendedor/:id/inventario" element={<VendedorStock />} />
+            <Route path="/vendedor/:id/stock" element={<RedirectToVendedorProfile />} />
+            <Route path="/vendedor/:id/inventario" element={<RedirectToVendedorProfile />} />
             <Route path="/profissionais" element={<Profissionais />} />
             <Route path="/patrocinios" element={<Patrocinios />} />
             <Route path="/enviar-stock" element={<StockSubmeter />} />

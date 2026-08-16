@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import { absoluteUrl } from '../../utils/seo';
 import api from '../../services/api';
@@ -9,6 +9,36 @@ import ProfileView, { obterLinksVisiveisPerfil } from './ProfileView';
 import LoadingScreen from '../../components/LoadingScreen';
 import { Icon } from '@mdi/react';
 import { mdiArrowLeft, mdiViewDashboardOutline } from '@mdi/js';
+import { formatarMarcaModeloVeiculo } from '../../data/marcasModelos';
+
+const normalizarTexto = (valor) => String(valor || '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .trim();
+
+const numero = (valor) => {
+  const n = Number(valor);
+  return Number.isFinite(n) && String(valor).trim() !== '' ? n : null;
+};
+
+const unicoOrdenado = (lista) => [...new Set(lista.filter(Boolean))]
+  .sort((a, b) => String(a).localeCompare(String(b), 'pt-PT'));
+
+const obterMarca = (anuncio) => anuncio?.carro?.marca || '';
+const obterModelo = (anuncio) => anuncio?.carro?.modelo || '';
+const obterDistrito = (anuncio) => anuncio?.localizacao?.distrito || '';
+
+const filtrosIniciais = {
+  q: '',
+  categoria: 'todos',
+  marca: '',
+  modelo: '',
+  distrito: '',
+  precoMin: '',
+  precoMax: '',
+  ordem: 'destaque',
+};
 
 export default function PerfilPublico() {
   const { id } = useParams();
@@ -22,6 +52,7 @@ export default function PerfilPublico() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
   const [linkCopiado, setLinkCopiado] = useState(false);
+  const [filtros, setFiltros] = useState(filtrosIniciais);
 
   const voltarDaMontra = () => {
     if (adminAVerPerfil) {
@@ -58,6 +89,83 @@ export default function PerfilPublico() {
     setTimeout(() => setLinkCopiado(false), 2000);
   };
 
+  const isAdmin = vendedor?.tipo === 'admin';
+  const nomeBase = vendedor?.nome || 'Vendedor';
+  const nomeExibicao = isAdmin
+    ? (nomeBase.toUpperCase().includes('NOXVELIA') ? nomeBase : `NOXVELIA ${nomeBase}`)
+    : nomeBase;
+  const isProfissional = vendedor?.tipoConta === 'profissional' || isAdmin;
+  const linksPerfilVisiveis = obterLinksVisiveisPerfil(vendedor);
+
+  const totais = useMemo(() => ({
+    todos: anuncios.length,
+    carro: anuncios.filter((anuncio) => anuncio.tipo === 'carro').length,
+    imovel: anuncios.filter((anuncio) => anuncio.tipo === 'imovel').length,
+    destacados: anuncios.filter((anuncio) => anuncio.destacado).length,
+  }), [anuncios]);
+
+  const opcoes = useMemo(() => {
+    const carros = anuncios.filter((anuncio) => anuncio.tipo === 'carro');
+    const carrosDaMarca = filtros.marca
+      ? carros.filter((anuncio) => obterMarca(anuncio) === filtros.marca)
+      : carros;
+
+    return {
+      marcas: unicoOrdenado(carros.map(obterMarca)),
+      modelos: unicoOrdenado(carrosDaMarca.map(obterModelo)),
+      distritos: unicoOrdenado(anuncios.map(obterDistrito)),
+    };
+  }, [anuncios, filtros.marca]);
+
+  const anunciosFiltrados = useMemo(() => {
+    const termo = normalizarTexto(filtros.q);
+    const min = numero(filtros.precoMin);
+    const max = numero(filtros.precoMax);
+
+    const filtrados = anuncios.filter((anuncio) => {
+      if (filtros.categoria === 'carro' && anuncio.tipo !== 'carro') return false;
+      if (filtros.categoria === 'imovel' && anuncio.tipo !== 'imovel') return false;
+      if (filtros.categoria === 'destacados' && !anuncio.destacado) return false;
+      if (filtros.marca && obterMarca(anuncio) !== filtros.marca) return false;
+      if (filtros.modelo && obterModelo(anuncio) !== filtros.modelo) return false;
+      if (filtros.distrito && obterDistrito(anuncio) !== filtros.distrito) return false;
+      if (min !== null && Number(anuncio.preco || 0) < min) return false;
+      if (max !== null && Number(anuncio.preco || 0) > max) return false;
+
+      if (!termo) return true;
+      const texto = normalizarTexto([
+        anuncio.titulo,
+        formatarMarcaModeloVeiculo(anuncio.carro),
+        anuncio.carro?.combustivel,
+        anuncio.imovel?.tipoImovel,
+        anuncio.imovel?.tipologia,
+        anuncio.localizacao?.cidade,
+        anuncio.localizacao?.distrito,
+      ].filter(Boolean).join(' '));
+
+      return texto.includes(termo);
+    });
+
+    return [...filtrados].sort((a, b) => {
+      if (filtros.ordem === 'preco-asc') return Number(a.preco || 0) - Number(b.preco || 0);
+      if (filtros.ordem === 'preco-desc') return Number(b.preco || 0) - Number(a.preco || 0);
+      if (filtros.ordem === 'recentes') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      return Number(b.destacado === true) - Number(a.destacado === true)
+        || new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    });
+  }, [anuncios, filtros]);
+
+  const handleFiltro = (campo) => (event) => {
+    const valor = event.target.value;
+    setFiltros((atual) => ({
+      ...atual,
+      [campo]: valor,
+      ...(campo === 'marca' ? { modelo: '' } : {}),
+    }));
+  };
+
+  const limparFiltros = () => setFiltros(filtrosIniciais);
+
   if (loading) {
     return (
       <LoadingScreen label="A carregar vendedor" detail="Estamos a preparar a montra pública." minHeight="calc(100vh - 80px)" tone="light" />
@@ -73,17 +181,6 @@ export default function PerfilPublico() {
     );
   }
 
-  const isAdmin = vendedor?.tipo === 'admin';
-  const nomeBase = vendedor?.nome || 'Vendedor';
-  const nomeExibicao = isAdmin
-    ? (nomeBase.toUpperCase().includes('NOXVELIA') ? nomeBase : `NOXVELIA ${nomeBase}`)
-    : nomeBase;
-  const isProfissional = vendedor?.tipoConta === 'profissional' || isAdmin;
-  const linksPerfilVisiveis = obterLinksVisiveisPerfil(vendedor);
-  const totalImoveis = anuncios.filter((anuncio) => anuncio.tipo === 'imovel').length;
-  const totalCarros = anuncios.filter((anuncio) => anuncio.tipo === 'carro').length;
-  const totalDestacados = anuncios.filter((anuncio) => anuncio.destacado).length;
-  const anunciosPreview = anuncios.slice(0, 3);
   return (
     <>
       <Seo
@@ -110,17 +207,22 @@ export default function PerfilPublico() {
         .pp-summary-item { min-height: 86px; display: grid; align-content: center; gap: 7px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff; box-shadow: 0 18px 42px -36px rgba(15,23,42,.5); }
         .pp-summary-item strong { color: #0f172a; font-size: 28px; line-height: 1; font-family: 'Plus Jakarta Sans', sans-serif; }
         .pp-summary-item span { color: #64748b; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-        .pp-stock-panel { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px; padding: clamp(22px, 3vw, 34px); border: 1px solid #e6e1d6; border-radius: 22px; background: #ffffff; box-shadow: 0 22px 55px -45px rgba(15,23,42,.5); }
+        .pp-stock-panel { padding: clamp(22px, 3vw, 34px); border: 1px solid #e6e1d6; border-radius: 22px; background: #ffffff; box-shadow: 0 22px 55px -45px rgba(15,23,42,.5); }
         .pp-section-kicker { display: block; margin-bottom: 6px; color: #102f50; font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
         .pp-section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(26px, 3vw, 42px); line-height: 1; font-weight: 900; margin: 0; color: #0f172a; letter-spacing: -.03em; }
-        .pp-section-copy { margin: 7px 0 0; max-width: 620px; color: #64748b; font-size: 13px; line-height: 1.55; font-weight: 650; }
-        .pp-stock-cta { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; padding: 0 18px; border-radius: 12px; background: #102f50; color: #ffffff; border: 1px solid #102f50; font-size: 13px; font-weight: 900; text-decoration: none; white-space: nowrap; }
-        .pp-stock-cta:hover { background: #0a223b; }
-        .pp-stock-cta:focus-visible { outline: 2px solid #102f50; outline-offset: 3px; }
-        .pp-preview-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 26px 0 18px; }
+        .pp-section-copy { margin: 7px 0 0; max-width: 720px; color: #64748b; font-size: 13px; line-height: 1.55; font-weight: 650; }
+        .pp-filters { margin-top: 22px; padding: clamp(15px, 2vw, 20px); border: 1px solid #e6e1d6; border-radius: 18px; background: #f7f5ef; }
+        .pp-filter-top { display: grid; grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(140px, .75fr)) auto; gap: 12px; align-items: end; }
+        .pp-filter-bottom { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+        .pp-field { display: grid; gap: 7px; }
+        .pp-field label { color: #102f50; font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .pp-field input, .pp-field select { width: 100%; min-height: 44px; border: 1px solid #e6e1d6; border-radius: 12px; background: #ffffff; color: #071326; padding: 0 13px; font: inherit; font-size: 14px; font-weight: 650; outline: none; box-sizing: border-box; }
+        .pp-field input:focus-visible, .pp-field select:focus-visible, .pp-clear:focus-visible, .pp-back:focus-visible { outline: 2px solid #102f50; outline-offset: 2px; }
+        .pp-clear { min-height: 44px; padding: 0 15px; border: 1px solid #102f50; border-radius: 12px; color: #102f50; background: #ffffff; font-size: 12px; font-weight: 900; cursor: pointer; white-space: nowrap; }
+        .pp-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 24px 0 18px; }
         .pp-preview-title { margin: 0; color: #0f172a; font-size: 17px; font-weight: 900; }
-        .pp-preview-link { color: #102f50; font-size: 12px; font-weight: 900; text-decoration: none; }
-        .pp-preview-link:hover { text-decoration: underline; }
+        .pp-result-copy { margin: 3px 0 0; color: #64748b; font-size: 13px; font-weight: 650; }
+        .pp-result-count { color: #102f50; font-size: 12px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
         .pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 22px; }
         .pp-empty { min-height: 220px; display: grid; place-items: center; padding: 38px 20px; border: 1px dashed #cbd5e1; border-radius: 14px; background: #ffffff; text-align: center; }
         .pp-empty-inner { max-width: 520px; }
@@ -129,10 +231,19 @@ export default function PerfilPublico() {
         .pp-empty-btn { min-height: 42px; padding: 0 16px; border: 0; border-radius: 10px; background: #0f172a; color: #ffffff; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; }
         .pp-empty-btn:hover { background: #1e293b; }
         .pp-empty-standalone { margin-top: 4px; }
+        @media (max-width: 1040px) {
+          .pp-filter-top, .pp-filter-bottom { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .pp-clear { width: 100%; }
+        }
         @media (max-width: 860px) {
           .pp-showcase-summary { grid-template-columns: 1fr; margin-top: 0; }
-          .pp-stock-panel { grid-template-columns: 1fr; align-items: start; }
-          .pp-stock-cta { width: 100%; }
+          .pp-stock-panel { border-radius: 18px; }
+        }
+        @media (max-width: 680px) {
+          .pp-hero { padding: 26px 16px 18px; margin-bottom: 30px; }
+          .pp-main { padding: 0 16px; }
+          .pp-filter-top, .pp-filter-bottom { grid-template-columns: 1fr; }
+          .pp-toolbar { align-items: flex-start; flex-direction: column; }
         }
       `}</style>
 
@@ -152,8 +263,8 @@ export default function PerfilPublico() {
             <ProfileView
               user={vendedor}
               isOwner={false}
-              totalImoveis={totalImoveis}
-              totalCarros={totalCarros}
+              totalImoveis={totais.imovel}
+              totalCarros={totais.carro}
               links={linksPerfilVisiveis}
               onShare={copiarLinkMontra}
               linkCopiado={linkCopiado}
@@ -165,29 +276,90 @@ export default function PerfilPublico() {
           {anuncios.length > 0 ? (
             <>
               <div className="pp-showcase-summary" aria-label="Resumo da montra">
-                <div className="pp-summary-item"><strong>{anuncios.length}</strong><span>anúncios ativos</span></div>
-                <div className="pp-summary-item"><strong>{totalCarros}</strong><span>automóveis</span></div>
-                <div className="pp-summary-item"><strong>{totalImoveis}</strong><span>imóveis</span></div>
-                <div className="pp-summary-item"><strong>{totalDestacados}</strong><span>destaques</span></div>
+                <div className="pp-summary-item"><strong>{totais.todos}</strong><span>anúncios ativos</span></div>
+                <div className="pp-summary-item"><strong>{totais.carro}</strong><span>automóveis</span></div>
+                <div className="pp-summary-item"><strong>{totais.imovel}</strong><span>imóveis</span></div>
+                <div className="pp-summary-item"><strong>{totais.destacados}</strong><span>destaques</span></div>
               </div>
 
-              <div className="pp-stock-panel">
+              <section className="pp-stock-panel" aria-label="Stock público do vendedor">
                 <div>
                   <span className="pp-section-kicker">Stock público</span>
                   <h2 className="pp-section-title">Anúncios de {nomeExibicao}</h2>
-                  <p className="pp-section-copy">Abre a página de stock para pesquisar apenas dentro dos anúncios deste vendedor, com filtros por categoria, preço, marca, modelo e localização.</p>
+                  <p className="pp-section-copy">Todo o stock público deste vendedor está agora concentrado no perfil. Filtra por categoria, preço, marca, modelo ou localização sem sair da montra.</p>
                 </div>
-                <Link className="pp-stock-cta" to={`/vendedor/${id}/stock`}>Ver stock completo</Link>
-              </div>
 
-              {anunciosPreview.length > 0 && (
-                <>
-                  <div className="pp-preview-head">
-                    <h3 className="pp-preview-title">Últimos anúncios</h3>
-                    <Link className="pp-preview-link" to={`/vendedor/${id}/stock`}>Ver todos</Link>
+                <div className="pp-filters" aria-label="Filtros do stock">
+                  <div className="pp-filter-top">
+                    <div className="pp-field">
+                      <label htmlFor="pp-q">Pesquisa</label>
+                      <input id="pp-q" value={filtros.q} onChange={handleFiltro('q')} placeholder="Marca, modelo, cidade ou palavra-chave" />
+                    </div>
+                    <div className="pp-field">
+                      <label htmlFor="pp-categoria">Categoria</label>
+                      <select id="pp-categoria" value={filtros.categoria} onChange={handleFiltro('categoria')}>
+                        <option value="todos">Tudo</option>
+                        <option value="carro">Automóveis</option>
+                        <option value="imovel">Imóveis</option>
+                        <option value="destacados">Destaques</option>
+                      </select>
+                    </div>
+                    <div className="pp-field">
+                      <label htmlFor="pp-distrito">Distrito</label>
+                      <select id="pp-distrito" value={filtros.distrito} onChange={handleFiltro('distrito')}>
+                        <option value="">Portugal inteiro</option>
+                        {opcoes.distritos.map((distrito) => <option key={distrito} value={distrito}>{distrito}</option>)}
+                      </select>
+                    </div>
+                    <div className="pp-field">
+                      <label htmlFor="pp-ordem">Ordenar</label>
+                      <select id="pp-ordem" value={filtros.ordem} onChange={handleFiltro('ordem')}>
+                        <option value="destaque">Destaque primeiro</option>
+                        <option value="recentes">Mais recentes</option>
+                        <option value="preco-asc">Preço crescente</option>
+                        <option value="preco-desc">Preço decrescente</option>
+                      </select>
+                    </div>
+                    <button type="button" className="pp-clear" onClick={limparFiltros}>Limpar</button>
                   </div>
+
+                  <div className="pp-filter-bottom">
+                    <div className="pp-field">
+                      <label htmlFor="pp-marca">Marca</label>
+                      <select id="pp-marca" value={filtros.marca} onChange={handleFiltro('marca')}>
+                        <option value="">Todas</option>
+                        {opcoes.marcas.map((marca) => <option key={marca} value={marca}>{marca}</option>)}
+                      </select>
+                    </div>
+                    <div className="pp-field">
+                      <label htmlFor="pp-modelo">Modelo</label>
+                      <select id="pp-modelo" value={filtros.modelo} onChange={handleFiltro('modelo')}>
+                        <option value="">Todos</option>
+                        {opcoes.modelos.map((modelo) => <option key={modelo} value={modelo}>{modelo}</option>)}
+                      </select>
+                    </div>
+                    <div className="pp-field">
+                      <label htmlFor="pp-preco-min">Preço mínimo</label>
+                      <input id="pp-preco-min" type="number" min="0" value={filtros.precoMin} onChange={handleFiltro('precoMin')} placeholder="Mínimo" />
+                    </div>
+                    <div className="pp-field">
+                      <label htmlFor="pp-preco-max">Preço máximo</label>
+                      <input id="pp-preco-max" type="number" min="0" value={filtros.precoMax} onChange={handleFiltro('precoMax')} placeholder="Máximo" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pp-toolbar">
+                  <div>
+                    <h3 className="pp-preview-title">Anúncios ativos</h3>
+                    <p className="pp-result-copy">Resultados do stock ativo de {nomeExibicao}.</p>
+                  </div>
+                  <span className="pp-result-count">{anunciosFiltrados.length} de {anuncios.length}</span>
+                </div>
+
+                {anunciosFiltrados.length > 0 ? (
                   <div className="pp-grid">
-                    {anunciosPreview.map((anuncio) => {
+                    {anunciosFiltrados.map((anuncio) => {
                       const utilizadorPopulado = anuncio?.utilizador && typeof anuncio.utilizador === 'object'
                         ? anuncio.utilizador
                         : vendedor;
@@ -201,8 +373,16 @@ export default function PerfilPublico() {
                       );
                     })}
                   </div>
-                </>
-              )}
+                ) : (
+                  <div className="pp-empty">
+                    <div className="pp-empty-inner">
+                      <h3>Sem resultados para estes filtros</h3>
+                      <p>Experimenta limpar os filtros ou procurar por outra marca, localização ou intervalo de preço.</p>
+                      <button type="button" className="pp-empty-btn" onClick={limparFiltros}>Limpar filtros</button>
+                    </div>
+                  </div>
+                )}
+              </section>
             </>
           ) : (
             <div className="pp-empty pp-empty-standalone">
