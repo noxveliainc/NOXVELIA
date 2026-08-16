@@ -179,18 +179,28 @@ export default function NavbarLanding() {
           stroke-linecap: round;
         }
 
+        /* FIX: fundo 100% opaco (sem alfa) + camada de composição própria,
+           para evitar o bug de transparência causado pelo backdrop-filter
+           do .nl-root em Safari/Chrome mobile, onde o fundo do dropdown
+           deixava "sangrar" o conteúdo por trás (hero da Landing). */
         .nl-mobile-menu {
           position: absolute;
           top: calc(100% + 8px);
           left: 16px;
           right: 16px;
+          z-index: 60;
           display: none;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 8px;
           padding: 12px;
           border: 1px solid rgba(8, 33, 38, 0.12);
           border-radius: 14px;
-          background: rgba(255, 255, 255, 0.98);
+          background-color: #fffaf0;
+          -webkit-backdrop-filter: none;
+          backdrop-filter: none;
+          isolation: isolate;
+          transform: translateZ(0);
+          will-change: transform;
           box-shadow: 0 22px 54px -30px rgba(8, 33, 38, 0.5);
         }
 

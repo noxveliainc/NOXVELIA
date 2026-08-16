@@ -1,1 +1,0 @@
-import"./rolldown-runtime-QTnfLwEv.js";import{S as e,j as t}from"./index-CIYLZE4E.js";import{t as n}from"./Pesquisa-DAT7P5pb.js";t();var r=e();function i(){return(0,r.jsx)(n,{tipoPadrao:`carro`})}export{i as default};

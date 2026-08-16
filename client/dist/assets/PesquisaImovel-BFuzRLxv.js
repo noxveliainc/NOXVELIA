@@ -1,1 +1,0 @@
-import{O as e,y as t}from"./index-ChZw1uni.js";import{t as n}from"./Pesquisa-rRx3obvJ.js";e();var r=t();function i(){return(0,r.jsx)(n,{tipoPadrao:`imovel`})}export{i as default};
