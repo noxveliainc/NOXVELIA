@@ -247,7 +247,7 @@ export default function NavbarLanding() {
           min-height: 42px;
           width: 100%;
           padding: 0 12px;
-          color: #355158;
+          color: #355158 !important;
           border: 0;
           border-radius: 9px;
           text-decoration: none;
@@ -261,13 +261,13 @@ export default function NavbarLanding() {
           grid-column: 1 / -1;
           justify-content: center;
           min-height: 46px;
-          color: #ffffff;
+          color: #ffffff !important;
           background: #071326;
         }
 
         .nl-mobile-menu a:hover,
         .nl-mobile-menu button:hover {
-          color: #071326;
+          color: #071326 !important;
           background: #edf6f3;
         }
 
