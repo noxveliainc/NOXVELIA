@@ -32,10 +32,10 @@ export default function Landing() {
   const heroTitleRef = useRef(null);
   const aosRef = useRef(null);
   const animeRef = useRef(null);
-
+  
   const publicarTo = signed ? '/publicar' : '/login';
   const publicarState = signed ? undefined : publishIntentState(location, '/');
-
+  
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
   const [resumoPublico, setResumoPublico] = useState(null);
   const [noticiasMercado, setNoticiasMercado] = useState([]);
@@ -102,7 +102,7 @@ export default function Landing() {
   useEffect(() => {
     let ativo = true;
     api.get('/anuncios/resumo-publico').then(({ data }) => { if (ativo) setResumoPublico(data || null); }).catch(() => { if (ativo) setResumoPublico(null); });
-
+    
     api.get('/market-news?limit=6')
       .then(({ data }) => { if (ativo) setNoticiasMercado(Array.isArray(data?.items) ? data.items : []); })
       .catch(() => { if (ativo) setNoticiasMercado([]); });
@@ -155,12 +155,12 @@ export default function Landing() {
               <span className="lp-kicker lp-hero-kicker">Pesquisa em Portugal</span>
               <h1 id="lp-title" ref={heroTitleRef} style={{ textAlign: 'center' }}>Automóveis e imóveis, sem intermediários.</h1>
               <p style={{ textAlign: 'center' }}>Fala diretamente com quem anuncia, sem comissões pelo caminho. Encontra o teu próximo carro ou casa.</p>
-
+              
               <div className="lp-hero-actions" aria-label="Ações principais" style={{ justifyContent: 'center', marginTop: '12px' }}>
                 <Link className="lp-main-cta" to="/carros">Explorar Automóveis</Link>
                 <Link className="lp-soft-cta" to="/imoveis">Explorar Imóveis</Link>
               </div>
-
+              
               <ul className="lp-trust-row" style={{ justifyContent: 'center', marginTop: '18px' }}>
                 {TRUST_POINTS.map((ponto) => <li key={ponto.texto}><CheckCircle2 size={15} strokeWidth={2.4} aria-hidden="true" /> {ponto.texto}</li>)}
               </ul>
@@ -202,7 +202,7 @@ export default function Landing() {
           </section>
         )}
 
-        {/* NOTÍCIAS */}
+        {/* NOTÍCIAS (MANTIDO) */}
         {noticiasMercado.length > 0 && (
           <section className="lp-section lp-news-section" id="atualidade" aria-labelledby="lp-news" data-aos="fade-up">
             <div className="lp-shell">
@@ -237,7 +237,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* CARVERTICAL */}
+        {/* CARVERTICAL (MANTIDO) */}
         <section className="lp-section lp-cv-section" id="carvertical" aria-labelledby="lp-cv" data-aos="fade-up">
           <div className="lp-shell lp-cv-card">
             <div>
