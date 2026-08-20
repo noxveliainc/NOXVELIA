@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
   // 🌟 ESTADO PARA CONTROLAR OS TICKETS DE SUPORTE
@@ -82,7 +83,7 @@ export default function Footer() {
         <div className="suporte-modal-overlay" onClick={() => setModalSuporteAberto(false)}>
           <div className="suporte-modal-card" onClick={e => e.stopPropagation()}>
             <h2 style={{ fontFamily: 'var(--nx-font-display, sans-serif)', fontSize: '24px', fontWeight: 800, margin: '0 0 8px 0' }}>Central de Ajuda</h2>
-            <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0 0 28px 0', lineHeight: 1.5 }}>Envia a tua questão técnica. Respondemos assim que possível.</p>
+            <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0 0 28px 0', lineHeight: 1.5 }}>Envie a sua questão técnica. Respondemos assim que possível.</p>
 
             {suporteSucesso ? (
               <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '16px', borderRadius: '8px', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>
@@ -149,16 +150,17 @@ export default function Footer() {
             <div className="nx-footer-links">
               <div className="nx-footer-col">
                 <h4>Plataforma</h4>
-                <a href="/carros">Carros</a>
-                <a href="/imoveis">Imóveis</a>
-                <a href="/profissionais">Profissionais</a>
+                <Link to="/carros">Carros</Link>
+                <Link to="/imoveis">Imóveis</Link>
+                <Link to="/profissionais">Profissionais</Link>
               </div>
               <div className="nx-footer-col">
                 <h4>Empresa</h4>
-                <a href="/sobre-nos">Sobre nós</a>
+                <Link to="/sobre-nos">Sobre nós</Link>
+                <Link to="/patrocinios">Anunciar Marca</Link>
                 <button onClick={() => setModalSuporteAberto(true)}>Ajuda</button>
-                <a href="/privacidade">Termos e Condições</a>
-                <a href="/privacidade">Política de Privacidade</a>
+                <Link to="/privacidade">Termos e Condições</Link>
+                <Link to="/privacidade">Política de Privacidade</Link>
               </div>
             </div>
 
@@ -189,4 +191,3 @@ export default function Footer() {
     </>
   );
 }
-
