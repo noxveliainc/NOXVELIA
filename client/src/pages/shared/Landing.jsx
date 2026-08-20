@@ -175,7 +175,7 @@ export default function Landing() {
     navigate(anuncioPath(anuncio));
   };
 
-  const renderAnuncio = (anuncio, origem) => {
+  const renderAnuncio = (anuncio, origem, indice) => {
     const isCarro = anuncio.tipo === 'carro';
     const foto = getImageUrl(anuncio.fotos?.[0] || anuncio.imagens?.[0], 'medium');
     const detalhe = isCarro
@@ -183,14 +183,16 @@ export default function Landing() {
       : [anuncio.imovel?.tipologia || anuncio.imovel?.tipoImovel, anuncio.imovel?.area ? `${anuncio.imovel.area} m²` : null].filter(Boolean).join(' · ');
 
     return (
-      <button type="button" key={anuncio._id} className="lp-listing-card" onClick={() => abrirExemplo(anuncio, origem)}>
+      <button type="button" key={anuncio._id} className="lp-listing-card" data-aos="fade-up" data-aos-delay={Math.min(indice * 40, 280)} onClick={() => abrirExemplo(anuncio, origem)}>
         <span className="lp-listing-img">{foto ? <img src={foto} width="800" height="600" alt={anuncio.titulo || (isCarro ? 'Automóvel' : 'Imóvel')} loading="lazy" /> : <span className={`lp-listing-no-photo ${isCarro ? 'is-carro' : 'is-imovel'}`}>{isCarro ? <Car size={34} /> : <HomeIcon size={34} />}<em>{isCarro ? 'Automóvel sem foto' : 'Imóvel sem foto'}</em></span>}<span className="lp-listing-tag">{isCarro ? 'Automóvel' : 'Imóvel'}</span></span>
         <span className="lp-listing-body"><span className="lp-listing-price">{formatarMoeda(anuncio.preco)}</span><span className="lp-listing-title">{anuncio.titulo}</span><span className="lp-listing-meta">{detalhe || (isCarro ? 'Dados técnicos disponíveis' : 'Detalhes do imóvel')}</span><span className="lp-listing-location"><MapPin size={12} strokeWidth={2.4} aria-hidden="true" /> {anuncio.localizacao?.cidade || 'Portugal'}</span></span>
       </button>
     );
   };
 
-  const mostrarDestaques = !loadingExemplos && (exemplos.carro.length > 0 || exemplos.imovel.length > 0);
+  const renderEsqueletoGrelha = () => Array.from({ length: 8 }).map((_, indice) => <span key={indice} className="lp-listing-skeleton" aria-hidden="true" />);
+
+  const mostrarDestaques = loadingExemplos || exemplos.carro.length > 0 || exemplos.imovel.length > 0;
 
   return (
     <div className="lp-root">
@@ -287,21 +289,21 @@ export default function Landing() {
         {mostrarDestaques && (
           <section className="lp-section lp-listing-section" id="destaques" aria-labelledby="lp-featured" data-aos="fade-up">
             <div className="lp-shell">
-              {exemplos.carro.length > 0 && (
+              {(loadingExemplos || exemplos.carro.length > 0) && (
                 <div className="lp-highlight-block">
                   <div className="lp-section-head">
                     <div><span className="lp-kicker"><Car size={13} /> Noxvelia Drive</span><h2 id="lp-featured">Últimos automóveis publicados</h2></div>
                   </div>
-                  <div className="lp-highlight-grid">{exemplos.carro.slice(0, 8).map((anuncio) => renderAnuncio(anuncio, '/carros'))}</div>
+                  <div className="lp-highlight-grid">{loadingExemplos ? renderEsqueletoGrelha() : exemplos.carro.slice(0, 8).map((anuncio, indice) => renderAnuncio(anuncio, '/carros', indice))}</div>
                   <div className="lp-highlight-more"><button type="button" className="lp-secondary-button" onClick={() => navigate('/carros')}>Ver mais em Noxvelia Drive <ArrowRight size={15} /></button></div>
                 </div>
               )}
-              {exemplos.imovel.length > 0 && (
+              {(loadingExemplos || exemplos.imovel.length > 0) && (
                 <div className="lp-highlight-block">
                   <div className="lp-section-head">
                     <div><span className="lp-kicker"><HomeIcon size={13} /> Noxvelia Estate</span><h2>Últimos imóveis publicados</h2></div>
                   </div>
-                  <div className="lp-highlight-grid">{exemplos.imovel.slice(0, 8).map((anuncio) => renderAnuncio(anuncio, '/imoveis'))}</div>
+                  <div className="lp-highlight-grid">{loadingExemplos ? renderEsqueletoGrelha() : exemplos.imovel.slice(0, 8).map((anuncio, indice) => renderAnuncio(anuncio, '/imoveis', indice))}</div>
                   <div className="lp-highlight-more"><button type="button" className="lp-secondary-button" onClick={() => navigate('/imoveis')}>Ver mais em Noxvelia Estate <ArrowRight size={15} /></button></div>
                 </div>
               )}

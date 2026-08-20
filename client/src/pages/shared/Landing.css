@@ -592,6 +592,20 @@
 
 .lp-listing-no-photo em { font-style: normal; font-size: 13px; }
 
+.lp-listing-skeleton {
+  display: block;
+  min-height: 220px;
+  border-radius: 16px;
+  background: linear-gradient(100deg, var(--cor-borda) 28%, #f4f1e8 48%, var(--cor-borda) 68%);
+  background-size: 220% 100%;
+  animation: lp-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes lp-skeleton-pulse {
+  0% { background-position: 220% 0; }
+  100% { background-position: -220% 0; }
+}
+
 /* ---------- Sell ---------- */
 
 .lp-sell-section { background: #ffffff; }
@@ -668,6 +682,7 @@
   .lp-secondary-button,
   .lp-listing-card,
   .lp-news-card { transition: none; }
+  .lp-listing-skeleton { animation: none; }
 }
 
 /* Refinamento de escala: mantém a pesquisa principal forte e reduz secções secundárias. */
