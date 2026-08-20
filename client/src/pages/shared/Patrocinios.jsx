@@ -183,9 +183,9 @@ export default function Patrocinios() {
         
         .sponsor-choice { border: 1px solid var(--cor-borda); border-radius: 10px; background: #fcfbfa; padding: 14px; text-align: left; cursor: pointer; transition: all 0.2s; color: var(--cor-texto); }
         .sponsor-choice:hover { border-color: #d9c49c; }
-        .sponsor-choice.is-selected { border-color: #102f50; background: #102f50; color: #ffffff; }
-        .sponsor-choice.is-selected strong { color: #ffffff; }
-        .sponsor-choice.is-selected span { color: rgba(255,255,255,0.7); }
+        .sponsor-choice.is-selected { border-color: #d9c49c; background: rgba(217, 196, 156, 0.25); color: #102f50; }
+.sponsor-choice.is-selected strong { color: #102f50; }
+.sponsor-choice.is-selected span { color: #102f50; opacity: 0.85; }
         
         .sponsor-choice strong { display: block; font-size: 15px; font-weight: 800; margin-bottom: 2px; }
         .sponsor-choice span { display: block; color: var(--cor-texto-secundario); font-size: 12px; line-height: 1.4; }
