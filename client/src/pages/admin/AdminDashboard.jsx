@@ -4,7 +4,6 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import PartnershipEmails from './PartnershipEmails';
 import AdminPostImages from './AdminPostImages';
-import AdminBanners from './AdminBanners';
 import AdminStockIntegrations from './AdminStockIntegrations';
 import AdminStockSubmissions from './AdminStockSubmissions';
 import LoadingScreen from '../../components/LoadingScreen';
@@ -22,7 +21,7 @@ import {
 /* ------------------------------------------------------------------ */
 /* NOXVELIA · Soberania — Admin Command Center                        */
 /* Design language: "Mission Control" — deep navy/ink canvas,         */
-/* amber sovereign accent, monospace data readouts, hairline grids.  */
+/* amber sovereign accent, monospace data readouts, hairline grids.   */
 /* ------------------------------------------------------------------ */
 
 const COLORS = {
@@ -93,11 +92,12 @@ export default function AdminDashboard() {
     setErro('');
 
     try {
-      const [resStats, resUsers, resAnuncios, resFunnel] = await Promise.all([
+      const [resStats, resUsers, resAnuncios, resFunnel, resFinanceiro] = await Promise.all([
         api.get('/admin/dashboard/stats'),
         api.get('/admin/utilizadores'),
         api.get('/admin/anuncios'),
-        api.get(`/admin/dashboard/funnel?days=${funnelDays}`)
+        api.get(`/admin/dashboard/funnel?days=${funnelDays}`),
+        api.get('/admin/financeiro')
       ]);
       setStats(resStats.data);
       setUtilizadores(resUsers.data);
@@ -152,7 +152,6 @@ export default function AdminDashboard() {
     }
   };
 
-
   const alterarFinanceiro = (campo) => (event) => {
     setFinanceiroForm((atual) => ({ ...atual, [campo]: event.target.value }));
   };
@@ -174,6 +173,7 @@ export default function AdminDashboard() {
       setSavingFinanceiro(false);
     }
   };
+
   const alterarEstadoAnuncio = async (id, estado) => {
     setIsUpdatingStatus(id);
     try {
@@ -214,6 +214,7 @@ export default function AdminDashboard() {
   const totalUtilizadoresReais = utilizadores.length ? utilizadoresReais.length : stats?.totalUsers ?? 0;
   const totalUtilizadoresTabela = utilizadoresVisiveis.length;
   const contasInternasTexto = totalContasInternas === 1 ? '1 conta interna fora da contagem' : `${totalContasInternas} contas internas fora da contagem`;
+  
   const novosUtilizadoresReais7d = useMemo(() => {
     if (!utilizadores.length || !ultimaAtualizacao) return stats?.novosUsers7d ?? 0;
     const limite = ultimaAtualizacao.getTime() - 7 * 24 * 60 * 60 * 1000;
@@ -269,7 +270,8 @@ export default function AdminDashboard() {
   const gastoSite = Number(financeiro?.gastoSite || 0);
   const entradaSite = Number(financeiro?.entradaSite || 0);
   const saldoSite = Number(financeiro?.saldo ?? (entradaSite - gastoSite));
-  const retornoSite = gastoSite > 0 ? `${(((entradaSite - gastoSite) / gastoSite) * 100).toFixed(1)}% retorno` : 'sem base de gasto';  const visitasReais = funnel?.visitasReais || {};
+  const retornoSite = gastoSite > 0 ? `${(((entradaSite - gastoSite) / gastoSite) * 100).toFixed(1)}% retorno` : 'sem base de gasto';  
+  const visitasReais = funnel?.visitasReais || {};
   const visitantesHoje = Number(visitasReais.hoje || 0);
   const visitantesOntem = Number(visitasReais.ontem || 0);
   const diferencaVisitantesHoje = visitantesHoje - visitantesOntem;
@@ -538,7 +540,6 @@ export default function AdminDashboard() {
             { id: 'anuncios', label: 'Moderação de Anúncios', icon: <Icon path={mdiFileDocumentOutline} size={0.7} />, count: anuncios.length },
             { id: 'criativos', label: 'Criativos', icon: <Icon path={mdiImageMultipleOutline} size={0.7} /> },
             { id: 'financas', label: 'Finanças', icon: <Icon path={mdiCurrencyEur} size={0.7} /> },
-            { id: 'publicidade', label: 'Publicidade', icon: <Icon path={mdiCurrencyEur} size={0.7} /> },
             { id: 'stock-pedidos', label: 'Pedidos de stock', icon: <Icon path={mdiFileDocumentOutline} size={0.7} /> },
             { id: 'integracoes', label: 'Integrações de stock', icon: <Icon path={mdiRefresh} size={0.7} /> },
             { id: 'parcerias', label: 'Emails de Parcerias', icon: <Icon path={mdiEmailOutline} size={0.7} /> },
@@ -1055,7 +1056,6 @@ export default function AdminDashboard() {
             <AdminPostImages anuncios={anuncios} colors={COLORS} fonts={{ display: FONT_DISPLAY, body: FONT_BODY, mono: FONT_MONO }} />
           )}
 
-
           {activeTab === 'financas' && (
             <AdminFinancePanel
               financeiro={financeiro}
@@ -1067,9 +1067,6 @@ export default function AdminDashboard() {
               saldo={saldoSite}
               retorno={retornoSite}
             />
-          )}
-          {activeTab === 'publicidade' && (
-            <AdminBanners colors={COLORS} fonts={{ display: FONT_DISPLAY, body: FONT_BODY, mono: FONT_MONO }} />
           )}
 
           {activeTab === 'stock-pedidos' && (
@@ -1189,6 +1186,7 @@ function AdminFinancePanel({ financeiro, form, onChange, onSubmit, saving, moeda
     </div>
   );
 }
+
 function Avatar({ nome, isSoberano, premium }) {
   const inicial = nome ? nome.charAt(0).toUpperCase() : '?';
   let bg = '#e8f0ed', border = COLORS.border, color = COLORS.text;
@@ -1340,3 +1338,4 @@ function PanelToolbar({ searchValue, onSearch, placeholder, filters, activeFilte
     </div>
   );
 }
+
