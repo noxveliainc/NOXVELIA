@@ -43,26 +43,37 @@ app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
 const production = process.env.NODE_ENV === 'production';
-const allowedOrigins = new Set([
+
+// 🌟 CORREÇÃO DO CORS
+const allowedOrigins = [
   'https://www.noxvelia.com',
   'https://noxvelia.com',
   process.env.CLIENT_URL,
-  ...(!production ? ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:4173', 'http://127.0.0.1:4173'] : []),
-].filter(Boolean));
-const corsOrigin = (origin, callback) => {
-  if (!origin || allowedOrigins.has(origin)) return callback(null, true);
-  return callback(new Error('Origem não autorizada por CORS.'));
-};
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173'
+].filter(Boolean);
 
-app.use(cors({
-  origin: corsOrigin,
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Permite chamadas sem origin (ex: mobile apps, postman) ou se estiver na lista
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Origem não autorizada por CORS.'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+  optionsSuccessStatus: 200 // Algumas versões antigas de browsers falham em OPTIONS sem 200
+};
+
+app.use(cors(corsOptions));
 
 const io = new Server(httpServer, {
-  cors: { origin: corsOrigin, credentials: true },
+  cors: corsOptions,
 });
 
 app.use(morgan(production ? 'combined' : 'dev'));
