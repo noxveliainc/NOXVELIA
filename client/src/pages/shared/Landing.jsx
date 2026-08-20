@@ -1,7 +1,6 @@
 ﻿import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Building2, Car, CheckCircle2, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck } from 'lucide-react';
-import AdBanner from '../../components/AdBanner';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
 import NavbarLanding from './NavbarLanding';
@@ -339,8 +338,6 @@ export default function Landing() {
             </div>
           </div>
         </section>
-
-        <AdBanner mode="direct" placement="landing_between_highlights" minHeight={176} mobileMinHeight={150} />
 
         <section className="lp-section lp-cv-section" id="carvertical" aria-labelledby="lp-cv" data-aos="fade-up">
           <div className="lp-shell lp-cv-card">
