@@ -93,11 +93,12 @@ export default function AdminDashboard() {
     setErro('');
 
     try {
-      const [resStats, resUsers, resAnuncios, resFunnel] = await Promise.all([
+      const [resStats, resUsers, resAnuncios, resFunnel, resFinanceiro] = await Promise.all([
         api.get('/admin/dashboard/stats'),
         api.get('/admin/utilizadores'),
         api.get('/admin/anuncios'),
-        api.get(`/admin/dashboard/funnel?days=${funnelDays}`)
+        api.get(`/admin/dashboard/funnel?days=${funnelDays}`),
+        api.get('/admin/financeiro').catch(() => ({ data: { financeiro: null } }))
       ]);
       setStats(resStats.data);
       setUtilizadores(resUsers.data);
@@ -118,14 +119,16 @@ export default function AdminDashboard() {
     }
   }, [funnelDays]);
 
+  // CORREÇÃO CRÍTICA DO LOOP INFINITO (isSoberano extraído como variável primitiva)
+  const isSoberano = user?.tipo === 'admin';
+
   useEffect(() => {
-    if (!signed || user?.tipo !== 'admin') {
+    if (!signed || !isSoberano) {
       navigate('/');
       return;
     }
-
     carregarQuartelGeneral();
-  }, [signed, user, navigate, carregarQuartelGeneral]);
+  }, [signed, isSoberano, navigate, carregarQuartelGeneral]);
 
   const alterarPeriodoFunil = (event) => {
     setFunnelDays(Number(event.target.value));
@@ -174,6 +177,7 @@ export default function AdminDashboard() {
       setSavingFinanceiro(false);
     }
   };
+  
   const alterarEstadoAnuncio = async (id, estado) => {
     setIsUpdatingStatus(id);
     try {
@@ -388,7 +392,7 @@ export default function AdminDashboard() {
             color: ${COLORS.textFaint};
             font-family: ${FONT_MONO};
             font-size: 10px;
-            font-weight: 800;
+            fontWeight: 800;
             letter-spacing: 0.08em;
             text-transform: uppercase;
           }
