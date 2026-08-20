@@ -666,7 +666,6 @@ export default function NavbarLanding() {
             <a href="#anunciar">Criar anúncio</a>
             <Link to="/profissionais">Profissionais</Link>
             <Link to="/enviar-stock">Enviar stock</Link>
-            <Link to="/patrocinios">Patrocinar</Link>
           </div>
 
           <div className="nl-actions">
@@ -687,7 +686,6 @@ export default function NavbarLanding() {
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
               )}
             </button>
-            <Link to="/patrocinios" className="nl-btn-ghost nl-btn-sponsor">Patrocinar</Link>
             {!signed && <Link to="/login" state={{ from: location.pathname }} className="nl-btn-ghost">Entrar</Link>}
             <Link to={publicarTo} state={publicarState} className="nl-btn-solid">Criar anúncio</Link>
 
@@ -749,7 +747,6 @@ export default function NavbarLanding() {
             <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Imóveis</Link>
             <Link to="/profissionais" onClick={() => setMenuMobileAberto(false)}>Profissionais</Link>
             <Link to="/enviar-stock" onClick={() => setMenuMobileAberto(false)}>Enviar stock</Link>
-            <Link to="/patrocinios" onClick={() => setMenuMobileAberto(false)}>Torne-se patrocinador</Link>
             <Link className="nl-mobile-primary" to={publicarTo} state={publicarState} onClick={() => setMenuMobileAberto(false)}>Criar anúncio</Link>
             {signed ? (
               <>
