@@ -961,3 +961,76 @@
 @media (max-width: 560px) {
   .lp-montra-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------- CarVertical ---------- */
+
+.lp-cv-section { background: #ffffff; }
+
+.lp-cv-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: clamp(22px, 4vw, 72px);
+  padding: clamp(34px, 5vw, 72px);
+  border: 1px solid var(--cor-borda);
+  border-radius: 28px;
+  background: #ffffff;
+}
+
+.lp-cv-card > div:first-child {
+  display: grid;
+  gap: 14px;
+  max-width: 620px;
+}
+
+.lp-cv-card > div:first-child p {
+  margin: 0;
+  color: var(--cor-texto-secundario);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.lp-cv-panel {
+  flex-shrink: 0;
+  width: 260px;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 28px 24px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 20px;
+  background: var(--cor-fundo-suave);
+  text-align: center;
+}
+
+.lp-cv-panel img {
+  max-width: 160px;
+  height: auto;
+  display: block;
+}
+
+.lp-cv-panel strong {
+  font-family: var(--nx-font-display);
+  font-size: 40px;
+  font-weight: 900;
+  color: var(--cor-navy);
+  line-height: 1;
+}
+
+.lp-cv-panel span {
+  color: var(--cor-texto-secundario);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+@media (max-width: 860px) {
+  .lp-cv-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 28px;
+  }
+
+  .lp-cv-panel {
+    width: 100%;
+  }
+}
