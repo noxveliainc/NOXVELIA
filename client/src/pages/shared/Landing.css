@@ -940,3 +940,24 @@
     min-height: 215px;
   }
 }
+/* ---------- Grelhas de Montra (Drive / Estate) ---------- */
+.lp-montra-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 24px);
+  margin-bottom: 32px;
+}
+
+.lp-montra-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 1024px) {
+  .lp-montra-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .lp-montra-grid { grid-template-columns: 1fr; }
+}
