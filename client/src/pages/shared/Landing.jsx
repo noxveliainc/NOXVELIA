@@ -1,6 +1,6 @@
-﻿import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, Building2, Car, CheckCircle2, Home as HomeIcon, MapPin, Newspaper, Search, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Building2, Car, CheckCircle2, Home as HomeIcon, MapPin, Newspaper, Search } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
 import NavbarLanding from './NavbarLanding';
@@ -15,7 +15,6 @@ import { trackFunnelEvent } from '../../utils/funnelAnalytics';
 import { COOKIE_CONSENT_CHANGED_EVENT, readCookieConsent } from '../../utils/cookieConsent';
 import './Landing.css';
 
-const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 const COMBUSTIVEIS_POPULARES = ['Diesel', 'Gasolina', 'Eléctrico', 'Híbrido', 'GPL'];
 const TIPOLOGIAS_POPULARES = ['T1', 'T2', 'T3', 'T4', 'T5+'];
 const PRECOS_CARROS = [{ label: 'Até 10.000 €', value: '10000' }, { label: 'Até 20.000 €', value: '20000' }, { label: 'Até 30.000 €', value: '30000' }];
@@ -32,7 +31,6 @@ const TRUST_POINTS = [
   { texto: 'Todos os distritos de Portugal' },
 ];
 
-const LandingListingsCarousel = lazy(() => import('./LandingListingsCarousel'));
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const formatarMoeda = (valor) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
@@ -51,7 +49,6 @@ export default function Landing() {
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
   const [resumoPublico, setResumoPublico] = useState(null);
   const [loadingExemplos, setLoadingExemplos] = useState(true);
-  const [erroExemplos, setErroExemplos] = useState(false);
   const [noticiasMercado, setNoticiasMercado] = useState([]);
   const [pesquisa, setPesquisa] = useState({ tipo: 'carro', marca: '', modelo: '', combustivel: '', tipologia: '', distrito: '', precoMax: '' });
 
@@ -162,13 +159,9 @@ export default function Landing() {
       try {
         const { data } = await api.get('/anuncios/em-alta/semana');
         if (!ativo) return;
-        setExemplos({ carro: (data?.carro || []).slice(0, 6), imovel: (data?.imovel || []).slice(0, 6) });
-        setErroExemplos(false);
+        setExemplos({ carro: (data?.carro || []).slice(0, 8), imovel: (data?.imovel || []).slice(0, 8) });
       } catch {
-        if (ativo) {
-          setExemplos({ carro: [], imovel: [] });
-          setErroExemplos(true);
-        }
+        if (ativo) setExemplos({ carro: [], imovel: [] });
       } finally {
         if (ativo) setLoadingExemplos(false);
       }
@@ -197,21 +190,7 @@ export default function Landing() {
     );
   };
 
-  const renderAnunciosSwiper = (lista, origem) => (
-    <Suspense fallback={<div className="lp-listing-fallback">{lista.slice(0, 2).map((anuncio) => renderAnuncio(anuncio, origem))}</div>}>
-      <LandingListingsCarousel items={lista} renderItem={(anuncio) => renderAnuncio(anuncio, origem)} />
-    </Suspense>
-  );
-
-  const renderEstadoLista = (tipo, rota) => (
-    <div className="lp-listing-state" role="status">
-      <strong>{loadingExemplos ? 'A carregar seleção.' : (erroExemplos ? 'A seleção está a ser atualizada.' : `Ver anúncios de ${tipo}.`)}</strong>
-      <span>{loadingExemplos ? 'A lista completa está disponível.' : 'Usa os filtros para encontrar resultados.'}</span>
-      {!loadingExemplos && <button type="button" className="lp-secondary-button" onClick={() => navigate(rota)}>Abrir {tipo}</button>}
-    </div>
-  );
-
-  const mostrarDestaques = loadingExemplos || exemplos.carro.length > 0 || exemplos.imovel.length > 0;
+  const mostrarDestaques = !loadingExemplos && (exemplos.carro.length > 0 || exemplos.imovel.length > 0);
 
   return (
     <div className="lp-root">
@@ -308,23 +287,24 @@ export default function Landing() {
         {mostrarDestaques && (
           <section className="lp-section lp-listing-section" id="destaques" aria-labelledby="lp-featured" data-aos="fade-up">
             <div className="lp-shell">
-              <div className="lp-section-head">
-                <div><span className="lp-kicker">Anúncios</span><h2 id="lp-featured">Recentes na Noxvelia</h2></div>
-              </div>
-              <div className="lp-listing-columns">
-                {(loadingExemplos || exemplos.carro.length > 0) && (
-                  <div className="lp-listing-column">
-                    <div className="lp-column-top"><h3><Car size={16} /> Automóveis</h3><button type="button" onClick={() => navigate('/carros')}>Ver automóveis</button></div>
-                    <div className="lp-listing-list">{exemplos.carro.length > 0 ? renderAnunciosSwiper(exemplos.carro, '/carros') : renderEstadoLista('automóveis', '/carros')}</div>
+              {exemplos.carro.length > 0 && (
+                <div className="lp-highlight-block">
+                  <div className="lp-section-head">
+                    <div><span className="lp-kicker"><Car size={13} /> Noxvelia Drive</span><h2 id="lp-featured">Últimos automóveis publicados</h2></div>
                   </div>
-                )}
-                {(loadingExemplos || exemplos.imovel.length > 0) && (
-                  <div className="lp-listing-column">
-                    <div className="lp-column-top"><h3><HomeIcon size={16} /> Imóveis</h3><button type="button" onClick={() => navigate('/imoveis')}>Ver imóveis</button></div>
-                    <div className="lp-listing-list">{exemplos.imovel.length > 0 ? renderAnunciosSwiper(exemplos.imovel, '/imoveis') : renderEstadoLista('imóveis', '/imoveis')}</div>
+                  <div className="lp-highlight-grid">{exemplos.carro.slice(0, 8).map((anuncio) => renderAnuncio(anuncio, '/carros'))}</div>
+                  <div className="lp-highlight-more"><button type="button" className="lp-secondary-button" onClick={() => navigate('/carros')}>Ver mais em Noxvelia Drive <ArrowRight size={15} /></button></div>
+                </div>
+              )}
+              {exemplos.imovel.length > 0 && (
+                <div className="lp-highlight-block">
+                  <div className="lp-section-head">
+                    <div><span className="lp-kicker"><HomeIcon size={13} /> Noxvelia Estate</span><h2>Últimos imóveis publicados</h2></div>
                   </div>
-                )}
-              </div>
+                  <div className="lp-highlight-grid">{exemplos.imovel.slice(0, 8).map((anuncio) => renderAnuncio(anuncio, '/imoveis'))}</div>
+                  <div className="lp-highlight-more"><button type="button" className="lp-secondary-button" onClick={() => navigate('/imoveis')}>Ver mais em Noxvelia Estate <ArrowRight size={15} /></button></div>
+                </div>
+              )}
             </div>
           </section>
         )}
@@ -335,22 +315,6 @@ export default function Landing() {
             <div className="lp-sell-actions">
               <Link className="lp-main-cta" to={publicarTo} state={publicarState} onPointerEnter={animarCta}>Criar anúncio <ArrowRight size={16} /></Link>
               {temProfissionaisAtivos && <Link className="lp-soft-cta" to="/profissionais"><Building2 size={16} /> Ver profissionais</Link>}
-            </div>
-          </div>
-        </section>
-
-        <section className="lp-section lp-cv-section" id="carvertical" aria-labelledby="lp-cv" data-aos="fade-up">
-          <div className="lp-shell lp-cv-card">
-            <div>
-              <span className="lp-kicker"><ShieldCheck size={12} /> Histórico automóvel</span>
-              <h2 id="lp-cv">20% de desconto na carVertical</h2>
-              <p>Consulta dados disponíveis sobre histórico, quilometragem e registos do veículo antes de fechar negócio.</p>
-              <a className="lp-main-cta" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer" onPointerEnter={animarCta}>Verificar veículo <ArrowRight size={16} /></a>
-            </div>
-            <div className="lp-cv-panel">
-              <img src="/carvertical-logo.png" alt="carVertical" />
-              <strong>20%</strong>
-              <span>de desconto através do link Noxvelia.</span>
             </div>
           </div>
         </section>
