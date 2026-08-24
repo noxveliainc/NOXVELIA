@@ -585,7 +585,7 @@ export default function Anuncio() {
                     {mostrarTelefone ? (
                       <div>
                         <a href={`tel:${telefoneContacto}`} className="btn-contact" style={{ background: '#102326', textDecoration: 'none' }}>
-                          <Icon path={mdiphonen} size={0.8} /> {telefoneContacto}
+                          <Icon path={mdiPhone} size={0.8} />
                         </a>
                         {whatsappNumero && (
                           <a href={`https://wa.me/${whatsappNumero}?text=${mensagemWhatsapp}`} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
