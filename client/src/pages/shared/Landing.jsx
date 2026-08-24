@@ -11,6 +11,8 @@ import { useAuth } from '../../context/AuthContext';
 import { publishIntentState } from '../../utils/navigationState';
 import { trackFunnelEvent } from '../../utils/funnelAnalytics';
 import { COOKIE_CONSENT_CHANGED_EVENT, readCookieConsent } from '../../utils/cookieConsent';
+import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
+import { DISTRITOS, DISTRITOS_CIDADES_PT } from '../../data/localizacoes';
 import './Landing.css';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
@@ -40,9 +42,15 @@ export default function Landing() {
   const [resumoPublico, setResumoPublico] = useState(null);
   const [noticiasMercado, setNoticiasMercado] = useState([]);
 
-  // ESTADO DA CAIXA DE PESQUISA RÁPIDA (UX Melhorada)
+  // ESTADOS PARA OS FILTROS REAIS DA HOMEPAGE
   const [searchTab, setSearchTab] = useState('carro');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [marca, setMarca] = useState('');
+  const [modelo, setModelo] = useState('');
+  const [distrito, setDistrito] = useState('');
+  const [cidade, setCidade] = useState('');
+
+  const modelosDisponiveis = marca ? getModelosPorMarca(marca).map(m => typeof m === 'object' ? m.modelo || m.nome : m) : [];
+  const cidadesDisponiveis = distrito ? DISTRITOS_CIDADES_PT[distrito] || [] : [];
 
   const temProfissionaisAtivos = Number(resumoPublico?.profissionais || 0) > 0;
 
@@ -130,18 +138,19 @@ export default function Landing() {
     navigate(anuncioPath(anuncio));
   };
 
-  // FUNÇÃO DE PESQUISA RÁPIDA (Encaminha para a página certa com os filtros)
-  const handleQuickSearch = (e) => {
+  // FUNÇÃO DE PESQUISA AVANÇADA PARA A HOMEPAGE
+  const handleAdvancedSearch = (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) {
-      navigate(searchTab === 'carro' ? '/carros' : '/imoveis');
-      return;
-    }
-    
+    const params = new URLSearchParams();
+
     if (searchTab === 'carro') {
-      navigate(`/carros?pesquisa=${encodeURIComponent(searchQuery)}`);
+      if (marca) params.set('marca', marca);
+      if (modelo) params.set('modelo', modelo);
+      navigate(`/carros?${params.toString()}`);
     } else {
-      navigate(`/imoveis?localizacao=${encodeURIComponent(searchQuery)}`);
+      if (distrito && distrito !== 'Todos') params.set('distrito', distrito);
+      if (cidade) params.set('cidade', cidade);
+      navigate(`/imoveis?${params.toString()}`);
     }
   };
 
@@ -166,7 +175,7 @@ export default function Landing() {
       <NavbarLanding />
       <main>
         
-        {/* HERO COM SEARCH BOX (Conversão Imediata) */}
+        {/* HERO COM SEARCH BOX (FILTROS REAIS) */}
         <section className="lp-hero" aria-labelledby="lp-title" id="pesquisa">
           <img className="lp-hero-bg" src="/noxvelia-hero-coast.webp" alt="" aria-hidden="true" />
           <div className="lp-shell lp-hero-shell">
@@ -181,7 +190,7 @@ export default function Landing() {
               </ul>
             </div>
 
-            {/* CAIXA DE PESQUISA RÁPIDA */}
+            {/* CAIXA DE PESQUISA AVANÇADA (Corrigida) */}
             <div className="lp-search-box">
               <div className="lp-search-head">
                 <span>Pesquisa Rápida</span>
@@ -193,7 +202,7 @@ export default function Landing() {
                   type="button"
                   className={searchTab === 'carro' ? 'active' : ''} 
                   data-vertical="carro"
-                  onClick={() => setSearchTab('carro')}
+                  onClick={() => { setSearchTab('carro'); setDistrito(''); setCidade(''); }}
                 >
                   <Car size={16} /> Drive
                 </button>
@@ -201,24 +210,48 @@ export default function Landing() {
                   type="button"
                   className={searchTab === 'imovel' ? 'active' : ''} 
                   data-vertical="imovel"
-                  onClick={() => setSearchTab('imovel')}
+                  onClick={() => { setSearchTab('imovel'); setMarca(''); setModelo(''); }}
                 >
                   <HomeIcon size={16} /> Estate
                 </button>
               </div>
 
-              <form onSubmit={handleQuickSearch} className="lp-search-grid" style={{ gridTemplateColumns: '1fr' }}>
-                <label>
-                  {searchTab === 'carro' ? 'Marca ou Modelo' : 'Distrito ou Concelho'}
-                  <input 
-                    type="text" 
-                    className="nx-input"
-                    style={{ minHeight: '46px', border: '1px solid #ded6c8', borderRadius: '13px', padding: '0 13px', width: '100%', fontSize: '14px' }}
-                    placeholder={searchTab === 'carro' ? "Ex: BMW, Audi A3..." : "Ex: Lisboa, Braga, Porto..."}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </label>
+              <form onSubmit={handleAdvancedSearch} className="lp-search-grid">
+                {searchTab === 'carro' ? (
+                  <>
+                    <label>
+                      Marca
+                      <select value={marca} onChange={(e) => { setMarca(e.target.value); setModelo(''); }}>
+                        <option value="">Todas as marcas</option>
+                        {MARCAS.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    </label>
+                    <label>
+                      Modelo
+                      <select value={modelo} onChange={(e) => setModelo(e.target.value)} disabled={!marca}>
+                        <option value="">{marca ? 'Todos os modelos' : 'Escolha a marca'}</option>
+                        {modelosDisponiveis.map((m, idx) => <option key={idx} value={m}>{m}</option>)}
+                      </select>
+                    </label>
+                  </>
+                ) : (
+                  <>
+                    <label>
+                      Distrito
+                      <select value={distrito} onChange={(e) => { setDistrito(e.target.value); setCidade(''); }}>
+                        <option value="">Todos os distritos</option>
+                        {DISTRITOS.map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </label>
+                    <label>
+                      Concelho / Cidade
+                      <select value={cidade} onChange={(e) => setCidade(e.target.value)} disabled={!distrito}>
+                        <option value="">{distrito ? 'Todos os concelhos' : 'Escolha o distrito'}</option>
+                        {cidadesDisponiveis.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </label>
+                  </>
+                )}
                 <button type="submit" onPointerEnter={animarCta}>
                   <Search size={16} /> Pesquisar {searchTab === 'carro' ? 'Automóveis' : 'Imóveis'}
                 </button>
