@@ -580,8 +580,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               </div>
             )}
 
-            <button type="button" className="pesquisa-apply-btn" onClick={ejecutarFiltrosManuais}>Aplicar Filtros</button>
-          </aside>
+<button type="button" className="pesquisa-apply-btn" onClick={executarFiltrosManuais}>Aplicar Filtros</button>          </aside>
 
           <button type="button" className="pesquisa-sidebar-toggle" onClick={() => setIsSidebarOpen(prev => !prev)} aria-label="Alternar filtros">
             <Icon path={isSidebarOpen ? mdiChevronLeft : mdiChevronRight} size={0.8} />
