@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, Building2, Car, CheckCircle2, Home as HomeIcon, MapPin, Newspaper, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Building2, Car, CheckCircle2, Home as HomeIcon, MapPin, Newspaper, ShieldCheck, Search } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
 import NavbarLanding from './NavbarLanding';
@@ -15,9 +15,9 @@ import './Landing.css';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 const TRUST_POINTS = [
-  { texto: 'Publicação gratuita' },
-  { texto: 'Contacto direto, sem intermediários' },
-  { texto: 'Todos os distritos de Portugal' },
+  { texto: 'Zero comissões de venda' },
+  { texto: 'Contacto direto via WhatsApp' },
+  { texto: 'Milhares de portugueses ativos' },
 ];
 
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -39,6 +39,10 @@ export default function Landing() {
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
   const [resumoPublico, setResumoPublico] = useState(null);
   const [noticiasMercado, setNoticiasMercado] = useState([]);
+
+  // ESTADO DA CAIXA DE PESQUISA RÁPIDA (UX Melhorada)
+  const [searchTab, setSearchTab] = useState('carro');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const temProfissionaisAtivos = Number(resumoPublico?.profissionais || 0) > 0;
 
@@ -111,7 +115,6 @@ export default function Landing() {
       try {
         const { data } = await api.get('/anuncios/em-alta/semana');
         if (!ativo) return;
-        // Limitamos a 4 anúncios para manter a grelha simétrica
         setExemplos({ carro: (data?.carro || []).slice(0, 4), imovel: (data?.imovel || []).slice(0, 4) });
       } catch {
         if (ativo) setExemplos({ carro: [], imovel: [] });
@@ -125,6 +128,21 @@ export default function Landing() {
   const abrirExemplo = (anuncio, origem) => {
     try { localStorage.setItem('@App:contexto_visual', origem === '/carros' ? 'carro' : 'imovel'); } catch { /* silenciado */ }
     navigate(anuncioPath(anuncio));
+  };
+
+  // FUNÇÃO DE PESQUISA RÁPIDA (Encaminha para a página certa com os filtros)
+  const handleQuickSearch = (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) {
+      navigate(searchTab === 'carro' ? '/carros' : '/imoveis');
+      return;
+    }
+    
+    if (searchTab === 'carro') {
+      navigate(`/carros?pesquisa=${encodeURIComponent(searchQuery)}`);
+    } else {
+      navigate(`/imoveis?localizacao=${encodeURIComponent(searchQuery)}`);
+    }
   };
 
   const renderAnuncio = (anuncio, origem) => {
@@ -144,27 +162,69 @@ export default function Landing() {
 
   return (
     <div className="lp-root">
-      <Seo title="Noxvelia | Plataforma de automóveis e imóveis em Portugal" description="Noxvelia é uma plataforma portuguesa para pesquisar e publicar anúncios de automóveis e imóveis." path="/" jsonLd={[siteIdentityJsonLd, homePageJsonLd]} />
+      <Seo title="Noxvelia | Automóveis e Imóveis em Portugal" description="Pesquisa e publica anúncios de carros e casas em Portugal. Contacto direto via WhatsApp sem intermediários e sem comissões." path="/" jsonLd={[siteIdentityJsonLd, homePageJsonLd]} />
       <NavbarLanding />
       <main>
-        {/* HERO LIMPO SEM FORMULÁRIO */}
-        <section className="lp-hero" aria-labelledby="lp-title">
+        
+        {/* HERO COM SEARCH BOX (Conversão Imediata) */}
+        <section className="lp-hero" aria-labelledby="lp-title" id="pesquisa">
           <img className="lp-hero-bg" src="/noxvelia-hero-coast.webp" alt="" aria-hidden="true" />
-          <div className="lp-shell" style={{ width: 'min(100% - clamp(40px, 6vw, 96px), 900px)', margin: '0 auto', textAlign: 'center' }}>
-            <div className="lp-hero-copy" style={{ margin: '0 auto', justifyItems: 'center' }}>
-              <span className="lp-kicker lp-hero-kicker">Pesquisa em Portugal</span>
-              <h1 id="lp-title" ref={heroTitleRef} style={{ textAlign: 'center' }}>Automóveis e imóveis, sem intermediários.</h1>
-              <p style={{ textAlign: 'center' }}>Fala diretamente com quem anuncia, sem comissões pelo caminho. Encontra o teu próximo carro ou casa.</p>
+          <div className="lp-shell lp-hero-shell">
+            
+            <div className="lp-hero-copy">
+              <span className="lp-kicker lp-hero-kicker">O Mercado Português</span>
+              <h1 id="lp-title" ref={heroTitleRef}>Automóveis e imóveis.<br/>Direto ao assunto.</h1>
+              <p>Esquece as comissões e os chats complicados. Na Noxvelia, encontras o teu próximo carro ou casa e falas diretamente com quem vende pelo WhatsApp.</p>
               
-              <div className="lp-hero-actions" aria-label="Ações principais" style={{ justifyContent: 'center', marginTop: '12px' }}>
-                <Link className="lp-main-cta" to="/carros">Explorar Automóveis</Link>
-                <Link className="lp-soft-cta" to="/imoveis">Explorar Imóveis</Link>
-              </div>
-              
-              <ul className="lp-trust-row" style={{ justifyContent: 'center', marginTop: '18px' }}>
+              <ul className="lp-trust-row">
                 {TRUST_POINTS.map((ponto) => <li key={ponto.texto}><CheckCircle2 size={15} strokeWidth={2.4} aria-hidden="true" /> {ponto.texto}</li>)}
               </ul>
             </div>
+
+            {/* CAIXA DE PESQUISA RÁPIDA */}
+            <div className="lp-search-box">
+              <div className="lp-search-head">
+                <span>Pesquisa Rápida</span>
+                <strong>O que procuras hoje?</strong>
+              </div>
+              
+              <div className="lp-tabs">
+                <button 
+                  type="button"
+                  className={searchTab === 'carro' ? 'active' : ''} 
+                  data-vertical="carro"
+                  onClick={() => setSearchTab('carro')}
+                >
+                  <Car size={16} /> Drive
+                </button>
+                <button 
+                  type="button"
+                  className={searchTab === 'imovel' ? 'active' : ''} 
+                  data-vertical="imovel"
+                  onClick={() => setSearchTab('imovel')}
+                >
+                  <HomeIcon size={16} /> Estate
+                </button>
+              </div>
+
+              <form onSubmit={handleQuickSearch} className="lp-search-grid" style={{ gridTemplateColumns: '1fr' }}>
+                <label>
+                  {searchTab === 'carro' ? 'Marca ou Modelo' : 'Distrito ou Concelho'}
+                  <input 
+                    type="text" 
+                    className="nx-input"
+                    style={{ minHeight: '46px', border: '1px solid #ded6c8', borderRadius: '13px', padding: '0 13px', width: '100%', fontSize: '14px' }}
+                    placeholder={searchTab === 'carro' ? "Ex: BMW, Audi A3..." : "Ex: Lisboa, Braga, Porto..."}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </label>
+                <button type="submit" onPointerEnter={animarCta}>
+                  <Search size={16} /> Pesquisar {searchTab === 'carro' ? 'Automóveis' : 'Imóveis'}
+                </button>
+              </form>
+            </div>
+
           </div>
         </section>
 
@@ -173,13 +233,13 @@ export default function Landing() {
           <section className="lp-section lp-listing-section" id="drive" aria-labelledby="lp-drive" data-aos="fade-up">
             <div className="lp-shell">
               <div className="lp-section-head">
-                <div><span className="lp-kicker"><Car size={14} /> Noxvelia Drive</span><h2 id="lp-drive">Automóveis em destaque</h2></div>
+                <div><span className="lp-kicker"><Car size={14} /> Noxvelia Drive</span><h2 id="lp-drive">Viaturas em destaque</h2></div>
               </div>
               <div className="lp-montra-grid">
                 {exemplos.carro.map((anuncio) => renderAnuncio(anuncio, '/carros'))}
               </div>
               <div className="lp-montra-footer">
-                <Link className="lp-secondary-button" to="/carros">Ver mais em Noxvelia Drive <ArrowRight size={16} /></Link>
+                <Link className="lp-secondary-button" to="/carros">Explorar todo o stock Automóvel <ArrowRight size={16} /></Link>
               </div>
             </div>
           </section>
@@ -196,7 +256,7 @@ export default function Landing() {
                 {exemplos.imovel.map((anuncio) => renderAnuncio(anuncio, '/imoveis'))}
               </div>
               <div className="lp-montra-footer">
-                <Link className="lp-secondary-button" to="/imoveis">Ver mais em Noxvelia Estate <ArrowRight size={16} /></Link>
+                <Link className="lp-secondary-button" to="/imoveis">Explorar todo o stock Imobiliário <ArrowRight size={16} /></Link>
               </div>
             </div>
           </section>
@@ -207,7 +267,7 @@ export default function Landing() {
           <section className="lp-section lp-news-section" id="atualidade" aria-labelledby="lp-news" data-aos="fade-up">
             <div className="lp-shell">
               <div className="lp-section-head">
-                <div><span className="lp-kicker"><Newspaper size={13} /> Atualidade</span><h2 id="lp-news">Mercado em Portugal</h2><p className="lp-section-copy">Notícias recentes sobre automóveis, habitação e crédito.</p></div>
+                <div><span className="lp-kicker"><Newspaper size={13} /> Atualidade</span><h2 id="lp-news">Mercado em Portugal</h2><p className="lp-section-copy">Fica a par das últimas tendências do mercado automóvel e imobiliário.</p></div>
               </div>
               <div className="lp-news-grid">
                 {noticiasMercado.map((noticia) => {
@@ -226,13 +286,17 @@ export default function Landing() {
           </section>
         )}
 
-        {/* ANUNCIAR / VENDER */}
+        {/* ANUNCIAR / VENDER (CTA Agressivo) */}
         <section className="lp-section lp-sell-section" id="anunciar" aria-labelledby="lp-sell" data-aos="fade-up">
           <div className="lp-shell lp-sell-box">
-            <div><span className="lp-kicker">Anunciar</span><h2 id="lp-sell">Tens algo para vender?</h2><p>Publica grátis e recebe contactos diretamente no teu anúncio.</p></div>
+            <div>
+              <span className="lp-kicker">Para Particulares e Profissionais</span>
+              <h2 id="lp-sell">Pronto para vender?</h2>
+              <p>Cria a tua montra gratuitamente. Os clientes entram em contacto direto para o teu número, sem formulários escondidos nem comissões.</p>
+            </div>
             <div className="lp-sell-actions">
-              <Link className="lp-main-cta" to={publicarTo} state={publicarState} onPointerEnter={animarCta}>Criar anúncio <ArrowRight size={16} /></Link>
-              {temProfissionaisAtivos && <Link className="lp-soft-cta" to="/profissionais"><Building2 size={16} /> Ver profissionais</Link>}
+              <Link className="lp-main-cta" to={publicarTo} state={publicarState} onPointerEnter={animarCta}>Publicar Anúncio Grátis <ArrowRight size={16} /></Link>
+              {temProfissionaisAtivos && <Link className="lp-soft-cta" to="/profissionais"><Building2 size={16} /> Ver Stands e Agências</Link>}
             </div>
           </div>
         </section>
@@ -241,15 +305,15 @@ export default function Landing() {
         <section className="lp-section lp-cv-section" id="carvertical" aria-labelledby="lp-cv" data-aos="fade-up">
           <div className="lp-shell lp-cv-card">
             <div>
-              <span className="lp-kicker"><ShieldCheck size={12} /> Histórico automóvel</span>
-              <h2 id="lp-cv">20% de desconto na carVertical</h2>
-              <p>Consulta dados disponíveis sobre histórico, quilometragem e registos do veículo antes de fechar negócio.</p>
-              <a className="lp-main-cta" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer" onPointerEnter={animarCta}>Verificar veículo <ArrowRight size={16} /></a>
+              <span className="lp-kicker"><ShieldCheck size={12} /> Segurança Automóvel</span>
+              <h2 id="lp-cv">Verifica o carro antes de comprar</h2>
+              <p>Evita fraudes e quilómetros adulterados. Descobre o histórico de acidentes, manutenções e roubos de qualquer veículo através da matrícula ou VIN.</p>
+              <a className="lp-main-cta" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer" onPointerEnter={animarCta}>Consultar Histórico <ArrowRight size={16} /></a>
             </div>
             <div className="lp-cv-panel">
               <img src="/carvertical-logo.png" alt="carVertical" />
               <strong>20%</strong>
-              <span>de desconto através do link Noxvelia.</span>
+              <span>Desconto automático no relatório via Noxvelia.</span>
             </div>
           </div>
         </section>

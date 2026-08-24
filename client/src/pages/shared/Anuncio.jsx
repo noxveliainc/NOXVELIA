@@ -11,7 +11,7 @@ import { normalizarExtras } from '../../utils/extras';
 import { getImageDimensions, getImageSrcSet, getImageUrl } from '../../utils/images';
 import { formatarMarcaVeiculo, formatarModeloVeiculo } from '../../data/marcasModelos';
 import { Icon } from '@mdi/react';
-import {
+import { 
   mdiCheckDecagram, mdiShareVariantOutline, mdiHeartOutline, mdiHeart,
   mdiCalendarBlank, mdiSpeedometer, mdiGasStation, mdiCarShiftPattern, mdiEngineOutline,
   mdiHomeCityOutline, mdiRulerSquare, mdiBedOutline, mdiShower, mdiCertificateOutline,
@@ -179,6 +179,7 @@ export default function Anuncio() {
         .catch(() => {});
     }
   }, [signed, id]);
+
   useEffect(() => {
     if (!signed || !vendedorIdAvaliacao || userIdAtual === vendedorIdAvaliacao) {
       setMinhaAvaliacao(null);
@@ -267,6 +268,7 @@ export default function Anuncio() {
       setGuardado(data.guardado);
     } catch {}
   };
+
   const registarContacto = (canal = 'contacto') => {
     const listingId = anuncio?._id || id;
     if (!listingId) return;
@@ -284,7 +286,6 @@ export default function Anuncio() {
     setMostrarTelefone(true);
     registarContacto(temTelefoneContacto ? 'phone_reveal' : 'email_reveal');
   };
-
 
   const submeterAvaliacaoVendedor = async (nota) => {
     if (!signed) {
@@ -355,14 +356,9 @@ export default function Anuncio() {
               <div className="skl" style={{ width: '100%', aspectRatio: '16/9', borderRadius: 18 }} />
               <div className="skl" style={{ width: '40%', height: 32, marginTop: 22 }} />
               <div className="skl" style={{ width: '65%', height: 18, marginTop: 12 }} />
-              <div className="skl" style={{ width: '100%', height: 1, marginTop: 20, marginBottom: 20, opacity: .4 }} />
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: 12 }}>
-                {Array.from({ length: 6 }).map((_, i) => <div key={i} className="skl" style={{ height: 70 }} />)}
-              </div>
             </div>
             <div>
               <div className="skl" style={{ height: 280, borderRadius: 20 }} />
-              <div className="skl" style={{ height: 90, borderRadius: 16, marginTop: 14 }} />
             </div>
           </div>
         </div>
@@ -376,8 +372,8 @@ export default function Anuncio() {
       <h2 style={{ fontSize: '22px', color: '#0f172a', marginBottom: '8px', fontWeight: 800 }}>Não foi possível abrir este anúncio</h2>
       <p style={{ color: '#64748b', marginBottom: '24px', maxWidth: 360, lineHeight: 1.6 }}>{erro}</p>
       <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={() => navigate(-1)} className="nx-btn-primary" style={{ padding: '12px 24px', borderRadius: '12px', background: '#0f172a', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Voltar Atrás</button>
-        <Link to="/" className="nx-btn-primary" style={{ padding: '12px 24px', borderRadius: '12px', background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 700, textDecoration: 'none' }}>Página Inicial</Link>
+        <button onClick={() => navigate(-1)} style={{ padding: '12px 24px', borderRadius: '12px', background: '#0f172a', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Voltar Atrás</button>
+        <Link to="/" style={{ padding: '12px 24px', borderRadius: '12px', background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 700, textDecoration: 'none' }}>Página Inicial</Link>
       </div>
     </div>
   );
@@ -393,9 +389,7 @@ export default function Anuncio() {
 
   const precoValor = anuncio.preco || 0;
   const preco = formatarMoeda(precoValor);
-  const precoPorM2 = !isCarro && anuncio.imovel?.area
-    ? `${formatarMoeda(Math.round(precoValor / anuncio.imovel.area))}/m²`
-    : null;
+  const precoPorM2 = !isCarro && anuncio.imovel?.area ? `${formatarMoeda(Math.round(precoValor / anuncio.imovel.area))}/m²` : null;
 
   const vendedorAdmin = donoDoAnuncio?.tipo === 'admin';
   const emailContacto = anuncio.email || (vendedorAdmin ? '' : donoDoAnuncio?.email) || 'Não fornecido';
@@ -409,66 +403,41 @@ export default function Anuncio() {
   const inicial = donoDoAnuncio?.nome?.charAt(0).toUpperCase() || 'U';
   const localizacaoString = `${anuncio.localizacao?.cidade || 'N/A'}${anuncio.localizacao?.distrito ? `, ${anuncio.localizacao.distrito}` : ''}`;
   const extrasOpcionais = normalizarExtras(anuncio.equipamento || []);
-  const temVaranda = anuncio.imovel?.varanda || extrasOpcionais.some((extra) => {
-    const texto = extra.toLocaleLowerCase('pt-PT').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    return texto.includes('varanda') || texto.includes('terraco');
-  });
+  const temVaranda = anuncio.imovel?.varanda || extrasOpcionais.some((extra) => extra.toLowerCase().includes('varanda'));
 
-  const valorAnoMes = anuncio.carro?.ano
-    ? (anuncio.carro?.mesRegisto ? String(anuncio.carro.mesRegisto) + ' / ' + anuncio.carro.ano : anuncio.carro.ano)
-    : null;
-
+  const valorAnoMes = anuncio.carro?.ano ? (anuncio.carro?.mesRegisto ? `${anuncio.carro.mesRegisto} / ${anuncio.carro.ano}` : anuncio.carro.ano) : null;
   const vin = anuncio.carro?.vin;
-  const carVerticalLink = vin
-    ? 'https://www.carvertical.deal/27H3X8P/CXW7M6/?uid=332&source_id=AFF&sub1=noxvelia&sub3=' + encodeURIComponent(vin)
-    : 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
+  const carVerticalLink = vin ? `https://www.carvertical.deal/27H3X8P/CXW7M6/?uid=332&source_id=AFF&sub1=noxvelia&sub3=${encodeURIComponent(vin)}` : 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 
   const specs = isCarro ? [
     { label: 'Marca', value: formatarMarcaVeiculo(anuncio.carro), icon: mdiCar },
     { label: 'Modelo', value: formatarModeloVeiculo(anuncio.carro), icon: mdiCar },
     { label: 'Versão', value: anuncio.carro?.versao, icon: mdiFileDocumentOutline },
     { label: 'Mês / Ano', value: valorAnoMes, icon: mdiCalendarBlank },
-    { label: 'Quilometragem', value: anuncio.carro?.km != null ? new Intl.NumberFormat('pt-PT').format(anuncio.carro.km) + ' km' : null, icon: mdiSpeedometer },
+    { label: 'Quilometragem', value: anuncio.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null, icon: mdiSpeedometer },
     { label: 'Transmissão', value: formatarValorAuto(anuncio.carro?.transmissao, VALORES_TRANSMISSAO_CARRO), icon: mdiCarShiftPattern },
-    { label: 'Cilindrada', value: anuncio.carro?.cilindrada ? new Intl.NumberFormat('pt-PT').format(anuncio.carro.cilindrada) + ' cm³' : null, icon: mdiEngineOutline },
-    { label: 'Potência', value: anuncio.carro?.potencia ? anuncio.carro.potencia + ' cv' : null, icon: mdiEngineOutline },
-    { label: 'Cor Exterior', value: anuncio.carro?.cor, icon: mdiCar },
-    { label: 'Núm. Portas', value: anuncio.carro?.portas, icon: mdiCar },
-    { label: 'Núm. Lugares', value: anuncio.carro?.lugares, icon: mdiCar },
+    { label: 'Cilindrada', value: anuncio.carro?.cilindrada ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.cilindrada)} cm³` : null, icon: mdiEngineOutline },
+    { label: 'Potência', value: anuncio.carro?.potencia ? `${anuncio.carro.potencia} cv` : null, icon: mdiEngineOutline },
+    { label: 'Cor', value: anuncio.carro?.cor, icon: mdiCar },
+    { label: 'Portas', value: anuncio.carro?.portas, icon: mdiCar },
+    { label: 'Lugares', value: anuncio.carro?.lugares, icon: mdiCar },
     { label: 'Combustível', value: formatarValorAuto(anuncio.carro?.combustivel, VALORES_COMBUSTIVEL_CARRO), icon: mdiGasStation },
-    { label: 'Tracção', value: formatarValorAuto(anuncio.carro?.tracao, VALORES_TRACAO_CARRO), icon: mdiSwapHorizontal },
-    { label: 'Secção', value: formatarValorAuto(anuncio.carro?.seccao, VALORES_SECCAO_CARRO), icon: mdiCheckCircleOutline },
-    { label: 'Tipo de Veículo', value: formatarValorAuto(anuncio.carro?.tipoVeiculo, VALORES_TIPO_VEICULO_CARRO), icon: mdiCar },
   ] : [
-    { label: 'Tipo de imóvel', value: anuncio.imovel?.tipoImovel, icon: mdiHomeCityOutline },
+    { label: 'Tipo', value: anuncio.imovel?.tipoImovel, icon: mdiHomeCityOutline },
     { label: 'Tipologia', value: anuncio.imovel?.tipologia, icon: mdiHomeCityOutline },
-    { label: 'Área útil', value: anuncio.imovel?.area ? anuncio.imovel.area + ' m²' : null, icon: mdiRulerSquare },
-    { label: 'Area terreno/bruta', value: anuncio.imovel?.areaTerreno ? anuncio.imovel.areaTerreno + ' m2' : null, icon: mdiRulerSquare },
+    { label: 'Área útil', value: anuncio.imovel?.area ? `${anuncio.imovel.area} m²` : null, icon: mdiRulerSquare },
     { label: 'Quartos', value: anuncio.imovel?.quartos, icon: mdiBedOutline },
     { label: 'Casas de banho', value: anuncio.imovel?.casasBanho, icon: mdiShower },
-    { label: 'Ano construcao', value: anuncio.imovel?.anoConstrucao || anuncio.imovel?.ano, icon: mdiCalendarBlank },
-    { label: 'Andar', value: anuncio.imovel?.andar ?? null, icon: mdiHomeCityOutline },
-    { label: 'Cert. energético', value: anuncio.imovel?.certificadoEnergetico, icon: mdiCertificateOutline },
-    { label: 'Localização', value: localizacaoString, icon: mdiMapMarkerOutline },
-    { label: 'Estado', value: anuncio.imovel?.estadoConservacao || anuncio.imovel?.estado || 'Usado', icon: mdiHammerWrench },
-    { label: 'Piscina', value: anuncio.imovel?.piscina ? 'Sim' : null, icon: mdiCheckCircleOutline },
-    { label: 'Jardim', value: anuncio.imovel?.jardim ? 'Sim' : null, icon: mdiCheckCircleOutline },
-    { label: 'Elevador', value: anuncio.imovel?.elevador ? 'Sim' : null, icon: mdiCheckCircleOutline },
-    { label: 'Garagem', value: anuncio.imovel?.garagem ? 'Sim' : 'Não', icon: mdiGarageVariant },
-    { label: 'Varanda/Terraço', value: temVaranda ? 'Sim' : 'Não', icon: mdiBalcony },
+    { label: 'Cert. Energético', value: anuncio.imovel?.certificadoEnergetico, icon: mdiCertificateOutline },
   ];
 
   const especificacoesVisiveis = specs.filter(s => s.value != null && s.value !== '');
   const gruposExtras = agruparExtras(extrasOpcionais, isCarro);
   const valorFinanciado = Math.max(0, precoValor - entrada);
   const taxaMensal = 0.079 / 12;
-  const prestacaoMensal = valorFinanciado > 0
-    ? Math.round((valorFinanciado * taxaMensal) / (1 - Math.pow(1 + taxaMensal, -meses)))
-    : 0;
+  const prestacaoMensal = valorFinanciado > 0 ? Math.round((valorFinanciado * taxaMensal) / (1 - Math.pow(1 + taxaMensal, -meses))) : 0;
 
   const accent = '#102f50';
-  const accentShadow = 'rgba(16,47,80,.22)';
-
   const garantia = anuncio.garantia;
   const aceitaRetoma = anuncio.aceitaRetoma;
   const rating = donoDoAnuncio?.rating || 0;
@@ -476,734 +445,206 @@ export default function Anuncio() {
   const anoRegistoUser = donoDoAnuncio?.createdAt ? new Date(donoDoAnuncio.createdAt).getFullYear() : new Date().getFullYear();
   const vendedorVerificado = donoDoAnuncio?.tipo === 'admin';
   const contactoConfirmado = donoDoAnuncio?.verificado === true || vendedorVerificado;
-  const contaProfissionalConfirmada = donoDoAnuncio?.tipoConta === 'profissional' || donoDoAnuncio?.tipo === 'profissional' || vendedorVerificado;
-  const nomePublicoVendedor = vendedorVerificado
-    ? (donoDoAnuncio.nome?.toUpperCase().includes('NOXVELIA') ? donoDoAnuncio.nome : `NOXVELIA ${donoDoAnuncio?.nome}`)
-    : (donoDoAnuncio?.nome || 'Utilizador Particular');
+  const contaProfissionalConfirmada = donoDoAnuncio?.tipoConta === 'profissional' || vendedorVerificado;
+  const nomePublicoVendedor = vendedorVerificado ? (donoDoAnuncio.nome?.toUpperCase().includes('NOXVELIA') ? donoDoAnuncio.nome : `NOXVELIA ${donoDoAnuncio?.nome}`) : (donoDoAnuncio?.nome || 'Particular');
   const mensagemWhatsapp = encodeURIComponent(`Olá, vi o anúncio "${anuncio.titulo}" na Noxvelia (${preco}, ${localizacaoString}) e queria saber se ainda está disponível.`);
   const referencia = anuncio._id?.slice(-6).toUpperCase();
-  const dataPublicacao = anuncio.createdAt
-    ? new Date(anuncio.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
-    : null;
-  const resumoDecisao = [
-    { label: 'Localização', value: localizacaoString, icon: mdiMapMarkerOutline },
-    { label: isCarro ? 'Marca' : 'Preço / m²', value: isCarro ? (formatarMarcaVeiculo(anuncio.carro) || 'Viatura') : (precoPorM2 || 'A confirmar'), icon: isCarro ? mdiCar : mdiRulerSquare },
-    { label: 'Vendedor', value: contactoConfirmado ? 'Email confirmado' : (rating > 0 ? `${rating.toFixed(1)} estrelas` : 'Novo vendedor'), icon: mdiShieldCheckOutline },
-    { label: 'Contacto', value: temTelefoneContacto ? 'Telefone' : (temEmailContacto ? 'Email' : 'Sem contacto'), icon: temTelefoneContacto ? mdiPhone : mdiEmailOutline },
-  ];
-
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': isCarro ? 'Vehicle' : 'Product',
-    name: anuncio.titulo,
-    description: anuncio.descricao?.slice(0, 300),
-    image: fotos.filter(Boolean),
-    url: absoluteUrl(anuncioPath(anuncio)),
-    sku: anuncio._id,
-    category: isCarro ? 'Automóveis' : 'Imóveis',
-    offers: {
-      '@type': 'Offer',
-      priceCurrency: 'EUR',
-      price: precoValor,
-      availability: 'https://schema.org/InStock',
-      url: absoluteUrl(anuncioPath(anuncio)),
-      seller: donoDoAnuncio?.nome ? { '@type': donoDoAnuncio?.tipoConta === 'profissional' ? 'Organization' : 'Person', name: donoDoAnuncio.nome } : undefined,
-    },
-  };
-  const breadcrumbLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Noxvelia', item: absoluteUrl('/') },
-      { '@type': 'ListItem', position: 2, name: isCarro ? 'Carros' : 'Imóveis', item: absoluteUrl(isCarro ? '/carros' : '/imoveis') },
-      { '@type': 'ListItem', position: 3, name: anuncio.titulo, item: absoluteUrl(anuncioPath(anuncio)) },
-    ],
-  };
+  const dataPublicacao = anuncio.createdAt ? new Date(anuncio.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : null;
 
   return (
     <>
-      <Seo
-        title={`${anuncio.titulo} | Noxvelia`}
-        description={(anuncio.descricao || `${anuncio.titulo} em ${anuncio.localizacao?.cidade || 'Portugal'}`).slice(0, 160)}
-        path={anuncioPath(anuncio)}
-        image={fotoPrincipalUrl}
-        type="product"
-        jsonLd={[jsonLd, breadcrumbLd]}
-      />
+      <Seo title={`${anuncio.titulo} | Noxvelia`} description={(anuncio.descricao || `${anuncio.titulo} em ${localizacaoString}`).slice(0, 160)} path={anuncioPath(anuncio)} image={fotoPrincipalUrl} type="product" />
 
       <style>{`
-        /* RESETS FUNDAMENTAIS MÓVEIS */
         *, *::before, *::after { box-sizing: border-box; }
-        img { max-width: 100%; height: auto; display: block; }
-        .ano-page { background: linear-gradient(180deg, #ffffff 0%, #f8fafc 34%, #ffffff 100%); color: #0f172a; min-height: calc(100vh - 72px); padding: 28px 20px 72px; font-family: 'Inter', sans-serif; overflow-x: hidden; width: 100%; max-width: 100%; }
-        .ano-container { width: 100%; max-width: 1280px; margin: 0 auto; min-width: 0; }
+        .ano-page { background: #f4f7f3; color: #102326; min-height: calc(100vh - 72px); padding: 28px 20px 100px; font-family: 'Inter', sans-serif; overflow-x: hidden; width: 100%; }
+        .ano-container { width: min(1200px, 100%); margin: 0 auto; }
+        .ano-breadcrumb { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .ano-back { display: inline-flex; align-items: center; gap: 6px; color: #4f646a; font-size: 12px; font-weight: 700; text-transform: uppercase; text-decoration: none; }
+        .ano-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 380px); gap: 28px; align-items: start; }
+        @media (max-width: 960px) { .ano-grid { grid-template-columns: 1fr; } }
         
-        .ano-breadcrumb { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-        .ano-back { display: inline-flex; align-items: center; gap: 6px; color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; text-decoration: none; transition: color .2s; }
-        .ano-back:hover, .ano-back:focus-visible { color: #0f172a; }
-        .ano-actions { display: flex; gap: 10px; }
-        .btn-icon { width: 38px; height: 38px; border-radius: 10px; background: #ffffff; border: 1px solid #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .2s; position: relative; flex-shrink: 0; }
-        .btn-icon:hover { background: #f1f5f9; border-color: #cbd5e1; color: #0f172a; transform: translateY(-1px); }
-        .btn-icon:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid ${accent}; outline-offset: 2px; }
-        .btn-icon.saved { color: #ef4444; background: rgba(239,68,68,.05); border-color: rgba(239,68,68,.2); }
-        .toast-copy { position: absolute; top: 110%; right: 0; background: #0f172a; color: #ffffff; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 6px; white-space: nowrap; pointer-events: none; animation: nx-fade-in .2s; z-index: 20; display: flex; align-items: center; gap: 4px; }
-
-        .ano-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 390px); gap: 32px; align-items: start; width: 100%; }
-        .ano-grid > div { min-width: 0; min-height: 0; }
-        @media (max-width: 960px) { .ano-grid { grid-template-columns: minmax(0, 1fr); } }
-
-        .gallery-wrap { border-radius: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; margin-bottom: 18px; box-shadow: 0 28px 70px -52px rgba(15,23,42,0.55); width: 100%; max-width: 100%; min-width: 0; }
-        .ano-page.is-featured .gallery-wrap { border-color: rgba(217,196,156,.78) !important; box-shadow: 0 28px 70px -50px rgba(16,47,80,.62), 0 0 0 1px rgba(217,196,156,.2) !important; }
-        .ano-page.is-featured .title-block,
-        .ano-page.is-featured .price-panel { border-color: rgba(217,196,156,.68) !important; }
+        .gallery-wrap { border-radius: 20px; overflow: hidden; background: #ffffff; border: 1px solid #dfe8e4; margin-bottom: 20px; }
+        .gallery-main { position: relative; width: 100%; aspect-ratio: 16/9; background: #e8f0ed; cursor: zoom-in; }
+        .gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; }
         
-        .gallery-main { position: relative; width: 100%; aspect-ratio: 16/9; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; min-width: 0; }
-        .gallery-main img { width: 100%; height: 100%; max-width: 100%; object-fit: cover; transition: transform .5s ease, opacity .3s; }
-        .gallery-main:hover img { transform: scale(1.025); }
-        .gallery-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,.6) 0%, transparent 45%); pointer-events: none; }
-        .gallery-placeholder { color: #cbd5e1; opacity: 0.5; }
-        .gallery-badge { position: absolute; top: 14px; left: 14px; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,.05); border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: ${accent}; display: flex; align-items: center; gap: 5px; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .gallery-badge.below-featured { top: 54px; }
-        .gallery-featured-badge { position: absolute; top: 14px; left: 14px; z-index: 6; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 13px; border-radius: 999px; background: linear-gradient(135deg, #102f50 0%, #d9c49c 100%); color: #fffaf0; border: 1px solid rgba(255,250,240,.32); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 18px 34px -20px rgba(2,6,23,.78); }
-        .gallery-counter { position: absolute; top: 14px; right: 14px; background: rgba(15,23,42,.65); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 5; }
-        .gallery-zoom-hint { position: absolute; bottom: 16px; right: 14px; background: rgba(15,23,42,.55); backdrop-filter: blur(8px); border-radius: 20px; padding: 6px 11px; font-size: 11px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 5; opacity: 0; transition: opacity .2s; }
-        .gallery-main:hover .gallery-zoom-hint { opacity: 1; }
-        .gallery-bottom { position: absolute; bottom: 16px; left: 16px; right: 16px; z-index: 5; pointer-events: none; }
-        .gallery-title-overlay { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(16px, 4.5vw, 26px); font-weight: 800; color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,.6); letter-spacing: -.02em; line-height: 1.25; margin-bottom: 6px; word-break: break-word; overflow-wrap: anywhere; white-space: normal; }
-        .gallery-loc { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,.9); font-size: 13px; font-weight: 600; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+        .title-block { background: #ffffff; border: 1px solid #dfe8e4; border-radius: 18px; padding: 24px; margin-bottom: 20px; }
+        .listing-price { font-family: 'Space Grotesk', sans-serif; font-size: 34px; font-weight: 900; color: #102326; margin-bottom: 6px; }
+        .listing-subtitle { font-size: 20px; font-weight: 800; color: #102326; margin-bottom: 12px; line-height: 1.3; }
         
-        .arrow-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.9); border: 1px solid rgba(0,0,0,.05); color: #0f172a; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; transition: all .2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .arrow-btn:hover { background: #ffffff; transform: translateY(-50%) scale(1.05); }
-        .arrow-left { left: 14px; } .arrow-right { right: 14px; }
-        
-        .thumbs-row { display: flex; gap: 8px; padding: 12px; overflow-x: auto; scrollbar-width: none; background: #ffffff; border-top: 1px solid #e2e8f0; width: 100%; max-width: 100%; }
-        .thumbs-row::-webkit-scrollbar { display: none; }
-        .thumb { width: 76px; height: 50px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid transparent; opacity: .6; transition: all .2s; flex-shrink: 0; padding: 0; background: #f1f5f9; }
-        .thumb:hover { opacity: .9; }
-        .thumb.active { border-color: ${accent}; opacity: 1; }
-        .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .specs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-top: 16px; }
+        .spec-card { background: #ffffff; border: 1px solid #dfe8e4; border-radius: 12px; padding: 14px; }
+        .spec-label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #7b8b90; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+        .spec-value { font-size: 14px; font-weight: 700; color: #102326; }
 
-        .title-block { margin-bottom: 18px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 22px; box-shadow: 0 20px 50px -42px rgba(15,23,42,0.5); width: 100%; max-width: 100%; min-width: 0; }
-        .listing-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 4vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 5px; }
-        .listing-subtitle { font-size: clamp(18px, 2vw, 24px); color: #0f172a; font-weight: 800; margin-bottom: 14px; line-height: 1.25; letter-spacing: -0.01em; word-break: break-word; overflow-wrap: anywhere; }
-        .meta-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; width: 100%; }
-        .meta-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; }
-        .meta-ref { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #64748b; font-weight: 600; background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
-        .meta-ref:hover { color: #0f172a; }
-        .estado-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: rgba(217,196,156,.18); color: #102f50; border: 1px solid rgba(217,196,156,.38); }
-        .estado-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-        .meta-dot { color: #cbd5e1; font-size: 10px; }
-        .featured-title-strip { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; padding: 12px 14px; border: 1px solid #e7d3a8; border-radius: 12px; background: linear-gradient(135deg, #fff8e7 0%, #ffffff 100%); color: #102f50; }
-        .featured-title-strip span { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
-        .featured-title-strip small { color: #64748b; font-size: 12px; font-weight: 700; text-align: right; }
-        .nx-badge-item.destaque { background: #102f50; border-color: #102f50; color: #fffaf0; }
+        .price-panel { background: #ffffff; border: 1px solid #dfe8e4; border-radius: 20px; padding: 24px; box-shadow: 0 12px 32px rgba(16,35,38,0.04); position: sticky; top: 24px; }
+        .btn-contact { width: 100%; padding: 16px; background: #168b82; color: #fff; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+        .btn-whatsapp { width: 100%; padding: 16px; background: #25d366; color: #fff; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: none; margin-bottom: 12px; }
 
-        .decision-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0 0 22px; width: 100%; }
-        .decision-item { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 13px 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 26px -24px rgba(15,23,42,0.45); min-width: 0; }
-        .decision-icon { width: 34px; height: 34px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: ${accent}; flex-shrink: 0; }
-        .decision-label { display: block; font-size: 9.5px; color: #94a3b8; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; line-height: 1; margin-bottom: 5px; }
-        .decision-value { display: block; color: #0f172a; font-size: 13px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-
-        .specs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 155px), 1fr)); gap: 12px; width: 100%; }
-        .spec-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; transition: border-color .2s, transform .2s, box-shadow .2s; animation: nx-rise .35s ease backwards; min-width: 0; }
-        .spec-card:hover { border-color: #cbd5e1; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
-        .spec-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-        .spec-value { font-size: 15px; font-weight: 700; color: #0f172a; text-transform: capitalize; word-break: break-word; overflow-wrap: anywhere; }
-
-        .extras-panel { display: flex; flex-direction: column; gap: 22px; width: 100%; }
-        .extras-group { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-        .extras-group-title { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: #475569; }
-        .extras-group-title::before { content: ''; width: 8px; height: 8px; border-radius: 999px; background: ${accent}; box-shadow: 0 0 0 4px rgba(217,196,156,.16); }
-        .extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 10px; align-items: stretch; }
-        .extra-item { min-width: 0; min-height: 58px; display: flex; align-items: flex-start; gap: 11px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 13px 14px; font-size: 13px; font-weight: 750; color: #334155; line-height: 1.42; animation: nx-rise .35s ease backwards; box-shadow: 0 12px 28px -24px rgba(15,23,42,0.35); }
-        .extra-check { width: 24px; height: 24px; border-radius: 8px; background: rgba(217,196,156,0.1); color: ${accent}; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; margin-top: -1px; }
-        .extra-text { min-width: 0; overflow-wrap: anywhere; word-break: normal; white-space: normal; }
-
-        .desc-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; margin-top: 4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); width: 100%; max-width: 100%; min-width: 0; }
-        .desc-head { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 16px; display: flex; align-items: center; gap: 7px; }
-        .desc-text { font-size: 14px; line-height: 1.8; color: #334155; white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; }
-
-        .tour-card { margin-top: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 20px 48px -42px rgba(15,23,42,.55); width: 100%; min-width: 0; }
-        .tour-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; }
-        .tour-title { display: flex; align-items: center; gap: 8px; color: #0f172a; font-size: 15px; font-weight: 850; }
-        .tour-provider { padding: 4px 9px; border-radius: 999px; color: ${accent}; background: rgba(217,196,156,.08); border: 1px solid rgba(217,196,156,.18); font-size: 10px; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; }
-        .tour-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #020617; }
-        .tour-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-
-        .tab-panel { animation: nx-fade-in .35s ease; }
-        .open-detail-stack { display: flex; flex-direction: column; gap: 24px; width: 100%; }
-        .open-detail-section { width: 100%; min-width: 0; }
-        .open-detail-title { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: #475569; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
-        .open-detail-title::before { content: ''; width: 18px; height: 1px; background: #d9c49c; flex: 0 0 auto; }
-
-        .sidebar-sticky { position: static; display: flex; flex-direction: column; gap: 16px; max-height: none; overflow: visible; overscroll-behavior: auto; padding-right: 0; scrollbar-width: auto; width: 100%; min-width: 0; }
-        .price-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 22px; padding: 26px; box-shadow: 0 28px 70px -52px rgba(15,23,42,0.7); width: 100%; min-width: 0; }
-        .panel-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 3.5vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 4px; }
-        .panel-price-m2 { font-size: 13px; color: #64748b; font-weight: 600; margin-bottom: 16px; }
-
-        .nx-price-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0; }
-        .nx-badge-item { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; }
-        .nx-badge-item.garantia { background: rgba(217, 196, 156, 0.08); border-color: rgba(217, 196, 156, 0.28); color: #102f50; }
-        .nx-badge-item.retoma { background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.2); color: #2563eb; }
-
-        .btn-contact { width: 100%; box-sizing: border-box; padding: 16px; background: ${accent}; color: #fff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px ${accentShadow}; margin-bottom: 12px; }
-        .btn-contact:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: 0 10px 28px ${accentShadow}; }
-
-        .btn-whatsapp { width: 100%; box-sizing: border-box; padding: 16px; background: #102f50; color: #fff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 6px 20px rgba(16, 47, 80, 0.2); text-decoration: none; margin-bottom: 12px; }
-        .btn-whatsapp:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(16, 47, 80, 0.28); color: #fff; }
-
-        .contact-revealed { width: 100%; box-sizing: border-box; padding: 18px 16px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; transition: all .2s; margin-bottom: 12px; overflow: hidden; min-width: 0; }
-        .contact-revealed:hover { background: #f1f5f9; border-color: #94a3b8; }
-        .contact-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; }
-        .contact-phone { font-size: clamp(16px, 4vw, 22px); font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 7px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-        .contact-email { font-size: 13px; color: #475569; font-weight: 600; margin-top: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
-
-        .cv-banner { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 20px; padding: 24px; text-decoration: none; display: flex; flex-direction: column; transition: all .2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); box-sizing: border-box; width: 100%; margin-top: 16px; min-width: 0; }
-        .cv-banner:hover { border-color: #7dd3fc; background: #e0f2fe; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.1); }
-        .cv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; width: 100%; box-sizing: border-box; flex-wrap: wrap; gap: 8px; }
-        .cv-discount { background: #1B4DFF; color: #fff; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .cv-desc { font-size: 14px; color: #0c4a6e; line-height: 1.5; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
-        .cv-code-wrap { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px dashed #7dd3fc; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; cursor: pointer; transition: all 0.2s; width: 100%; box-sizing: border-box; flex-wrap: wrap; gap: 8px; }
-        .cv-code-wrap:hover { background: #f8fafc; border-color: #38bdf8; }
-        .cv-code { display: flex; align-items: center; background: #f0f9ff; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 800; color: #1B4DFF; letter-spacing: 0.05em; }
-        .cv-btn { width: 100%; padding: 16px; background: #1B4DFF; color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; transition: background .2s, transform .2s; box-sizing: border-box; }
-        .cv-banner:hover .cv-btn { background: #143bc4; }
-
-        .finance-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); width: 100%; min-width: 0; }
-        .finance-box .fin-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 14px; }
-        .fin-result-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #cbd5e1; flex-wrap: wrap; gap: 8px; }
-        .fin-prestacao { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 800; color: ${accent}; letter-spacing: -.02em; }
-        .fin-mes { font-size: 12px; color: #64748b; font-weight: 600; margin-left: 3px; }
-        .fin-taeg { font-size: 11px; color: #64748b; font-weight: 700; }
-        .slider-group { margin-bottom: 12px; width: 100%; min-width: 0; }
-        .slider-label-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px; width: 100%; }
-        .slider-val { color: ${accent}; }
-        .fin-slider { width: 100%; height: 4px; border-radius: 2px; accent-color: ${accent}; cursor: pointer; -webkit-appearance: none; background: #e2e8f0; outline: none; display: block; }
-        .fin-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${accent}; cursor: pointer; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .fin-note { font-size: 10.5px; color: #94a3b8; margin-top: 12px; line-height: 1.5; }
-
-        .trust-strip { display: flex; gap: 18px; padding: 16px 4px 0; margin-top: 4px; border-top: 1px solid #e2e8f0; justify-content: center; flex-wrap: wrap; }
-        .trust-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #64748b; }
-        .trust-item.verified { color: #102f50; font-weight: 850; }
-
-        .seller-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; transition: all .2s; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); width: 100%; min-width: 0; }
-        .seller-panel:hover { border-color: #cbd5e1; background: #f8fafc; transform: translateY(-2px); box-shadow: 0 14px 20px -5px rgba(0,0,0,0.08); }
-        .seller-avatar { width: 48px; height: 48px; border-radius: 50%; background: #f1f5f9; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 800; color: #0f172a; flex-shrink: 0; overflow: hidden; }
-        .seller-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .seller-info { flex: 1; min-width: 0; text-align: left; }
-        .seller-name { font-size: 15px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 5px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        .seller-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .seller-rating { display: flex; align-items: center; gap: 2px; font-size: 13px; font-weight: 800; color: #0f172a; background: #fffbeb; padding: 2px 8px 2px 6px; border-radius: 6px; border: 1px solid #fef3c7; }
-        .seller-reviews { font-weight: 600; color: #64748b; font-size: 11.5px; margin-left: 2px; }
-        .seller-rating-empty.verified, .seller-rating-empty.company { background: rgba(217,196,156,.16); color: #102f50; border-color: rgba(217,196,156,.42); }
-        .seller-rating-empty { font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .seller-date { font-size: 12px; font-weight: 600; color: #64748b; }
-        .seller-vote-panel { width: 100%; margin-top: 12px; padding: 18px; border: 1px solid #e6e1d6; border-radius: 18px; background: #fffdf8; display: grid; gap: 12px; }
-        .seller-vote-copy { display: grid; gap: 4px; }
-        .seller-vote-copy strong { color: #102f50; font-size: 14px; font-weight: 900; }
-        .seller-vote-copy span { color: #64748b; font-size: 12px; line-height: 1.45; }
-        .seller-vote-stars { display: inline-flex; align-items: center; gap: 5px; }
-        .seller-vote-stars button { width: 34px; height: 34px; border-radius: 999px; border: 1px solid #e6e1d6; background: #ffffff; color: #cbd5e1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform .18s ease, border-color .18s ease, color .18s ease, background .18s ease; }
-        .seller-vote-stars button:hover:not(:disabled), .seller-vote-stars button.active { color: #d9a441; border-color: rgba(217, 195, 145, .78); background: #fff8e7; transform: translateY(-1px); }
-        .seller-vote-stars button:disabled { cursor: not-allowed; opacity: .62; }
-        .seller-vote-login { color: #102f50; font-size: 12px; font-weight: 850; text-decoration: none; }
-        .seller-vote-login:hover { text-decoration: underline; }
-        .seller-vote-status { color: #64748b; font-size: 12px; font-weight: 750; }
-        .seller-vote-status.success { color: #0f766e; }
-        .seller-vote-status.error { color: #b91c1c; }
-
-        .owner-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 14px; padding: 18px; margin-top: 4px; width: 100%; min-width: 0; }
-        .owner-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #2563eb; margin-bottom: 12px; }
-        .owner-btns { display: flex; gap: 10px; width: 100%; flex-wrap: wrap; }
-        .btn-owner-edit { flex: 1; min-width: 120px; padding: 11px; text-align: center; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; transition: all .2s; }
-        .btn-owner-edit:hover { border-color: #94a3b8; background: #f8fafc; }
-        .btn-owner-edit.is-locked { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
-        .btn-owner-edit.is-locked:hover { background: #ffedd5; border-color: #fdba74; }
-        .owner-note { margin-top: 10px; color: #475569; font-size: 11.5px; line-height: 1.5; }
-        .btn-owner-sold { flex: 1; min-width: 120px; padding: 11px; border: none; background: #102f50; color: #fff; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: opacity .2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-owner-sold:hover { opacity: .85; }
-
-        .nx-modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; animation: nx-fade-in .2s; width: 100%; height: 100%; }
-        .nx-modal-box { width: 100%; max-width: 440px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 36px 28px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-        .nx-modal-icon { margin-bottom: 16px; display: flex; justify-content: center; }
-        .nx-modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 10px; letter-spacing: -.02em; }
-        .nx-modal-text { font-size: 14px; color: #64748b; line-height: 1.7; margin-bottom: 28px; }
-        .nx-modal-footer { display: flex; gap: 12px; flex-wrap: wrap; }
-        .nx-btn-cancel { flex: 1; min-width: 120px; padding: 13px; background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; }
-        .nx-btn-cancel:hover { border-color: #94a3b8; color: #0f172a; background: #f8fafc; }
-        .nx-btn-danger { flex: 1; min-width: 120px; padding: 13px; background: #ef4444; border: none; color: #fff; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; transition: opacity .2s; }
-        .nx-btn-danger:hover { opacity: .85; }
-        .nx-btn-danger:disabled { opacity: .5; cursor: not-allowed; }
-
-        .sugeridos-section { margin-top: 64px; padding-top: 40px; border-top: 1px solid #e2e8f0; width: 100%; min-width: 0; }
-        .sugeridos-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 24px; letter-spacing: -0.02em; }
-        .sugeridos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 24px; width: 100%; }
-
-        .lightbox-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.98); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: nx-fade-in .2s; width: 100%; height: 100%; }
-        .lightbox-close { position: absolute; top: 18px; right: 18px; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; }
-        .lightbox-close:hover { background: rgba(255,255,255,.2); }
-        .lightbox-counter { position: absolute; top: 24px; left: 24px; color: rgba(255,255,255,.8); font-size: 13px; font-weight: 700; z-index: 5; }
-        .lightbox-img-wrap { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 70px 90px; min-width: 0; }
-        .lightbox-img-wrap img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 6px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-        
-        /* ── CORREÇÕES AGRESSIVAS PARA MOBILE E OVERFLOW ── */
-        @media (max-width: 900px) {
-          .decision-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-          .ano-page { padding: 16px 12px 100px; }
-          .desc-box { padding: 20px; }
-        }
-
-        @media (max-width: 720px) {
-          .lightbox-img-wrap { padding: 70px 16px; }
-          .arrow-btn { width: 34px; height: 34px; }
-          .gallery-wrap { border-radius: 16px; }
-        }
-
-        @media (max-width: 520px) {
-          .decision-strip { grid-template-columns: 1fr; }
-          .title-block { padding: 16px; }
-          .price-panel { padding: 18px; }
-          .gallery-title-overlay { font-size: 18px; }
-        }
-
-        @media (max-width: 620px) {
-          .featured-title-strip { align-items: flex-start; flex-direction: column; }
-          .featured-title-strip small { text-align: left; }
-          .gallery-badge.below-featured { top: 52px; }
-        }
-
-        @keyframes nx-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        @media (prefers-reduced-motion: reduce) {
-          .spec-card, .extra-item, .gallery-main img, .btn-contact, .btn-whatsapp { animation: none !important; transition: none !important; }
+        /* STICKY BOTTOM BAR MOBILE (Conversão Máxima) */
+        .mobile-sticky-cta { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid #dfe8e4; padding: 12px 16px; z-index: 999; align-items: center; justify-content: space-between; box-shadow: 0 -10px 25px rgba(0,0,0,0.08); }
+        @media(max-width: 960px) {
+          .mobile-sticky-cta { display: flex; }
         }
       `}</style>
 
+      {/* LIGHTBOX MODAL */}
       {lightboxAberto && (
-        <div className="lightbox-overlay" onClick={() => setLightboxAberto(false)} role="dialog" aria-modal="true" aria-label="Visualização ampliada das fotos">
-          <button type="button" className="lightbox-close" onClick={(e) => { e.stopPropagation(); setLightboxAberto(false); }} aria-label="Fechar">
-            <Icon path={mdiClose} size={1} />
-          </button>
-          {fotos.length > 1 && <div className="lightbox-counter">{fotoActiva + 1} / {fotos.length}</div>}
-          <div className="lightbox-img-wrap" onClick={(e) => e.stopPropagation()} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-            {fotoActivaOriginalUrl ? (
-              <img
-                src={fotoActivaOriginalUrl}
-                width={fotoActivaDims.width}
-                height={fotoActivaDims.height}
-                alt={`${anuncio.titulo} — foto ${fotoActiva + 1}`}
-              />
-            ) : (
-              <div className="gallery-placeholder"><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={3} /></div>
-            )}
-          </div>
-          {fotos.length > 1 && (
-            <>
-              <button type="button" className="arrow-btn arrow-left" onClick={(e) => { e.stopPropagation(); fotoAnterior(); }} aria-label="Foto anterior"><Icon path={mdiChevronLeft} size={1.1} /></button>
-              <button type="button" className="arrow-btn arrow-right" onClick={(e) => { e.stopPropagation(); fotoSeguinte(); }} aria-label="Foto seguinte"><Icon path={mdiChevronRight} size={1.1} /></button>
-            </>
-          )}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(16,35,38,0.95)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setLightboxAberto(false)}>
+          <button type="button" onClick={() => setLightboxAberto(false)} style={{ position: 'absolute', top: 20, right: 20, background: 'transparent', border: 0, color: '#fff', cursor: 'pointer' }}><Icon path={mdiClose} size={1.5} /></button>
+          <img src={fotoActivaOriginalUrl} alt="" style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }} />
         </div>
       )}
 
+      {/* MODAL VENDIDO */}
       {mostrarModalVendido && (
-        <div className="nx-modal-overlay" onClick={() => setMostrarModalVendido(false)}>
-          <div className="nx-modal-box" onClick={e => e.stopPropagation()}>
-            <div className="nx-modal-icon"><Icon path={mdiCheckCircleOutline} size={2.5} color="#102f50" /></div>
-            <h3 className="nx-modal-title">Venda Concluída</h3>
-            <p className="nx-modal-text">Pretendes eliminar este anúncio de forma permanente dado que o ativo já foi vendido?</p>
-            <div className="nx-modal-footer">
-              <button type="button" className="nx-btn-cancel" disabled={eliminandoVendido} onClick={() => setMostrarModalVendido(false)}>Cancelar</button>
-              <button type="button" className="nx-btn-danger" disabled={eliminandoVendido} onClick={handleConfirmarVendido}>
-                {eliminandoVendido ? 'A marcar...' : 'Marcar como vendido'}
-              </button>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(16,35,38,0.6)', backdropFilter: 'blur(6px)', zIndex: 9999, display: 'grid', placeItems: 'center', padding: 20 }}>
+          <div style={{ background: '#fff', padding: 36, borderRadius: 20, maxWidth: 420, textAlign: 'center' }}>
+            <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 22, margin: '0 0 12px' }}>Marcar como Vendido?</h3>
+            <p style={{ color: '#4f646a', fontSize: 14, margin: '0 0 24px' }}>O anúncio passará a constar como concluído e será retirado das pesquisas ativas.</p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setMostrarModalVendido(false)} style={{ flex: 1, padding: 12, borderRadius: 10, border: '1px solid #dfe8e4', background: '#fff', fontWeight: 700, cursor: 'pointer' }}>Cancelar</button>
+              <button onClick={handleConfirmarVendido} disabled={eliminandoVendido} style={{ flex: 1, padding: 12, borderRadius: 10, border: 0, background: '#ef4444', color: '#fff', fontWeight: 800, cursor: 'pointer' }}>Confirmar</button>
             </div>
           </div>
         </div>
       )}
 
-      <div className={`ano-page${isDestacado ? ' is-featured' : ''}`}>
+      <div className="ano-page">
         <div className="ano-container">
-
+          
           <div className="ano-breadcrumb">
             <Link to={isCarro ? '/carros' : '/imoveis'} className="ano-back">
               <Icon path={mdiChevronLeft} size={0.75} /> Voltar à Pesquisa
             </Link>
-            <div className="ano-actions">
-              <button className="btn-icon" onClick={handlePartilhar} title="Partilhar" aria-label="Partilhar anúncio">
-                <Icon path={mdiShareVariantOutline} size={0.85} />
-                {copiado && <div className="toast-copy"><Icon path={mdiCheck} size={0.55} /> Copiado</div>}
-              </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={handlePartilhar} style={{ width: 36, height: 36, borderRadius: 10, background: '#fff', border: '1px solid #dfe8e4', display: 'grid', placeItems: 'center', cursor: 'pointer' }}><Icon path={mdiShareVariantOutline} size={0.8} /></button>
               {!isDono && (
-                <button className={`btn-icon ${guardado ? 'saved' : ''}`} onClick={toggleGuardado} title="Guardar" aria-pressed={guardado} aria-label={guardado ? 'Remover dos guardados' : 'Guardar anúncio'}>
-                  <Icon path={guardado ? mdiHeart : mdiHeartOutline} size={0.85} />
-                </button>
+                <button onClick={toggleGuardado} style={{ width: 36, height: 36, borderRadius: 10, background: '#fff', border: '1px solid #dfe8e4', display: 'grid', placeItems: 'center', cursor: 'pointer', color: guardado ? '#ef4444' : 'inherit' }}><Icon path={guardado ? mdiHeart : mdiHeartOutline} size={0.8} /></button>
               )}
             </div>
           </div>
 
           <div className="ano-grid">
+            
+            {/* COLUNA ESQUERDA: FOTOS E DETALHES */}
             <div>
               <div className="gallery-wrap">
-                <div
-                  className="gallery-main"
-                  onClick={() => setLightboxAberto(true)}
-                  onTouchStart={onTouchStart}
-                  onTouchEnd={onTouchEnd}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Abrir galeria em ecrã completo"
-                  onKeyDown={(e) => { if (e.key === 'Enter') setLightboxAberto(true); }}
-                >
+                <div className="gallery-main" onClick={() => setLightboxAberto(true)}>
                   {fotoActivaLargeUrl ? (
-                    <img
-                      src={fotoActivaLargeUrl}
-                      srcSet={fotoActivaSrcSet || undefined}
-                      sizes="(max-width: 960px) 100vw, 820px"
-                      width={fotoActivaDims.width}
-                      height={fotoActivaDims.height}
-                      alt={anuncio.titulo}
-                      loading="eager"
-                    />
+                    <img src={fotoActivaLargeUrl} alt={anuncio.titulo} />
                   ) : (
-                    <div className="gallery-placeholder"><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={3} /></div>
-                  )}
-                  <div className="gallery-overlay" />
-                  {isDestacado && (
-                    <div className="gallery-featured-badge"><Icon path={mdiStar} size={0.68} />Destaque Noxvelia</div>
-                  )}
-                  <div className={`gallery-badge${isDestacado ? ' below-featured' : ''}`}><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={0.7} />{isCarro ? 'Automóvel' : 'Imóvel'}</div>
-                  {fotos.length > 1 && (<div className="gallery-counter"><Icon path={mdiCamera} size={0.65} />{fotoActiva + 1} / {fotos.length}</div>)}
-                  {fotoActivaLargeUrl && <div className="gallery-zoom-hint"><Icon path={mdiMagnifyPlusOutline} size={0.65} />Ampliar</div>}
-                  <div className="gallery-bottom">
-                    <div className="gallery-title-overlay">{anuncio.titulo}</div>
-                    <div className="gallery-loc"><Icon path={mdiMapMarkerOutline} size={0.65} />{localizacaoString}</div>
-                  </div>
-                  {fotos.length > 1 && (
-                    <>
-                      <button type="button" className="arrow-btn arrow-left" onClick={(e) => { e.stopPropagation(); fotoAnterior(); }} aria-label="Foto anterior"><Icon path={mdiChevronLeft} size={1.1} /></button>
-                      <button type="button" className="arrow-btn arrow-right" onClick={(e) => { e.stopPropagation(); fotoSeguinte(); }} aria-label="Foto seguinte"><Icon path={mdiChevronRight} size={1.1} /></button>
-                    </>
+                    <div style={{ display: 'grid', placeItems: 'center', height: '100%', color: '#7b8b90' }}><Icon path={isCarro ? mdiCar : mdiHomeCityOutline} size={3} /></div>
                   )}
                 </div>
-                {fotos.length > 1 && (
-                  <div className="thumbs-row">
-                    {fotos.map((f, i) => (
-                      <button type="button" key={i} className={`thumb ${fotoActiva === i ? 'active' : ''}`} onClick={() => setFotoActiva(i)} aria-label={`Ver foto ${i + 1}`}>
-                        {getImageUrl(f, 'thumbnail') ? <img src={getImageUrl(f, 'thumbnail')} width="400" height="300" alt="" loading="lazy" /> : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#cbd5e1' }}><Icon path={mdiCamera} size={1} /></div>}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
 
-              <div className={`title-block${isDestacado ? ' is-featured' : ''}`}>
-                {isDestacado && (
-                  <div className="featured-title-strip">
-                    <span><Icon path={mdiStar} size={0.68} />Destaque Noxvelia</span>
-                    <small>Aparece com prioridade nos resultados de pesquisa.</small>
-                  </div>
-                )}
+              <div className="title-block">
                 <div className="listing-price">{preco}</div>
                 <div className="listing-subtitle">{anuncio.titulo}</div>
-                <div className="meta-row">
-                  {dataPublicacao && <span className="meta-item"><Icon path={mdiClockOutline} size={0.65} /> Publicado em {dataPublicacao}</span>}
-                  <span className="estado-badge"><span className="estado-dot" />{anuncio.estado || 'Disponível'}</span>
-                  <span className="meta-item"><Icon path={mdiEyeOutline} size={0.65} /> {anuncio.visitas || 0} visualizações</span>
-                  <span className="meta-dot">·</span>
-                  <button type="button" className="meta-ref" onClick={copiarReferencia} title="Copiar referência">
-                    <Icon path={refCopiado ? mdiCheck : mdiContentCopy} size={0.6} /> Ref: #{referencia}
-                  </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: '#4f646a', fontSize: '13px', fontWeight: 600 }}>
+                  <span><Icon path={mdiMapMarkerOutline} size={0.7} /> {localizacaoString}</span>
+                  <span>·</span>
+                  <span><Icon path={mdiEyeOutline} size={0.7} /> {anuncio.visitas || 0} visualizações</span>
                 </div>
               </div>
 
-              <div className="decision-strip">
-                {resumoDecisao.map((item) => (
-                  <div className="decision-item" key={item.label}>
-                    <span className="decision-icon"><Icon path={item.icon} size={0.78} /></span>
-                    <span style={{ minWidth: 0 }}>
-                      <span className="decision-label">{item.label}</span>
-                      <span className="decision-value">{item.value}</span>
-                    </span>
-                  </div>
-                ))}
+              <div className="title-block">
+                <h3 style={{ fontFamily: 'Space Grotesk', fontSize: '18px', margin: '0 0 12px' }}>Especificações</h3>
+                <div className="specs-grid">
+                  {especificacoesVisiveis.map((s, i) => (
+                    <div key={i} className="spec-card">
+                      <div className="spec-label"><Icon path={s.icon} size={0.65} /> {s.label}</div>
+                      <div className="spec-value">{s.value}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="open-detail-stack">
-                <section className="open-detail-section">
-                  <div className="open-detail-title">Ficha técnica</div>
-                  <div className="specs-grid tab-panel">
-                    {especificacoesVisiveis.map((s, i) => (
-                      <div key={i} className="spec-card" style={{ animationDelay: `${i * 35}ms` }}>
-                        <div className="spec-label"><Icon path={s.icon} size={0.75} />{s.label}</div>
-                        <div className="spec-value">{s.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                {extrasOpcionais.length > 0 && (
-                  <section className="open-detail-section">
-                    <div className="open-detail-title">{isCarro ? 'Equipamento' : 'Detalhes'}</div>
-                    <div className="extras-panel tab-panel">
-                      {gruposExtras.map((grupo, grupoIndex) => (
-                        <section key={grupo.titulo} className="extras-group">
-                          <div className="extras-group-title">{grupo.titulo}</div>
-                          <div className="extras-grid">
-                            {grupo.items.map((extra, i) => (
-                              <div key={grupo.titulo + '-' + extra + '-' + i} className="extra-item" style={{ animationDelay: String((grupoIndex + i) * 30) + 'ms' }}>
-                                <span className="extra-check"><Icon path={mdiCheckCircleOutline} size={0.7} /></span>
-                                <span className="extra-text">{extra}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </section>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                <section className="open-detail-section">
-                  <div className="open-detail-title">Descrição</div>
-                  <div className="desc-box tab-panel">
-                    <div className="desc-head"><Icon path={mdiFileDocumentOutline} size={0.8} />Descrição do Anunciante</div>
-                    <div className="desc-text">{anuncio.descricao || 'O vendedor ainda não adicionou uma descrição detalhada.'}</div>
-                  </div>
-                </section>
+              <div className="title-block">
+                <h3 style={{ fontFamily: 'Space Grotesk', fontSize: '18px', margin: '0 0 12px' }}>Descrição</h3>
+                <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, color: '#4f646a', fontSize: '14px', margin: 0 }}>{anuncio.descricao || 'Sem descrição detalhada.'}</p>
               </div>
-
-              {videoEmbed && (
-                <section className="tour-card" aria-labelledby="tour-virtual-title">
-                  <div className="tour-head">
-                    <div className="tour-title" id="tour-virtual-title">
-                      <Icon path={mdiCamera} size={0.82} />
-                      Tour Virtual / Vídeo
-                    </div>
-                    <span className="tour-provider">{videoEmbed.provider}</span>
-                  </div>
-                  <div className="tour-frame">
-                    <iframe
-                      src={videoEmbed.embedUrl}
-                      title={videoEmbed.title}
-                      loading="lazy"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      allowFullScreen
-                    />
-                  </div>
-                </section>
-              )}
             </div>
 
+            {/* COLUNA DIREITA: CONTACTOS E PREÇO (SIDEBAR) */}
             <div>
-              <div className="sidebar-sticky">
-                <div className={`price-panel${isDestacado ? ' is-featured' : ''}`}>
-                  <div className="panel-price">{preco}</div>
-                  {precoPorM2 && <div className="panel-price-m2">{precoPorM2}</div>}
+              <div className="price-panel">
+                <div style={{ fontSize: '28px', fontFamily: 'Space Grotesk', fontWeight: 900, color: '#102326', marginBottom: 16 }}>{preco}</div>
 
-                  <div className="nx-price-badges">
-                    {isDestacado && (
-                      <div className="nx-badge-item destaque"><Icon path={mdiStar} size={0.7} /> Destaque</div>
-                    )}
-                    {(garantia || vendedorVerificado) && (
-                      <div className="nx-badge-item garantia"><Icon path={mdiShieldCheckOutline} size={0.7} /> {garantia || 'Garantia Incluída'}</div>
-                    )}
-                    {aceitaRetoma && (
-                      <div className="nx-badge-item retoma"><Icon path={mdiSwapHorizontal} size={0.7} /> Aceita Retoma</div>
-                    )}
-                    <div className="nx-badge-item"><Icon path={mdiLightningBolt} size={0.7} color="#f59e0b" /> Financiamento</div>
-                  </div>
-
-                  {isDono ? (
-                    <div className="owner-box">
-                      <div className="owner-label">Gestão do Anúncio</div>
-                      <div className="owner-btns">
-                        {podeEditarAnuncioAtivo ? (
-                          <Link to={`/editar/${id}`} className="btn-owner-edit">Editar Dados</Link>
-                        ) : (
-                          <Link to="/premium-confirmar" className="btn-owner-edit is-locked">PRO para editar</Link>
-                        )}
-                        <button type="button" className="btn-owner-sold" onClick={() => setMostrarModalVendido(true)}>
-                          <Icon path={mdiCheck} size={0.7} style={{marginRight: 4}} /> Vendido
-                        </button>
-                      </div>
-                      {!podeEditarAnuncioAtivo && (
-                        <div className="owner-note">Anúncios ativos só podem ser editados com PRO. Podes marcar como vendido a qualquer momento.</div>
-                      )}
+                {isDono ? (
+                  <div style={{ background: '#f8faf7', border: '1px solid #dfe8e4', borderRadius: 14, padding: 16 }}>
+                    <strong style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', marginBottom: 8, color: '#4f646a' }}>Gestão do Anúncio</strong>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Link to={`/editar/${id}`} style={{ flex: 1, padding: 10, background: '#fff', border: '1px solid #dfe8e4', borderRadius: 8, textAlign: 'center', fontWeight: 700, textDecoration: 'none', color: '#102326', fontSize: 13 }}>Editar</Link>
+                      <button onClick={() => setMostrarModalVendido(true)} style={{ flex: 1, padding: 10, background: '#102326', color: '#fff', border: 0, borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Vendido</button>
                     </div>
-                  ) : (
-                    <>
-                      {mostrarTelefone ? (
-                        <>
-                          <a href={temTelefoneContacto ? `tel:${telefoneContacto}` : `mailto:${emailContacto}`} className="contact-revealed" onClick={() => registarContacto(temTelefoneContacto ? 'phone_reveal' : 'email_reveal')}>
-                            <span className="contact-label">Contactar via</span>
-                            <div className="contact-phone">
-                              <Icon path={temTelefoneContacto ? mdiPhone : mdiEmailOutline} size={0.9} color={accent} />
-                              {temTelefoneContacto ? telefoneContacto : 'Email'}
-                            </div>
-                            <div className="contact-email"><Icon path={mdiEmailOutline} size={0.6} />{emailContacto}</div>
+                  </div>
+                ) : (
+                  <>
+                    {mostrarTelefone ? (
+                      <div>
+                        <a href={`tel:${telefoneContacto}`} className="btn-contact" style={{ background: '#102326', textDecoration: 'none' }}>
+                          <Icon path={mdiphonen} size={0.8} /> {telefoneContacto}
+                        </a>
+                        {whatsappNumero && (
+                          <a href={`https://wa.me/${whatsappNumero}?text=${mensagemWhatsapp}`} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
+                            <Icon path={mdiWhatsapp} size={0.85} /> Enviar Mensagem WhatsApp
                           </a>
-                          {whatsappNumero && (
-                            <a
-                              href={`https://wa.me/${whatsappNumero}?text=${mensagemWhatsapp}`}
-                              onClick={() => { registarContacto('whatsapp_click'); trackFunnelEvent('whatsapp_click', { listingId: anuncio._id, vertical: anuncio.tipo }); }}
-                              target="_blank" rel="noopener noreferrer" className="btn-whatsapp"
-                            >
-                              <Icon path={mdiWhatsapp} size={0.85} /> Contactar por WhatsApp
-                            </a>
-                          )}
-                        </>
-                      ) : (
-                        <button type="button" className="btn-contact" onClick={revelarContactos}>
-                          <Icon path={temTelefoneContacto ? mdiPhone : mdiEmailOutline} size={0.85} />
-                          {temTelefoneContacto ? 'Revelar Contactos' : 'Mostrar Email'}
-                        </button>
-                      )}
-                      
-                      <div className="trust-strip">
-                        <span className="trust-item"><Icon path={mdiShieldCheckOutline} size={0.6} />Contacto direto</span>
-                        {contactoConfirmado && <span className="trust-item verified"><Icon path={mdiCheckDecagram} size={0.6} />Email confirmado</span>}
-                        {contaProfissionalConfirmada && <span className="trust-item verified"><Icon path={mdiShieldCheckOutline} size={0.6} />Conta profissional</span>}
-                        <span className="trust-item"><Icon path={mdiClockOutline} size={0.6} />Sem comissão</span>
+                        )}
                       </div>
-                    </>
-                  )}
-
-                  {isCarro && !isDono && (
-                    <a href={carVerticalLink} target="_blank" rel="noopener noreferrer" className="cv-banner">
-                      <div className="cv-head">
-                        <img src="/carvertical-logo.png" alt="carVertical" style={{ height: '22px', width: 'auto', objectFit: 'contain' }} />
-                        <span className="cv-discount">-20%</span>
-                      </div>
-                      <p className="cv-desc">Verifica o histórico de acidentes, roubos e anomalias de quilometragem deste veículo.</p>
-                      <div className="cv-code-wrap" onClick={(e) => { e.preventDefault(); navigator.clipboard.writeText("NOXVELIA"); alert("Código copiado com sucesso!"); }}>
-                        <span style={{ fontSize: '12px', color: '#0c4a6e', fontWeight: 600 }}>CÓDIGO DE DESCONTO:</span>
-                        <span className="cv-code">
-                          NOXVELIA <Icon path={mdiContentCopy} size={0.5} style={{marginLeft: '6px'}}/>
-                        </span>
-                      </div>
-                      <div className="cv-btn">Verificar Histórico</div>
-                    </a>
-                  )}
-
-                  {isCarro && !isDono && (
-                    <div className="finance-box">
-                      <div className="fin-head">Simulação de Crédito</div>
-                      <div className="fin-result-row">
-                        <div>
-                          <span className="fin-prestacao">{prestacaoMensal.toLocaleString('pt-PT')}€</span>
-                          <span className="fin-mes">/mês</span>
-                        </div>
-                        <div className="fin-taeg">TAEG 7.9%</div>
-                      </div>
-                      <div className="slider-group">
-                        <div className="slider-label-row">
-                          <span>Entrada inicial</span>
-                          <span className="slider-val">{Number(entrada).toLocaleString('pt-PT')}€</span>
-                        </div>
-                        <input type="range" className="fin-slider" min="0" max={Math.round(precoValor * 0.7)} step="250" value={entrada} onChange={e => setEntrada(Number(e.target.value))} aria-label="Entrada inicial" />
-                      </div>
-                      <div className="slider-group" style={{ marginBottom: 0 }}>
-                        <div className="slider-label-row">
-                          <span>Prazo</span>
-                          <span className="slider-val">{meses} meses</span>
-                        </div>
-                        <input type="range" className="fin-slider" min="24" max="120" step="12" value={meses} onChange={e => setMeses(Number(e.target.value))} aria-label="Prazo em meses" />
-                      </div>
-                      <div className="fin-note">Simulação meramente indicativa. Os valores reais dependem da aprovação de crédito junto da instituição financeira parceira.</div>
-                    </div>
-                  )}
-
-                  <AdBanner
-                    mode="direct"
-                    placement="detalhe_sidebar"
-                    adsensePlacement="detail_sidebar"
-                    vertical={anuncio.tipo}
-                    variant="sidebar"
-                    minHeight={220}
-                    mobileMinHeight={120}
-                  />
-                </div>
-
-                <Link to={`/vendedor/${donoDoAnuncio?._id}`} className="seller-panel">
-                  <div className="seller-avatar">{donoDoAnuncio?.avatarUrl ? <img src={donoDoAnuncio.avatarUrl} alt="" /> : inicial}</div>
-                  <div className="seller-info">
-                    <div className="seller-name">
-                      {nomePublicoVendedor}
-                      {contactoConfirmado && <Icon path={mdiCheckDecagram} size={0.8} color="#d9c49c" title="Email confirmado" />}
-                    </div>
-
-                    <div className="seller-meta">
-                      {rating > 0 ? (
-                        <div className="seller-rating">
-                          <span className="seller-rating-icon">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Icon key={i} path={mdiStar} size={0.5} color={i < Math.round(rating) ? '#f59e0b' : '#fde68a'} />
-                            ))}
-                          </span>
-                          {rating.toFixed(1)}
-                          <span className="seller-reviews">({totalAvaliacoes})</span>
-                        </div>
-                      ) : (
-                        <div className={`seller-rating-empty${contactoConfirmado ? ' verified' : ''}`}>{contactoConfirmado ? 'Email confirmado' : 'Novo vendedor'}</div>
-                      )}
-                      {contaProfissionalConfirmada && <div className="seller-rating-empty company">Conta profissional</div>}
-                      <span className="meta-dot">&middot;</span>
-                      <div className="seller-date">Desde {anoRegistoUser}</div>
-                    </div>
-                  </div>
-                  <Icon path={mdiChevronRight} size={1} color="#94a3b8" />
-                </Link>
-                {!isDono && (
-                  <div className="seller-vote-panel">
-                    <div className="seller-vote-copy">
-                      <strong>{minhaAvaliacao ? 'A tua avaliação do vendedor' : 'Avaliar vendedor'}</strong>
-                      <span>Uma votação por utilizador. Podes atualizar a tua nota mais tarde.</span>
-                    </div>
-                    <div className="seller-vote-stars" role="radiogroup" aria-label="Avaliação do vendedor">
-                      {Array.from({ length: 5 }).map((_, index) => {
-                        const valor = index + 1;
-                        const ativo = valor <= avaliacaoSelecionada;
-                        return (
-                          <button
-                            key={valor}
-                            type="button"
-                            className={ativo ? 'active' : ''}
-                            onClick={() => submeterAvaliacaoVendedor(valor)}
-                            disabled={!signed || avaliandoVendedor}
-                            aria-label={`${valor} ${valor === 1 ? 'estrela' : 'estrelas'}`}
-                            aria-checked={avaliacaoSelecionada === valor}
-                            role="radio"
-                          >
-                            <Icon path={mdiStar} size={0.82} />
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {!signed && <Link className="seller-vote-login" to="/login">Entrar para avaliar</Link>}
-                    {avaliandoVendedor && <span className="seller-vote-status">A guardar avaliação...</span>}
-                    {erroAvaliacao && <span className="seller-vote-status error">{erroAvaliacao}</span>}
-                    {sucessoAvaliacao && <span className="seller-vote-status success">{sucessoAvaliacao}</span>}
-                  </div>
+                    ) : (
+                      <button type="button" className="btn-contact" onClick={revelarContactos}>
+                        <Icon path={mdiphonen} size={0.8} /> Revelar Contactos
+                      </button>
+                    )}
+                  </>
                 )}
+
+                <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid #dfe8e4', display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#e8f0ed', display: 'grid', placeItems: 'center', fontWeight: 800 }}>{inicial}</div>
+                  <div>
+                    <strong style={{ display: 'block', fontSize: '14px', color: '#102326' }}>{nomePublicoVendedor}</strong>
+                    <span style={{ fontSize: '12px', color: '#4f646a' }}>Membro desde {anoRegistoUser}</span>
+                  </div>
+                </div>
               </div>
             </div>
+
           </div>
 
-          <AdBanner mode="direct" placement="detalhe_sugestoes" adsensePlacement="listing_before_suggestions" vertical={anuncio.tipo} minHeight={126} mobileMinHeight={78} />
-
+          {/* Sugeridos */}
           {sugeridos.length > 0 && (
-            <div className="sugeridos-section">
-              <h3 className="sugeridos-title">Poderá gostar destes anúncios</h3>
-              <div className="sugeridos-grid">
-                {sugeridos.map(sug => <AnuncioCard key={sug._id} anuncio={sug} />)}
+            <div style={{ marginTop: '48px' }}>
+              <h3 style={{ fontFamily: 'Space Grotesk', fontSize: '20px', marginBottom: '20px' }}>Poderá gostar também</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
+                {sugeridos.map(s => <AnuncioCard key={s._id} anuncio={s} />)}
               </div>
             </div>
           )}
 
         </div>
       </div>
+
+      {/* BARRA STICKY FLUTUANTE EM MOBILE (Conversão garantida ao scrollar) */}
+      {!isDono && (
+        <div className="mobile-sticky-cta">
+          <div>
+            <span style={{ display: 'block', fontSize: '11px', color: '#7b8b90', fontWeight: 700 }}>Preço</span>
+            <strong style={{ fontFamily: 'Space Grotesk', fontSize: '18px', color: '#102326' }}>{preco}</strong>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {whatsappNumero && (
+              <a href={`https://wa.me/${whatsappNumero}?text=${mensagemWhatsapp}`} target="_blank" rel="noopener noreferrer" style={{ width: 42, height: 42, borderRadius: 12, background: '#25d366', color: '#fff', display: 'grid', placeItems: 'center', textDecoration: 'none' }}>
+                <Icon path={mdiWhatsapp} size={1} />
+              </a>
+            )}
+            <button onClick={revelarContactos} style={{ padding: '0 20px', height: 42, borderRadius: 12, background: '#168b82', color: '#fff', border: 0, fontWeight: 800, fontSize: 13 }}>
+              Contactar
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

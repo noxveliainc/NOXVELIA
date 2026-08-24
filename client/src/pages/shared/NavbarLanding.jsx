@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { publishIntentState } from '../../utils/navigationState';
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { publishIntentState } from "../../utils/navigationState";
 
 export default function NavbarLanding() {
   const { user, signed, logout } = useAuth();
@@ -22,17 +22,17 @@ export default function NavbarLanding() {
     };
 
     const fecharComEscape = (evento) => {
-      if (evento.key === 'Escape') {
+      if (evento.key === "Escape") {
         setUserMenuAberto(false);
         setMenuMobileAberto(false);
       }
     };
 
-    window.addEventListener('click', cliqueFora);
-    window.addEventListener('keydown', fecharComEscape);
+    window.addEventListener("click", cliqueFora);
+    window.addEventListener("keydown", fecharComEscape);
     return () => {
-      window.removeEventListener('click', cliqueFora);
-      window.removeEventListener('keydown', fecharComEscape);
+      window.removeEventListener("click", cliqueFora);
+      window.removeEventListener("keydown", fecharComEscape);
     };
   }, []);
 
@@ -43,7 +43,7 @@ export default function NavbarLanding() {
 
   const obterUserLocal = () => {
     try {
-      const guardado = sessionStorage.getItem('@App:user');
+      const guardado = sessionStorage.getItem("@App:user");
       return guardado ? JSON.parse(guardado) : null;
     } catch {
       return null;
@@ -52,10 +52,10 @@ export default function NavbarLanding() {
 
   const dadosUser = user || obterUserLocal();
   const avatarImg = dadosUser?.avatarUrl || dadosUser?.avatar;
-  const inicial = dadosUser?.nome?.charAt(0).toUpperCase() || 'U';
-  const primeiroNome = dadosUser?.nome?.split(' ')[0] || '';
-  const publicarTo = signed ? '/publicar' : '/login';
-  const publicarState = signed ? undefined : publishIntentState(location, '/');
+  const inicial = dadosUser?.nome?.charAt(0).toUpperCase() || "U";
+  const primeiroNome = dadosUser?.nome?.split(" ")[0] || "";
+  const publicarTo = signed ? "/publicar" : "/login";
+  const publicarState = signed ? undefined : publishIntentState(location, "/");
 
   return (
     <>
@@ -656,14 +656,38 @@ export default function NavbarLanding() {
 
       <nav className="nl-root" aria-label="Navegação principal" ref={navRef}>
         <div className="nl-inner">
-          <Link to="/" className="nl-brand" aria-label="Noxvelia — página inicial">
+          <Link
+            to="/"
+            className="nl-brand"
+            aria-label="Noxvelia — página inicial"
+          >
             <img src="/logo-noxvelia.png" alt="" />
             <span className="nl-wordmark">Noxvelia</span>
           </Link>
 
           <div className="nl-links">
-            <a href="#pesquisa">Pesquisar</a>
-            <a href="#anunciar">Criar anúncio</a>
+            <a
+              href="#pesquisa"
+              onClick={(e) => {
+                e.preventDefault();
+                document
+                  .getElementById("pesquisa")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Pesquisar
+            </a>
+            <a
+              href="#anunciar"
+              onClick={(e) => {
+                e.preventDefault();
+                document
+                  .getElementById("anunciar")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Criar anúncio
+            </a>
             <Link to="/profissionais">Profissionais</Link>
             <Link to="/enviar-stock">Enviar stock</Link>
           </div>
@@ -678,22 +702,42 @@ export default function NavbarLanding() {
               }}
               aria-expanded={menuMobileAberto}
               aria-controls="nl-mobile-menu"
-              aria-label={menuMobileAberto ? 'Fechar navegação' : 'Abrir navegação'}
+              aria-label={
+                menuMobileAberto ? "Fechar navegação" : "Abrir navegação"
+              }
             >
               {menuMobileAberto ? (
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
               ) : (
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 7h16M4 12h16M4 17h16" />
+                </svg>
               )}
             </button>
-            {!signed && <Link to="/login" state={{ from: location.pathname }} className="nl-btn-ghost">Entrar</Link>}
-            <Link to={publicarTo} state={publicarState} className="nl-btn-solid">Criar anúncio</Link>
+            {!signed && (
+              <Link
+                to="/login"
+                state={{ from: location.pathname }}
+                className="nl-btn-ghost"
+              >
+                Entrar
+              </Link>
+            )}
+            <Link
+              to={publicarTo}
+              state={publicarState}
+              className="nl-btn-solid"
+            >
+              Criar anúncio
+            </Link>
 
             {signed ? (
               <div ref={userMenuRef} className="nl-user-wrap">
                 <button
                   type="button"
-                  className={`nl-user-trigger ${userMenuAberto ? 'active' : ''}`}
+                  className={`nl-user-trigger ${userMenuAberto ? "active" : ""}`}
                   onClick={() => {
                     setMenuMobileAberto(false);
                     setUserMenuAberto((aberto) => !aberto);
@@ -702,27 +746,55 @@ export default function NavbarLanding() {
                   aria-label="Abrir menu de utilizador"
                 >
                   <span className="nl-avatar">
-                    {avatarImg ? <img src={avatarImg} alt="" /> : <span className="nl-avatar-initial">{inicial}</span>}
+                    {avatarImg ? (
+                      <img src={avatarImg} alt="" />
+                    ) : (
+                      <span className="nl-avatar-initial">{inicial}</span>
+                    )}
                   </span>
-                  {primeiroNome && <span className="nl-username">{primeiroNome}</span>}
-                  <svg className="nl-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" strokeWidth="2" aria-hidden="true">
+                  {primeiroNome && (
+                    <span className="nl-username">{primeiroNome}</span>
+                  )}
+                  <svg
+                    className="nl-chevron"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    strokeWidth="2"
+                    aria-hidden="true"
+                  >
                     <path d="M6 9l6 6 6-6" />
                   </svg>
                 </button>
 
                 {userMenuAberto && (
                   <div className="nl-user-dropdown">
-                    <Link to="/perfil" onClick={() => setUserMenuAberto(false)} className="nl-ud-item">
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                    <Link
+                      to="/perfil"
+                      onClick={() => setUserMenuAberto(false)}
+                      className="nl-ud-item"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
                       O meu perfil
                     </Link>
                     <div className="nl-ud-divider" />
                     <button
                       type="button"
-                      onClick={() => { setUserMenuAberto(false); logout(); }}
+                      onClick={() => {
+                        setUserMenuAberto(false);
+                        logout();
+                      }}
                       className="nl-ud-item logout"
                     >
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                      </svg>
                       Terminar sessão
                     </button>
                   </div>
@@ -741,22 +813,62 @@ export default function NavbarLanding() {
                 <span>Automóveis e imóveis em Portugal</span>
               </div>
             </div>
-            <a href="#pesquisa" onClick={() => setMenuMobileAberto(false)}>Pesquisar</a>
-            <a href="#anunciar" onClick={() => setMenuMobileAberto(false)}>Criar anúncio</a>
-            <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>Automóveis</Link>
-            <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>Imóveis</Link>
-            <Link to="/profissionais" onClick={() => setMenuMobileAberto(false)}>Profissionais</Link>
-            <Link to="/enviar-stock" onClick={() => setMenuMobileAberto(false)}>Enviar stock</Link>
-            <Link className="nl-mobile-primary" to={publicarTo} state={publicarState} onClick={() => setMenuMobileAberto(false)}>Criar anúncio</Link>
+            <a href="#pesquisa" onClick={() => setMenuMobileAberto(false)}>
+              Pesquisar
+            </a>
+            <a href="#anunciar" onClick={() => setMenuMobileAberto(false)}>
+              Criar anúncio
+            </a>
+            <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>
+              Automóveis
+            </Link>
+            <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>
+              Imóveis
+            </Link>
+            <Link
+              to="/profissionais"
+              onClick={() => setMenuMobileAberto(false)}
+            >
+              Profissionais
+            </Link>
+            <Link to="/enviar-stock" onClick={() => setMenuMobileAberto(false)}>
+              Enviar stock
+            </Link>
+            <Link
+              className="nl-mobile-primary"
+              to={publicarTo}
+              state={publicarState}
+              onClick={() => setMenuMobileAberto(false)}
+            >
+              Criar anúncio
+            </Link>
             {signed ? (
               <>
-                <Link to="/perfil" onClick={() => setMenuMobileAberto(false)}>O meu perfil</Link>
-                <button type="button" onClick={() => { setMenuMobileAberto(false); logout(); }}>Terminar sessão</button>
+                <Link to="/perfil" onClick={() => setMenuMobileAberto(false)}>
+                  O meu perfil
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuMobileAberto(false);
+                    logout();
+                  }}
+                >
+                  Terminar sessão
+                </button>
               </>
             ) : (
               <>
-                <Link to="/login" state={{ from: location.pathname }} onClick={() => setMenuMobileAberto(false)}>Entrar</Link>
-                <Link to="/registo" onClick={() => setMenuMobileAberto(false)}>Registar</Link>
+                <Link
+                  to="/login"
+                  state={{ from: location.pathname }}
+                  onClick={() => setMenuMobileAberto(false)}
+                >
+                  Entrar
+                </Link>
+                <Link to="/registo" onClick={() => setMenuMobileAberto(false)}>
+                  Registar
+                </Link>
               </>
             )}
           </div>
