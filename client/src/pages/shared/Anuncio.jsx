@@ -478,7 +478,7 @@ export default function Anuncio() {
         .spec-value { font-size: 14px; font-weight: 700; color: #102326; }
 
         .price-panel { background: #ffffff; border: 1px solid #dfe8e4; border-radius: 20px; padding: 24px; box-shadow: 0 12px 32px rgba(16,35,38,0.04); position: sticky; top: 24px; }
-        .btn-contact { width: 100%; padding: 16px; background: #168b82; color: #fff; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+        .btn-contact { width: 100%; padding: 16px; background: #168b82; color: #fff; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; text-decoration: none; }
         .btn-whatsapp { width: 100%; padding: 16px; background: #25d366; color: #fff; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: none; margin-bottom: 12px; }
 
         /* STICKY BOTTOM BAR MOBILE (Conversão Máxima) */
@@ -584,18 +584,18 @@ export default function Anuncio() {
                   <>
                     {mostrarTelefone ? (
                       <div>
-                        <a href={`tel:${telefoneContacto}`} className="btn-contact" style={{ background: '#102326', textDecoration: 'none' }}>
-                          <Icon path={mdiPhone} size={0.8} />
+                        <a href={`tel:${telefoneContacto}`} className="btn-contact" style={{ background: '#102326' }}>
+                          <Icon path={mdiPhone} size={0.8} /> {telefoneContacto}
                         </a>
                         {whatsappNumero && (
                           <a href={`https://wa.me/${whatsappNumero}?text=${mensagemWhatsapp}`} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
-                            <Icon path={mdiWhatsapp} size={0.85} /> Enviar Mensagem WhatsApp
+                            <Icon path={mdiWhatsapp} size={0.85} /> Mensagem WhatsApp
                           </a>
                         )}
                       </div>
                     ) : (
                       <button type="button" className="btn-contact" onClick={revelarContactos}>
-                        <Icon path={mdiphonen} size={0.8} /> Revelar Contactos
+                        <Icon path={mdiPhone} size={0.8} /> Revelar Contactos
                       </button>
                     )}
                   </>
@@ -626,7 +626,7 @@ export default function Anuncio() {
         </div>
       </div>
 
-      {/* BARRA STICKY FLUTUANTE EM MOBILE (Conversão garantida ao scrollar) */}
+      {/* BARRA STICKY FLUTUANTE EM MOBILE */}
       {!isDono && (
         <div className="mobile-sticky-cta">
           <div>
