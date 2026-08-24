@@ -1,11 +1,16 @@
 User-agent: *
 Allow: /
+
+# Áreas privadas / sem valor de indexação — não devem ser rastreadas
 Disallow: /admin
 Disallow: /perfil
+Disallow: /editar
 Disallow: /favoritos
-Disallow: /editar/
-Disallow: /sucesso/
+Disallow: /notificacoes
 Disallow: /premium-confirmar
+Disallow: /sucesso-upsell
+Disallow: /reset-password
+Disallow: /verificar-email
+Disallow: /api/
 
 Sitemap: https://www.noxvelia.com/sitemap.xml
-Sitemap: https://www.noxvelia.com/api/system/sitemap.xml
