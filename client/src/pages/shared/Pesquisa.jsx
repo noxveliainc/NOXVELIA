@@ -434,11 +434,26 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const mostrarPublicidadeInline = !loading && totalAnunciosReais >= 8;
   const mostrarPublicidadeFundo = !loading && vistaAtiva === 'grelha' && totalAnunciosReais >= 6;
 
+  // --- GERADOR DINÂMICO DE LONG-TAIL SEO PARA A PÁGINA DE PESQUISA ---
+  const locSeo = filtros.cidade ? `em ${filtros.cidade}` : (filtros.distrito && filtros.distrito !== 'Todos' ? `em ${filtros.distrito}` : 'em Portugal');
+  let titleSeo = '';
+  let descSeo = '';
+
+  if (tipoSeguro === 'carro') {
+    const veiculoSeo = [filtros.marca, filtros.modelo].filter(Boolean).join(' ').trim() || 'Carros Usados e Novos';
+    titleSeo = `${veiculoSeo} ${locSeo} - Preços e Anúncios | Noxvelia`;
+    descSeo = `Procuras ${veiculoSeo} ${locSeo}? Descobre as melhores oportunidades no portal automóvel Noxvelia. Fala direto com o vendedor pelo WhatsApp, sem intermediários.`;
+  } else {
+    const imovelSeo = [filtros.tipologias[0] || '', (filtros.tiposImovel || [])[0] || 'Imóveis'].filter(Boolean).join(' ').trim();
+    titleSeo = `${imovelSeo} para venda ${locSeo} | Noxvelia`;
+    descSeo = `Encontra ${imovelSeo} para comprar ${locSeo}. Consulta preços, áreas e fotos na Noxvelia. Negócios sem comissões e contacto direto via WhatsApp.`;
+  }
+
   return (
     <>
       {!seoParams && <Seo
-        title={tipoSeguro === 'carro' ? 'Carros usados e novos em Portugal | Noxvelia' : 'Imóveis para venda em Portugal | Noxvelia'}
-        description={tipoSeguro === 'carro' ? 'Pesquisa carros usados e novos em Portugal por marca, modelo, preço e localização.' : 'Pesquisa apartamentos, moradias e terrenos em Portugal por tipologia, preço e localização.'}
+        title={titleSeo}
+        description={descSeo}
         path={tipoSeguro === 'carro' ? '/carros' : '/imoveis'}
       />}
       <style>{`
@@ -580,7 +595,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               </div>
             )}
 
-<button type="button" className="pesquisa-apply-btn" onClick={executarFiltrosManuais}>Aplicar Filtros</button>          </aside>
+            <button type="button" className="pesquisa-apply-btn" onClick={executarFiltrosManuais}>Aplicar Filtros</button>
+          </aside>
 
           <button type="button" className="pesquisa-sidebar-toggle" onClick={() => setIsSidebarOpen(prev => !prev)} aria-label="Alternar filtros">
             <Icon path={isSidebarOpen ? mdiChevronLeft : mdiChevronRight} size={0.8} />

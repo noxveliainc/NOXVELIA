@@ -492,24 +492,67 @@ export default function Anuncio() {
     { label: 'Contacto', value: temTelefoneContacto ? 'Telefone' : (temEmailContacto ? 'Email' : 'Sem contacto'), icon: temTelefoneContacto ? mdiPhone : mdiEmailOutline },
   ];
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': isCarro ? 'Vehicle' : 'Product',
-    name: anuncio.titulo,
-    description: anuncio.descricao?.slice(0, 300),
-    image: fotos.filter(Boolean),
-    url: absoluteUrl(anuncioPath(anuncio)),
-    sku: anuncio._id,
-    category: isCarro ? 'Automóveis' : 'Imóveis',
-    offers: {
-      '@type': 'Offer',
-      priceCurrency: 'EUR',
-      price: precoValor,
-      availability: 'https://schema.org/InStock',
+  // --- GERADOR DE JSON-LD (RICH SNIPPETS / SCHEMA.ORG) AUTOMÁTICO ---
+  let jsonLd = {};
+  if (isCarro) {
+    jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'Vehicle',
+      name: anuncio.titulo,
+      description: anuncio.descricao?.slice(0, 300),
+      image: fotos.filter(Boolean),
       url: absoluteUrl(anuncioPath(anuncio)),
-      seller: donoDoAnuncio?.nome ? { '@type': donoDoAnuncio?.tipoConta === 'profissional' ? 'Organization' : 'Person', name: donoDoAnuncio.nome } : undefined,
-    },
-  };
+      sku: anuncio._id,
+      brand: { '@type': 'Brand', name: anuncio.carro?.marca || 'Automóvel' },
+      model: anuncio.carro?.modelo,
+      vehicleConfiguration: anuncio.carro?.versao,
+      modelDate: anuncio.carro?.ano,
+      mileageFromOdometer: { '@type': 'QuantitativeValue', value: anuncio.carro?.km, unitCode: 'KMT' },
+      fuelType: anuncio.carro?.combustivel,
+      vehicleTransmission: anuncio.carro?.transmissao,
+      color: anuncio.carro?.cor,
+      offers: {
+        '@type': 'Offer',
+        priceCurrency: 'EUR',
+        price: precoValor,
+        itemCondition: anuncio.carro?.km > 500 ? 'https://schema.org/UsedCondition' : 'https://schema.org/NewCondition',
+        availability: anuncio.estado === 'ativo' ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
+        url: absoluteUrl(anuncioPath(anuncio)),
+        seller: donoDoAnuncio?.nome ? { '@type': donoDoAnuncio?.tipoConta === 'profissional' || donoDoAnuncio?.tipo === 'admin' ? 'Organization' : 'Person', name: donoDoAnuncio.nome } : undefined,
+      }
+    };
+  } else {
+    let tipoImovelSchema = 'RealEstateListing';
+    if (anuncio.imovel?.tipoImovel?.toLowerCase() === 'apartamento') tipoImovelSchema = 'Apartment';
+    if (anuncio.imovel?.tipoImovel?.toLowerCase() === 'moradia') tipoImovelSchema = 'SingleFamilyResidence';
+
+    jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': tipoImovelSchema,
+      name: anuncio.titulo,
+      description: anuncio.descricao?.slice(0, 300),
+      image: fotos.filter(Boolean),
+      url: absoluteUrl(anuncioPath(anuncio)),
+      sku: anuncio._id,
+      numberOfRooms: anuncio.imovel?.quartos,
+      floorSize: { '@type': 'QuantitativeValue', value: anuncio.imovel?.area, unitCode: 'MTK' },
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: anuncio.localizacao?.cidade,
+        addressRegion: anuncio.localizacao?.distrito,
+        addressCountry: 'PT'
+      },
+      offers: {
+        '@type': 'Offer',
+        priceCurrency: 'EUR',
+        price: precoValor,
+        availability: anuncio.estado === 'ativo' ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
+        url: absoluteUrl(anuncioPath(anuncio)),
+        seller: donoDoAnuncio?.nome ? { '@type': donoDoAnuncio?.tipoConta === 'profissional' || donoDoAnuncio?.tipo === 'admin' ? 'Organization' : 'Person', name: donoDoAnuncio.nome } : undefined,
+      }
+    };
+  }
+
   const breadcrumbLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
