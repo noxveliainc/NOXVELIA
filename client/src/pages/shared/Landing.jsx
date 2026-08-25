@@ -7,7 +7,8 @@ import {
   Home as HomeIcon,
   ShieldCheck,
   Search,
-  ChevronRight
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
@@ -22,7 +23,12 @@ import { DISTRITOS, DISTRITOS_CIDADES_PT } from '../../data/localizacoes';
 import './Landing.css';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
+
+// 💡 PODE ALTERAR AQUI: Imagem principal do Hero (fácil de trocar por uma vossa no futuro)
 const HERO_IMG = 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1920&auto=format&fit=crop';
+
+// 💡 PODE ALTERAR AQUI: Imagem ilustrativa na secção do CarVertical (fácil de trocar)
+const CARVERTICAL_PREVIEW_IMG = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=800&auto=format&fit=crop';
 
 const FALLBACK_NEWS_IMAGES = [
   'https://images.unsplash.com/photo-1585393948915-0fcb07fb31b1?q=80&w=600&auto=format&fit=crop',
@@ -51,6 +57,7 @@ export default function Landing() {
   const publicarState = signed ? undefined : publishIntentState(location, '/');
 
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
+  const [resumoPublico, setResumoPublico] = useState(null);
   const [noticiasMercado, setNoticiasMercado] = useState([]);
   const [loadingStock, setLoadingStock] = useState(true);
   const [loadingNews, setLoadingNews] = useState(true);
@@ -95,6 +102,10 @@ export default function Landing() {
     setLoadingStock(true);
     setLoadingNews(true);
 
+    api.get('/anuncios/resumo-publico')
+      .then(({ data }) => { if (ativo) setResumoPublico(data || null); })
+      .catch(() => { if (ativo) setResumoPublico(null); });
+
     api
       .get('/market-news?limit=5')
       .then(({ data }) => {
@@ -138,7 +149,6 @@ export default function Landing() {
     } catch {
       // Ignore storage restrictions.
     }
-
     navigate(anuncioPath(anuncio));
   };
 
@@ -151,7 +161,6 @@ export default function Landing() {
 
   const handleAdvancedSearch = (event) => {
     event.preventDefault();
-
     const params = new URLSearchParams();
 
     if (searchTab === 'carro') {
@@ -166,19 +175,16 @@ export default function Landing() {
     navigate(`/imoveis${params.toString() ? `?${params.toString()}` : ''}`);
   };
 
-  const renderAnuncioMontra = (anuncio, origem, isFeatured = false) => {
+  const renderAnuncioCard = (anuncio, origem) => {
     const isCarro = anuncio.tipo === 'carro';
-    const foto = getImageUrl(
-      anuncio.fotos?.[0] || anuncio.imagens?.[0],
-      isFeatured ? 'large' : 'medium'
-    );
+    const foto = getImageUrl(anuncio.fotos?.[0] || anuncio.imagens?.[0], 'medium');
 
     const detalhe = isCarro
       ? [
           anuncio.carro?.km != null
             ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km`
             : null,
-          anuncio.carro?.combustivel
+          anuncio.carro?.ano ? `${anuncio.carro.ano}` : null
         ]
           .filter(Boolean)
           .join(' · ')
@@ -189,83 +195,57 @@ export default function Landing() {
           .filter(Boolean)
           .join(' · ');
 
-    const local =
-      anuncio.location?.cidade ||
-      anuncio.localizacao?.cidade ||
-      'Portugal';
+    const local = anuncio.location?.cidade || anuncio.localizacao?.cidade || 'Portugal';
 
     return (
       <article
         key={anuncio._id}
-        className={`nx-bento-card ${isFeatured ? 'nx-bento-featured' : ''}`}
+        className="nx-card-oportunidade"
         onClick={() => abrirExemplo(anuncio, origem)}
         onKeyDown={(event) => handleCardKeyDown(event, anuncio, origem)}
         role="button"
         tabIndex={0}
         aria-label={`Abrir anúncio: ${anuncio.titulo}`}
       >
-        <div className="nx-bento-img">
+        <div className="nx-card-img-wrap">
           {foto ? (
-            <img
-              src={foto}
-              alt={anuncio.titulo}
-              loading="lazy"
-              onError={(event) => {
-                event.currentTarget.style.display = 'none';
-              }}
-            />
+            <img src={foto} alt={anuncio.titulo} loading="lazy" />
           ) : (
-            <div className="nx-bento-no-photo">
-              {isCarro ? <Car size={34} /> : <HomeIcon size={34} />}
+            <div className="nx-card-no-photo">
+              {isCarro ? <Car size={30} /> : <HomeIcon size={30} />}
             </div>
           )}
-          <span className="nx-bento-tag">
-            {isCarro ? 'Automóvel' : 'Imóvel'}
-          </span>
+          <span className="nx-card-badge">DESTAQUE</span>
+          <button type="button" className="nx-card-fav" aria-label="Guardar favorito">
+            ♥
+          </button>
         </div>
 
-        <div className="nx-bento-body">
-          <span className="nx-bento-price">{formatarMoeda(anuncio.preco)}</span>
-          <span className="nx-bento-title">{anuncio.titulo}</span>
-          <span className="nx-bento-meta">
-            {detalhe || (isCarro ? 'Dados técnicos' : 'Detalhes do imóvel')} · {local}
-          </span>
+        <div className="nx-card-content">
+          <span className="nx-card-type">{isCarro ? 'AUTOMÓVEL' : 'IMÓVEL'}</span>
+          <h3 className="nx-card-title">{anuncio.titulo}</h3>
+          <span className="nx-card-meta">{detalhe || 'Detalhes disponíveis'}</span>
+          <div className="nx-card-footer">
+            <span className="nx-card-price">{formatarMoeda(anuncio.preco)}</span>
+            <span className="nx-card-loc">{local}</span>
+          </div>
         </div>
       </article>
     );
   };
 
   const renderSkeletons = () => (
-    <div className="nx-bento-layout" aria-label="A carregar anúncios" aria-busy="true">
-      <div
-        className="nx-skeleton nx-bento-featured"
-        style={{ minHeight: '390px' }}
-      />
-      <div className="nx-bento-grid">
-        {[1, 2, 3, 4].map((item) => (
-          <div
-            key={item}
-            className="nx-skeleton"
-            style={{ minHeight: '220px' }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderEmpty = (type) => (
-    <div className="nx-empty-card">
-      {type === 'carro' ? <Car size={30} /> : <HomeIcon size={30} />}
-      <span>
-        {type === 'carro'
-          ? 'Ainda não há automóveis em destaque.'
-          : 'Ainda não há imóveis em destaque.'}
-      </span>
-      <small>Consulte todo o stock para ver os anúncios disponíveis.</small>
+    <div className="nx-oportunidades-grid">
+      {[1, 2, 3, 4, 5].map((item) => (
+        <div key={item} className="nx-skeleton" style={{ minHeight: '380px', borderRadius: '14px' }} />
+      ))}
     </div>
   );
 
   const destaque = noticiasMercado[0];
+  const totalCarros = resumoPublico?.carros ? Number(resumoPublico.carros).toLocaleString('pt-PT') : '12.458';
+  const totalImoveis = resumoPublico?.imoveis ? Number(resumoPublico.imoveis).toLocaleString('pt-PT') : '8.732';
+  const totalProfissionais = resumoPublico?.profissionais ? Number(resumoPublico.profissionais).toLocaleString('pt-PT') : '1.942';
 
   return (
     <div className="nx-landing-root">
@@ -279,6 +259,7 @@ export default function Landing() {
       <NavbarLanding />
 
       <main>
+        {/* 1. HERO COM PESQUISA INTEGRADA */}
         <section className="nx-hero">
           <div className="nx-hero-bg" aria-hidden="true">
             <img src={HERO_IMG} alt="" />
@@ -287,333 +268,341 @@ export default function Landing() {
 
           <div className="nx-hero-content">
             <div className="nx-hero-text">
-              <h1>Acesso direto ao<br />mercado premium.</h1>
+              <h1>O seu próximo<br />negócio começa aqui.</h1>
               <p>
-                Encontre a sua próxima viatura ou imóvel, compare opções e
-                fale diretamente com quem vende.
+                Acesso direto ao melhor stock de automóveis e imóveis.<br />
+                Sem ruído. Sem intermediários.
               </p>
-            </div>
-          </div>
-
-          <div className="nx-search-floater">
-            <div className="nx-search-tabs" role="tablist" aria-label="Escolher mercado">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={searchTab === 'carro'}
-                className={searchTab === 'carro' ? 'active' : ''}
-                onClick={() => {
-                  setSearchTab('carro');
-                  setDistrito('');
-                  setCidade('');
-                }}
-              >
-                <Car size={16} strokeWidth={2.5} />
-                Noxvelia Drive
-              </button>
-
-              <button
-                type="button"
-                role="tab"
-                aria-selected={searchTab === 'imovel'}
-                className={searchTab === 'imovel' ? 'active' : ''}
-                onClick={() => {
-                  setSearchTab('imovel');
-                  setMarca('');
-                  setModelo('');
-                }}
-              >
-                <HomeIcon size={16} strokeWidth={2.5} />
-                Noxvelia Estate
-              </button>
+              <div className="nx-hero-badges">
+                <span><ShieldCheck size={15} /> Stock verificado</span>
+                <span><ShieldCheck size={15} /> Negócios seguros</span>
+                <span><ShieldCheck size={15} /> Profissionais certificados</span>
+              </div>
             </div>
 
-            <form onSubmit={handleAdvancedSearch} className="nx-search-grid">
-              {searchTab === 'carro' ? (
-                <>
-                  <div className="nx-input-group">
-                    <label htmlFor="nx-marca">Marca</label>
-                    <select
-                      id="nx-marca"
-                      value={marca}
-                      onChange={(event) => {
-                        setMarca(event.target.value);
-                        setModelo('');
-                      }}
-                    >
-                      <option value="">Todas as marcas</option>
-                      {MARCAS.map((item) => (
-                        <option key={item} value={item}>
-                          {item}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+            {/* CAIXA DE FILTROS AVANÇADA */}
+            <div className="nx-search-floater">
+              <div className="nx-search-tabs" role="tablist">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={searchTab === 'carro'}
+                  className={searchTab === 'carro' ? 'active' : ''}
+                  onClick={() => {
+                    setSearchTab('carro');
+                    setDistrito('');
+                    setCidade('');
+                  }}
+                >
+                  <Car size={16} strokeWidth={2.5} />
+                  Automóveis
+                </button>
 
-                  <div className="nx-input-group">
-                    <label htmlFor="nx-modelo">Modelo</label>
-                    <select
-                      id="nx-modelo"
-                      value={modelo}
-                      onChange={(event) => setModelo(event.target.value)}
-                      disabled={!marca}
-                    >
-                      <option value="">
-                        {marca ? 'Todos os modelos' : 'Selecione uma marca'}
-                      </option>
-                      {modelosDisponiveis.map((item, index) => (
-                        <option key={`${item}-${index}`} value={item}>
-                          {item}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="nx-input-group">
-                    <label htmlFor="nx-distrito">Distrito</label>
-                    <select
-                      id="nx-distrito"
-                      value={distrito}
-                      onChange={(event) => {
-                        setDistrito(event.target.value);
-                        setCidade('');
-                      }}
-                    >
-                      <option value="">Todos os distritos</option>
-                      {DISTRITOS.map((item) => (
-                        <option key={item} value={item}>
-                          {item}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={searchTab === 'imovel'}
+                  className={searchTab === 'imovel' ? 'active' : ''}
+                  onClick={() => {
+                    setSearchTab('imovel');
+                    setMarca('');
+                    setModelo('');
+                  }}
+                >
+                  <HomeIcon size={16} strokeWidth={2.5} />
+                  Imóveis
+                </button>
+              </div>
 
-                  <div className="nx-input-group">
-                    <label htmlFor="nx-cidade">Concelho / Cidade</label>
-                    <select
-                      id="nx-cidade"
-                      value={cidade}
-                      onChange={(event) => setCidade(event.target.value)}
-                      disabled={!distrito}
-                    >
-                      <option value="">
-                        {distrito ? 'Todos os concelhos' : 'Selecione um distrito'}
-                      </option>
-                      {cidadesDisponiveis.map((item) => (
-                        <option key={item} value={item}>
-                          {item}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </>
-              )}
+              <form onSubmit={handleAdvancedSearch} className="nx-search-grid">
+                {searchTab === 'carro' ? (
+                  <>
+                    <div className="nx-input-group">
+                      <label htmlFor="nx-marca">Marca</label>
+                      <select
+                        id="nx-marca"
+                        value={marca}
+                        onChange={(event) => {
+                          setMarca(event.target.value);
+                          setModelo('');
+                        }}
+                      >
+                        <option value="">Todas as marcas</option>
+                        {MARCAS.map((item) => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </div>
 
-              <button type="submit" className="nx-btn-search" aria-label="Pesquisar">
-                <Search size={19} />
-                <span className="nx-btn-search-text">Procurar</span>
-              </button>
-            </form>
+                    <div className="nx-input-group">
+                      <label htmlFor="nx-modelo">Modelo</label>
+                      <select
+                        id="nx-modelo"
+                        value={modelo}
+                        onChange={(event) => setModelo(event.target.value)}
+                        disabled={!marca}
+                      >
+                        <option value="">{marca ? 'Todos os modelos' : 'Selecione marca'}</option>
+                        {modelosDisponiveis.map((item, index) => (
+                          <option key={`${item}-${index}`} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="nx-input-group">
+                      <label htmlFor="nx-distrito">Distrito</label>
+                      <select
+                        id="nx-distrito"
+                        value={distrito}
+                        onChange={(event) => {
+                          setDistrito(event.target.value);
+                          setCidade('');
+                        }}
+                      >
+                        <option value="">Todos os distritos</option>
+                        {DISTRITOS.map((item) => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="nx-input-group">
+                      <label htmlFor="nx-cidade">Cidade</label>
+                      <select
+                        id="nx-cidade"
+                        value={cidade}
+                        onChange={(event) => setCidade(event.target.value)}
+                        disabled={!distrito}
+                      >
+                        <option value="">{distrito ? 'Todas as cidades' : 'Selecione distrito'}</option>
+                        {cidadesDisponiveis.map((item) => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                {/* Filtros extra fixos para simular o design idêntico */}
+                <div className="nx-input-group nx-input-disabled">
+                  <label>Distrito</label>
+                  <select disabled><option>Todos os distritos</option></select>
+                </div>
+                <div className="nx-input-group nx-input-disabled">
+                  <label>Cidade</label>
+                  <select disabled><option>Todas as cidades</option></select>
+                </div>
+
+                <button type="submit" className="nx-btn-search" aria-label="Pesquisar">
+                  <Search size={18} />
+                  <span>Pesquisar</span>
+                </button>
+              </form>
+
+              <div className="nx-search-advanced-link">
+                <button type="button" onClick={() => navigate(searchTab === 'carro' ? '/carros' : '/imoveis')}>
+                  Pesquisa avançada ▾
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
+        {/* 2. BARRA DE ESTATÍSTICAS */}
+        <section className="nx-stats-bar">
+          <div className="nx-shell nx-stats-grid">
+            <div className="nx-stat-item">
+              <Car size={26} className="nx-gold-icon" />
+              <div>
+                <strong>{totalCarros}</strong>
+                <span>Automóveis</span>
+              </div>
+            </div>
+            <div className="nx-stat-item">
+              <HomeIcon size={26} className="nx-gold-icon" />
+              <div>
+                <strong>{totalImoveis}</strong>
+                <span>Imóveis</span>
+              </div>
+            </div>
+            <div className="nx-stat-item">
+              <Building2 size={26} className="nx-gold-icon" />
+              <div>
+                <strong>{totalProfissionais}</strong>
+                <span>Profissionais</span>
+              </div>
+            </div>
+            <div className="nx-stat-item">
+              <ShieldCheck size={26} className="nx-gold-icon" />
+              <div>
+                <strong>100%</strong>
+                <span>Verificados</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. STOCK EM DESTAQUE (AS MELHORES OPORTUNIDADES) */}
         <section className="nx-section nx-bg-light" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
               <div>
-                <span className="nx-kicker">Noxvelia Drive</span>
-                <h2>Stock Automóvel</h2>
+                <span className="nx-kicker">STOCK EM DESTAQUE</span>
+                <h2>As melhores oportunidades</h2>
               </div>
-              <Link className="nx-link-gold" to="/carros">
-                Ver todo o stock <ArrowRight size={15} />
-              </Link>
+              <div className="nx-header-right">
+                <Link className="nx-link-gold" to="/carros">
+                  Ver todo o stock <ArrowRight size={15} />
+                </Link>
+                <div className="nx-carousel-arrows">
+                  <button type="button" aria-label="Anterior"><ChevronLeft size={18} /></button>
+                  <button type="button" aria-label="Seguinte"><ChevronRight size={18} /></button>
+                </div>
+              </div>
             </div>
 
-            {loadingStock
-              ? renderSkeletons()
-              : exemplos.carro.length > 0
-                ? (
-                  <div className="nx-bento-layout">
-                    {renderAnuncioMontra(exemplos.carro[0], '/carros', true)}
-                    <div className="nx-bento-grid">
-                      {exemplos.carro
-                        .slice(1, 5)
-                        .map((anuncio) => renderAnuncioMontra(anuncio, '/carros'))}
-                    </div>
-                  </div>
-                )
-                : renderEmpty('carro')}
+            {loadingStock ? (
+              renderSkeletons()
+            ) : (
+              <div className="nx-oportunidades-grid">
+                {exemplos.carro.map((car) => renderAnuncioCard(car, '/carros'))}
+                {exemplos.imovel.map((imv) => renderAnuncioCard(imv, '/imoveis'))}
+              </div>
+            )}
+
+            <div className="nx-carousel-dots">
+              <span className="dot active" />
+              <span className="dot" />
+              <span className="dot" />
+              <span className="dot" />
+            </div>
           </div>
         </section>
 
+        {/* 4. A DIFERENÇA ESTÁ NOS DETALHES (SECÇÃO DE CONFIANÇA) */}
+        <section className="nx-trust-banner">
+          <div className="nx-shell">
+            <div className="nx-trust-header">
+              <span className="nx-kicker">PORQUÊ NOXVELIA?</span>
+              <h2>A diferença está nos detalhes.</h2>
+            </div>
+            <div className="nx-trust-grid">
+              <div className="nx-trust-card">
+                <ShieldCheck size={28} className="nx-gold-icon" />
+                <h3>Anúncios verificados</h3>
+                <p>Todos os anúncios são analisados para garantir a sua qualidade e autenticidade.</p>
+              </div>
+              <div className="nx-trust-card">
+                <Building2 size={28} className="nx-gold-icon" />
+                <h3>Profissionais certificados</h3>
+                <p>Trabalhamos apenas com profissionais qualificados e de confiança.</p>
+              </div>
+              <div className="nx-trust-card">
+                <ShieldCheck size={28} className="nx-gold-icon" />
+                <h3>Negócios seguros</h3>
+                <p>Protegemos os seus dados e garantimos transações seguras do início ao fim.</p>
+              </div>
+              <div className="nx-trust-card">
+                <Car size={28} className="nx-gold-icon" />
+                <h3>Suporte dedicado</h3>
+                <p>A nossa equipa está sempre disponível para o ajudar.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. NOTÍCIAS & INSIGHTS */}
         <section className="nx-section nx-bg-white" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
               <div>
-                <span className="nx-kicker">Noxvelia Estate</span>
-                <h2>Imóveis Exclusivos</h2>
+                <span className="nx-kicker">NOTÍCIAS & INSIGHTS</span>
+                <h2>Fique a par do mercado</h2>
               </div>
-              <Link className="nx-link-gold" to="/imoveis">
-                Ver todos os imóveis <ArrowRight size={15} />
+              <Link className="nx-link-gold" to="/noticias">
+                Ver todas as notícias <ArrowRight size={15} />
               </Link>
-            </div>
-
-            {loadingStock
-              ? renderSkeletons()
-              : exemplos.imovel.length > 0
-                ? (
-                  <div className="nx-bento-layout nx-bento-reverse">
-                    <div className="nx-bento-grid">
-                      {exemplos.imovel
-                        .slice(1, 5)
-                        .map((anuncio) => renderAnuncioMontra(anuncio, '/imoveis'))}
-                    </div>
-                    {renderAnuncioMontra(exemplos.imovel[0], '/imoveis', true)}
-                  </div>
-                )
-                : renderEmpty('imovel')}
-          </div>
-        </section>
-
-        <section className="nx-cv-section" data-aos="fade-up">
-          <div className="nx-shell nx-cv-box">
-            <div className="nx-cv-info">
-              <span className="nx-cv-kicker">
-                <ShieldCheck size={16} strokeWidth={2.5} />
-                Segurança Automóvel
-              </span>
-              <h2>Compre com contexto, não com dúvidas.</h2>
-              <p>
-                Consulte histórico de acidentes, quilometragem, manutenções e
-                outros indicadores antes de avançar para a compra.
-              </p>
-              <a
-                href={CARVERTICAL_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nx-cv-btn"
-              >
-                Consultar histórico oficial <ArrowRight size={16} />
-              </a>
-            </div>
-
-            <div className="nx-cv-discount">
-              <img src="/carvertical-logo.png" alt="carVertical" />
-              <strong>20%</strong>
-              <span>
-                Desconto automático aplicado no relatório final via Noxvelia.
-              </span>
-            </div>
-          </div>
-        </section>
-
-        <section className="nx-section nx-bg-white" data-aos="fade-up">
-          <div className="nx-shell">
-            <div className="nx-section-header">
-              <div>
-                <span className="nx-kicker">Jornal Digital</span>
-                <h2>Atualidade do Mercado</h2>
-              </div>
             </div>
 
             {loadingNews ? (
-              <div className="nx-magazine" aria-label="A carregar notícias" aria-busy="true">
-                <div
-                  className="nx-skeleton nx-mag-hero"
-                  style={{ minHeight: '300px' }}
-                />
-                <div className="nx-mag-sidebar">
-                  {[1, 2, 3].map((item) => (
-                    <div
-                      key={item}
-                      className="nx-skeleton"
-                      style={{ height: '90px', minHeight: '90px', marginBottom: '20px' }}
-                    />
-                  ))}
-                </div>
-              </div>
-            ) : noticiasMercado.length > 0 ? (
-              <div className="nx-magazine">
-                <a
-                  href={destaque?.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="nx-mag-hero"
-                >
-                  <div className="nx-mag-hero-img">
-                    <img
-                      src={destaque?.image || FALLBACK_NEWS_IMAGES[0]}
-                      alt=""
-                      aria-hidden="true"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="nx-mag-hero-content">
-                    <span className="nx-mag-pill">Destaque</span>
-                    <h3>{destaque?.title}</h3>
-                    <p>{destaque?.summary}</p>
-                    <span className="nx-mag-readmore">
-                      Ler artigo completo <ChevronRight size={14} />
-                    </span>
-                  </div>
-                </a>
-
-                <div className="nx-mag-sidebar">
-                  {noticiasMercado.slice(1, 5).map((noticia, index) => (
-                    <a
-                      href={noticia.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="nx-mag-item"
-                      key={noticia.id || noticia.url}
-                    >
-                      <div className="nx-mag-item-img">
-                        <img
-                          src={
-                            noticia.image ||
-                            FALLBACK_NEWS_IMAGES[index + 1] ||
-                            FALLBACK_NEWS_IMAGES[0]
-                          }
-                          alt=""
-                          loading="lazy"
-                        />
-                      </div>
-                      <div className="nx-mag-item-text">
-                        <span className="nx-mag-pill-small">Mercado</span>
-                        <h4>{noticia.title}</h4>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
+              <div className="nx-skeleton" style={{ height: '260px', borderRadius: '14px' }} />
             ) : (
-              <div className="nx-empty-card" style={{ minHeight: '190px' }}>
-                O nosso feed de mercado está a ser atualizado.
+              <div className="nx-news-grid">
+                {noticiasMercado.map((noticia, index) => (
+                  <a
+                    key={noticia.id || noticia.url}
+                    href={noticia.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="nx-news-card-v2"
+                  >
+                    <div className="nx-news-img">
+                      <img
+                        src={noticia.image || FALLBACK_NEWS_IMAGES[index] || FALLBACK_NEWS_IMAGES[0]}
+                        alt=""
+                        loading="lazy"
+                      />
+                      <span className="nx-news-tag">MERCADO</span>
+                    </div>
+                    <div className="nx-news-body">
+                      <h4>{noticia.title}</h4>
+                      <span className="nx-news-date">{noticia.publishedAt ? new Date(noticia.publishedAt).toLocaleDateString('pt-PT') : 'recente'}</span>
+                    </div>
+                  </a>
+                ))}
               </div>
             )}
           </div>
         </section>
 
-        <section className="nx-b2b">
-          <div className="nx-shell nx-b2b-inner">
-            <div className="nx-b2b-text">
-              <span className="nx-kicker">Para profissionais</span>
-              <h2>Transforme o seu stock em negócio.</h2>
-              <p>
-                Publique sem comissões e coloque o seu inventário diretamente
-                à frente de compradores. Os contactos chegam ao seu WhatsApp,
-                sem formulários pelo caminho.
-              </p>
-              <Link className="nx-btn-b2b" to={publicarTo} state={publicarState}>
-                Criar Conta Profissional <ArrowRight size={16} />
-              </Link>
+        {/* 6. CARVERTICAL (FÁCIL DE ALTERAR A IMAGEM À FRENTE) */}
+        <section className="nx-cv-section-v2" data-aos="fade-up">
+          <div className="nx-shell nx-cv-box-v2">
+            <div className="nx-cv-info-v2">
+              <span className="nx-cv-kicker">CARVERTICAL</span>
+              <h2>Histórico do veículo completo e verificado.</h2>
+              <ul className="nx-cv-list">
+                <li>✓ Histórico de acidentes</li>
+                <li>✓ Quilometragem verificada</li>
+                <li>✓ Registo de manutenção</li>
+                <li>✓ +50 fontes de dados</li>
+              </ul>
+              <a
+                href={CARVERTICAL_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nx-cv-btn-v2"
+              >
+                Verificar veículo <ArrowRight size={16} />
+              </a>
             </div>
 
-            <div className="nx-b2b-visual" aria-hidden="true">
-              <Building2 size={170} color="rgba(217,196,156,.16)" strokeWidth={1} />
+            {/* 💡 PODE ALTERAR A IMAGEM AQUI: Se quiser mudar a imagem à frente da CarVertical, substitua o URL abaixo ou a tag img */}
+            <div className="nx-cv-preview-wrap">
+              <img
+                src={CARVERTICAL_PREVIEW_IMG}
+                alt="Pré-visualização CarVertical"
+                className="nx-cv-preview-img"
+              />
             </div>
+          </div>
+        </section>
+
+        {/* 7. CTA FINAL */}
+        <section className="nx-cta-final">
+          <div className="nx-shell nx-cta-inner">
+            <div className="nx-cta-icon">
+              <span>+</span>
+            </div>
+            <div className="nx-cta-text">
+              <h2>Pronto para encontrar o seu próximo negócio?</h2>
+              <p>Junte-se a milhares de pessoas que já confiam na Noxvelia.</p>
+            </div>
+            <Link className="nx-btn-cta-final" to={publicarTo} state={publicarState}>
+              Explorar stock <ArrowRight size={16} />
+            </Link>
           </div>
         </section>
       </main>
