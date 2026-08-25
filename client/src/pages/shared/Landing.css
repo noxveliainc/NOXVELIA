@@ -26,6 +26,7 @@
   display: flex;
   align-items: center;
   padding-bottom: 120px; /* Cria espaço para a caixa saltar fora */
+  background-color: #102f50; /* COR DE SEGURANÇA PARA O TEXTO BRANCO LER-SE SEMPRE */
 }
 
 .nx-hero-bg {
@@ -41,7 +42,7 @@
   background: linear-gradient(180deg, rgba(16,47,80,0.88) 0%, rgba(16,47,80,0.4) 100%);
 }
 
-.nx-hero-content { text-align: center; color: #ffffff; }
+.nx-hero-content { text-align: center; color: #ffffff; width: 100%; }
 
 .nx-hero-text {
   max-width: 800px; margin: 0 auto;

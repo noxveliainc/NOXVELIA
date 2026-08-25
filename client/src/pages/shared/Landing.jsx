@@ -169,7 +169,7 @@ export default function Landing() {
         {/* 1. HERO OVERLAP */}
         <section className="nx-hero">
           <div className="nx-hero-bg">
-             <img src="/noxvelia-hero-coast.webp" alt="Fundo Noxvelia" aria-hidden="true" />
+             <img src="https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=1920&auto=format&fit=crop" alt="Fundo Noxvelia" aria-hidden="true" />
              <div className="nx-hero-overlay"></div>
           </div>
           
@@ -248,48 +248,52 @@ export default function Landing() {
         </section>
 
         {/* 3. BENTO GRID - CARROS */}
-        {exemplos.carro.length > 0 && (
-          <section className="nx-section nx-bg-light" data-aos="fade-up">
-            <div className="nx-shell">
-              <div className="nx-section-header">
-                <h2>O Melhor do Stock Automóvel</h2>
-                <Link className="nx-link-gold" to="/carros">Ver todos <ArrowRight size={16} /></Link>
-              </div>
+        <section className="nx-section nx-bg-light" data-aos="fade-up">
+          <div className="nx-shell">
+            <div className="nx-section-header">
+              <h2>O Melhor do Stock Automóvel</h2>
+              <Link className="nx-link-gold" to="/carros">Ver todos <ArrowRight size={16} /></Link>
+            </div>
+            {exemplos.carro.length > 0 ? (
               <div className="nx-bento-layout">
                 {renderAnuncioMontra(exemplos.carro[0], '/carros', true)}
                 <div className="nx-bento-grid">
                   {exemplos.carro.slice(1, 5).map((anuncio) => renderAnuncioMontra(anuncio, '/carros', false))}
                 </div>
               </div>
-            </div>
-          </section>
-        )}
+            ) : (
+              <p style={{color: '#64748b', fontSize: '16px'}}>A carregar viaturas em destaque...</p>
+            )}
+          </div>
+        </section>
 
         {/* 4. BENTO GRID - IMÓVEIS (INVERTIDO) */}
-        {exemplos.imovel.length > 0 && (
-          <section className="nx-section nx-bg-white" data-aos="fade-up">
-            <div className="nx-shell">
-              <div className="nx-section-header">
-                <h2>Imóveis Exclusivos</h2>
-                <Link className="nx-link-gold" to="/imoveis">Ver todos <ArrowRight size={16} /></Link>
-              </div>
+        <section className="nx-section nx-bg-white" data-aos="fade-up">
+          <div className="nx-shell">
+            <div className="nx-section-header">
+              <h2>Imóveis Exclusivos</h2>
+              <Link className="nx-link-gold" to="/imoveis">Ver todos <ArrowRight size={16} /></Link>
+            </div>
+            {exemplos.imovel.length > 0 ? (
               <div className="nx-bento-layout nx-bento-reverse">
                 <div className="nx-bento-grid">
                   {exemplos.imovel.slice(1, 5).map((anuncio) => renderAnuncioMontra(anuncio, '/imoveis', false))}
                 </div>
                 {renderAnuncioMontra(exemplos.imovel[0], '/imoveis', true)}
               </div>
-            </div>
-          </section>
-        )}
+            ) : (
+              <p style={{color: '#64748b', fontSize: '16px'}}>A carregar imóveis em destaque...</p>
+            )}
+          </div>
+        </section>
 
         {/* 5. NOTÍCIAS MAGAZINE */}
-        {noticiasMercado.length > 0 && (
-          <section className="nx-section nx-bg-light" data-aos="fade-up">
-            <div className="nx-shell">
-              <div className="nx-section-header">
-                 <h2>Atualidade do Mercado</h2>
-              </div>
+        <section className="nx-section nx-bg-light" data-aos="fade-up">
+          <div className="nx-shell">
+            <div className="nx-section-header">
+               <h2>Atualidade do Mercado</h2>
+            </div>
+            {noticiasMercado.length > 0 ? (
               <div className="nx-magazine">
                  <a href={noticiasMercado[0]?.url} target="_blank" rel="noopener noreferrer" className="nx-mag-hero">
                     <span className="nx-mag-pill">Destaque</span>
@@ -305,9 +309,11 @@ export default function Landing() {
                     ))}
                  </div>
               </div>
-            </div>
-          </section>
-        )}
+            ) : (
+              <p style={{color: '#64748b', fontSize: '16px'}}>A atualizar feed de notícias...</p>
+            )}
+          </div>
+        </section>
 
         {/* 6. CTA B2B (PROFISSIONAL) */}
         <section className="nx-section nx-b2b">
