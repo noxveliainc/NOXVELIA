@@ -409,7 +409,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 2. BARRA DE ESTATÍSTICAS REAIS */}
+        {/* 2. BARRA DE ESTATÍSTICAS */}
         <section className="nx-stats-bar">
           <div className="nx-shell nx-stats-grid">
             <div className="nx-stat-item">
@@ -507,7 +507,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 5. NOTÍCIAS & INSIGHTS */}
+        {/* 5. NOTÍCIAS & INSIGHTS (Com proteção absoluta de imagem) */}
         <section className="nx-section nx-bg-white" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
@@ -522,47 +522,41 @@ export default function Landing() {
 
             {loadingNews ? (
               <div className="nx-skeleton" style={{ height: '260px', borderRadius: '14px' }} />
-            ) : noticiasMercado.length > 0 ? (
-              <div className="nx-news-grid">
-                {noticiasMercado.slice(0, 4).map((noticia, index) => (
-                  <a
-                    key={noticia.id || noticia.url}
-                    href={noticia.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="nx-news-card-v2"
-                  >
-                    <div className="nx-news-img">
-                      <img
-                        src={noticia.image || FALLBACK_NEWS_IMAGES[index] || FALLBACK_NEWS_IMAGES[0]}
-                        alt={noticia.title}
-                        loading="lazy"
-                      />
-                      <span className="nx-news-tag">MERCADO</span>
-                    </div>
-                    <div className="nx-news-body">
-                      <h4>{noticia.title}</h4>
-                      <span className="nx-news-date">
-                        {noticia.publishedAt ? new Date(noticia.publishedAt).toLocaleDateString('pt-PT') : 'recente'}
-                      </span>
-                    </div>
-                  </a>
-                ))}
-              </div>
             ) : (
               <div className="nx-news-grid">
-                {FALLBACK_NEWS_IMAGES.map((imgUrl, i) => (
-                  <div key={i} className="nx-news-card-v2">
-                    <div className="nx-news-img">
-                      <img src={imgUrl} alt="Mercado imobiliário e automóvel" />
-                      <span className="nx-news-tag">INSIGHT</span>
-                    </div>
-                    <div className="nx-news-body">
-                      <h4>Tendências do mercado de luxo em Portugal para o trimestre</h4>
-                      <span className="nx-news-date">recente</span>
-                    </div>
-                  </div>
-                ))}
+                {noticiasMercado.slice(0, 4).map((noticia, index) => {
+                  const imgFinal = noticia.image && noticia.image.startsWith('http')
+                    ? noticia.image
+                    : FALLBACK_NEWS_IMAGES[index % FALLBACK_NEWS_IMAGES.length];
+
+                  return (
+                    <a
+                      key={noticia.id || noticia.url || index}
+                      href={noticia.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nx-news-card-v2"
+                    >
+                      <div className="nx-news-img">
+                        <img
+                          src={imgFinal}
+                          alt={noticia.title}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.src = FALLBACK_NEWS_IMAGES[0];
+                          }}
+                        />
+                        <span className="nx-news-tag">MERCADO</span>
+                      </div>
+                      <div className="nx-news-body">
+                        <h4>{noticia.title}</h4>
+                        <span className="nx-news-date">
+                          {noticia.publishedAt ? new Date(noticia.publishedAt).toLocaleDateString('pt-PT') : 'recente'}
+                        </span>
+                      </div>
+                    </a>
+                  );
+                })}
               </div>
             )}
           </div>
