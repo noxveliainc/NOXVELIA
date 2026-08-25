@@ -23,19 +23,10 @@ import { DISTRITOS, DISTRITOS_CIDADES_PT } from '../../data/localizacoes';
 import './Landing.css';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
-
-// 💡 PODE ALTERAR AQUI: Imagem principal do Hero (fácil de trocar por uma vossa no futuro)
 const HERO_IMG = 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1920&auto=format&fit=crop';
 
-// 💡 PODE ALTERAR AQUI: Imagem ilustrativa na secção do CarVertical (fácil de trocar)
+// 💡 PODE ALTERAR AQUI: A imagem que fica à frente na CarVertical (fácil de trocar depois)
 const CARVERTICAL_PREVIEW_IMG = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=800&auto=format&fit=crop';
-
-const FALLBACK_NEWS_IMAGES = [
-  'https://images.unsplash.com/photo-1585393948915-0fcb07fb31b1?q=80&w=600&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=600&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=600&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=600&auto=format&fit=crop'
-];
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
@@ -107,10 +98,12 @@ export default function Landing() {
       .catch(() => { if (ativo) setResumoPublico(null); });
 
     api
-      .get('/market-news?limit=5')
+      .get('/market-news?limit=10')
       .then(({ data }) => {
         if (!ativo) return;
-        setNoticiasMercado(Array.isArray(data?.items) ? data.items : []);
+        const items = Array.isArray(data?.items) ? data.items : [];
+        // Filtro estrito: apenas notícias que possuem imagem real
+        setNoticiasMercado(items.filter((item) => Boolean(item.image)));
       })
       .catch(() => {
         if (ativo) setNoticiasMercado([]);
@@ -177,7 +170,10 @@ export default function Landing() {
 
   const renderAnuncioCard = (anuncio, origem) => {
     const isCarro = anuncio.tipo === 'carro';
-    const foto = getImageUrl(anuncio.fotos?.[0] || anuncio.imagens?.[0], 'medium');
+    const foto = getImageUrl(
+      anuncio.fotos?.[0] || anuncio.imagens?.[0],
+      'medium'
+    );
 
     const detalhe = isCarro
       ? [
@@ -216,9 +212,6 @@ export default function Landing() {
             </div>
           )}
           <span className="nx-card-badge">DESTAQUE</span>
-          <button type="button" className="nx-card-fav" aria-label="Guardar favorito">
-            ♥
-          </button>
         </div>
 
         <div className="nx-card-content">
@@ -235,17 +228,19 @@ export default function Landing() {
   };
 
   const renderSkeletons = () => (
-    <div className="nx-oportunidades-grid">
-      {[1, 2, 3, 4, 5].map((item) => (
+    <div className="nx-oportunidades-grid" aria-label="A carregar anúncios" aria-busy="true">
+      {[1, 2, 3, 4].map((item) => (
         <div key={item} className="nx-skeleton" style={{ minHeight: '380px', borderRadius: '14px' }} />
       ))}
     </div>
   );
 
-  const destaque = noticiasMercado[0];
-  const totalCarros = resumoPublico?.carros ? Number(resumoPublico.carros).toLocaleString('pt-PT') : '12.458';
-  const totalImoveis = resumoPublico?.imoveis ? Number(resumoPublico.imoveis).toLocaleString('pt-PT') : '8.732';
-  const totalProfissionais = resumoPublico?.profissionais ? Number(resumoPublico.profissionais).toLocaleString('pt-PT') : '1.942';
+  // Dados reais obtidos da API ou contagem segura dos arrays reais
+  const totalCarrosReal = resumoPublico?.carros ?? exemplos.carro.length;
+  const totalImoveisReal = resumoPublico?.imoveis ?? exemplos.imovel.length;
+  const totalProfissionaisReal = resumoPublico?.profissionais ?? '0';
+
+  const listaOportunidades = [...exemplos.carro, ...exemplos.imovel].slice(0, 8);
 
   return (
     <div className="nx-landing-root">
@@ -280,7 +275,7 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* CAIXA DE FILTROS AVANÇADA */}
+            {/* CAIXA DE FILTROS */}
             <div className="nx-search-floater">
               <div className="nx-search-tabs" role="tablist">
                 <button
@@ -385,7 +380,6 @@ export default function Landing() {
                   </>
                 )}
 
-                {/* Filtros extra fixos para simular o design idêntico */}
                 <div className="nx-input-group nx-input-disabled">
                   <label>Distrito</label>
                   <select disabled><option>Todos os distritos</option></select>
@@ -400,37 +394,31 @@ export default function Landing() {
                   <span>Pesquisar</span>
                 </button>
               </form>
-
-              <div className="nx-search-advanced-link">
-                <button type="button" onClick={() => navigate(searchTab === 'carro' ? '/carros' : '/imoveis')}>
-                  Pesquisa avançada ▾
-                </button>
-              </div>
             </div>
           </div>
         </section>
 
-        {/* 2. BARRA DE ESTATÍSTICAS */}
+        {/* 2. BARRA DE ESTATÍSTICAS REAIS */}
         <section className="nx-stats-bar">
           <div className="nx-shell nx-stats-grid">
             <div className="nx-stat-item">
               <Car size={26} className="nx-gold-icon" />
               <div>
-                <strong>{totalCarros}</strong>
+                <strong>{totalCarrosReal}</strong>
                 <span>Automóveis</span>
               </div>
             </div>
             <div className="nx-stat-item">
               <HomeIcon size={26} className="nx-gold-icon" />
               <div>
-                <strong>{totalImoveis}</strong>
+                <strong>{totalImoveisReal}</strong>
                 <span>Imóveis</span>
               </div>
             </div>
             <div className="nx-stat-item">
               <Building2 size={26} className="nx-gold-icon" />
               <div>
-                <strong>{totalProfissionais}</strong>
+                <strong>{totalProfissionaisReal}</strong>
                 <span>Profissionais</span>
               </div>
             </div>
@@ -444,7 +432,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 3. STOCK EM DESTAQUE (AS MELHORES OPORTUNIDADES) */}
+        {/* 3. STOCK EM DESTAQUE (OPORTUNIDADES REAIS) */}
         <section className="nx-section nx-bg-light" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
@@ -456,32 +444,27 @@ export default function Landing() {
                 <Link className="nx-link-gold" to="/carros">
                   Ver todo o stock <ArrowRight size={15} />
                 </Link>
-                <div className="nx-carousel-arrows">
-                  <button type="button" aria-label="Anterior"><ChevronLeft size={18} /></button>
-                  <button type="button" aria-label="Seguinte"><ChevronRight size={18} /></button>
-                </div>
               </div>
             </div>
 
             {loadingStock ? (
               renderSkeletons()
-            ) : (
+            ) : listaOportunidades.length > 0 ? (
               <div className="nx-oportunidades-grid">
-                {exemplos.carro.map((car) => renderAnuncioCard(car, '/carros'))}
-                {exemplos.imovel.map((imv) => renderAnuncioCard(imv, '/imoveis'))}
+                {listaOportunidades.map((anuncio) =>
+                  renderAnuncioCard(anuncio, anuncio.tipo === 'carro' ? '/carros' : '/imoveis')
+                )}
+              </div>
+            ) : (
+              <div className="nx-empty-card">
+                <Car size={30} />
+                <span>De momento não existem anúncios em destaque na plataforma.</span>
               </div>
             )}
-
-            <div className="nx-carousel-dots">
-              <span className="dot active" />
-              <span className="dot" />
-              <span className="dot" />
-              <span className="dot" />
-            </div>
           </div>
         </section>
 
-        {/* 4. A DIFERENÇA ESTÁ NOS DETALHES (SECÇÃO DE CONFIANÇA) */}
+        {/* 4. PORQUÊ NOXVELIA */}
         <section className="nx-trust-banner">
           <div className="nx-shell">
             <div className="nx-trust-header">
@@ -513,7 +496,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 5. NOTÍCIAS & INSIGHTS */}
+        {/* 5. NOTÍCIAS & INSIGHTS (COM FILTRO RIGOROSO DE IMAGEM) */}
         <section className="nx-section nx-bg-white" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
@@ -528,9 +511,9 @@ export default function Landing() {
 
             {loadingNews ? (
               <div className="nx-skeleton" style={{ height: '260px', borderRadius: '14px' }} />
-            ) : (
+            ) : noticiasMercado.length > 0 ? (
               <div className="nx-news-grid">
-                {noticiasMercado.map((noticia, index) => (
+                {noticiasMercado.slice(0, 4).map((noticia) => (
                   <a
                     key={noticia.id || noticia.url}
                     href={noticia.url}
@@ -539,29 +522,34 @@ export default function Landing() {
                     className="nx-news-card-v2"
                   >
                     <div className="nx-news-img">
-                      <img
-                        src={noticia.image || FALLBACK_NEWS_IMAGES[index] || FALLBACK_NEWS_IMAGES[0]}
-                        alt=""
-                        loading="lazy"
-                      />
+                      <img src={noticia.image} alt={noticia.title} loading="lazy" />
                       <span className="nx-news-tag">MERCADO</span>
                     </div>
                     <div className="nx-news-body">
                       <h4>{noticia.title}</h4>
-                      <span className="nx-news-date">{noticia.publishedAt ? new Date(noticia.publishedAt).toLocaleDateString('pt-PT') : 'recente'}</span>
+                      <span className="nx-news-date">
+                        {noticia.publishedAt ? new Date(noticia.publishedAt).toLocaleDateString('pt-PT') : 'recente'}
+                      </span>
                     </div>
                   </a>
                 ))}
+              </div>
+            ) : (
+              <div className="nx-empty-card" style={{ minHeight: '180px' }}>
+                O nosso feed de mercado está a atualizar artigos com imagem.
               </div>
             )}
           </div>
         </section>
 
-        {/* 6. CARVERTICAL (FÁCIL DE ALTERAR A IMAGEM À FRENTE) */}
+        {/* 6. CARVERTICAL (COM LOGÓTIPO NO TOPO + IMAGEM À FRENTE) */}
         <section className="nx-cv-section-v2" data-aos="fade-up">
           <div className="nx-shell nx-cv-box-v2">
             <div className="nx-cv-info-v2">
-              <span className="nx-cv-kicker">CARVERTICAL</span>
+              {/* Logótipo oficial no topo */}
+              <div className="nx-cv-logo-top">
+                <img src="/carvertical-logo.png" alt="carVertical" />
+              </div>
               <h2>Histórico do veículo completo e verificado.</h2>
               <ul className="nx-cv-list">
                 <li>✓ Histórico de acidentes</li>
@@ -579,7 +567,7 @@ export default function Landing() {
               </a>
             </div>
 
-            {/* 💡 PODE ALTERAR A IMAGEM AQUI: Se quiser mudar a imagem à frente da CarVertical, substitua o URL abaixo ou a tag img */}
+            {/* Imagem à frente (fácil de alterar no topo do ficheiro via CARVERTICAL_PREVIEW_IMG) */}
             <div className="nx-cv-preview-wrap">
               <img
                 src={CARVERTICAL_PREVIEW_IMG}
@@ -598,7 +586,7 @@ export default function Landing() {
             </div>
             <div className="nx-cta-text">
               <h2>Pronto para encontrar o seu próximo negócio?</h2>
-              <p>Junte-se a milhares de pessoas que já confiam na Noxvelia.</p>
+              <p>Junte-se a profissionais e particulares que confiam na Noxvelia.</p>
             </div>
             <Link className="nx-btn-cta-final" to={publicarTo} state={publicarState}>
               Explorar stock <ArrowRight size={16} />
