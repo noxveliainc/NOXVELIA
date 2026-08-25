@@ -30,51 +30,36 @@
 }
 .nx-empty-state { color: #64748b; font-size: 15px; font-style: italic; }
 
-/* --- 1. HERO SPLIT (A Identidade Única) --- */
+/* --- 1. HERO --- */
 .nx-hero {
   position: relative;
-  min-height: 75vh;
+  /* ALTURA REDUZIDA SUBSTANCIALMENTE (DE 75vh PARA 50vh) */
+  min-height: 50vh; 
   display: flex;
   align-items: center;
   overflow: hidden;
   background: #071326;
 }
 
-.nx-hero-split {
-  position: absolute;
-  top: 0; bottom: 0;
-  width: 50vw;
-  transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.7s ease, opacity 0.7s ease;
-  z-index: 1;
+.nx-hero-bg {
+  position: absolute; inset: 0; z-index: 1;
 }
 
-.nx-hero-split--drive { left: 0; }
-.nx-hero-split--estate { right: 0; }
-
-.nx-hero-split img {
-  width: 100vw; 
-  height: 100%;
-  object-fit: cover;
-  position: absolute;
-  top: 0;
+.nx-hero-bg img {
+  width: 100%; height: 100%; object-fit: cover;
 }
-.nx-hero-split--drive img { left: 0; }
-.nx-hero-split--estate img { right: 0; }
 
-.nx-hero-gradient {
+.nx-hero-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(0deg, rgba(7,19,38,0.9) 0%, rgba(7,19,38,0.4) 50%, rgba(7,19,38,0.7) 100%);
+  background: linear-gradient(180deg, rgba(7,19,38,0.85) 0%, rgba(7,19,38,0.6) 100%);
 }
-
-/* Interação do Split */
-.nx-hero-split.is-focus { width: 60vw; filter: grayscale(0%); opacity: 1; z-index: 2; }
-.nx-hero-split.is-dim { width: 40vw; filter: grayscale(80%); opacity: 0.4; z-index: 1; }
 
 .nx-hero-content {
   position: relative;
   z-index: 3;
   width: 100%;
-  padding-bottom: 140px; 
+  padding-top: 40px;
+  padding-bottom: 110px; /* Ajustado para a nova altura */
 }
 
 .nx-hero-text {
@@ -82,26 +67,26 @@
 }
 
 .nx-hero-text h1 {
-  font-size: clamp(42px, 6vw, 76px);
+  font-size: clamp(38px, 5vw, 64px);
   font-family: var(--nx-font-display);
   font-weight: 900;
   line-height: 1.05;
   letter-spacing: -0.02em;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .nx-hero-text p {
-  font-size: clamp(17px, 2vw, 22px);
+  font-size: clamp(16px, 1.8vw, 20px);
   color: rgba(255, 255, 255, 0.8);
   font-weight: 400;
   margin: 0;
 }
 
-/* CAIXA DE PESQUISA ARQUITETÓNICA */
+/* CAIXA DE PESQUISA (Alinhamento Corrigido) */
 .nx-search-floater {
   position: absolute;
   left: 50%;
-  bottom: -50px;
+  bottom: -45px;
   transform: translateX(-50%);
   width: min(100% - 32px, 1020px);
   background: #ffffff;
@@ -134,12 +119,15 @@
 }
 
 .nx-search-grid {
-  display: flex; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; padding: 8px;
+  display: flex; 
+  align-items: center; /* Centra tudo verticalmente */
+  background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; padding: 12px;
 }
 
 .nx-input-group { 
-  flex: 1; display: flex; flex-direction: column; gap: 4px; 
-  padding: 8px 24px; border-right: 1px solid #e2e8f0;
+  flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px; 
+  padding: 4px 24px; border-right: 1px solid #e2e8f0;
+  height: 100%;
 }
 .nx-input-group:nth-child(2) { border-right: none; }
 
@@ -151,8 +139,9 @@
 }
 
 .nx-btn-search {
+  height: 54px; /* Altura fixa para igualar os inputs */
   background: #102f50; border: none; border-radius: 6px;
-  padding: 0 32px; margin-left: 8px;
+  padding: 0 32px; margin-left: 12px;
   display: flex; align-items: center; justify-content: center; gap: 10px;
   color: #ffffff; font-weight: 700; font-size: 15px; cursor: pointer; 
   transition: background 0.2s;
@@ -193,7 +182,7 @@
 .nx-bento-title { font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.3;}
 .nx-bento-meta { font-size: 13px; color: #64748b; margin-top: 4px;}
 
-/* Destaque (Correção da imagem Vertical) */
+/* Destaque */
 .nx-bento-featured .nx-bento-img { 
   height: auto; 
   aspect-ratio: 16/11; 
@@ -203,7 +192,7 @@
 .nx-bento-featured .nx-bento-title { font-size: 18px; }
 
 
-/* --- 3. CARVERTICAL (Recuperado e Editorial) --- */
+/* --- 3. CARVERTICAL --- */
 .nx-cv-section { background: #ffffff; padding: 60px 0; }
 .nx-cv-box {
   display: flex; justify-content: space-between; align-items: center; gap: 40px;
@@ -228,7 +217,7 @@
 .nx-cv-discount span { font-size: 12px; color: #64748b; line-height: 1.4;}
 
 
-/* --- 4. MAGAZINE (Layout de Jornal c/ Imagens) --- */
+/* --- 4. MAGAZINE --- */
 .nx-magazine { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
 
 .nx-mag-hero {
@@ -275,7 +264,7 @@
 }
 
 @media (max-width: 860px) {
-  .nx-hero { padding-bottom: 240px; }
+  .nx-hero { padding-bottom: 180px; min-height: 60vh; }
   .nx-search-floater { width: calc(100% - 32px); padding: 16px; bottom: -80px;}
   .nx-search-grid { flex-direction: column; align-items: stretch; background: transparent; border: none; padding: 0;}
   .nx-input-group { border-right: none; border-bottom: 1px solid #e2e8f0; padding: 12px 8px; background: #f8fafc; border-radius: 8px; margin-bottom: 8px;}

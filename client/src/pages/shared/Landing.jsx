@@ -17,8 +17,8 @@ import './Landing.css';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 
-const HERO_IMG_DRIVE = 'https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1400&auto=format&fit=crop';
-const HERO_IMG_ESTATE = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop';
+// Nova imagem única, ultra-premium, escura e focada (Arquitetura moderna / Garagem de luxo)
+const HERO_IMG = 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1920&auto=format&fit=crop';
 
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const formatarMoeda = (valor) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
@@ -98,7 +98,6 @@ export default function Landing() {
   useEffect(() => {
     let ativo = true;
     
-    // Fomos buscar mais notícias para preencher o jornal
     api.get('/market-news?limit=5')
       .then(({ data }) => { if (ativo) setNoticiasMercado(Array.isArray(data?.items) ? data.items : []); })
       .catch(() => { if (ativo) setNoticiasMercado([]); });
@@ -167,15 +166,11 @@ export default function Landing() {
       <NavbarLanding />
       
       <main>
-        {/* 1. HERO — SPLIT PORTAL (Identidade Única Noxvelia) */}
+        {/* 1. HERO - Imagem Única e Elegante */}
         <section className="nx-hero">
-          <div className={`nx-hero-split nx-hero-split--drive ${searchTab === 'carro' ? 'is-focus' : 'is-dim'}`}>
-            <img src={HERO_IMG_DRIVE} alt="Automóveis Noxvelia Drive" aria-hidden="true" />
-            <div className="nx-hero-gradient"></div>
-          </div>
-          <div className={`nx-hero-split nx-hero-split--estate ${searchTab === 'imovel' ? 'is-focus' : 'is-dim'}`}>
-            <img src={HERO_IMG_ESTATE} alt="Imóveis Noxvelia Estate" aria-hidden="true" />
-            <div className="nx-hero-gradient"></div>
+          <div className="nx-hero-bg">
+            <img src={HERO_IMG} alt="Fundo Noxvelia" aria-hidden="true" />
+            <div className="nx-hero-overlay"></div>
           </div>
 
           <div className="nx-hero-content">
@@ -185,7 +180,7 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* CAIXA DE PESQUISA (Design Arquitetónico) */}
+          {/* CAIXA DE PESQUISA (Alinhamento Corrigido) */}
           <div className="nx-search-floater">
             <div className="nx-search-tabs">
               <button type="button" data-vertical="carro" className={searchTab === 'carro' ? 'active' : ''} onClick={() => { setSearchTab('carro'); setDistrito(''); setCidade(''); }}>
@@ -285,7 +280,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 4. CARVERTICAL (A TUA VERSÃO RECUPERADA E MELHORADA) */}
+        {/* 4. CARVERTICAL */}
         <section className="nx-section nx-cv-section" data-aos="fade-up">
           <div className="nx-shell nx-cv-box">
              <div className="nx-cv-info">
@@ -304,7 +299,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 5. NOTÍCIAS MAGAZINE (Com imagens em todos os artigos) */}
+        {/* 5. NOTÍCIAS MAGAZINE */}
         <section className="nx-section nx-bg-white" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
