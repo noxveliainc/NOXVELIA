@@ -42,7 +42,6 @@ export default function Landing() {
   const [resumoPublico, setResumoPublico] = useState(null);
   const [noticiasMercado, setNoticiasMercado] = useState([]);
 
-  // ESTADOS PARA OS FILTROS REAIS DA HOMEPAGE
   const [searchTab, setSearchTab] = useState('carro');
   const [marca, setMarca] = useState('');
   const [modelo, setModelo] = useState('');
@@ -123,7 +122,7 @@ export default function Landing() {
       try {
         const { data } = await api.get('/anuncios/em-alta/semana');
         if (!ativo) return;
-        setExemplos({ carro: (data?.carro || []).slice(0, 4), imovel: (data?.imovel || []).slice(0, 4) });
+        setExemplos({ carro: (data?.carro || []).slice(0, 5), imovel: (data?.imovel || []).slice(0, 5) });
       } catch {
         if (ativo) setExemplos({ carro: [], imovel: [] });
       }
@@ -138,7 +137,6 @@ export default function Landing() {
     navigate(anuncioPath(anuncio));
   };
 
-  // FUNÇÃO DE PESQUISA AVANÇADA PARA A HOMEPAGE
   const handleAdvancedSearch = (e) => {
     e.preventDefault();
     const params = new URLSearchParams();
@@ -154,202 +152,198 @@ export default function Landing() {
     }
   };
 
-  const renderAnuncio = (anuncio, origem) => {
+  const renderAnuncioMontra = (anuncio, origem, isFeatured = false) => {
     const isCarro = anuncio.tipo === 'carro';
-    const foto = getImageUrl(anuncio.fotos?.[0] || anuncio.imagens?.[0], 'medium');
+    const foto = getImageUrl(anuncio.fotos?.[0] || anuncio.imagens?.[0], isFeatured ? 'large' : 'medium');
     const detalhe = isCarro
       ? [anuncio.carro?.km != null ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : null, anuncio.carro?.combustivel].filter(Boolean).join(' · ')
       : [anuncio.imovel?.tipologia || anuncio.imovel?.tipoImovel, anuncio.imovel?.area ? `${anuncio.imovel.area} m²` : null].filter(Boolean).join(' · ');
 
     return (
-      <button type="button" key={anuncio._id} className="lp-listing-card" onClick={() => abrirExemplo(anuncio, origem)}>
-        <span className="lp-listing-img">{foto ? <img src={foto} width="800" height="600" alt={anuncio.titulo} loading="lazy" /> : <span className={`lp-listing-no-photo ${isCarro ? 'is-carro' : 'is-imovel'}`}>{isCarro ? <Car size={34} /> : <HomeIcon size={34} />}<em>Sem foto</em></span>}<span className="lp-listing-tag">{isCarro ? 'Automóvel' : 'Imóvel'}</span></span>
-        <span className="lp-listing-body"><span className="lp-listing-price">{formatarMoeda(anuncio.preco)}</span><span className="lp-listing-title">{anuncio.titulo}</span><span className="lp-listing-meta">{detalhe || (isCarro ? 'Dados técnicos disponíveis' : 'Detalhes do imóvel')}</span><span className="lp-listing-location"><MapPin size={12} strokeWidth={2.4} aria-hidden="true" /> {anuncio.localizacao?.cidade || 'Portugal'}</span></span>
+      <button type="button" key={anuncio._id} className={`nx-bento-card ${isFeatured ? 'nx-bento-featured' : ''}`} onClick={() => abrirExemplo(anuncio, origem)}>
+        <span className="nx-bento-img">
+          {foto ? <img src={foto} alt={anuncio.titulo} loading="lazy" /> : <span className={`nx-bento-no-photo`}>{isCarro ? <Car size={34} /> : <HomeIcon size={34} />}</span>}
+          <span className="nx-bento-tag">{isCarro ? 'Automóvel' : 'Imóvel'}</span>
+        </span>
+        <span className="nx-bento-body">
+          <span className="nx-bento-price">{formatarMoeda(anuncio.preco)}</span>
+          <span className="nx-bento-title">{anuncio.titulo}</span>
+          <span className="nx-bento-meta">{detalhe || (isCarro ? 'Dados técnicos' : 'Detalhes do imóvel')} | {anuncio.localizacao?.cidade || 'Portugal'}</span>
+        </span>
       </button>
     );
   };
 
   return (
-    <div className="lp-root">
+    <div className="lp-root nx-editorial">
       <Seo title="Noxvelia | Automóveis e Imóveis em Portugal" description="Pesquisa e publica anúncios de carros e casas em Portugal. Contacto direto via WhatsApp sem intermediários e sem comissões." path="/" jsonLd={[siteIdentityJsonLd, homePageJsonLd]} />
       <NavbarLanding />
       <main>
         
-        {/* HERO COM SEARCH BOX (FILTROS REAIS) */}
-        <section className="lp-hero" aria-labelledby="lp-title" id="pesquisa">
-          <img className="lp-hero-bg" src="/noxvelia-hero-coast.webp" alt="" aria-hidden="true" />
-          <div className="lp-shell lp-hero-shell">
-            
-            <div className="lp-hero-copy">
-              <span className="lp-kicker lp-hero-kicker">O Mercado Português</span>
+        {/* HERO COM OVERLAP DA PESQUISA */}
+        <section className="nx-hero-overlap" aria-labelledby="lp-title" id="pesquisa">
+          <div className="nx-hero-bg-wrapper">
+             <img className="lp-hero-bg" src="/noxvelia-hero-coast.webp" alt="" aria-hidden="true" />
+             <div className="nx-hero-overlay"></div>
+          </div>
+          
+          <div className="lp-shell nx-hero-content">
+            <div className="nx-hero-text">
               <h1 id="lp-title" ref={heroTitleRef}>Automóveis e imóveis.<br/>Direto ao assunto.</h1>
-              <p>Esquece as comissões e os chats complicados. Na Noxvelia, encontras o teu próximo carro ou casa e falas diretamente com quem vende pelo WhatsApp.</p>
-              
-              <ul className="lp-trust-row">
-                {TRUST_POINTS.map((ponto) => <li key={ponto.texto}><CheckCircle2 size={15} strokeWidth={2.4} aria-hidden="true" /> {ponto.texto}</li>)}
-              </ul>
+              <p>O mercado premium, sem intermediários. Fala diretamente com o vendedor pelo WhatsApp.</p>
             </div>
 
-            {/* CAIXA DE PESQUISA AVANÇADA (Corrigida) */}
-            <div className="lp-search-box">
-              <div className="lp-search-head">
-                <span>Pesquisa Rápida</span>
-                <strong>O que procuras hoje?</strong>
-              </div>
-              
-              <div className="lp-tabs">
-                <button 
-                  type="button"
-                  className={searchTab === 'carro' ? 'active' : ''} 
-                  data-vertical="carro"
-                  onClick={() => { setSearchTab('carro'); setDistrito(''); setCidade(''); }}
-                >
-                  <Car size={16} /> Drive
+            {/* A CAIXA FLUTUANTE (OVERLAP) */}
+            <div className="nx-search-floater">
+              <div className="nx-search-tabs">
+                <button type="button" className={searchTab === 'carro' ? 'active' : ''} onClick={() => { setSearchTab('carro'); setDistrito(''); setCidade(''); }}>
+                  <Car size={18} /> Automóveis
                 </button>
-                <button 
-                  type="button"
-                  className={searchTab === 'imovel' ? 'active' : ''} 
-                  data-vertical="imovel"
-                  onClick={() => { setSearchTab('imovel'); setMarca(''); setModelo(''); }}
-                >
-                  <HomeIcon size={16} /> Estate
+                <button type="button" className={searchTab === 'imovel' ? 'active' : ''} onClick={() => { setSearchTab('imovel'); setMarca(''); setModelo(''); }}>
+                  <HomeIcon size={18} /> Imóveis
                 </button>
               </div>
 
-              <form onSubmit={handleAdvancedSearch} className="lp-search-grid">
+              <form onSubmit={handleAdvancedSearch} className="nx-search-grid">
                 {searchTab === 'carro' ? (
                   <>
-                    <label>
-                      Marca
+                    <div className="nx-input-group">
+                      <label>Marca</label>
                       <select value={marca} onChange={(e) => { setMarca(e.target.value); setModelo(''); }}>
                         <option value="">Todas as marcas</option>
                         {MARCAS.map(m => <option key={m} value={m}>{m}</option>)}
                       </select>
-                    </label>
-                    <label>
-                      Modelo
+                    </div>
+                    <div className="nx-input-group">
+                      <label>Modelo</label>
                       <select value={modelo} onChange={(e) => setModelo(e.target.value)} disabled={!marca}>
                         <option value="">{marca ? 'Todos os modelos' : 'Escolha a marca'}</option>
                         {modelosDisponiveis.map((m, idx) => <option key={idx} value={m}>{m}</option>)}
                       </select>
-                    </label>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <label>
-                      Distrito
+                    <div className="nx-input-group">
+                      <label>Distrito</label>
                       <select value={distrito} onChange={(e) => { setDistrito(e.target.value); setCidade(''); }}>
                         <option value="">Todos os distritos</option>
                         {DISTRITOS.map(d => <option key={d} value={d}>{d}</option>)}
                       </select>
-                    </label>
-                    <label>
-                      Concelho / Cidade
+                    </div>
+                    <div className="nx-input-group">
+                      <label>Concelho</label>
                       <select value={cidade} onChange={(e) => setCidade(e.target.value)} disabled={!distrito}>
                         <option value="">{distrito ? 'Todos os concelhos' : 'Escolha o distrito'}</option>
                         {cidadesDisponiveis.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
-                    </label>
+                    </div>
                   </>
                 )}
-                <button type="submit" onPointerEnter={animarCta}>
-                  <Search size={16} /> Pesquisar {searchTab === 'carro' ? 'Automóveis' : 'Imóveis'}
+                <button type="submit" className="nx-btn-search" onPointerEnter={animarCta}>
+                  <Search size={20} />
                 </button>
               </form>
             </div>
-
           </div>
         </section>
 
-        {/* NOXVELIA DRIVE (CARROS) */}
+        {/* FAIXA CARVERTICAL (SECURITY STRIP) */}
+        <section className="nx-security-strip">
+          <div className="lp-shell nx-strip-inner">
+            <div className="nx-strip-text">
+               <ShieldCheck size={24} className="nx-gold-icon" />
+               <span><strong>Compre com Confiança.</strong> Obtenha 20% de desconto no histórico completo do veículo.</span>
+            </div>
+            <a href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer" className="nx-strip-btn">
+              Verificar Matrícula <ArrowRight size={16} />
+            </a>
+          </div>
+        </section>
+
+        {/* NOXVELIA DRIVE (BENTO GRID) */}
         {exemplos.carro.length > 0 && (
-          <section className="lp-section lp-listing-section" id="drive" aria-labelledby="lp-drive" data-aos="fade-up">
+          <section className="nx-section nx-bg-light" id="drive" data-aos="fade-up">
             <div className="lp-shell">
-              <div className="lp-section-head">
-                <div><span className="lp-kicker"><Car size={14} /> Noxvelia Drive</span><h2 id="lp-drive">Viaturas em destaque</h2></div>
+              <div className="nx-section-header">
+                <h2>O Melhor do Stock Automóvel</h2>
+                <Link className="nx-link-gold" to="/carros">Ver todos <ArrowRight size={16} /></Link>
               </div>
-              <div className="lp-montra-grid">
-                {exemplos.carro.map((anuncio) => renderAnuncio(anuncio, '/carros'))}
-              </div>
-              <div className="lp-montra-footer">
-                <Link className="lp-secondary-button" to="/carros">Explorar todo o stock Automóvel <ArrowRight size={16} /></Link>
+              <div className="nx-bento-layout">
+                {/* 1 Carro em Destaque Gigante */}
+                {renderAnuncioMontra(exemplos.carro[0], '/carros', true)}
+                
+                {/* 4 Carros Mais pequenos */}
+                <div className="nx-bento-secondary">
+                  {exemplos.carro.slice(1, 5).map((anuncio) => renderAnuncioMontra(anuncio, '/carros', false))}
+                </div>
               </div>
             </div>
           </section>
         )}
 
-        {/* NOXVELIA ESTATE (IMÓVEIS) */}
+        {/* NOXVELIA ESTATE (BENTO GRID) */}
         {exemplos.imovel.length > 0 && (
-          <section className="lp-section lp-listing-section" style={{ borderTop: 'none', paddingTop: 0 }} id="estate" aria-labelledby="lp-estate" data-aos="fade-up">
+          <section className="nx-section nx-bg-white" id="estate" data-aos="fade-up">
             <div className="lp-shell">
-              <div className="lp-section-head">
-                <div><span className="lp-kicker"><HomeIcon size={14} /> Noxvelia Estate</span><h2 id="lp-estate">Imóveis em destaque</h2></div>
+              <div className="nx-section-header">
+                <h2>Imóveis Exclusivos</h2>
+                <Link className="nx-link-gold" to="/imoveis">Ver todos <ArrowRight size={16} /></Link>
               </div>
-              <div className="lp-montra-grid">
-                {exemplos.imovel.map((anuncio) => renderAnuncio(anuncio, '/imoveis'))}
-              </div>
-              <div className="lp-montra-footer">
-                <Link className="lp-secondary-button" to="/imoveis">Explorar todo o stock Imobiliário <ArrowRight size={16} /></Link>
+              <div className="nx-bento-layout nx-bento-reverse">
+                 <div className="nx-bento-secondary">
+                  {exemplos.imovel.slice(1, 5).map((anuncio) => renderAnuncioMontra(anuncio, '/imoveis', false))}
+                </div>
+                {renderAnuncioMontra(exemplos.imovel[0], '/imoveis', true)}
               </div>
             </div>
           </section>
         )}
 
-        {/* NOTÍCIAS (MANTIDO) */}
+        {/* NOTÍCIAS (MAGAZINE LAYOUT) */}
         {noticiasMercado.length > 0 && (
-          <section className="lp-section lp-news-section" id="atualidade" aria-labelledby="lp-news" data-aos="fade-up">
+          <section className="nx-section nx-bg-light" id="atualidade" data-aos="fade-up">
             <div className="lp-shell">
-              <div className="lp-section-head">
-                <div><span className="lp-kicker"><Newspaper size={13} /> Atualidade</span><h2 id="lp-news">Mercado em Portugal</h2><p className="lp-section-copy">Fica a par das últimas tendências do mercado automóvel e imobiliário.</p></div>
+              <div className="nx-section-header">
+                 <h2>Atualidade do Mercado</h2>
               </div>
-              <div className="lp-news-grid">
-                {noticiasMercado.map((noticia) => {
-                  const dataNoticia = formatarDataCurta(noticia.publishedAt);
-                  return (
-                    <a className="lp-news-card" href={noticia.url} target="_blank" rel="noopener noreferrer" key={noticia.id || noticia.url}>
-                      <span className={`lp-news-pill ${noticia.vertical === 'automoveis' ? 'cars' : 'homes'}`}>{noticia.verticalLabel || 'Mercado'}</span>
-                      <h3>{noticia.title}</h3>
-                      {noticia.summary && <p>{noticia.summary}</p>}
-                      <span className="lp-news-meta">{noticia.source}{dataNoticia ? ` · ${dataNoticia}` : ''}</span>
-                    </a>
-                  );
-                })}
+              <div className="nx-magazine-layout">
+                 {/* Notícia Destaque */}
+                 <a href={noticiasMercado[0].url} target="_blank" rel="noopener noreferrer" className="nx-mag-hero">
+                    <span className="nx-mag-pill">{noticiasMercado[0].verticalLabel || 'Destaque'}</span>
+                    <h3>{noticiasMercado[0].title}</h3>
+                    <p>{noticiasMercado[0].summary}</p>
+                 </a>
+                 {/* Notícias Secundárias */}
+                 <div className="nx-mag-sidebar">
+                    {noticiasMercado.slice(1, 4).map((noticia) => (
+                      <a href={noticia.url} target="_blank" rel="noopener noreferrer" className="nx-mag-item" key={noticia.id || noticia.url}>
+                         <span className="nx-mag-pill-small">{noticia.verticalLabel || 'Notícia'}</span>
+                         <h4>{noticia.title}</h4>
+                      </a>
+                    ))}
+                 </div>
               </div>
             </div>
           </section>
         )}
 
-        {/* ANUNCIAR / VENDER (CTA Agressivo) */}
-        <section className="lp-section lp-sell-section" id="anunciar" aria-labelledby="lp-sell" data-aos="fade-up">
-          <div className="lp-shell lp-sell-box">
-            <div>
-              <span className="lp-kicker">Para Particulares e Profissionais</span>
-              <h2 id="lp-sell">Pronto para vender?</h2>
-              <p>Cria a tua montra gratuitamente. Os clientes entram em contacto direto para o teu número, sem formulários escondidos nem comissões.</p>
-            </div>
-            <div className="lp-sell-actions">
-              <Link className="lp-main-cta" to={publicarTo} state={publicarState} onPointerEnter={animarCta}>Publicar Anúncio Grátis <ArrowRight size={16} /></Link>
-              {temProfissionaisAtivos && <Link className="lp-soft-cta" to="/profissionais"><Building2 size={16} /> Ver Stands e Agências</Link>}
-            </div>
+        {/* CTA B2B (PROFISSIONAL) */}
+        <section className="nx-section nx-b2b-cta">
+          <div className="lp-shell nx-b2b-inner">
+             <div className="nx-b2b-text">
+                <h2>És um Profissional?</h2>
+                <p>Vende automóveis e imóveis sem pagar um cêntimo em comissões. Importamos o teu stock diretamente do teu software de gestão. Os clientes contactam o teu WhatsApp diretamente.</p>
+                <div className="nx-b2b-actions">
+                  <Link className="nx-btn-solid" to={publicarTo} state={publicarState}>Começar a Vender <ArrowRight size={16} /></Link>
+                </div>
+             </div>
+             <div className="nx-b2b-image">
+                <img src="/mockup-whatsapp.png" alt="Noxvelia no WhatsApp" onError={(e) => e.target.style.display='none'} />
+             </div>
           </div>
         </section>
 
-        {/* CARVERTICAL (MANTIDO) */}
-        <section className="lp-section lp-cv-section" id="carvertical" aria-labelledby="lp-cv" data-aos="fade-up">
-          <div className="lp-shell lp-cv-card">
-            <div>
-              <span className="lp-kicker"><ShieldCheck size={12} /> Segurança Automóvel</span>
-              <h2 id="lp-cv">Verifica o carro antes de comprar</h2>
-              <p>Evita fraudes e quilómetros adulterados. Descobre o histórico de acidentes, manutenções e roubos de qualquer veículo através da matrícula ou VIN.</p>
-              <a className="lp-main-cta" href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer" onPointerEnter={animarCta}>Consultar Histórico <ArrowRight size={16} /></a>
-            </div>
-            <div className="lp-cv-panel">
-              <img src="/carvertical-logo.png" alt="carVertical" />
-              <strong>20%</strong>
-              <span>Desconto automático no relatório via Noxvelia.</span>
-            </div>
-          </div>
-        </section>
       </main>
       <Footer />
     </div>

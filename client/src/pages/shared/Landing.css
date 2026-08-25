@@ -1034,3 +1034,194 @@
     width: 100%;
   }
 }
+/* Adiciona isto ao final do teu Landing.css */
+
+/* ==========================================================================
+   NOXVELIA EDITORIAL (NOVO LAYOUT)
+   ========================================================================== */
+.nx-editorial {
+  --nx-gold: #d9c49c;
+  --nx-navy: #102f50;
+  --nx-bg-light: #f8fafc;
+}
+
+.nx-section { padding: 80px 0; }
+.nx-bg-light { background-color: var(--nx-bg-light); }
+.nx-bg-white { background-color: #ffffff; }
+
+/* --- 1. HERO OVERLAP --- */
+.nx-hero-overlap {
+  position: relative;
+  min-height: 70vh;
+  padding-top: 100px;
+  padding-bottom: 120px; /* Espaço para o floater */
+  display: flex;
+  align-items: center;
+}
+.nx-hero-bg-wrapper {
+  position: absolute; inset: 0; z-index: -2;
+}
+.nx-hero-bg-wrapper img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.nx-hero-overlay {
+  position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(180deg, rgba(16,47,80,0.85) 0%, rgba(16,47,80,0.6) 100%);
+}
+.nx-hero-text {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 60px;
+  color: #ffffff;
+}
+.nx-hero-text h1 {
+  font-size: clamp(40px, 6vw, 72px);
+  font-family: var(--nx-font-display);
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+.nx-hero-text p {
+  font-size: clamp(18px, 2vw, 22px);
+  color: rgba(255,255,255,0.8);
+}
+
+/* --- A CAIXA FLUTUANTE (SEARCH) --- */
+.nx-search-floater {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -40px; /* Faz a sobreposição */
+  width: min(100% - 40px, 900px);
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 40px -15px rgba(16, 47, 80, 0.2);
+  z-index: 10;
+}
+.nx-search-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+}
+.nx-search-tabs button {
+  background: none; border: none;
+  font-size: 16px; font-weight: 700;
+  color: #64748b;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer; padding: 10px 20px;
+  border-radius: 10px;
+}
+.nx-search-tabs button.active {
+  color: var(--nx-navy);
+  background: rgba(217,196,156, 0.15);
+}
+.nx-search-grid {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.nx-input-group { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.nx-input-group label { font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+.nx-input-group select {
+  border: none; border-bottom: 2px solid #e2e8f0;
+  padding: 10px 0; font-size: 16px; font-weight: 600;
+  color: var(--nx-navy);
+  background: transparent; outline: none; cursor: pointer;
+}
+.nx-btn-search {
+  background: var(--nx-gold);
+  border: none; border-radius: 16px;
+  width: 60px; height: 60px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--nx-navy); cursor: pointer;
+  transition: transform 0.2s;
+}
+.nx-btn-search:hover { transform: scale(1.05); }
+
+/* --- 2. CARVERTICAL STRIP --- */
+.nx-security-strip {
+  background: var(--nx-navy);
+  padding: 20px 0;
+  margin-top: 80px; /* Dá espaço ao floater */
+}
+.nx-strip-inner {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+}
+.nx-strip-text {
+  display: flex; align-items: center; gap: 12px; color: #ffffff; font-size: 16px;
+}
+.nx-gold-icon { color: var(--nx-gold); }
+.nx-strip-text strong { color: var(--nx-gold); font-weight: 800; }
+.nx-strip-btn {
+  background: transparent; border: 1px solid var(--nx-gold); color: var(--nx-gold);
+  padding: 10px 20px; border-radius: 8px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px; text-decoration: none;
+}
+.nx-strip-btn:hover { background: var(--nx-gold); color: var(--nx-navy); }
+
+/* --- 3. BENTO GRID (MONTRA) --- */
+.nx-section-header {
+  display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px;
+}
+.nx-section-header h2 { font-family: var(--nx-font-display); font-size: 32px; font-weight: 900; color: var(--nx-navy); margin:0; }
+.nx-link-gold { color: var(--nx-gold); font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+
+.nx-bento-layout {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+}
+.nx-bento-secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.nx-bento-reverse { grid-template-columns: 1fr 1fr; } /* Usado para inverter os imóveis */
+
+.nx-bento-card {
+  display: flex; flex-direction: column;
+  background: #ffffff; border-radius: 16px; overflow: hidden;
+  border: 1px solid #e2e8f0; text-align: left; cursor: pointer; padding: 0;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.nx-bento-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -10px rgba(16,47,80,0.1); }
+.nx-bento-featured { grid-column: span 1; }
+
+.nx-bento-img { position: relative; aspect-ratio: 16/10; width: 100%; overflow: hidden; }
+.nx-bento-img img { width: 100%; height: 100%; object-fit: cover; }
+.nx-bento-tag { position: absolute; top: 12px; left: 12px; background: rgba(16,47,80,0.8); color:#fff; font-size:11px; padding:4px 10px; border-radius:8px; font-weight:700;}
+
+.nx-bento-body { padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+.nx-bento-price { font-size: 24px; font-weight: 900; color: var(--nx-navy); }
+.nx-bento-title { font-size: 16px; font-weight: 700; color: #0f172a; }
+.nx-bento-meta { font-size: 13px; color: #64748b; }
+
+/* --- 4. MAGAZINE (NOTÍCIAS) --- */
+.nx-magazine-layout { display: grid; grid-template-columns: 3fr 2fr; gap: 40px; }
+.nx-mag-hero { background: #ffffff; border-radius: 16px; padding: 40px; text-decoration: none; border: 1px solid #e2e8f0; }
+.nx-mag-pill { background: rgba(217,196,156,0.2); color: var(--nx-navy); font-size: 12px; font-weight: 800; padding: 6px 12px; border-radius: 8px; text-transform: uppercase; }
+.nx-mag-hero h3 { font-size: 28px; font-weight: 900; color: var(--nx-navy); margin: 20px 0 10px; }
+.nx-mag-hero p { color: #64748b; font-size: 16px; }
+
+.nx-mag-sidebar { display: flex; flex-direction: column; gap: 20px; }
+.nx-mag-item { background: #ffffff; padding: 20px; border-radius: 12px; text-decoration: none; border: 1px solid #e2e8f0; }
+.nx-mag-pill-small { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 8px;}
+.nx-mag-item h4 { font-size: 16px; font-weight: 700; color: var(--nx-navy); margin:0;}
+
+/* --- 5. B2B CTA --- */
+.nx-b2b-cta { background: var(--nx-navy); color: #ffffff; overflow:hidden;}
+.nx-b2b-inner { display: flex; justify-content: space-between; align-items: center; gap: 40px; }
+.nx-b2b-text { max-width: 600px; }
+.nx-b2b-text h2 { font-size: 40px; font-family: var(--nx-font-display); font-weight: 900; margin-bottom: 20px;}
+.nx-b2b-text p { font-size: 18px; color: rgba(255,255,255,0.8); margin-bottom: 30px; }
+.nx-btn-solid { background: var(--nx-gold); color: var(--nx-navy); font-weight: 800; padding: 14px 28px; border-radius: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .nx-bento-layout { grid-template-columns: 1fr; }
+  .nx-magazine-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .nx-hero-overlap { padding-bottom: 180px; }
+  .nx-search-grid { flex-direction: column; align-items: stretch; }
+  .nx-btn-search { width: 100%; margin-top: 10px; border-radius: 8px;}
+  .nx-strip-inner { flex-direction: column; text-align: center; }
+  .nx-b2b-inner { flex-direction: column; text-align: center;}
+}
