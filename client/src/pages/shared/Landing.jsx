@@ -57,6 +57,7 @@ export default function Landing() {
   const [noticiasMercado, setNoticiasMercado] = useState([]);
   const [loadingStock, setLoadingStock] = useState(true);
   const [loadingNews, setLoadingNews] = useState(true);
+  const [visitasGlobais, setVisitasGlobais] = useState('12.480');
 
   const [searchTab, setSearchTab] = useState('carro');
   const [marca, setMarca] = useState('');
@@ -101,6 +102,14 @@ export default function Landing() {
     api.get('/anuncios/resumo-publico')
       .then(({ data }) => { if (ativo) setResumoPublico(data || null); })
       .catch(() => { if (ativo) setResumoPublico(null); });
+
+    api.get('/anuncios/visitas-globais-publicas')
+      .then(({ data }) => {
+        if (ativo && data?.visitasTotais) {
+          setVisitasGlobais(Number(data.visitasTotais).toLocaleString('pt-PT'));
+        }
+      })
+      .catch(() => {});
 
     api
       .get('/market-news?limit=10')
@@ -240,7 +249,7 @@ export default function Landing() {
   const totalCarrosReal = Number(resumoPublico?.carros ?? exemplos.carro.length).toLocaleString('pt-PT');
   const totalImoveisReal = Number(resumoPublico?.imoveis ?? exemplos.imovel.length).toLocaleString('pt-PT');
   const totalContasReal = Number(resumoPublico?.usersCount ?? 142).toLocaleString('pt-PT');
-  const totalVisitasReal = Number(resumoPublico?.visitas ?? 12480).toLocaleString('pt-PT');
+  const totalVisitasReal = visitasGlobais;
 
   const listaOportunidades = [...exemplos.carro, ...exemplos.imovel].slice(0, 8);
 

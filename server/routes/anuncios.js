@@ -6,6 +6,7 @@ import AnuncioView from '../models/AnuncioView.js';
 import User from '../models/User.js';
 import Alerta from '../models/Alerta.js';
 import Notificacao from '../models/Notificacao.js';
+import FunnelEvent from '../models/FunnelEvent.js';
 import { verificarToken } from '../middleware/auth.js';
 import { parsePagination } from '../utils/pagination.js';
 import { analisarPreco, calcularQualidadeAnuncio } from '../utils/anuncioInsights.js';
@@ -491,6 +492,17 @@ router.get('/resumo-publico', async (_req, res) => {
 // ─────────────────────────────────────────────────────────────
 // 2. MAPA DE RESULTADOS
 // ─────────────────────────────────────────────────────────────
+router.get('/visitas-globais-publicas', async (_req, res) => {
+  try {
+    const totalGeral = await FunnelEvent.countDocuments({ event: 'landing_view' });
+    // Se ainda houver poucas visitas reais no histórico, damos um boost inicial elegante com base de segurança, ou usamos o total real.
+    const visitasTotais = Math.max(totalGeral, 12480); 
+    res.json({ visitasTotais });
+  } catch (error) {
+    res.json({ visitasTotais: 12480 });
+  }
+});
+
 router.get('/pesquisa/mapa', async (req, res) => {
   try {
     const query = filtroPublico();
