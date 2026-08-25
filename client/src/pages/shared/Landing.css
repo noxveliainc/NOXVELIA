@@ -173,10 +173,19 @@
   display: inline-flex; align-items: center; gap: 8px; background: var(--nx-gold); color: #051322;
   padding: 14px 24px; border-radius: 8px; font-weight: 800; font-size: 14px; text-decoration: none;
 }
-.nx-cv-preview-wrap { position: relative; display: flex; justify-content: center; }
+.nx-cv-preview-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .nx-cv-preview-img {
-  width: 100%; max-width: 460px; border-radius: 12px; border: 1px solid rgba(255,255,255,.15);
-  box-shadow: 0 20px 40px rgba(0,0,0,.4);
+  width: 100%;
+  max-width: 320px; /* Reduzido de 460px para ficar mais pequeno e elegante */
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: 0 16px 32px rgba(0,0,0,.35);
 }
 
 /* 7. CTA FINAL */
