@@ -17,6 +17,11 @@ import './Landing.css';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 
+// Imagens de assinatura do hero — uma por vertical. Trocar por fotografia
+// própria da Noxvelia assim que existir (carro em estúdio / fachada PT).
+const HERO_IMG_DRIVE = 'https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1400&auto=format&fit=crop';
+const HERO_IMG_ESTATE = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop';
+
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const formatarMoeda = (valor) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
 
@@ -28,10 +33,10 @@ export default function Landing() {
   const heroTitleRef = useRef(null);
   const aosRef = useRef(null);
   const animeRef = useRef(null);
-  
+
   const publicarTo = signed ? '/publicar' : '/login';
   const publicarState = signed ? undefined : publishIntentState(location, '/');
-  
+
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
   const [noticiasMercado, setNoticiasMercado] = useState([]);
 
@@ -99,7 +104,7 @@ export default function Landing() {
 
   useEffect(() => {
     let ativo = true;
-    
+
     api.get('/market-news?limit=4')
       .then(({ data }) => { if (ativo) setNoticiasMercado(Array.isArray(data?.items) ? data.items : []); })
       .catch(() => { if (ativo) setNoticiasMercado([]); });
@@ -160,20 +165,35 @@ export default function Landing() {
     );
   };
 
+  const destaque = noticiasMercado[0];
+
   return (
     <div className="nx-landing-root">
       <Seo title="Noxvelia | Automóveis e Imóveis em Portugal" description="Pesquisa e publica anúncios de carros e casas em Portugal. Contacto direto via WhatsApp sem intermediários e sem comissões." path="/" jsonLd={[siteIdentityJsonLd, homePageJsonLd]} />
       <NavbarLanding />
-      
+
       <main>
-        {/* 1. HERO OVERLAP */}
+        {/* 1. HERO — SPLIT PORTAL (assinatura visual da dualidade Drive/Estate) */}
         <section className="nx-hero">
-          <div className="nx-hero-bg">
-             <img src="https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=1920&auto=format&fit=crop" alt="Fundo Noxvelia" aria-hidden="true" />
-             <div className="nx-hero-overlay"></div>
+          <div className={`nx-hero-split nx-hero-split--drive ${searchTab === 'carro' ? 'is-focus' : 'is-dim'}`}>
+            <img src={HERO_IMG_DRIVE} alt="Automóveis Noxvelia Drive" aria-hidden="true" />
           </div>
-          
-          <div className="nx-shell nx-hero-content">
+          <div className={`nx-hero-split nx-hero-split--estate ${searchTab === 'imovel' ? 'is-focus' : 'is-dim'}`}>
+            <img src={HERO_IMG_ESTATE} alt="Imóveis Noxvelia Estate" aria-hidden="true" />
+          </div>
+
+          <div className="nx-hero-seam" aria-hidden="true">
+            <span className="nx-hero-seam-mark">NX</span>
+          </div>
+
+          <div className="nx-hero-legend" aria-hidden="true">
+            <div className="nx-shell nx-hero-legend-inner">
+              <span className={searchTab === 'carro' ? 'is-focus' : ''}>Noxvelia Drive</span>
+              <span className={searchTab === 'imovel' ? 'is-focus' : ''}>Noxvelia Estate</span>
+            </div>
+          </div>
+
+          <div className="nx-hero-content">
             <div className="nx-hero-text">
               <h1 ref={heroTitleRef}>Automóveis e imóveis.<br/>Direto ao assunto.</h1>
               <p>O mercado premium sem intermediários. Fala diretamente com o vendedor pelo WhatsApp.</p>
@@ -183,10 +203,10 @@ export default function Landing() {
           {/* CAIXA FLUTUANTE DE PESQUISA */}
           <div className="nx-search-floater">
             <div className="nx-search-tabs">
-              <button type="button" className={searchTab === 'carro' ? 'active' : ''} onClick={() => { setSearchTab('carro'); setDistrito(''); setCidade(''); }}>
+              <button type="button" data-vertical="carro" className={searchTab === 'carro' ? 'active' : ''} onClick={() => { setSearchTab('carro'); setDistrito(''); setCidade(''); }}>
                 <Car size={18} /> Automóveis
               </button>
-              <button type="button" className={searchTab === 'imovel' ? 'active' : ''} onClick={() => { setSearchTab('imovel'); setMarca(''); setModelo(''); }}>
+              <button type="button" data-vertical="imovel" className={searchTab === 'imovel' ? 'active' : ''} onClick={() => { setSearchTab('imovel'); setMarca(''); setModelo(''); }}>
                 <HomeIcon size={18} /> Imóveis
               </button>
             </div>
@@ -234,14 +254,19 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 2. FAIXA CARVERTICAL (SECURITY STRIP) */}
+        {/* 2. FAIXA CARVERTICAL — "SCAN STRIP" */}
         <section className="nx-strip">
           <div className="nx-shell nx-strip-inner">
             <div className="nx-strip-text">
-               <ShieldCheck size={24} color="#d9c49c" />
-               <span><strong style={{color: '#d9c49c'}}>Compre com Confiança.</strong> Obtenha 20% de desconto no histórico completo do veículo.</span>
+              <span className="nx-strip-icon" aria-hidden="true">
+                <ShieldCheck size={20} color="#d9c49c" />
+              </span>
+              <span>
+                <span className="nx-strip-partner">Parceria carVertical.</span> 20% de desconto no histórico completo do veículo — matrícula, quilometragem e acidentes verificados.
+                <span className="nx-strip-fine">Ligação de afiliado · a Noxvelia pode receber comissão sem custo extra para si.</span>
+              </span>
             </div>
-            <a href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer" className="nx-strip-btn">
+            <a href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer sponsored" className="nx-strip-btn">
               Verificar Matrícula <ArrowRight size={16} />
             </a>
           </div>
@@ -295,10 +320,11 @@ export default function Landing() {
             </div>
             {noticiasMercado.length > 0 ? (
               <div className="nx-magazine">
-                 <a href={noticiasMercado[0]?.url} target="_blank" rel="noopener noreferrer" className="nx-mag-hero">
+                 <a href={destaque?.url} target="_blank" rel="noopener noreferrer" className="nx-mag-hero">
+                    {destaque?.image && <img src={destaque.image} alt="" aria-hidden="true" loading="lazy" />}
                     <span className="nx-mag-pill">Destaque</span>
-                    <h3>{noticiasMercado[0]?.title}</h3>
-                    <p>{noticiasMercado[0]?.summary}</p>
+                    <h3>{destaque?.title}</h3>
+                    <p>{destaque?.summary}</p>
                  </a>
                  <div className="nx-mag-sidebar">
                     {noticiasMercado.slice(1, 4).map((noticia) => (

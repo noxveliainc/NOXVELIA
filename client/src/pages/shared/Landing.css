@@ -1,6 +1,6 @@
 ﻿/* ==========================================================================
-   NOXVELIA LANDING PAGE - EDITORIAL PREMIUM
-   Foco em Profundidade, "Overlap", e Estética de Revista (Bento Grid)
+   NOXVELIA LANDING PAGE — EDITORIAL PREMIUM
+   Assinatura: "Split Portal" — o hero materializa a dualidade Drive/Estate
    ========================================================================== */
 
 .nx-landing-root {
@@ -19,48 +19,121 @@
 .nx-bg-light { background-color: #f8fafc; }
 .nx-bg-white { background-color: #ffffff; }
 
-/* --- 1. HERO & OVERLAP (A CAIXA FLUTUANTE) --- */
+/* --- 1. HERO "SPLIT PORTAL" ---------------------------------------------
+   Duas metades fotográficas (Drive / Estate) partilham uma costura central.
+   O separador reage ao tab de pesquisa ativo — a UI ensina a dualidade da
+   marca em vez de a decorar.
+   -------------------------------------------------------------------- */
 .nx-hero {
   position: relative;
-  min-height: 65vh;
-  display: flex;
-  align-items: center;
-  padding-bottom: 120px; /* Cria espaço para a caixa saltar fora */
-  background-color: #102f50; /* COR DE SEGURANÇA PARA O TEXTO BRANCO LER-SE SEMPRE */
+  min-height: 74vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding-bottom: 130px;
+  background-color: #071a2e;
+  isolation: isolate;
 }
 
-.nx-hero-bg {
-  position: absolute; inset: 0; z-index: -2;
+.nx-hero-split {
+  position: relative;
+  overflow: hidden;
 }
 
-.nx-hero-bg img {
-  width: 100%; height: 100%; object-fit: cover;
+.nx-hero-split img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.06);
+  filter: saturate(0.9) brightness(0.8);
+  transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease, opacity 0.5s ease;
 }
 
-.nx-hero-overlay {
-  position: absolute; inset: 0; z-index: -1;
-  background: linear-gradient(180deg, rgba(16,47,80,0.88) 0%, rgba(16,47,80,0.4) 100%);
+.nx-hero-split::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(7,26,46,0.55) 0%, rgba(7,26,46,0.92) 100%);
+  mix-blend-mode: multiply;
+  transition: background 0.5s ease;
 }
 
-.nx-hero-content { text-align: center; color: #ffffff; width: 100%; }
+.nx-hero-split--drive { clip-path: polygon(0 0, 100% 0, 92% 100%, 0 100%); margin-right: -6%; }
+.nx-hero-split--estate { clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%); }
 
-.nx-hero-text {
-  max-width: 800px; margin: 0 auto;
+.nx-hero-split.is-focus img { transform: scale(1); filter: saturate(1.15) brightness(0.92); }
+.nx-hero-split.is-focus::after { background: linear-gradient(180deg, rgba(7,26,46,0.25) 0%, rgba(7,26,46,0.82) 100%); }
+.nx-hero-split--drive.is-focus::after { background: linear-gradient(180deg, rgba(42,193,180,0.28) 0%, rgba(7,26,46,0.88) 100%); }
+.nx-hero-split--estate.is-focus::after { background: linear-gradient(180deg, rgba(62,207,142,0.28) 0%, rgba(7,26,46,0.88) 100%); }
+
+.nx-hero-split.is-dim img { filter: grayscale(0.55) brightness(0.55); }
+
+/* Costura central — a marca literalmente une os dois mundos */
+.nx-hero-seam {
+  position: absolute;
+  top: 0; bottom: 130px; left: 50%;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(217,196,156,0) 0%, rgba(217,196,156,0.65) 40%, rgba(217,196,156,0.65) 60%, rgba(217,196,156,0) 100%);
+  transform: translateX(-1px);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.nx-hero-seam-mark {
+  position: absolute; top: 40px; left: 50%;
+  transform: translateX(-50%);
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: #f8fafc;
+  border: 1px solid rgba(217,196,156,0.5);
+  display: grid; place-items: center;
+  font-family: var(--nx-font-display);
+  font-weight: 900; font-size: 15px; color: #102f50;
+  letter-spacing: -0.02em;
+  box-shadow: 0 10px 30px -8px rgba(0,0,0,0.4);
+  z-index: 4;
+}
+
+.nx-hero-content {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center; color: #ffffff;
+  width: min(100% - 48px, 780px);
+  z-index: 3;
+  pointer-events: none;
 }
 
 .nx-hero-text h1 {
-  font-size: clamp(38px, 6vw, 68px);
+  font-size: clamp(34px, 5.4vw, 62px);
   font-family: var(--nx-font-display);
   font-weight: 900;
-  line-height: 1.1;
-  margin-bottom: 20px;
+  line-height: 1.08;
+  margin-bottom: 18px;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.35);
 }
 
 .nx-hero-text p {
-  font-size: clamp(16px, 2vw, 22px);
-  color: rgba(255, 255, 255, 0.85);
+  font-size: clamp(15px, 1.8vw, 20px);
+  color: rgba(255, 255, 255, 0.88);
   margin: 0;
 }
+
+.nx-hero-legend {
+  pointer-events: none;
+  position: absolute;
+  bottom: 158px; left: 0; right: 0;
+  display: flex; justify-content: space-between;
+  z-index: 3;
+}
+
+.nx-shell.nx-hero-legend-inner {
+  display: flex; justify-content: space-between;
+  font-family: var(--nx-font-display);
+  font-weight: 800; font-size: 13px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  transition: color 0.4s ease;
+}
+.nx-hero-legend-inner span.is-focus { color: #d9c49c; }
 
 /* CAIXA DE PESQUISA FLUTUANTE */
 .nx-search-floater {
@@ -72,7 +145,7 @@
   background: #ffffff;
   border-radius: 24px;
   padding: 30px;
-  box-shadow: 0 25px 50px -12px rgba(16, 47, 80, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(16, 47, 80, 0.28);
   border: 1px solid #e2e8f0;
   z-index: 10;
 }
@@ -92,6 +165,8 @@
 
 .nx-search-tabs button:hover { color: #102f50; background: #f8fafc; }
 .nx-search-tabs button.active { color: #102f50; background: rgba(217,196,156, 0.2); }
+.nx-search-tabs button[data-vertical="carro"].active { box-shadow: inset 0 -3px 0 #2ac1b4; }
+.nx-search-tabs button[data-vertical="imovel"].active { box-shadow: inset 0 -3px 0 #3ecf8e; }
 
 .nx-search-grid {
   display: flex; gap: 20px; align-items: flex-end;
@@ -113,21 +188,62 @@
   cursor: pointer; transition: transform 0.2s, background 0.2s;
 }
 .nx-btn-search:hover { transform: scale(1.05); background: #f0dfbb; }
+.nx-btn-search:focus-visible,
+.nx-search-tabs button:focus-visible,
+.nx-bento-card:focus-visible,
+.nx-strip-btn:focus-visible,
+.nx-btn-b2b:focus-visible { outline: 2px solid #d9c49c; outline-offset: 3px; }
 
-/* --- 2. SECURITY STRIP (CarVertical) --- */
+/* --- 2. FAIXA CARVERTICAL — "SCAN STRIP" ---------------------------------
+   A parceria deixa de ser um aviso discreto: ganha o peso visual de um
+   selo de verificação, com uma linha de scan a repetir sobre a matrícula.
+   -------------------------------------------------------------------- */
 .nx-strip {
+  position: relative;
   background: #102f50;
-  padding: 24px 0;
-  margin-top: 100px; /* Para não bater no floater */
+  padding: 28px 0;
+  margin-top: 100px;
+  overflow: hidden;
+}
+
+.nx-strip::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(90deg, rgba(217,196,156,0.06) 0px, rgba(217,196,156,0.06) 1px, transparent 1px, transparent 64px);
+  pointer-events: none;
 }
 
 .nx-strip-inner {
+  position: relative;
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
 }
 
 .nx-strip-text {
-  display: flex; align-items: center; gap: 16px; color: #ffffff; font-size: 16px;
+  display: flex; align-items: center; gap: 16px; color: #ffffff; font-size: 15px;
 }
+
+.nx-strip-icon {
+  position: relative;
+  width: 44px; height: 44px; flex-shrink: 0;
+  border-radius: 12px;
+  background: rgba(217,196,156,0.12);
+  display: grid; place-items: center;
+  overflow: hidden;
+}
+.nx-strip-icon::after {
+  content: '';
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: #d9c49c;
+  box-shadow: 0 0 8px 1px rgba(217,196,156,0.8);
+  animation: nx-scan 2.4s ease-in-out infinite;
+}
+@keyframes nx-scan {
+  0%, 100% { top: 10%; opacity: 0.9; }
+  50% { top: 85%; opacity: 0.4; }
+}
+
+.nx-strip-partner { font-weight: 800; color: #d9c49c; }
+.nx-strip-fine { display: block; font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 2px; }
 
 .nx-strip-btn {
   background: transparent; border: 1px solid #d9c49c; color: #d9c49c;
@@ -162,8 +278,9 @@
   border-color: #cbd5e1;
 }
 
-.nx-bento-img { position: relative; aspect-ratio: 16/10; width: 100%; background: #f1f5f9; }
-.nx-bento-img img { width: 100%; height: 100%; object-fit: cover; }
+.nx-bento-img { position: relative; aspect-ratio: 16/10; width: 100%; background: #f1f5f9; overflow: hidden; }
+.nx-bento-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+.nx-bento-card:hover .nx-bento-img img { transform: scale(1.06); }
 .nx-bento-no-photo { width: 100%; height: 100%; display: grid; place-items: center; color: #94a3b8; }
 .nx-bento-tag { position: absolute; top: 16px; left: 16px; background: rgba(16,47,80,0.85); backdrop-filter: blur(4px); color:#fff; font-size:11px; padding:6px 12px; border-radius:10px; font-weight:800; text-transform: uppercase; letter-spacing: 0.05em;}
 
@@ -172,38 +289,56 @@
 .nx-bento-title { font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.3;}
 .nx-bento-meta { font-size: 13px; color: #64748b; margin-top: 4px;}
 
-/* Estilos Específicos do Destaque (Esquerda ou Direita) - CORRIGIDO O TAMANHO DA IMAGEM */
-.nx-bento-featured .nx-bento-img { 
-  height: auto; 
-  aspect-ratio: 16/11; 
-  max-height: 480px; 
+.nx-bento-featured .nx-bento-img {
+  height: auto;
+  aspect-ratio: 16/11;
+  max-height: 480px;
 }
 .nx-bento-featured .nx-bento-price { font-size: 32px; }
 .nx-bento-featured .nx-bento-title { font-size: 20px; }
+
+.nx-bento-reverse { grid-template-columns: 1fr 1fr; }
 
 /* --- 4. MAGAZINE (Notícias) --- */
 .nx-magazine {
   display: grid; grid-template-columns: 3fr 2fr; gap: 30px;
 }
 .nx-mag-hero {
-  background: #ffffff; border-radius: 20px; padding: 40px; text-decoration: none; border: 1px solid #e2e8f0;
-  display: flex; flex-direction: column; justify-content: center;
+  position: relative;
+  background: #102f50; border-radius: 20px; padding: 40px; text-decoration: none; border: 1px solid #102f50;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  min-height: 340px; overflow: hidden;
   transition: box-shadow 0.2s;
 }
-.nx-mag-hero:hover { box-shadow: 0 20px 40px -15px rgba(16,47,80,0.1); }
-.nx-mag-pill { background: rgba(217,196,156,0.2); color: #102f50; font-size: 12px; font-weight: 800; padding: 6px 14px; border-radius: 8px; text-transform: uppercase; width: fit-content;}
-.nx-mag-hero h3 { font-size: clamp(24px, 2.5vw, 36px); font-weight: 900; color: #102f50; margin: 24px 0 16px; font-family: var(--nx-font-display); line-height: 1.1;}
-.nx-mag-hero p { color: #64748b; font-size: 17px; margin:0; line-height: 1.6;}
+.nx-mag-hero img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0.5; transition: transform 0.5s ease, opacity 0.3s ease;
+}
+.nx-mag-hero::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(16,47,80,0.15) 0%, rgba(16,47,80,0.95) 85%);
+}
+.nx-mag-hero:hover img { transform: scale(1.05); }
+.nx-mag-hero:hover { box-shadow: 0 20px 40px -15px rgba(16,47,80,0.3); }
+.nx-mag-hero > * { position: relative; z-index: 1; }
+.nx-mag-pill { background: rgba(217,196,156,0.2); color: #d9c49c; font-size: 12px; font-weight: 800; padding: 6px 14px; border-radius: 8px; text-transform: uppercase; width: fit-content;}
+.nx-mag-hero h3 { font-size: clamp(24px, 2.5vw, 36px); font-weight: 900; color: #ffffff; margin: 24px 0 16px; font-family: var(--nx-font-display); line-height: 1.1;}
+.nx-mag-hero p { color: rgba(255,255,255,0.75); font-size: 17px; margin:0; line-height: 1.6;}
 
 .nx-mag-sidebar { display: flex; flex-direction: column; gap: 20px; }
-.nx-mag-item { background: #ffffff; padding: 24px; border-radius: 16px; text-decoration: none; border: 1px solid #e2e8f0; transition: transform 0.2s;}
+.nx-mag-item { background: #ffffff; padding: 24px; border-radius: 16px; text-decoration: none; border: 1px solid #e2e8f0; transition: transform 0.2s, border-color 0.2s;}
 .nx-mag-item:hover { transform: translateX(5px); border-color: #d9c49c; }
 .nx-mag-pill-small { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 12px; letter-spacing: 0.1em;}
 .nx-mag-item h4 { font-size: 18px; font-weight: 800; color: #102f50; margin:0; line-height: 1.3;}
 
 /* --- 5. B2B CTA --- */
-.nx-b2b { background: #102f50; color: #ffffff; padding: 100px 0; overflow: hidden;}
-.nx-b2b-inner { display: flex; justify-content: space-between; align-items: center; position: relative;}
+.nx-b2b { position: relative; background: #102f50; color: #ffffff; padding: 100px 0; overflow: hidden;}
+.nx-b2b::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(135deg, rgba(217,196,156,0.05) 0px, rgba(217,196,156,0.05) 1px, transparent 1px, transparent 40px);
+}
+.nx-b2b-inner { position: relative; display: flex; justify-content: space-between; align-items: center;}
 .nx-b2b-text { max-width: 600px; z-index: 2;}
 .nx-b2b-text h2 { font-size: clamp(32px, 4vw, 54px); font-family: var(--nx-font-display); font-weight: 900; margin: 0 0 24px; line-height: 1;}
 .nx-b2b-text p { font-size: 18px; color: rgba(255,255,255,0.8); margin: 0 0 40px; line-height: 1.6; }
@@ -211,8 +346,21 @@
 .nx-btn-b2b:hover { transform: translateY(-2px); background: #f0dfbb; }
 .nx-b2b-visual { position: absolute; right: 5%; opacity: 0.5; z-index: 1; pointer-events: none;}
 
+/* --- REDUCED MOTION --- */
+@media (prefers-reduced-motion: reduce) {
+  .nx-hero-split img,
+  .nx-bento-img img,
+  .nx-mag-hero img,
+  .nx-strip-icon::after { transition: none; animation: none; }
+}
+
 /* --- RESPONSIVIDADE --- */
 @media (max-width: 1024px) {
+  .nx-hero { grid-template-columns: 1fr; min-height: 58vh; }
+  .nx-hero-split--drive,
+  .nx-hero-split--estate { clip-path: none; margin-right: 0; }
+  .nx-hero-split--estate { display: none; }
+  .nx-hero-seam { display: none; }
   .nx-bento-layout { grid-template-columns: 1fr; }
   .nx-bento-featured .nx-bento-img { aspect-ratio: 16/9; height: auto; max-height: none;}
   .nx-magazine { grid-template-columns: 1fr; }
@@ -220,6 +368,8 @@
 
 @media (max-width: 860px) {
   .nx-hero { padding-bottom: 220px; }
+  .nx-hero-seam { bottom: 220px; }
+  .nx-hero-legend { bottom: 248px; }
   .nx-search-floater { width: calc(100% - 32px); padding: 24px; bottom: -80px;}
   .nx-search-grid { flex-direction: column; align-items: stretch; gap: 16px;}
   .nx-btn-search { width: 100%; height: 54px; border-radius: 12px; margin-top: 10px;}
