@@ -16,9 +16,15 @@ import { DISTRITOS, DISTRITOS_CIDADES_PT } from '../../data/localizacoes';
 import './Landing.css';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
-
-// Nova imagem única, ultra-premium, escura e focada (Arquitetura moderna / Garagem de luxo)
 const HERO_IMG = 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1920&auto=format&fit=crop';
+
+// Imagens de fallback (luxo/mercado) para as notícias que não tenham foto
+const FALLBACK_NEWS_IMAGES = [
+  'https://images.unsplash.com/photo-1585393948915-0fcb07fb31b1?q=80&w=600&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=600&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=600&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=600&auto=format&fit=crop'
+];
 
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const formatarMoeda = (valor) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(valor || 0);
@@ -37,6 +43,7 @@ export default function Landing() {
   
   const [exemplos, setExemplos] = useState({ carro: [], imovel: [] });
   const [noticiasMercado, setNoticiasMercado] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Estados de Pesquisa
   const [searchTab, setSearchTab] = useState('carro');
@@ -97,6 +104,7 @@ export default function Landing() {
 
   useEffect(() => {
     let ativo = true;
+    setLoading(true);
     
     api.get('/market-news?limit=5')
       .then(({ data }) => { if (ativo) setNoticiasMercado(Array.isArray(data?.items) ? data.items : []); })
@@ -107,8 +115,8 @@ export default function Landing() {
         const { data } = await api.get('/anuncios/em-alta/semana');
         if (!ativo) return;
         setExemplos({ carro: (data?.carro || []).slice(0, 5), imovel: (data?.imovel || []).slice(0, 5) });
-      } catch {
-        if (ativo) setExemplos({ carro: [], imovel: [] });
+      } finally {
+        if (ativo) setLoading(false);
       }
     };
     carregarExemplos();
@@ -158,6 +166,18 @@ export default function Landing() {
     );
   };
 
+  // Esqueletos Premium para quando o site está a carregar
+  const renderSkeletons = () => (
+    <div className="nx-bento-layout">
+      <div className="nx-skeleton nx-bento-featured" style={{ borderRadius: '12px', minHeight: '400px' }}></div>
+      <div className="nx-bento-grid">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="nx-skeleton" style={{ borderRadius: '12px', minHeight: '220px' }}></div>
+        ))}
+      </div>
+    </div>
+  );
+
   const destaque = noticiasMercado[0];
 
   return (
@@ -166,7 +186,7 @@ export default function Landing() {
       <NavbarLanding />
       
       <main>
-        {/* 1. HERO - Imagem Única e Elegante */}
+        {/* 1. HERO - Imagem Super Curta e Sem Cortar a Pesquisa */}
         <section className="nx-hero">
           <div className="nx-hero-bg">
             <img src={HERO_IMG} alt="Fundo Noxvelia" aria-hidden="true" />
@@ -180,7 +200,7 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* CAIXA DE PESQUISA (Alinhamento Corrigido) */}
+          {/* CAIXA DE PESQUISA (Agora perfeitamente visível) */}
           <div className="nx-search-floater">
             <div className="nx-search-tabs">
               <button type="button" data-vertical="carro" className={searchTab === 'carro' ? 'active' : ''} onClick={() => { setSearchTab('carro'); setDistrito(''); setCidade(''); }}>
@@ -235,7 +255,7 @@ export default function Landing() {
         </section>
 
         {/* 2. BENTO GRID - CARROS */}
-        <section className="nx-section nx-bg-light" data-aos="fade-up" style={{paddingTop: '160px'}}>
+        <section className="nx-section nx-bg-light" data-aos="fade-up" style={{paddingTop: '130px'}}>
           <div className="nx-shell">
             <div className="nx-section-header">
               <div>
@@ -244,7 +264,8 @@ export default function Landing() {
               </div>
               <Link className="nx-link-gold" to="/carros">Ver todo o stock <ArrowRight size={16} /></Link>
             </div>
-            {exemplos.carro.length > 0 ? (
+            
+            {loading ? renderSkeletons() : exemplos.carro.length > 0 ? (
               <div className="nx-bento-layout">
                 {renderAnuncioMontra(exemplos.carro[0], '/carros', true)}
                 <div className="nx-bento-grid">
@@ -252,7 +273,7 @@ export default function Landing() {
                 </div>
               </div>
             ) : (
-              <p className="nx-empty-state">A carregar viaturas em destaque...</p>
+              <div className="nx-empty-card"><Car size={32} />Nenhum automóvel disponível no momento.</div>
             )}
           </div>
         </section>
@@ -267,7 +288,8 @@ export default function Landing() {
               </div>
               <Link className="nx-link-gold" to="/imoveis">Ver todos os imóveis <ArrowRight size={16} /></Link>
             </div>
-            {exemplos.imovel.length > 0 ? (
+
+            {loading ? renderSkeletons() : exemplos.imovel.length > 0 ? (
               <div className="nx-bento-layout nx-bento-reverse">
                 <div className="nx-bento-grid">
                   {exemplos.imovel.slice(1, 5).map((anuncio) => renderAnuncioMontra(anuncio, '/imoveis', false))}
@@ -275,7 +297,7 @@ export default function Landing() {
                 {renderAnuncioMontra(exemplos.imovel[0], '/imoveis', true)}
               </div>
             ) : (
-              <p className="nx-empty-state">A carregar imóveis em destaque...</p>
+              <div className="nx-empty-card"><HomeIcon size={32} />Nenhum imóvel disponível no momento.</div>
             )}
           </div>
         </section>
@@ -308,11 +330,19 @@ export default function Landing() {
                   <h2>Atualidade do Mercado</h2>
                </div>
             </div>
-            {noticiasMercado.length > 0 ? (
+
+            {loading ? (
+              <div className="nx-magazine">
+                 <div className="nx-skeleton nx-mag-hero" style={{ minHeight: '300px', borderRadius: '16px' }}></div>
+                 <div className="nx-mag-sidebar">
+                    {[1, 2, 3].map(i => <div key={i} className="nx-skeleton" style={{ height: '90px', borderRadius: '8px', marginBottom: '20px' }}></div>)}
+                 </div>
+              </div>
+            ) : noticiasMercado.length > 0 ? (
               <div className="nx-magazine">
                  <a href={destaque?.url} target="_blank" rel="noopener noreferrer" className="nx-mag-hero">
                     <div className="nx-mag-hero-img">
-                       {destaque?.image && <img src={destaque.image} alt="" aria-hidden="true" loading="lazy" />}
+                       <img src={destaque?.image || FALLBACK_NEWS_IMAGES[0]} alt="" aria-hidden="true" loading="lazy" />
                     </div>
                     <div className="nx-mag-hero-content">
                        <span className="nx-mag-pill">Destaque</span>
@@ -322,13 +352,11 @@ export default function Landing() {
                     </div>
                  </a>
                  <div className="nx-mag-sidebar">
-                    {noticiasMercado.slice(1, 5).map((noticia) => (
+                    {noticiasMercado.slice(1, 5).map((noticia, idx) => (
                       <a href={noticia.url} target="_blank" rel="noopener noreferrer" className="nx-mag-item" key={noticia.id || noticia.url}>
-                         {noticia.image && (
-                           <div className="nx-mag-item-img">
-                             <img src={noticia.image} alt="" loading="lazy" />
-                           </div>
-                         )}
+                         <div className="nx-mag-item-img">
+                           <img src={noticia.image || FALLBACK_NEWS_IMAGES[idx + 1] || FALLBACK_NEWS_IMAGES[0]} alt="" loading="lazy" />
+                         </div>
                          <div className="nx-mag-item-text">
                            <span className="nx-mag-pill-small">Mercado</span>
                            <h4>{noticia.title}</h4>
@@ -338,7 +366,7 @@ export default function Landing() {
                  </div>
               </div>
             ) : (
-              <p className="nx-empty-state">A atualizar feed de notícias financeiras...</p>
+              <div className="nx-empty-card" style={{minHeight: '200px'}}>O nosso feed financeiro está a ser atualizado.</div>
             )}
           </div>
         </section>
