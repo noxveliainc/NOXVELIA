@@ -24,8 +24,7 @@ import './Landing.css';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 const HERO_IMG = 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1920&auto=format&fit=crop';
-const CARVERTICAL_PREVIEW_IMG = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=800&auto=format&fit=crop';
-
+const CARVERTICAL_PREVIEW_IMG = '/carvertical-preview.png';
 const FALLBACK_NEWS_IMAGES = [
   'https://images.unsplash.com/photo-1585393948915-0fcb07fb31b1?q=80&w=600&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=600&auto=format&fit=crop',
