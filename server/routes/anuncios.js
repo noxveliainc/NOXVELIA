@@ -495,11 +495,9 @@ router.get('/resumo-publico', async (_req, res) => {
 router.get('/visitas-globais-publicas', async (_req, res) => {
   try {
     const totalGeral = await FunnelEvent.countDocuments({ event: 'landing_view' });
-    // Se ainda houver poucas visitas reais no histórico, damos um boost inicial elegante com base de segurança, ou usamos o total real.
-    const visitasTotais = Math.max(totalGeral, 12480); 
-    res.json({ visitasTotais });
+    res.json({ visitasTotais: totalGeral });
   } catch (error) {
-    res.json({ visitasTotais: 12480 });
+    res.json({ visitasTotais: 0 });
   }
 });
 

@@ -57,7 +57,7 @@ export default function Landing() {
   const [noticiasMercado, setNoticiasMercado] = useState([]);
   const [loadingStock, setLoadingStock] = useState(true);
   const [loadingNews, setLoadingNews] = useState(true);
-  const [visitasGlobais, setVisitasGlobais] = useState('12.480');
+  const [visitasGlobais, setVisitasGlobais] = useState(0);
 
   const [searchTab, setSearchTab] = useState('carro');
   const [marca, setMarca] = useState('');
@@ -105,8 +105,8 @@ export default function Landing() {
 
     api.get('/anuncios/visitas-globais-publicas')
       .then(({ data }) => {
-        if (ativo && data?.visitasTotais) {
-          setVisitasGlobais(Number(data.visitasTotais).toLocaleString('pt-PT'));
+        if (ativo && data?.visitasTotais !== undefined) {
+          setVisitasGlobais(Number(data.visitasTotais));
         }
       })
       .catch(() => {});
@@ -248,8 +248,8 @@ export default function Landing() {
 
   const totalCarrosReal = Number(resumoPublico?.carros ?? exemplos.carro.length).toLocaleString('pt-PT');
   const totalImoveisReal = Number(resumoPublico?.imoveis ?? exemplos.imovel.length).toLocaleString('pt-PT');
-  const totalContasReal = Number(resumoPublico?.usersCount ?? 142).toLocaleString('pt-PT');
-  const totalVisitasReal = visitasGlobais;
+  const totalContasReal = Number(resumoPublico?.usersCount ?? 0).toLocaleString('pt-PT');
+  const totalVisitasReal = Number(visitasGlobais).toLocaleString('pt-PT');
 
   const listaOportunidades = [...exemplos.carro, ...exemplos.imovel].slice(0, 8);
 
@@ -409,7 +409,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 2. BARRA DE ESTATÍSTICAS */}
+        {/* 2. BARRA DE ESTATÍSTICAS REAIS */}
         <section className="nx-stats-bar">
           <div className="nx-shell nx-stats-grid">
             <div className="nx-stat-item">
