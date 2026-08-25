@@ -1,5 +1,5 @@
 ﻿/* ==========================================================================
-   NOXVELIA — LANDING PAGE (DADOS REAIS & RIGOR VISUAL)
+   NOXVELIA — LANDING PAGE (DADOS REAIS, CONTAS, VISITAS E SEM SINAL DE MAIS)
    ========================================================================== */
 
 .nx-landing-root {
@@ -92,9 +92,6 @@
 }
 .nx-btn-search:hover { background: #0b2746; }
 
-.nx-search-advanced-link { margin-top: 12px; text-align: left; }
-.nx-search-advanced-link button { background: none; border: 0; color: #718096; font-size: 12px; font-weight: 700; cursor: pointer; }
-
 /* 2. ESTATÍSTICAS */
 .nx-stats-bar { background: #071322; border-top: 1px solid rgba(255,255,255,.08); padding: 24px 0; color: #fff; }
 .nx-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
@@ -183,10 +180,6 @@
 .nx-cta-inner {
   display: flex; align-items: center; justify-content: space-between; gap: 20px;
   background: #0b1c2c; border: 1px solid rgba(255,255,255,.06); padding: 30px 40px; border-radius: 16px;
-}
-.nx-cta-icon {
-  width: 48px; height: 48px; background: rgba(201,173,114,.15); color: var(--nx-gold);
-  border-radius: 50%; display: grid; place-items: center; font-size: 24px; font-weight: 900; flex-shrink: 0;
 }
 .nx-cta-text h2 { font-size: 20px; font-weight: 900; margin-bottom: 4px; }
 .nx-cta-text p { font-size: 13px; color: #a0aec0; margin: 0; }

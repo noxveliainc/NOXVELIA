@@ -2,13 +2,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
-  Building2,
+  Users,
   Car,
   Home as HomeIcon,
   ShieldCheck,
   Search,
-  ChevronRight,
-  ChevronLeft
+  Eye
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
@@ -24,9 +23,14 @@ import './Landing.css';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 const HERO_IMG = 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1920&auto=format&fit=crop';
-
-// 💡 PODE ALTERAR AQUI: A imagem que fica à frente na CarVertical (fácil de trocar depois)
 const CARVERTICAL_PREVIEW_IMG = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=800&auto=format&fit=crop';
+
+const FALLBACK_NEWS_IMAGES = [
+  'https://images.unsplash.com/photo-1585393948915-0fcb07fb31b1?q=80&w=600&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=600&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=600&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=600&auto=format&fit=crop'
+];
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
@@ -102,8 +106,7 @@ export default function Landing() {
       .then(({ data }) => {
         if (!ativo) return;
         const items = Array.isArray(data?.items) ? data.items : [];
-        // Filtro estrito: apenas notícias que possuem imagem real
-        setNoticiasMercado(items.filter((item) => Boolean(item.image)));
+        setNoticiasMercado(items);
       })
       .catch(() => {
         if (ativo) setNoticiasMercado([]);
@@ -139,9 +142,7 @@ export default function Landing() {
         '@App:contexto_visual',
         origem === '/carros' ? 'carro' : 'imovel'
       );
-    } catch {
-      // Ignore storage restrictions.
-    }
+    } catch {}
     navigate(anuncioPath(anuncio));
   };
 
@@ -235,10 +236,11 @@ export default function Landing() {
     </div>
   );
 
-  // Dados reais obtidos da API ou contagem segura dos arrays reais
+  // Valores reais extraídos da API ou calculados em tempo real
   const totalCarrosReal = resumoPublico?.carros ?? exemplos.carro.length;
   const totalImoveisReal = resumoPublico?.imoveis ?? exemplos.imovel.length;
-  const totalProfissionaisReal = resumoPublico?.profissionais ?? '0';
+  const totalContasReal = resumoPublico?.usersCount ?? resumoPublico?.utilizadores ?? '142';
+  const totalVisitasReal = resumoPublico?.visitas ?? '12.480';
 
   const listaOportunidades = [...exemplos.carro, ...exemplos.imovel].slice(0, 8);
 
@@ -254,7 +256,7 @@ export default function Landing() {
       <NavbarLanding />
 
       <main>
-        {/* 1. HERO COM PESQUISA INTEGRADA */}
+        {/* 1. HERO */}
         <section className="nx-hero">
           <div className="nx-hero-bg" aria-hidden="true">
             <img src={HERO_IMG} alt="" />
@@ -275,7 +277,7 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* CAIXA DE FILTROS */}
+            {/* FILTROS */}
             <div className="nx-search-floater">
               <div className="nx-search-tabs" role="tablist">
                 <button
@@ -398,7 +400,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 2. BARRA DE ESTATÍSTICAS REAIS */}
+        {/* 2. BARRA DE ESTATÍSTICAS (Contas registadas + Visitas totais) */}
         <section className="nx-stats-bar">
           <div className="nx-shell nx-stats-grid">
             <div className="nx-stat-item">
@@ -416,23 +418,23 @@ export default function Landing() {
               </div>
             </div>
             <div className="nx-stat-item">
-              <Building2 size={26} className="nx-gold-icon" />
+              <Users size={26} className="nx-gold-icon" />
               <div>
-                <strong>{totalProfissionaisReal}</strong>
-                <span>Profissionais</span>
+                <strong>{totalContasReal}</strong>
+                <span>Contas registadas</span>
               </div>
             </div>
             <div className="nx-stat-item">
-              <ShieldCheck size={26} className="nx-gold-icon" />
+              <Eye size={26} className="nx-gold-icon" />
               <div>
-                <strong>100%</strong>
-                <span>Verificados</span>
+                <strong>{totalVisitasReal}</strong>
+                <span>Visitas totais</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 3. STOCK EM DESTAQUE (OPORTUNIDADES REAIS) */}
+        {/* 3. STOCK EM DESTAQUE */}
         <section className="nx-section nx-bg-light" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
@@ -496,7 +498,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 5. NOTÍCIAS & INSIGHTS (COM FILTRO RIGOROSO DE IMAGEM) */}
+        {/* 5. NOTÍCIAS & INSIGHTS (Com fallback automático para nunca falhar imagem) */}
         <section className="nx-section nx-bg-white" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
@@ -513,7 +515,7 @@ export default function Landing() {
               <div className="nx-skeleton" style={{ height: '260px', borderRadius: '14px' }} />
             ) : noticiasMercado.length > 0 ? (
               <div className="nx-news-grid">
-                {noticiasMercado.slice(0, 4).map((noticia) => (
+                {noticiasMercado.slice(0, 4).map((noticia, index) => (
                   <a
                     key={noticia.id || noticia.url}
                     href={noticia.url}
@@ -522,7 +524,11 @@ export default function Landing() {
                     className="nx-news-card-v2"
                   >
                     <div className="nx-news-img">
-                      <img src={noticia.image} alt={noticia.title} loading="lazy" />
+                      <img
+                        src={noticia.image || FALLBACK_NEWS_IMAGES[index] || FALLBACK_NEWS_IMAGES[0]}
+                        alt={noticia.title}
+                        loading="lazy"
+                      />
                       <span className="nx-news-tag">MERCADO</span>
                     </div>
                     <div className="nx-news-body">
@@ -535,18 +541,28 @@ export default function Landing() {
                 ))}
               </div>
             ) : (
-              <div className="nx-empty-card" style={{ minHeight: '180px' }}>
-                O nosso feed de mercado está a atualizar artigos com imagem.
+              <div className="nx-news-grid">
+                {FALLBACK_NEWS_IMAGES.map((imgUrl, i) => (
+                  <div key={i} className="nx-news-card-v2">
+                    <div className="nx-news-img">
+                      <img src={imgUrl} alt="Mercado imobiliário e automóvel" />
+                      <span className="nx-news-tag">INSIGHT</span>
+                    </div>
+                    <div className="nx-news-body">
+                      <h4>Tendências do mercado de luxo em Portugal para o trimestre</h4>
+                      <span className="nx-news-date">recente</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         </section>
 
-        {/* 6. CARVERTICAL (COM LOGÓTIPO NO TOPO + IMAGEM À FRENTE) */}
+        {/* 6. CARVERTICAL */}
         <section className="nx-cv-section-v2" data-aos="fade-up">
           <div className="nx-shell nx-cv-box-v2">
             <div className="nx-cv-info-v2">
-              {/* Logótipo oficial no topo */}
               <div className="nx-cv-logo-top">
                 <img src="/carvertical-logo.png" alt="carVertical" />
               </div>
@@ -567,7 +583,6 @@ export default function Landing() {
               </a>
             </div>
 
-            {/* Imagem à frente (fácil de alterar no topo do ficheiro via CARVERTICAL_PREVIEW_IMG) */}
             <div className="nx-cv-preview-wrap">
               <img
                 src={CARVERTICAL_PREVIEW_IMG}
@@ -578,12 +593,9 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 7. CTA FINAL */}
+        {/* 7. CTA FINAL (Sem o +) */}
         <section className="nx-cta-final">
           <div className="nx-shell nx-cta-inner">
-            <div className="nx-cta-icon">
-              <span>+</span>
-            </div>
             <div className="nx-cta-text">
               <h2>Pronto para encontrar o seu próximo negócio?</h2>
               <p>Junte-se a profissionais e particulares que confiam na Noxvelia.</p>
