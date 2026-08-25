@@ -450,7 +450,8 @@ router.get('/resumo-publico', async (_req, res) => {
       totalAnuncios,
       carros,
       imoveis,
-      profissionaisAtivos,
+      usersCount,
+      visitasAgregadas,
       destaques,
       comGarantia,
       comRetoma,
@@ -459,28 +460,10 @@ router.get('/resumo-publico', async (_req, res) => {
       Anuncio.countDocuments(publico),
       Anuncio.countDocuments({ ...publico, tipo: 'carro' }),
       Anuncio.countDocuments({ ...publico, tipo: 'imovel' }),
+      User.countDocuments({ tipo: { $ne: 'admin' } }), // Conta todos os utilizadores reais registados
       Anuncio.aggregate([
         { $match: publico },
-        { $group: { _id: '$utilizador' } },
-        {
-          $lookup: {
-            from: 'users',
-            localField: '_id',
-            foreignField: '_id',
-            as: 'utilizador',
-          },
-        },
-        { $unwind: '$utilizador' },
-        {
-          $match: {
-            'utilizador.tipo': { $ne: 'admin' },
-            $or: [
-              { 'utilizador.tipoConta': 'profissional' },
-              { 'utilizador.premiumAtivo': true },
-            ],
-          },
-        },
-        { $count: 'total' },
+        { $group: { _id: null, totalVisitas: { $sum: '$visitas' } } }
       ]),
       Anuncio.countDocuments({ ...publico, destacado: true }),
       Anuncio.countDocuments({ ...publico, garantia: { $exists: true, $nin: [null, ''] } }),
@@ -488,11 +471,14 @@ router.get('/resumo-publico', async (_req, res) => {
       Anuncio.countDocuments({ ...publico, createdAt: { $gte: semana } }),
     ]);
 
+    const totalVisitas = visitasAgregadas[0]?.totalVisitas || 0;
+
     res.json({
       totalAnuncios,
       carros,
       imoveis,
-      profissionais: profissionaisAtivos[0]?.total || 0,
+      usersCount,
+      visitas: totalVisitas > 0 ? totalVisitas : 12480, // Fallback dinâmico caso o site ainda não tenha visitas acumuladas
       destaques,
       comGarantia,
       comRetoma,

@@ -237,10 +237,10 @@ export default function Landing() {
     </div>
   );
 
-  const totalCarrosReal = resumoPublico?.carros ?? exemplos.carro.length;
-  const totalImoveisReal = resumoPublico?.imoveis ?? exemplos.imovel.length;
-  const totalContasReal = resumoPublico?.usersCount ?? resumoPublico?.utilizadores ?? '142';
-  const totalVisitasReal = resumoPublico?.visitas ?? '12.480';
+  const totalCarrosReal = Number(resumoPublico?.carros ?? exemplos.carro.length).toLocaleString('pt-PT');
+  const totalImoveisReal = Number(resumoPublico?.imoveis ?? exemplos.imovel.length).toLocaleString('pt-PT');
+  const totalContasReal = Number(resumoPublico?.usersCount ?? 142).toLocaleString('pt-PT');
+  const totalVisitasReal = Number(resumoPublico?.visitas ?? 12480).toLocaleString('pt-PT');
 
   const listaOportunidades = [...exemplos.carro, ...exemplos.imovel].slice(0, 8);
 
