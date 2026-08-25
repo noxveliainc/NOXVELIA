@@ -18,7 +18,6 @@ import './Landing.css';
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
 const HERO_IMG = 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1920&auto=format&fit=crop';
 
-// Imagens de fallback (luxo/mercado) para as notícias que não tenham foto
 const FALLBACK_NEWS_IMAGES = [
   'https://images.unsplash.com/photo-1585393948915-0fcb07fb31b1?q=80&w=600&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=600&auto=format&fit=crop',
@@ -36,7 +35,6 @@ export default function Landing() {
   const landingViewTrackedRef = useRef(false);
   const heroTitleRef = useRef(null);
   const aosRef = useRef(null);
-  const animeRef = useRef(null);
   
   const publicarTo = signed ? '/publicar' : '/login';
   const publicarState = signed ? undefined : publishIntentState(location, '/');
@@ -45,7 +43,6 @@ export default function Landing() {
   const [noticiasMercado, setNoticiasMercado] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Estados de Pesquisa
   const [searchTab, setSearchTab] = useState('carro');
   const [marca, setMarca] = useState('');
   const [modelo, setModelo] = useState('');
@@ -55,19 +52,6 @@ export default function Landing() {
   const modelosDisponiveis = marca ? getModelosPorMarca(marca).map(m => typeof m === 'object' ? m.modelo || m.nome : m) : [];
   const cidadesDisponiveis = distrito ? DISTRITOS_CIDADES_PT[distrito] || [] : [];
 
-  const carregarAnime = () => {
-    if (!animeRef.current) animeRef.current = import('animejs').then((modulo) => modulo.animate);
-    return animeRef.current;
-  };
-
-  const animarCta = (evento) => {
-    if (prefersReducedMotion()) return;
-    const alvo = evento.currentTarget;
-    carregarAnime()
-      .then((animateFn) => animateFn(alvo, { scale: [1, 1.03, 1], duration: 400, ease: 'easeOutElastic(1, .8)' }))
-      .catch(() => {});
-  };
-
   useEffect(() => {
     let ativo = true;
     Promise.all([import('aos'), import('aos/dist/aos.css')])
@@ -75,31 +59,9 @@ export default function Landing() {
         if (!ativo) return;
         const aos = modulo.default;
         aos.init({ duration: 600, easing: 'ease-out-cubic', once: true, offset: 40, disable: prefersReducedMotion });
-        aosRef.current = aos;
       })
       .catch(() => {});
     return () => { ativo = false; };
-  }, []);
-
-  useEffect(() => {
-    if (prefersReducedMotion() || !heroTitleRef.current) return undefined;
-    let ativo = true;
-    carregarAnime()
-      .then((animateFn) => {
-        if (ativo && heroTitleRef.current) animateFn(heroTitleRef.current, { opacity: [0, 1], y: [20, 0], duration: 800, ease: 'outExpo' });
-      })
-      .catch(() => {});
-    return () => { ativo = false; };
-  }, []);
-
-  useEffect(() => {
-    const trackLandingViewOnce = () => {
-      if (landingViewTrackedRef.current) return;
-      if (readCookieConsent()?.external !== true) return;
-      landingViewTrackedRef.current = true;
-      trackFunnelEvent('landing_view');
-    };
-    trackLandingViewOnce();
   }, []);
 
   useEffect(() => {
@@ -160,13 +122,12 @@ export default function Landing() {
         <div className="nx-bento-body">
           <span className="nx-bento-price">{formatarMoeda(anuncio.preco)}</span>
           <span className="nx-bento-title">{anuncio.titulo}</span>
-          <span className="nx-bento-meta">{detalhe || (isCarro ? 'Dados técnicos' : 'Detalhes do imóvel')} | {anuncio.localizacao?.cidade || 'Portugal'}</span>
+          <span className="nx-bento-meta">{detalhe || (isCarro ? 'Dados técnicos' : 'Detalhes do imóvel')} | {anuncio.location?.cidade || anuncio.localizacao?.cidade || 'Portugal'}</span>
         </div>
       </div>
     );
   };
 
-  // Esqueletos Premium para quando o site está a carregar
   const renderSkeletons = () => (
     <div className="nx-bento-layout">
       <div className="nx-skeleton nx-bento-featured" style={{ borderRadius: '12px', minHeight: '400px' }}></div>
@@ -186,7 +147,7 @@ export default function Landing() {
       <NavbarLanding />
       
       <main>
-        {/* 1. HERO - Imagem Super Curta e Sem Cortar a Pesquisa */}
+        {/* HERO */}
         <section className="nx-hero">
           <div className="nx-hero-bg">
             <img src={HERO_IMG} alt="Fundo Noxvelia" aria-hidden="true" />
@@ -200,7 +161,6 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* CAIXA DE PESQUISA (Agora perfeitamente visível) */}
           <div className="nx-search-floater">
             <div className="nx-search-tabs">
               <button type="button" data-vertical="carro" className={searchTab === 'carro' ? 'active' : ''} onClick={() => { setSearchTab('carro'); setDistrito(''); setCidade(''); }}>
@@ -247,15 +207,15 @@ export default function Landing() {
                   </div>
                 </>
               )}
-              <button type="submit" className="nx-btn-search" onPointerEnter={animarCta} aria-label="Pesquisar">
+              <button type="submit" className="nx-btn-search" aria-label="Pesquisar">
                 <Search size={20} /> <span className="nx-btn-search-text">Procurar</span>
               </button>
             </form>
           </div>
         </section>
 
-        {/* 2. BENTO GRID - CARROS */}
-        <section className="nx-section nx-bg-light" data-aos="fade-up" style={{paddingTop: '130px'}}>
+        {/* BENTO CARROS */}
+        <section className="nx-section nx-bg-light" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
               <div>
@@ -278,7 +238,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 3. BENTO GRID - IMÓVEIS (INVERTIDO) */}
+        {/* BENTO IMÓVEIS */}
         <section className="nx-section nx-bg-white" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
@@ -302,14 +262,14 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 4. CARVERTICAL */}
+        {/* CARVERTICAL */}
         <section className="nx-section nx-cv-section" data-aos="fade-up">
           <div className="nx-shell nx-cv-box">
              <div className="nx-cv-info">
                <span className="nx-cv-kicker"><ShieldCheck size={16} strokeWidth={2.5} /> Segurança Automóvel</span>
                <h2>Verifique o carro antes de comprar</h2>
                <p>Evite fraudes e quilómetros adulterados. Descubra o histórico de acidentes, manutenções e roubos de qualquer veículo através da matrícula ou VIN.</p>
-               <a href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer" className="nx-cv-btn" onPointerEnter={animarCta}>
+               <a href={CARVERTICAL_URL} target="_blank" rel="noopener noreferrer" className="nx-cv-btn">
                  Consultar Histórico Oficial <ArrowRight size={16}/>
                </a>
              </div>
@@ -321,7 +281,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 5. NOTÍCIAS MAGAZINE */}
+        {/* NOTÍCIAS */}
         <section className="nx-section nx-bg-white" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
@@ -371,13 +331,13 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 6. CTA B2B (PROFISSIONAL) */}
+        {/* CTA B2B */}
         <section className="nx-section nx-b2b">
           <div className="nx-shell nx-b2b-inner">
              <div className="nx-b2b-text">
                 <h2>És um Profissional?</h2>
                 <p>Vende sem pagar um cêntimo em comissões. Importamos o teu stock diretamente do teu software de gestão. Os clientes contactam o teu WhatsApp diretamente.</p>
-                <Link className="nx-btn-b2b" to={publicarTo} state={publicarState} onPointerEnter={animarCta}>
+                <Link className="nx-btn-b2b" to={publicarTo} state={publicarState}>
                   Criar Conta Profissional <ArrowRight size={16} />
                 </Link>
              </div>
