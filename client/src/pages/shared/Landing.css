@@ -47,15 +47,15 @@
 }
 
 /* --- 1. HERO --- */
+/* --- 1. HERO --- */
 .nx-hero {
   position: relative;
-  /* Reduzido para 40vh (Super Curto e Direto) */
   min-height: 40vh; 
   display: flex;
   align-items: center;
-  /* O SEGREDO: Remover overflow: hidden para os filtros aparecerem */
   overflow: visible; 
   background: #071326;
+  z-index: 20; /* <--- A MAGIA ESTÁ AQUI: Obriga o topo a ficar por cima da secção de baixo */
 }
 
 .nx-hero-bg {
