@@ -7,7 +7,8 @@ import {
   Home as HomeIcon,
   ShieldCheck,
   Search,
-  Eye
+  Eye,
+  Building2
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
@@ -236,7 +237,6 @@ export default function Landing() {
     </div>
   );
 
-  // Valores reais extraídos da API ou calculados em tempo real
   const totalCarrosReal = resumoPublico?.carros ?? exemplos.carro.length;
   const totalImoveisReal = resumoPublico?.imoveis ?? exemplos.imovel.length;
   const totalContasReal = resumoPublico?.usersCount ?? resumoPublico?.utilizadores ?? '142';
@@ -400,7 +400,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 2. BARRA DE ESTATÍSTICAS (Contas registadas + Visitas totais) */}
+        {/* 2. BARRA DE ESTATÍSTICAS */}
         <section className="nx-stats-bar">
           <div className="nx-shell nx-stats-grid">
             <div className="nx-stat-item">
@@ -498,7 +498,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 5. NOTÍCIAS & INSIGHTS (Com fallback automático para nunca falhar imagem) */}
+        {/* 5. NOTÍCIAS & INSIGHTS */}
         <section className="nx-section nx-bg-white" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
@@ -593,7 +593,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 7. CTA FINAL (Sem o +) */}
+        {/* 7. CTA FINAL */}
         <section className="nx-cta-final">
           <div className="nx-shell nx-cta-inner">
             <div className="nx-cta-text">
