@@ -142,6 +142,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nx-card-horiz {
           display: flex;
           width: 100%;
+          min-height: 210px; /* Garante que o cartão não encolhe demasiado */
           background: #ffffff;
           border: 1px solid #e2e8f0;
           border-radius: 12px;
@@ -185,32 +186,31 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         }
         .nx-badge-destaque svg { color: #071326; }
 
-        /* ── IMAGEM DO CARTÃO (CORRIGIDA PARA NÃO CORTAR) ── */
+        /* ── IMAGEM DO CARTÃO (Mais Larga e Alta) ── */
         .nxc-img-pane {
-          width: 280px;
+          width: 310px; /* Alargado para ter mais protagonismo */
+          min-height: 210px; /* Altura mínima para a imagem expandir */
           flex-shrink: 0;
           position: relative;
-          background: #0f172a; /* Fundo escuro atrás da imagem */
+          background: #0f172a; 
           overflow: hidden;
         }
         
-        /* Fundo esfumado para preencher espaços vazios elegantemente */
         .nxc-img-bg {
           position: absolute;
           inset: -24px;
           background-size: cover;
           background-position: center;
-          filter: blur(16px) brightness(0.6);
+          filter: blur(16px) brightness(0.5); /* Fundo um pouco mais escuro para contrastar o carro */
           z-index: 0;
         }
         
-        /* A imagem em si: usa 'contain' para nunca cortar a foto */
         .nxc-img-fg {
           position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: contain;
+          object-fit: contain; /* Nunca corta! */
           z-index: 1;
           transition: transform 0.4s ease;
         }
@@ -247,7 +247,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           min-width: 0;
           display: flex;
           flex-direction: column;
-          justify-content: flex-start;
+          justify-content: center; /* Centrado verticalmente agora que tem mais altura */
         }
         .nxc-tags-row {
           display: flex; gap: 8px; margin-bottom: 12px; align-items: center;
@@ -269,7 +269,6 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           display: flex;
           flex-wrap: wrap;
           gap: 12px 18px;
-          margin-bottom: auto;
         }
         .nxc-spec-item {
           display: flex; align-items: center; gap: 6px;
@@ -290,7 +289,8 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           background: #fafcff;
         }
         .nxc-price {
-          font-size: 24px; font-weight: 900; color: #071326;
+          font-size: 26px; /* Ligeiramente maior */
+          font-weight: 900; color: #071326;
           white-space: nowrap; margin-bottom: 16px;
         }
         
@@ -327,8 +327,8 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         /* RESPONSIVO */
         @media (max-width: 768px) {
-          .nx-card-horiz { flex-direction: column; }
-          .nxc-img-pane { width: 100%; height: 240px; border-bottom: 1px solid #f1f5f9; }
+          .nx-card-horiz { flex-direction: column; min-height: auto; }
+          .nxc-img-pane { width: 100%; height: 260px; min-height: auto; border-bottom: 1px solid #f1f5f9; }
           .nxc-body-pane { padding: 16px; }
           .nxc-action-pane { width: 100%; border-left: none; border-top: 1px solid #f1f5f9; flex-direction: row; justify-content: space-between; align-items: center; padding: 16px; }
           .nxc-price { margin-bottom: 0; font-size: 20px; }
