@@ -316,12 +316,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const modelosDisponiveis = filtros.marca ? (isOpcaoOutroVeiculo(filtros.marca) ? [OPCAO_OUTRO_VEICULO] : getNomesModelosComOutro(filtros.marca)) : [];
   const cidadesDisponiveis = (filtros.distrito && filtros.distrito !== 'Todos') ? DISTRITOS_CIDADES_PT[filtros.distrito] : [];
   
-  const accent = '#102f50'; // Navy para foco premium
-  const accentSoft = 'rgba(16, 47, 80, 0.12)';
-  const accentText = '#ffffff';
-  
-  const sidebarHidden = isMobileViewport ? !sidebarMobileAberta : !isSidebarOpen;
-
   const filtrosAtivos = [
     filtros.precoMin && `Desde ${formatarNumero(filtros.precoMin)} EUR`,
     filtros.precoMax && `Até ${formatarNumero(filtros.precoMax)} EUR`,
@@ -414,24 +408,11 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     puxarDadosServidor(1, false, tipoSeguro);
   }, [puxarDadosServidor, tipoSeguro]);
 
-  const limparFiltroAtivo = useCallback((filtro) => {
-    const patch = {};
-    let novaBusca = searchQuery;
-    if (filtro === `"${searchQuery.trim()}"`) novaBusca = '';
-    if (filtro === (filtros.precoMin && `Desde ${formatarNumero(filtros.precoMin)} EUR`)) patch.precoMin = '';
-    if (filtro === (filtros.precoMax && `Até ${formatarNumero(filtros.precoMax)} EUR`)) patch.precoMax = '';
-    if (filtro === filtros.distrito) { patch.distrito = 'Todos'; patch.cidade = ''; }
-    if (filtro === filtros.cidade) patch.cidade = '';
-    if (filtro === filtros.marca) { patch.marca = ''; patch.modelo = ''; }
-    if (filtro === filtros.modelo) patch.modelo = '';
-    aplicarFiltrosInstantaneos(patch, novaBusca);
-  }, [aplicarFiltrosInstantaneos, filtros, searchQuery]);
-
   const aplicarSugestaoPesquisa = useCallback((sugestao) => {
     aplicarFiltrosInstantaneos(sugestao.patch || {}, '');
   }, [aplicarFiltrosInstantaneos]);
 
-  // Função para renderizar o NOVO CARTÃO HORIZONTAL PREMIUM
+  // NOVO CARTÃO HORIZONTAL PREMIUM (Protegido de compressão)
   const renderCartaoHorizontal = (anuncio) => {
     const isCarro = anuncio.tipo === 'carro';
     const fotoUrl = anuncio.fotos?.[0] || anuncio.imagens?.[0] 
@@ -544,15 +525,18 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           margin: 0;
         }
 
-        /* --- OVERLAP OMNIBAR --- */
+        /* --- OMNIBAR FIX: LARGURA 100% --- */
         .nx-search-overlap {
+          width: 100%;
           max-width: 1280px;
-          margin: -40px auto 30px;
+          margin: -32px auto 30px;
           padding: 0 24px;
           position: relative;
           z-index: 10;
+          box-sizing: border-box;
         }
         .pesquisa-omnibar-wrapper {
+          width: 100%;
           min-height: 64px;
           display: flex;
           align-items: center;
@@ -562,12 +546,13 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           background: #ffffff;
           padding: 0 20px;
           box-shadow: 0 16px 32px -16px rgba(7,19,38,0.15);
+          box-sizing: border-box;
         }
         .pesquisa-omnibar-wrapper input {
-          flex: 1; min-width: 0; border: 0; background: transparent; color: #071326; padding: 0; font-size: 16px; font-weight: 600; outline: none;
+          flex: 1; min-width: 0; border: 0; background: transparent; color: #071326; padding: 0; font-size: 16px; font-weight: 600; outline: none; width: 100%;
         }
         .pesquisa-suggestions {
-          position: absolute; z-index: 30; top: calc(100% + 8px); left: 24px; right: 24px; display: grid; gap: 6px; padding: 8px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; box-shadow: 0 22px 52px -36px rgba(7,19,38,.42);
+          position: absolute; z-index: 30; top: calc(100% + 8px); left: 0; right: 0; display: grid; gap: 6px; padding: 8px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; box-shadow: 0 22px 52px -36px rgba(7,19,38,.42);
         }
         .pesquisa-suggestion {
           width: 100%; min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; text-align: left;
@@ -635,27 +620,34 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
         /* MAIN CONTENT & RESULTADOS */
         .pesquisa-main-content {
-          flex: 1; min-width: 0; display: flex; flex-direction: column;
+          flex: 1; min-width: 0; display: flex; flex-direction: column; width: 100%;
         }
 
         .pesquisa-topbar {
-          display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;
+          display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; width: 100%;
         }
         .pesquisa-sort { min-height: 42px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; color: #071326; padding: 0 14px; font-size: 13px; font-weight: 700; cursor: pointer; outline: none; }
         
-        /* GRELHA -> AGORA É LISTA HORIZONTAL */
-        .pesquisa-grid {
-          display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%;
+        /* NOVA CLASSE DE GRELHA (BLINDA CONTRA O INDEX.CSS ANTIGO) */
+        .nx-list-horizontal {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          width: 100%;
         }
-        .pesquisa-skeleton-grid {
-          display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%;
+        .nx-skeleton-list {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          width: 100%;
         }
-        .pesquisa-skeleton-card { min-height: 200px; border: 1px solid #e2e8f0; border-radius: 12px; background: linear-gradient(110deg, #ffffff 0%, #f1f5f9 44%, #ffffff 76%); background-size: 220% 100%; animation: pesquisaSkeleton 1.3s ease-in-out infinite; }
+        .pesquisa-skeleton-card { min-height: 200px; width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; background: linear-gradient(110deg, #ffffff 0%, #f1f5f9 44%, #ffffff 76%); background-size: 220% 100%; animation: pesquisaSkeleton 1.3s ease-in-out infinite; }
         @keyframes pesquisaSkeleton { from { background-position: 180% 0; } to { background-position: -40% 0; } }
 
-        /* CARTÃO HORIZONTAL PREMIUM */
+        /* CARTÃO HORIZONTAL PREMIUM PROTEGIDO */
         .nx-horiz-card {
           display: flex;
+          width: 100%;
           background: #ffffff;
           border: 1px solid #e2e8f0;
           border-radius: 12px;
@@ -700,6 +692,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           min-width: 0;
           display: flex;
           flex-direction: column;
+          justify-content: center;
         }
         .nx-horiz-tags {
           display: flex; gap: 8px; margin-bottom: 12px;
@@ -723,6 +716,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         }
         .nx-horiz-action {
           width: 220px;
+          flex-shrink: 0;
           padding: 24px;
           border-left: 1px solid #f1f5f9;
           display: flex;
@@ -755,11 +749,12 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
         @media (max-width: 768px) {
           .nx-horiz-card { flex-direction: column; }
-          .nx-horiz-img { width: 100%; height: 220px; border-bottom: 1px solid #f1f5f9; }
-          .nx-horiz-action { width: 100%; border-left: none; border-top: 1px solid #f1f5f9; align-items: flex-start; padding: 16px 24px; background: transparent; }
+          .nx-horiz-img { width: 100%; height: 240px; border-bottom: 1px solid #f1f5f9; }
+          .nx-horiz-body { padding: 16px; }
+          .nx-horiz-action { width: 100%; border-left: none; border-top: 1px solid #f1f5f9; flex-direction: row; justify-content: space-between; align-items: center; padding: 16px; background: transparent; }
         }
 
-        .infinite-spinner-container { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 42px 0; color: #94a3b8; }
+        .infinite-spinner-container { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 42px 0; color: #94a3b8; }
         .infinite-dot-pulse { width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; display: inline-block; animation: pulse .6s infinite alternate; }
         .infinite-dot-pulse:nth-child(2) { animation-delay: .2s; }
         .infinite-dot-pulse:nth-child(3) { animation-delay: .4s; }
@@ -935,11 +930,11 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                 </Suspense>
               </div>
             ) : loading && resultados.length === 0 ? (
-              <div className="pesquisa-skeleton-grid">
+              <div className="nx-skeleton-list">
                 {Array.from({ length: 5 }).map((_, index) => <div className="pesquisa-skeleton-card" key={index} />)}
               </div>
             ) : resultados.length > 0 ? (
-              <div className="pesquisa-grid">
+              <div className="nx-list-horizontal">
                 {resultados.map((anuncio, index) => (
                   <React.Fragment key={anuncio._id}>
                     {renderCartaoHorizontal(anuncio)}
