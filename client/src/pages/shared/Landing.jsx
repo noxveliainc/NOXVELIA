@@ -8,7 +8,9 @@ import {
   ShieldCheck,
   Search,
   Eye,
-  Building2
+  Wallet,
+  Star,
+  MessageCircle
 } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Seo from '../../components/Seo';
@@ -23,7 +25,10 @@ import { DISTRITOS, DISTRITOS_CIDADES_PT } from '../../data/localizacoes';
 import './Landing.css';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
-const HERO_IMG = 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1920&auto=format&fit=crop';
+// Usa o asset real já existente em client/public em vez de hotlink externo ao Unsplash:
+// mais rápido (sem pedido a domínio externo), sem dependência de terceiros, e já é o
+// visual "coast" pensado para a marca. Ajusta o nome do ficheiro se tiveres outro preferido.
+const HERO_IMG = '/noxvelia-hero-coast.webp';
 const CARVERTICAL_PREVIEW_IMG = '/carvertical-preview.png';
 
 const FALLBACK_NEWS_IMAGES = [
@@ -146,21 +151,13 @@ export default function Landing() {
     };
   }, []);
 
-  const abrirExemplo = (anuncio, origem) => {
+  const guardarContextoVisual = (origem) => {
     try {
       localStorage.setItem(
         '@App:contexto_visual',
         origem === '/carros' ? 'carro' : 'imovel'
       );
     } catch {}
-    navigate(anuncioPath(anuncio));
-  };
-
-  const handleCardKeyDown = (event, anuncio, origem) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      abrirExemplo(anuncio, origem);
-    }
   };
 
   const handleAdvancedSearch = (event) => {
@@ -174,7 +171,7 @@ export default function Landing() {
       return;
     }
 
-    if (distrito && distrito !== 'Todos') params.set('distrito', distrito);
+    if (distrito) params.set('distrito', distrito);
     if (cidade) params.set('cidade', cidade);
     navigate(`/imoveis${params.toString() ? `?${params.toString()}` : ''}`);
   };
@@ -205,18 +202,16 @@ export default function Landing() {
     const local = anuncio.location?.cidade || anuncio.localizacao?.cidade || 'Portugal';
 
     return (
-      <article
+      <Link
         key={anuncio._id}
+        to={anuncioPath(anuncio)}
         className="nx-card-oportunidade"
-        onClick={() => abrirExemplo(anuncio, origem)}
-        onKeyDown={(event) => handleCardKeyDown(event, anuncio, origem)}
-        role="button"
-        tabIndex={0}
+        onClick={() => guardarContextoVisual(origem)}
         aria-label={`Abrir anúncio: ${anuncio.titulo}`}
       >
         <div className="nx-card-img-wrap">
           {foto ? (
-            <img src={foto} alt={anuncio.titulo} loading="lazy" />
+            <img src={foto} alt={anuncio.titulo} loading="lazy" width={400} height={300} />
           ) : (
             <div className="nx-card-no-photo">
               {isCarro ? <Car size={30} /> : <HomeIcon size={30} />}
@@ -234,7 +229,7 @@ export default function Landing() {
             <span className="nx-card-loc">{local}</span>
           </div>
         </div>
-      </article>
+      </Link>
     );
   };
 
@@ -246,10 +241,19 @@ export default function Landing() {
     </div>
   );
 
-  const totalCarrosReal = Number(resumoPublico?.carros ?? exemplos.carro.length).toLocaleString('pt-PT');
-  const totalImoveisReal = Number(resumoPublico?.imoveis ?? exemplos.imovel.length).toLocaleString('pt-PT');
-  const totalContasReal = Number(resumoPublico?.usersCount ?? 0).toLocaleString('pt-PT');
-  const totalVisitasReal = Number(visitasGlobais).toLocaleString('pt-PT');
+  const numCarros = Number(resumoPublico?.carros ?? exemplos.carro.length);
+  const numImoveis = Number(resumoPublico?.imoveis ?? exemplos.imovel.length);
+  const numContas = Number(resumoPublico?.usersCount ?? 0);
+  const numVisitas = Number(visitasGlobais);
+
+  // Só mostra estatísticas com números que já transmitem confiança;
+  // esconder valores muito baixos evita o efeito "plataforma vazia" (ver prompt mestre).
+  const statsDisponiveis = [
+    { key: 'carros', icon: Car, valor: numCarros, label: 'Automóveis', min: 5 },
+    { key: 'imoveis', icon: HomeIcon, valor: numImoveis, label: 'Imóveis', min: 5 },
+    { key: 'contas', icon: Users, valor: numContas, label: 'Contas registadas', min: 20 },
+    { key: 'visitas', icon: Eye, valor: numVisitas, label: 'Visitas totais', min: 100 }
+  ].filter((stat) => stat.valor >= stat.min);
 
   const listaOportunidades = [...exemplos.carro, ...exemplos.imovel].slice(0, 8);
 
@@ -268,7 +272,7 @@ export default function Landing() {
         {/* 1. HERO */}
         <section className="nx-hero">
           <div className="nx-hero-bg" aria-hidden="true">
-            <img src={HERO_IMG} alt="" />
+            <img src={HERO_IMG} alt="" fetchpriority="high" />
             <div className="nx-hero-overlay" />
           </div>
 
@@ -391,15 +395,6 @@ export default function Landing() {
                   </>
                 )}
 
-                <div className="nx-input-group nx-input-disabled">
-                  <label>Distrito</label>
-                  <select disabled><option>Todos os distritos</option></select>
-                </div>
-                <div className="nx-input-group nx-input-disabled">
-                  <label>Cidade</label>
-                  <select disabled><option>Todas as cidades</option></select>
-                </div>
-
                 <button type="submit" className="nx-btn-search" aria-label="Pesquisar">
                   <Search size={18} />
                   <span>Pesquisar</span>
@@ -409,39 +404,22 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 2. BARRA DE ESTATÍSTICAS */}
-        <section className="nx-stats-bar">
-          <div className="nx-shell nx-stats-grid">
-            <div className="nx-stat-item">
-              <Car size={26} className="nx-gold-icon" />
-              <div>
-                <strong>{totalCarrosReal}</strong>
-                <span>Automóveis</span>
-              </div>
+        {/* 2. BARRA DE ESTATÍSTICAS (só aparece com números que reforçam confiança) */}
+        {statsDisponiveis.length >= 2 && (
+          <section className="nx-stats-bar">
+            <div className="nx-shell nx-stats-grid" style={{ gridTemplateColumns: `repeat(${statsDisponiveis.length}, 1fr)` }}>
+              {statsDisponiveis.map(({ key, icon: Icon, valor, label }) => (
+                <div className="nx-stat-item" key={key}>
+                  <Icon size={26} className="nx-gold-icon" />
+                  <div>
+                    <strong>{valor.toLocaleString('pt-PT')}</strong>
+                    <span>{label}</span>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="nx-stat-item">
-              <HomeIcon size={26} className="nx-gold-icon" />
-              <div>
-                <strong>{totalImoveisReal}</strong>
-                <span>Imóveis</span>
-              </div>
-            </div>
-            <div className="nx-stat-item">
-              <Users size={26} className="nx-gold-icon" />
-              <div>
-                <strong>{totalContasReal}</strong>
-                <span>Contas registadas</span>
-              </div>
-            </div>
-            <div className="nx-stat-item">
-              <Eye size={26} className="nx-gold-icon" />
-              <div>
-                <strong>{totalVisitasReal}</strong>
-                <span>Visitas totais</span>
-              </div>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* 3. STOCK EM DESTAQUE */}
         <section className="nx-section nx-bg-light" data-aos="fade-up">
@@ -489,17 +467,17 @@ export default function Landing() {
                 <p>Todos os anúncios são analisados para garantir a sua qualidade e autenticidade.</p>
               </div>
               <div className="nx-trust-card">
-                <Building2 size={28} className="nx-gold-icon" />
-                <h3>Profissionais certificados</h3>
-                <p>Trabalhamos apenas com profissionais qualificados e de confiança.</p>
+                <Wallet size={28} className="nx-gold-icon" />
+                <h3>Sem comissões</h3>
+                <p>Contacto direto por telefone, email ou WhatsApp. Sem intermediários a cobrar pelo negócio.</p>
               </div>
               <div className="nx-trust-card">
-                <ShieldCheck size={28} className="nx-gold-icon" />
-                <h3>Negócios seguros</h3>
-                <p>Protegemos os seus dados e garantimos transações seguras do início ao fim.</p>
+                <Star size={28} className="nx-gold-icon" />
+                <h3>Avaliações reais</h3>
+                <p>Cada vendedor tem uma reputação pública, construída por avaliações de utilizadores autenticados.</p>
               </div>
               <div className="nx-trust-card">
-                <Car size={28} className="nx-gold-icon" />
+                <MessageCircle size={28} className="nx-gold-icon" />
                 <h3>Suporte dedicado</h3>
                 <p>A nossa equipa está sempre disponível para o ajudar.</p>
               </div>
@@ -507,7 +485,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* 5. NOTÍCIAS & INSIGHTS (Com proteção absoluta de imagem) */}
+        {/* 5. NOTÍCIAS & INSIGHTS */}
         <section className="nx-section nx-bg-white" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
@@ -568,6 +546,7 @@ export default function Landing() {
             <div className="nx-cv-info-v2">
               <div className="nx-cv-logo-top">
                 <img src="/carvertical-logo.png" alt="carVertical" />
+                <span className="nx-cv-discount">-20% com código NOXVELIA</span>
               </div>
               <h2>Histórico do veículo completo e verificado.</h2>
               <ul className="nx-cv-list">
@@ -582,7 +561,7 @@ export default function Landing() {
                 rel="noopener noreferrer"
                 className="nx-cv-btn-v2"
               >
-                Verificar veículo <ArrowRight size={16} />
+                Verificar veículo com -20% <ArrowRight size={16} />
               </a>
             </div>
 
@@ -591,6 +570,7 @@ export default function Landing() {
                 src={CARVERTICAL_PREVIEW_IMG}
                 alt="Pré-visualização CarVertical"
                 className="nx-cv-preview-img"
+                loading="lazy"
               />
             </div>
           </div>
@@ -602,9 +582,10 @@ export default function Landing() {
             <div className="nx-cta-text">
               <h2>Pronto para encontrar o seu próximo negócio?</h2>
               <p>Junte-se a profissionais e particulares que confiam na Noxvelia.</p>
+              <p className="nx-cta-microcopy">Até 5 anúncios grátis. Sem cartão de crédito.</p>
             </div>
             <Link className="nx-btn-cta-final" to={publicarTo} state={publicarState}>
-              Explorar stock <ArrowRight size={16} />
+              Publicar anúncio grátis <ArrowRight size={16} />
             </Link>
           </div>
         </section>
