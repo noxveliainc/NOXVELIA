@@ -179,10 +179,7 @@ export default function NavbarLanding() {
           stroke-linecap: round;
         }
 
-        /* FIX: fundo 100% opaco (sem alfa) + camada de composição própria,
-           para evitar o bug de transparência causado pelo backdrop-filter
-           do .nl-root em Safari/Chrome mobile, onde o fundo do dropdown
-           deixava "sangrar" o conteúdo por trás (hero da Landing). */
+        /* FIX: fundo 100% opaco (sem alfa) + camada de composição própria */
         .nl-mobile-menu {
           position: absolute;
           top: calc(100% + 8px);
@@ -238,8 +235,6 @@ export default function NavbarLanding() {
           font-weight: 720;
         }
 
-
-
         .nl-mobile-menu a,
         .nl-mobile-menu button {
           display: flex;
@@ -275,7 +270,6 @@ export default function NavbarLanding() {
           color: #ffffff;
           background: #102f50;
         }
-
 
         .nl-btn-ghost,
         .nl-btn-solid {
@@ -531,7 +525,7 @@ export default function NavbarLanding() {
           background: #f0dfbb !important;
         }
 
-                .nl-btn-solid {
+        .nl-btn-solid {
           color: #102f50 !important;
           border-color: #102f50 !important;
           background: transparent !important;
@@ -555,7 +549,6 @@ export default function NavbarLanding() {
           background: #102f50 !important;
           border-color: #102f50 !important;
         }
-
 
         /* Noxvelia navy shell - referencia premium com CTA dourado */
         .nl-root {
@@ -666,28 +659,9 @@ export default function NavbarLanding() {
           </Link>
 
           <div className="nl-links">
-            <a
-              href="#pesquisa"
-              onClick={(e) => {
-                e.preventDefault();
-                document
-                  .getElementById("pesquisa")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              Pesquisar
-            </a>
-            <a
-              href="#anunciar"
-              onClick={(e) => {
-                e.preventDefault();
-                document
-                  .getElementById("anunciar")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              Criar anúncio
-            </a>
+            {/* CORREÇÃO: Utilizando os Links reais em vez de âncoras vazias */}
+            <Link to="/carros">Pesquisar</Link>
+            <Link to={publicarTo} state={publicarState}>Criar anúncio</Link>
             <Link to="/profissionais">Profissionais</Link>
             <Link to="/enviar-stock">Enviar stock</Link>
           </div>
@@ -813,14 +787,10 @@ export default function NavbarLanding() {
                 <span>Automóveis e imóveis em Portugal</span>
               </div>
             </div>
-            <a href="#pesquisa" onClick={() => setMenuMobileAberto(false)}>
-              Pesquisar
-            </a>
-            <a href="#anunciar" onClick={() => setMenuMobileAberto(false)}>
-              Criar anúncio
-            </a>
+            
+            {/* CORREÇÃO: Links do menu mobile organizados e corretos */}
             <Link to="/carros" onClick={() => setMenuMobileAberto(false)}>
-              Automóveis
+              Pesquisar
             </Link>
             <Link to="/imoveis" onClick={() => setMenuMobileAberto(false)}>
               Imóveis
@@ -834,6 +804,7 @@ export default function NavbarLanding() {
             <Link to="/enviar-stock" onClick={() => setMenuMobileAberto(false)}>
               Enviar stock
             </Link>
+            
             <Link
               className="nl-mobile-primary"
               to={publicarTo}
@@ -842,6 +813,7 @@ export default function NavbarLanding() {
             >
               Criar anúncio
             </Link>
+
             {signed ? (
               <>
                 <Link to="/perfil" onClick={() => setMenuMobileAberto(false)}>

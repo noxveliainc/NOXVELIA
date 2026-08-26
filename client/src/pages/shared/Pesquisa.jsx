@@ -2,19 +2,19 @@ import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRe
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
-import AnuncioCard from './AnuncioCard';
 import AdBanner from '../../components/AdBanner';
 import useDebounce from '../../hooks/useDebounce';
 import Fuse from 'fuse.js';
 import { Icon } from '@mdi/react';
 import { 
-  mdiMap, mdiViewGrid, mdiMagnify, mdiLoading, mdiFilterVariant, mdiChevronLeft,
-  mdiChevronRight, mdiShieldCheckOutline, mdiCloseCircleOutline, mdiAlertOutline
+  mdiMap, mdiMagnify, mdiFilterVariant, mdiChevronLeft,
+  mdiChevronRight, mdiCloseCircleOutline, mdiAlertOutline, mdiViewList
 } from '@mdi/js';
 import { MARCAS, OPCAO_OUTRO_VEICULO, getNomesModelosComOutro, isOpcaoOutroVeiculo, rotuloOpcaoVeiculo } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 import { publishIntentState } from '../../utils/navigationState';
 import { trackFunnelEvent } from '../../utils/funnelAnalytics';
+import { getImageUrl } from '../../utils/images';
 
 const TIPOLOGIAS = ['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'];
 const TIPOS_IMOVEL = [
@@ -25,7 +25,7 @@ const TIPOS_IMOVEL = [
   { value: 'escritorio', label: 'Escritório' },
 ];
 const COMBUSTIVEIS = ['Gasolina', 'Diesel', 'Eléctrico', 'Híbrido', 'GPL'];
-const TRANSMISSAO = ['Manual', 'Automático'];
+const TRANSMISSAO = ['Manual', 'Automática'];
 const TIPOS_VEICULO = [
   { value: 'citadino', label: 'Citadino' },
   { value: 'utilitario', label: 'Utilitário' },
@@ -107,7 +107,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [sidebarMobileAberta, setSidebarMobileAberta] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const [vistaAtiva, setVistaAtiva] = useState('grelha');
+  const [vistaAtiva, setVistaAtiva] = useState('lista');
 
   const [filtros, setFiltros] = useState(filtrosIniciais);
 
@@ -315,9 +315,11 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
   const modelosDisponiveis = filtros.marca ? (isOpcaoOutroVeiculo(filtros.marca) ? [OPCAO_OUTRO_VEICULO] : getNomesModelosComOutro(filtros.marca)) : [];
   const cidadesDisponiveis = (filtros.distrito && filtros.distrito !== 'Todos') ? DISTRITOS_CIDADES_PT[filtros.distrito] : [];
-  const accent = tipoSeguro === 'imovel' ? '#2ac1b4' : '#3ecf8e';
-  const accentText = '#071326';
-  const accentSoft = tipoSeguro === 'imovel' ? 'rgba(42,193,180,.18)' : 'rgba(62,207,142,.18)';
+  
+  const accent = '#102f50'; // Navy para foco premium
+  const accentSoft = 'rgba(16, 47, 80, 0.12)';
+  const accentText = '#ffffff';
+  
   const sidebarHidden = isMobileViewport ? !sidebarMobileAberta : !isSidebarOpen;
 
   const filtrosAtivos = [
@@ -429,12 +431,60 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     aplicarFiltrosInstantaneos(sugestao.patch || {}, '');
   }, [aplicarFiltrosInstantaneos]);
 
-  const totalAnunciosReais = Number(totalResultados || resultados.length || 0);
-  const mostrarPublicidadeTopo = !loading && vistaAtiva === 'grelha' && totalAnunciosReais >= 3;
-  const mostrarPublicidadeInline = !loading && totalAnunciosReais >= 8;
-  const mostrarPublicidadeFundo = !loading && vistaAtiva === 'grelha' && totalAnunciosReais >= 6;
+  // Função para renderizar o NOVO CARTÃO HORIZONTAL PREMIUM
+  const renderCartaoHorizontal = (anuncio) => {
+    const isCarro = anuncio.tipo === 'carro';
+    const fotoUrl = anuncio.fotos?.[0] || anuncio.imagens?.[0] 
+      ? getImageUrl(anuncio.fotos?.[0] || anuncio.imagens?.[0], 'medium') 
+      : '';
 
-  // --- GERADOR DINÂMICO DE LONG-TAIL SEO PARA A PÁGINA DE PESQUISA ---
+    const specs = isCarro
+      ? [
+          anuncio.carro?.ano,
+          anuncio.carro?.km != null ? `${formatarNumero(anuncio.carro.km)} km` : null,
+          anuncio.carro?.combustivel,
+          anuncio.carro?.transmissao
+        ].filter(Boolean).join(' • ')
+      : [
+          anuncio.imovel?.tipologia || anuncio.imovel?.tipoImovel,
+          anuncio.imovel?.area ? `${anuncio.imovel.area} m²` : null,
+          anuncio.imovel?.casasBanho ? `${anuncio.imovel.casasBanho} wc` : null
+        ].filter(Boolean).join(' • ');
+
+    const local = anuncio.localizacao?.cidade || anuncio.localizacao?.distrito || 'Portugal';
+    const isProfissional = anuncio.utilizador?.tipoConta === 'profissional' || anuncio.utilizador?.premiumAtivo;
+    const tipoAnunciante = isProfissional ? 'Profissional' : 'Particular';
+
+    return (
+      <Link key={anuncio._id} to={`/anuncio/${anuncio._id}`} className={`nx-horiz-card ${anuncio.destacado ? 'is-premium' : ''}`}>
+        <div className="nx-horiz-img">
+          {fotoUrl ? (
+            <img src={fotoUrl} alt={anuncio.titulo} loading="lazy" />
+          ) : (
+            <div className="nx-horiz-no-img"><Icon path={mdiViewList} size={2} color="#cbd5e1"/></div>
+          )}
+          {anuncio.destacado && <span className="nx-horiz-badge-destaque">DESTAQUE</span>}
+        </div>
+        <div className="nx-horiz-body">
+          <div className="nx-horiz-tags">
+            <span className="nx-horiz-tag-tipo">{tipoAnunciante}</span>
+            <span className="nx-horiz-tag-tipo">{isCarro ? 'Automóvel' : 'Imóvel'}</span>
+          </div>
+          <h3 className="nx-horiz-title">{anuncio.titulo}</h3>
+          <p className="nx-horiz-specs">{specs}</p>
+          <p className="nx-horiz-loc"><Icon path={mdiMap} size={0.6}/> {local}</p>
+        </div>
+        <div className="nx-horiz-action">
+          <div className="nx-horiz-price">{formatarNumero(anuncio.preco)} €</div>
+        </div>
+      </Link>
+    );
+  };
+
+  const totalAnunciosReais = Number(totalResultados || resultados.length || 0);
+  const mostrarPublicidadeTopo = !loading && vistaAtiva === 'lista' && totalAnunciosReais >= 3;
+  const mostrarPublicidadeInline = !loading && totalAnunciosReais >= 8;
+
   const locSeo = filtros.cidade ? `em ${filtros.cidade}` : (filtros.distrito && filtros.distrito !== 'Todos' ? `em ${filtros.distrito}` : 'em Portugal');
   let titleSeo = '';
   let descSeo = '';
@@ -451,73 +501,327 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
 
   return (
     <>
-      {!seoParams && <Seo
-        title={titleSeo}
-        description={descSeo}
-        path={tipoSeguro === 'carro' ? '/carros' : '/imoveis'}
-      />}
+      {!seoParams && <Seo title={titleSeo} description={descSeo} path={tipoSeguro === 'carro' ? '/carros' : '/imoveis'} />}
       <style>{`
-        .pesquisa-root { min-height: 100vh; display: flex; flex-direction: column; background: #ffffff; color: var(--cor-texto); font-family: var(--nx-font-body); }
-        .pesquisa-layout { width: 100%; display: flex; align-items: flex-start; gap: clamp(20px, 2vw, 36px); padding: clamp(22px, 2.8vw, 46px); flex: 1; transition: padding .22s ease, gap .22s ease; box-sizing: border-box; }
-        .pesquisa-sidebar { width: 320px; flex: 0 0 320px; position: sticky; top: 92px; max-height: calc(100vh - 112px); overflow-y: auto; overscroll-behavior: contain; padding: 22px; border: 1px solid var(--cor-borda); border-radius: 22px; background: #ffffff; transition: width .24s ease, flex-basis .24s ease, padding .24s ease, opacity .18s ease, border-color .18s ease; box-sizing: border-box; }
-        .pesquisa-sidebar.collapsed { width: 0; flex-basis: 0; min-width: 0; padding: 0; border-color: transparent; opacity: 0; overflow: hidden; pointer-events: none; }
-        .pesquisa-sidebar-toggle { flex: 0 0 34px; width: 34px; height: 52px; position: sticky; top: 92px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--cor-borda); border-radius: 14px; background: #ffffff; color: var(--cor-navy); cursor: pointer; transition: border-color .18s ease, background .18s ease, transform .18s ease; }
-        .pesquisa-sidebar-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--cor-borda); }
-        .pesquisa-filter-status { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
-        .pesquisa-filter-stat { padding: 13px 14px; border: 1px solid var(--cor-borda); border-radius: 16px; background: var(--cor-fundo-suave); }
-        .pesquisa-filter-stat strong { display: block; color: var(--cor-texto); font-size: 22px; font-weight: 900; line-height: 1; }
-        .pesquisa-filter-stat span { display: block; margin-top: 6px; color: var(--cor-texto-secundario); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-        .pesquisa-filter-section { display: grid; gap: 14px; margin-bottom: 16px; padding: 16px; border: 1px solid var(--cor-borda); border-radius: 20px; background: #ffffff; }
-        .pesquisa-filter-section-title, .pesquisa-filter-title { margin: 0; color: var(--cor-navy); font-size: 10px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
-        .pesquisa-filter-group { display: grid; gap: 9px; margin: 0; }
-        .pesquisa-filter-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-        .pesquisa-filter-input { width: 100%; min-height: 46px; border: 1px solid var(--cor-borda); border-radius: 13px; background: #ffffff; color: var(--cor-texto); padding: 0 13px; font-size: 13px; font-weight: 600; outline: none; transition: border-color .18s ease, box-shadow .18s ease, background .18s ease; box-sizing: border-box; }
-        .pesquisa-filter-input:focus { border-color: ${accent}; box-shadow: 0 0 0 3px ${accentSoft}; }
+        /* Reset de estilos da pesquisa */
+        .pesquisa-root {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          background: #f8fafc;
+          color: #071326;
+          font-family: Inter, sans-serif;
+        }
+
+        /* --- SLIM HERO (CABEÇALHO ESCURO) --- */
+        .nx-search-hero {
+          background: #071326;
+          color: #fffaf0;
+          padding: 40px 24px 70px;
+          text-align: left;
+        }
+        .nx-search-hero-inner {
+          max-width: 1280px;
+          margin: 0 auto;
+        }
+        .nx-search-breadcrumbs {
+          font-size: 11px;
+          color: #d9c49c;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-weight: 800;
+          margin-bottom: 16px;
+        }
+        .nx-search-hero h1 {
+          font-size: clamp(28px, 4vw, 42px);
+          font-weight: 900;
+          margin: 0 0 8px;
+          letter-spacing: -0.02em;
+        }
+        .nx-search-hero p {
+          font-size: 15px;
+          color: rgba(255, 250, 240, 0.7);
+          margin: 0;
+        }
+
+        /* --- OVERLAP OMNIBAR --- */
+        .nx-search-overlap {
+          max-width: 1280px;
+          margin: -40px auto 30px;
+          padding: 0 24px;
+          position: relative;
+          z-index: 10;
+        }
+        .pesquisa-omnibar-wrapper {
+          min-height: 64px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          border: 1px solid rgba(7,19,38,0.1);
+          border-radius: 12px;
+          background: #ffffff;
+          padding: 0 20px;
+          box-shadow: 0 16px 32px -16px rgba(7,19,38,0.15);
+        }
+        .pesquisa-omnibar-wrapper input {
+          flex: 1; min-width: 0; border: 0; background: transparent; color: #071326; padding: 0; font-size: 16px; font-weight: 600; outline: none;
+        }
+        .pesquisa-suggestions {
+          position: absolute; z-index: 30; top: calc(100% + 8px); left: 24px; right: 24px; display: grid; gap: 6px; padding: 8px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; box-shadow: 0 22px 52px -36px rgba(7,19,38,.42);
+        }
+        .pesquisa-suggestion {
+          width: 100%; min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; text-align: left;
+        }
+        .pesquisa-suggestion:hover { background: #f1f5f9; }
+
+        /* --- LAYOUT 2 COLUNAS --- */
+        .pesquisa-layout {
+          max-width: 1280px;
+          margin: 0 auto;
+          width: 100%;
+          display: flex;
+          align-items: flex-start;
+          gap: 30px;
+          padding: 0 24px 60px;
+          flex: 1;
+          box-sizing: border-box;
+        }
+        
+        /* SIDEBAR DE FILTROS */
+        .pesquisa-sidebar {
+          width: 300px;
+          flex-shrink: 0;
+          position: sticky;
+          top: 92px;
+          max-height: calc(100vh - 112px);
+          overflow-y: auto;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 24px;
+          box-sizing: border-box;
+          transition: width 0.3s ease, opacity 0.3s ease;
+        }
+        .pesquisa-sidebar.collapsed {
+          width: 0; opacity: 0; padding: 0; border: none; overflow: hidden; pointer-events: none;
+        }
+
+        .pesquisa-sidebar-header {
+          display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid #e2e8f0;
+        }
+        .pesquisa-sidebar-header strong { font-size: 16px; font-weight: 800; color: #071326; }
+        
+        .pesquisa-filter-status { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 24px; }
+        .pesquisa-filter-stat { padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; text-align: center; }
+        .pesquisa-filter-stat strong { display: block; color: #071326; font-size: 20px; font-weight: 900; line-height: 1; }
+        .pesquisa-filter-stat span { display: block; margin-top: 4px; color: #64748b; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+        
+        .pesquisa-filter-section { margin-bottom: 24px; }
+        .pesquisa-filter-section-title { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 16px; }
+        .pesquisa-filter-group { margin-bottom: 16px; }
+        .pesquisa-filter-title { font-size: 13px; font-weight: 700; color: #071326; margin-bottom: 8px; }
+        
+        .pesquisa-filter-input { width: 100%; min-height: 44px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; color: #071326; padding: 0 12px; font-size: 13px; font-weight: 600; outline: none; transition: border-color .2s; }
+        .pesquisa-filter-input:focus { border-color: #102f50; box-shadow: 0 0 0 3px rgba(16, 47, 80, 0.1); }
+        .pesquisa-filter-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        
         .pesquisa-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-        .pesquisa-tag { flex: 1 1 calc(50% - 8px); min-height: 38px; border: 1px solid var(--cor-borda); border-radius: 999px; background: #ffffff; color: var(--cor-texto-secundario); padding: 0 12px; font-size: 12px; font-weight: 700; cursor: pointer; transition: border-color .18s ease, background .18s ease, color .18s ease; box-sizing: border-box; }
-        .pesquisa-tag:hover { border-color: var(--cor-navy); color: var(--cor-texto); }
-        .pesquisa-tag.active { border-color: ${accent}; background: ${accent}; color: ${accentText}; }
-        .pesquisa-apply-btn { width: 100%; min-height: 50px; border: 1px solid var(--cor-navy); border-radius: 15px; background: var(--cor-navy); color: #ffffff; font-size: 13px; font-weight: 850; cursor: pointer; letter-spacing: .02em; }
-        .pesquisa-main-content { flex: 1; min-width: 0; width: 100%; display: flex; flex-direction: column; }
-        .pesquisa-search-row { display: flex; gap: 12px; margin-bottom: 22px; }
-        .pesquisa-omnibar-wrapper { min-height: 64px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--cor-borda); border-radius: 18px; background: #ffffff; padding: 0 20px; box-sizing: border-box; }
-        .pesquisa-omnibar-wrapper input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--cor-texto); padding: 0; font-size: 16px; font-weight: 500; outline: none; }
-        .pesquisa-suggestions { position: absolute; z-index: 30; top: calc(100% + 8px); left: 0; right: 0; display: grid; gap: 6px; padding: 8px; border: 1px solid var(--cor-borda); border-radius: 18px; background: #ffffff; box-shadow: 0 22px 52px -36px rgba(7,19,38,.42); }
-        .pesquisa-suggestion { width: 100%; min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border: 0; border-radius: 12px; background: transparent; cursor: pointer; text-align: left; }
-        .pesquisa-suggestion:hover { background: var(--cor-fundo-suave); }
-        .pesquisa-topbar { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; padding: 12px 18px; border: 1px solid var(--cor-borda); border-radius: 18px; background: #ffffff; box-sizing: border-box; }
-        .pesquisa-sort { min-height: 44px; border: 1px solid var(--cor-borda); border-radius: 14px; background: #ffffff; color: var(--cor-texto); padding: 0 14px; font-size: 13px; font-weight: 800; cursor: pointer; outline: none; }
-        .pesquisa-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 20px; align-items: start; }
-        .pesquisa-skeleton-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 20px; }
-        .pesquisa-skeleton-card { min-height: 330px; border: 1px solid var(--cor-borda); border-radius: 20px; background: linear-gradient(110deg, #ffffff 0%, var(--cor-fundo-suave) 44%, #ffffff 76%); background-size: 220% 100%; animation: pesquisaSkeleton 1.3s ease-in-out infinite; }
+        .pesquisa-tag { flex: 1 1 calc(50% - 8px); min-height: 38px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; color: #64748b; padding: 0 10px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .pesquisa-tag:hover { border-color: #102f50; color: #102f50; }
+        .pesquisa-tag.active { border-color: #102f50; background: #102f50; color: #ffffff; }
+        
+        .pesquisa-apply-btn { width: 100%; min-height: 48px; border: none; border-radius: 8px; background: #102f50; color: #ffffff; font-size: 14px; font-weight: 800; cursor: pointer; transition: background 0.2s; }
+        .pesquisa-apply-btn:hover { background: #071326; }
+
+        /* MAIN CONTENT & RESULTADOS */
+        .pesquisa-main-content {
+          flex: 1; min-width: 0; display: flex; flex-direction: column;
+        }
+
+        .pesquisa-topbar {
+          display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;
+        }
+        .pesquisa-sort { min-height: 42px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; color: #071326; padding: 0 14px; font-size: 13px; font-weight: 700; cursor: pointer; outline: none; }
+        
+        /* GRELHA -> AGORA É LISTA HORIZONTAL */
+        .pesquisa-grid {
+          display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%;
+        }
+        .pesquisa-skeleton-grid {
+          display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%;
+        }
+        .pesquisa-skeleton-card { min-height: 200px; border: 1px solid #e2e8f0; border-radius: 12px; background: linear-gradient(110deg, #ffffff 0%, #f1f5f9 44%, #ffffff 76%); background-size: 220% 100%; animation: pesquisaSkeleton 1.3s ease-in-out infinite; }
         @keyframes pesquisaSkeleton { from { background-position: 180% 0; } to { background-position: -40% 0; } }
-        .pesquisa-map-shell { position: relative; height: min(760px, calc(100vh - 220px)); min-height: 540px; overflow: hidden; border: 1px solid var(--cor-borda); border-radius: 22px; background: var(--cor-fundo-suave); }
-        .pesquisa-empty { text-align: center; padding: 80px 20px; background: #ffffff; border: 1px solid var(--cor-borda); border-radius: 22px; color: var(--cor-texto-secundario); }
-        .pesquisa-empty-action { margin-top: 18px; min-height: 46px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--cor-navy); border-radius: 14px; background: var(--cor-navy); color: #ffffff; padding: 0 18px; font-size: 13px; font-weight: 850; cursor: pointer; text-decoration: none; }
-        .infinite-spinner-container { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 42px 0; color: var(--cor-texto-secundario); font-size: 13px; }
-        .infinite-dot-pulse { width: 6px; height: 6px; background: var(--cor-texto-secundario); border-radius: 50%; display: inline-block; animation: pulse .6s infinite alternate; }
-        .infinite-dot-pulse:nth-child(2) { animation-delay: .2s; }
-        .infinite-dot-pulse:nth-child(3) { animation-delay: .4s; }
-        @keyframes pulse { from { opacity: .25; transform: scale(.8); } to { opacity: 1; transform: scale(1.2); } }
-        .sidebar-mobile-overlay { display: none; position: fixed; inset: 0; z-index: 9998; background: rgba(7,19,38,.28); }
+
+        /* CARTÃO HORIZONTAL PREMIUM */
+        .nx-horiz-card {
+          display: flex;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          overflow: hidden;
+          text-decoration: none;
+          color: inherit;
+          transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+        .nx-horiz-card:hover {
+          border-color: #102f50;
+          box-shadow: 0 16px 32px -16px rgba(7,19,38,0.15);
+          transform: translateY(-2px);
+        }
+        .nx-horiz-card.is-premium {
+          border: 2px solid #d9c49c;
+        }
+        .nx-horiz-img {
+          width: 280px;
+          flex-shrink: 0;
+          position: relative;
+          background: #f8fafc;
+        }
+        .nx-horiz-img img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .nx-horiz-no-img {
+          width: 100%; height: 100%; display: grid; place-items: center;
+        }
+        .nx-horiz-badge-destaque {
+          position: absolute;
+          top: 12px; left: 12px;
+          background: #d9c49c; color: #071326;
+          font-size: 9px; font-weight: 900;
+          padding: 4px 8px; border-radius: 6px;
+          letter-spacing: 0.05em;
+        }
+        .nx-horiz-body {
+          padding: 24px;
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+        }
+        .nx-horiz-tags {
+          display: flex; gap: 8px; margin-bottom: 12px;
+        }
+        .nx-horiz-tag-tipo {
+          background: #f1f5f9; color: #475569;
+          font-size: 10px; font-weight: 700;
+          padding: 4px 8px; border-radius: 6px;
+          text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .nx-horiz-title {
+          font-size: 18px; font-weight: 800; color: #071326;
+          margin: 0 0 8px; line-height: 1.3;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .nx-horiz-specs {
+          font-size: 13px; color: #475569; margin: 0 0 16px; font-weight: 600;
+        }
+        .nx-horiz-loc {
+          font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 6px; margin: auto 0 0; font-weight: 600;
+        }
+        .nx-horiz-action {
+          width: 220px;
+          padding: 24px;
+          border-left: 1px solid #f1f5f9;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: flex-end;
+          background: #fafcff;
+        }
+        .nx-horiz-price {
+          font-size: 24px; font-weight: 900; color: #071326;
+        }
+
+        /* COMPORTAMENTO MOBILE */
+        .sidebar-mobile-overlay { display: none; position: fixed; inset: 0; z-index: 9998; background: rgba(7,19,38,.4); }
+        .mobile-filter-trigger { display: none; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background: #102f50; color: #fff; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; margin-bottom: 16px; }
 
         @media (max-width: 1024px) {
-          .pesquisa-layout { padding: 18px 12px 34px; flex-direction: column; gap: 14px; }
-          .pesquisa-sidebar { position: fixed; top: 0; left: 0; width: min(88vw, 380px); max-width: 380px; height: 100dvh; max-height: 100dvh; z-index: 9999; border-radius: 0 18px 18px 0; transform: ${sidebarMobileAberta ? 'translateX(0)' : 'translateX(-105%)'}; transition: transform .24s ease; }
-          .pesquisa-sidebar.collapsed { width: min(88vw, 380px); flex-basis: auto; padding: 22px; border: 1px solid var(--cor-borda); opacity: 1; pointer-events: auto; }
-          .sidebar-mobile-overlay { display: ${sidebarMobileAberta ? 'block' : 'none'}; }
-          .pesquisa-sidebar-toggle { display: none; }
+          .pesquisa-layout { flex-direction: column; padding: 0 16px 40px; }
+          .nx-search-overlap { margin-top: -20px; padding: 0 16px; }
+          .mobile-filter-trigger { display: flex; }
+          
+          .pesquisa-sidebar {
+            position: fixed; top: 0; left: 0; width: min(88vw, 380px); max-width: 380px; height: 100dvh; max-height: 100dvh; z-index: 9999; border-radius: 0; transform: translateX(-105%); transition: transform .3s ease;
+          }
+          .pesquisa-sidebar.mobile-open { transform: translateX(0); }
+          .pesquisa-sidebar.collapsed { width: min(88vw, 380px); opacity: 1; pointer-events: auto; }
+          .sidebar-mobile-overlay { display: block; opacity: 0; pointer-events: none; transition: 0.3s; }
+          .pesquisa-sidebar.mobile-open ~ .sidebar-mobile-overlay { opacity: 1; pointer-events: auto; }
         }
+
+        @media (max-width: 768px) {
+          .nx-horiz-card { flex-direction: column; }
+          .nx-horiz-img { width: 100%; height: 220px; border-bottom: 1px solid #f1f5f9; }
+          .nx-horiz-action { width: 100%; border-left: none; border-top: 1px solid #f1f5f9; align-items: flex-start; padding: 16px 24px; background: transparent; }
+        }
+
+        .infinite-spinner-container { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 42px 0; color: #94a3b8; }
+        .infinite-dot-pulse { width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; display: inline-block; animation: pulse .6s infinite alternate; }
+        .infinite-dot-pulse:nth-child(2) { animation-delay: .2s; }
+        .infinite-dot-pulse:nth-child(3) { animation-delay: .4s; }
+        @keyframes pulse { from { opacity: .3; transform: scale(.8); } to { opacity: 1; transform: scale(1.2); } }
       `}</style>
 
       <div className="pesquisa-root">
-        <div className="sidebar-mobile-overlay" onClick={() => setSidebarMobileAberta(false)} aria-hidden="true" />
+        {/* --- NOVO SLIM HERO --- */}
+        <div className="nx-search-hero">
+          <div className="nx-search-hero-inner">
+            <div className="nx-search-breadcrumbs">
+              Noxvelia {tipoSeguro === 'carro' ? 'Drive' : 'Estate'} &rsaquo; {tipoSeguro === 'carro' ? 'Automóveis' : 'Imóveis'}
+            </div>
+            <h1>Encontre o seu próximo {tipoSeguro === 'carro' ? 'automóvel' : 'imóvel'}.</h1>
+            <p>Acesso direto ao melhor stock. Sem intermediários.</p>
+          </div>
+        </div>
+
+        {/* --- OMNIBAR SOBREPOSTA --- */}
+        <div className="nx-search-overlap">
+          <div style={{ position: 'relative', width: '100%' }}>
+            <div className="pesquisa-omnibar-wrapper">
+              <Icon path={mdiMagnify} size={1} color="#64748b" style={{ marginRight: 12 }} />
+              <input
+                type="text"
+                placeholder={pesquisaPlaceholder}
+                value={searchQuery}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setTimeout(() => setSearchFocused(false), 140)}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && aplicarFiltrosInstantaneos({}, e.currentTarget.value)}
+              />
+              {searchQuery && (
+                <button onClick={() => aplicarFiltrosInstantaneos({}, '')} style={{ border: 0, background: 'transparent', cursor: 'pointer' }}>
+                  <Icon path={mdiCloseCircleOutline} size={0.8} color="#94a3b8" />
+                </button>
+              )}
+            </div>
+            {searchFocused && sugestoesPesquisa.length > 0 && (
+              <div className="pesquisa-suggestions">
+                {sugestoesPesquisa.map((sug) => (
+                  <button key={sug.label} type="button" className="pesquisa-suggestion" onMouseDown={(e) => e.preventDefault()} onClick={() => aplicarSugestaoPesquisa(sug)}>
+                    <span style={{ fontWeight: 700, color: '#071326' }}>{sug.label}</span>
+                    <em style={{ fontStyle: 'normal', fontSize: 11, color: '#94a3b8' }}>{sug.detail}</em>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* OVERLAY MOBILE PARA SIDEBAR */}
+        {sidebarMobileAberta && (
+          <div className="sidebar-mobile-overlay" onClick={() => setSidebarMobileAberta(false)} aria-hidden="true" />
+        )}
 
         <div className="pesquisa-layout">
+          {/* SIDEBAR DE FILTROS */}
           <aside className={`pesquisa-sidebar ${isSidebarOpen ? '' : 'collapsed'} ${sidebarMobileAberta ? 'mobile-open' : ''}`}>
             <div className="pesquisa-sidebar-header">
               <strong>Filtros Avançados</strong>
-              {sidebarMobileAberta && <button onClick={() => setSidebarMobileAberta(false)} style={{ border: 0, background: 'transparent', fontWeight: 'bold', cursor: 'pointer', fontSize: 16 }}>✕</button>}
+              {sidebarMobileAberta && <button onClick={() => setSidebarMobileAberta(false)} style={{ border: 0, background: 'transparent', fontWeight: 'bold', cursor: 'pointer', fontSize: 18 }}>✕</button>}
             </div>
 
             <div className="pesquisa-filter-status">
@@ -598,55 +902,21 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
             <button type="button" className="pesquisa-apply-btn" onClick={executarFiltrosManuais}>Aplicar Filtros</button>
           </aside>
 
-          <button type="button" className="pesquisa-sidebar-toggle" onClick={() => setIsSidebarOpen(prev => !prev)} aria-label="Alternar filtros">
-            <Icon path={isSidebarOpen ? mdiChevronLeft : mdiChevronRight} size={0.8} />
-          </button>
-
+          {/* CONTEÚDO PRINCIPAL */}
           <main className="pesquisa-main-content">
-            <div className="pesquisa-search-row">
-              <button type="button" onClick={() => setSidebarMobileAberta(true)} style={{ display: 'none', alignItems: 'center', gap: 6, padding: '0 16px', background: '#fff', border: '1px solid #dfe8e4', borderRadius: 12, fontWeight: 700, cursor: 'pointer' }} className="mobile-filter-trigger">
-                <Icon path={mdiFilterVariant} size={0.7} /> Filtros
-              </button>
-
-              <div style={{ position: 'relative', flex: 1 }}>
-                <div className="pesquisa-omnibar-wrapper">
-                  <Icon path={mdiMagnify} size={0.9} color="#7b8b90" style={{ marginRight: 12 }} />
-                  <input
-                    type="text"
-                    placeholder={pesquisaPlaceholder}
-                    value={searchQuery}
-                    onFocus={() => setSearchFocused(true)}
-                    onBlur={() => setTimeout(() => setSearchFocused(false), 140)}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && aplicarFiltrosInstantaneos({}, e.currentTarget.value)}
-                  />
-                  {searchQuery && <button onClick={() => aplicarFiltrosInstantaneos({}, '')} style={{ border: 0, background: 'transparent', cursor: 'pointer' }}><Icon path={mdiCloseCircleOutline} size={0.7} /></button>}
-                </div>
-
-                {searchFocused && sugestoesPesquisa.length > 0 && (
-                  <div className="pesquisa-suggestions">
-                    {sugestoesPesquisa.map((sug) => (
-                      <button key={sug.label} type="button" className="pesquisa-suggestion" onMouseDown={(e) => e.preventDefault()} onClick={() => aplicarSugestaoPesquisa(sug)}>
-                        <span style={{ fontWeight: 700 }}>{sug.label}</span>
-                        <em style={{ fontStyle: 'normal', fontSize: 11, color: '#7b8b90' }}>{sug.detail}</em>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+            
+            <button type="button" onClick={() => setSidebarMobileAberta(true)} className="mobile-filter-trigger">
+              <Icon path={mdiFilterVariant} size={0.8} /> Filtrar Resultados
+            </button>
 
             <div className="pesquisa-topbar">
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#4f646a' }}>{loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} anúncios encontrados`}</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: '#475569' }}>
+                {loading && resultados.length === 0 ? 'A procurar...' : `${totalResultados} resultados encontrados`}
+              </span>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ display: 'inline-flex', background: '#f8faf7', border: '1px solid #dfe8e4', borderRadius: 12, padding: 4 }}>
-                  <button type="button" onClick={() => setVistaAtiva('grelha')} style={{ padding: '6px 12px', borderRadius: 8, border: 0, background: vistaAtiva === 'grelha' ? '#102326' : 'transparent', color: vistaAtiva === 'grelha' ? '#fff' : '#4f646a', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>Grelha</button>
-                  <button type="button" onClick={() => setVistaAtiva('mapa')} style={{ padding: '6px 12px', borderRadius: 8, border: 0, background: vistaAtiva === 'mapa' ? '#102326' : 'transparent', color: vistaAtiva === 'mapa' ? '#fff' : '#4f646a', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>Mapa</button>
-                </div>
-
                 <select className="pesquisa-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
-                  <option value="relevancia">Relevância</option>
+                  <option value="relevancia">Ordenar por: Relevância</option>
                   <option value="recentes">Mais recentes</option>
                   <option value="preco_asc">Preço: Mais baixo</option>
                   <option value="preco_desc">Preço: Mais alto</option>
@@ -666,15 +936,15 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               </div>
             ) : loading && resultados.length === 0 ? (
               <div className="pesquisa-skeleton-grid">
-                {Array.from({ length: 6 }).map((_, index) => <div className="pesquisa-skeleton-card" key={index} />)}
+                {Array.from({ length: 5 }).map((_, index) => <div className="pesquisa-skeleton-card" key={index} />)}
               </div>
             ) : resultados.length > 0 ? (
               <div className="pesquisa-grid">
                 {resultados.map((anuncio, index) => (
                   <React.Fragment key={anuncio._id}>
-                    <AnuncioCard anuncio={anuncio} showStatus={false} />
+                    {renderCartaoHorizontal(anuncio)}
                     {mostrarPublicidadeInline && (index + 1) % 6 === 0 && index < resultados.length - 1 && (
-                      <AdBanner mode="direct" placement={tipoSeguro === 'carro' ? 'feed_pesquisa_carros' : 'feed_pesquisa_imoveis'} vertical={tipoSeguro} variant="inline" minHeight={90} style={{ gridColumn: '1 / -1' }} />
+                      <AdBanner mode="direct" placement={tipoSeguro === 'carro' ? 'feed_pesquisa_carros' : 'feed_pesquisa_imoveis'} vertical={tipoSeguro} variant="inline" minHeight={90} />
                     )}
                   </React.Fragment>
                 ))}
@@ -686,10 +956,10 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               </div>
             ) : (
               <div className="pesquisa-empty">
-                <Icon path={mdiAlertOutline} size={1.8} color="#9d7b3f" style={{ margin: '0 auto 12px' }} />
-                <h3 style={{ margin: '0 0 6px', fontFamily: 'Space Grotesk', fontSize: 20 }}>Nenhum anúncio encontrado</h3>
-                <p style={{ color: '#4f646a', fontSize: 14, margin: '0 0 20px' }}>Tenta limpar os filtros aplicados ou alterar os critérios de pesquisa.</p>
-                <button onClick={limparFiltros} className="pesquisa-empty-action">Limpar todos os filtros</button>
+                <Icon path={mdiAlertOutline} size={1.8} color="#94a3b8" style={{ margin: '0 auto 12px' }} />
+                <h3 style={{ margin: '0 0 6px', fontSize: 20, fontWeight: 800, color: '#071326' }}>Nenhum anúncio encontrado</h3>
+                <p style={{ color: '#64748b', fontSize: 14, margin: '0 0 20px' }}>Tenta limpar os filtros aplicados ou alterar os critérios de pesquisa.</p>
+                <button onClick={limparFiltros} className="pesquisa-apply-btn" style={{ width: 'auto', padding: '0 24px' }}>Limpar todos os filtros</button>
               </div>
             )}
           </main>
