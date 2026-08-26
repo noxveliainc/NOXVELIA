@@ -185,25 +185,41 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         }
         .nx-badge-destaque svg { color: #071326; }
 
-        /* ── IMAGEM DO CARTÃO ── */
+        /* ── IMAGEM DO CARTÃO (CORRIGIDA PARA NÃO CORTAR) ── */
         .nxc-img-pane {
-          width: 260px;
+          width: 280px;
           flex-shrink: 0;
           position: relative;
-          background: #f1f5f9;
+          background: #0f172a; /* Fundo escuro atrás da imagem */
           overflow: hidden;
         }
-        .nxc-img-pane img {
+        
+        /* Fundo esfumado para preencher espaços vazios elegantemente */
+        .nxc-img-bg {
+          position: absolute;
+          inset: -24px;
+          background-size: cover;
+          background-position: center;
+          filter: blur(16px) brightness(0.6);
+          z-index: 0;
+        }
+        
+        /* A imagem em si: usa 'contain' para nunca cortar a foto */
+        .nxc-img-fg {
+          position: absolute;
+          inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain;
+          z-index: 1;
           transition: transform 0.4s ease;
         }
-        .nx-card-horiz:hover .nxc-img-pane img {
+        .nx-card-horiz:hover .nxc-img-fg {
           transform: scale(1.04);
         }
+
         .nxc-no-img {
-          width: 100%; height: 100%; display: grid; place-items: center; background: #e2e8f0; color: #94a3b8;
+          width: 100%; height: 100%; display: grid; place-items: center; background: #e2e8f0; color: #94a3b8; z-index: 1; position: relative;
         }
 
         /* OUTROS BADGES DA IMAGEM */
@@ -338,17 +354,23 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           )}
 
           {imagemPrincipalUrl ? (
-            <img
-              src={imagemPrincipalUrl}
-              srcSet={imagemPrincipalSrcSet || undefined}
-              sizes="(max-width: 768px) 100vw, 360px"
-              width={imagemPrincipalDims.width}
-              height={imagemPrincipalDims.height}
-              alt={tituloCard}
-              loading="lazy"
-              decoding="async"
-              onLoad={() => setImgCarregada(true)}
-            />
+            <>
+              {/* O fundo esfumado e escurecido */}
+              <div className="nxc-img-bg" style={{ backgroundImage: `url(${imagemPrincipalUrl})` }}></div>
+              {/* A imagem principal que nunca corta */}
+              <img
+                className="nxc-img-fg"
+                src={imagemPrincipalUrl}
+                srcSet={imagemPrincipalSrcSet || undefined}
+                sizes="(max-width: 768px) 100vw, 360px"
+                width={imagemPrincipalDims.width}
+                height={imagemPrincipalDims.height}
+                alt={tituloCard}
+                loading="lazy"
+                decoding="async"
+                onLoad={() => setImgCarregada(true)}
+              />
+            </>
           ) : (
             <div className="nxc-no-img">
               <CardIcon name={isImovel ? 'home' : 'car'} size={44} />
