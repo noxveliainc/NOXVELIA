@@ -9,13 +9,15 @@ import { Icon } from '@mdi/react';
 import { 
   mdiMap, mdiMagnify, mdiFilterVariant, mdiChevronLeft,
   mdiChevronRight, mdiChevronDown, mdiChevronUp, mdiCloseCircleOutline, 
-  mdiAlertOutline, mdiViewList
+  mdiAlertOutline
 } from '@mdi/js';
 import { MARCAS, OPCAO_OUTRO_VEICULO, getNomesModelosComOutro, isOpcaoOutroVeiculo, rotuloOpcaoVeiculo } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 import { publishIntentState } from '../../utils/navigationState';
 import { trackFunnelEvent } from '../../utils/funnelAnalytics';
-import { getImageUrl } from '../../utils/images';
+
+// IMPORTAÇÃO CRUCIAL: O NOSSO NOVO CARTÃO!
+import AnuncioCard from './AnuncioCard';
 
 const TIPOLOGIAS = ['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'];
 const TIPOS_IMOVEL = [
@@ -123,7 +125,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [filtros, setFiltros] = useState(filtrosIniciais);
 
   const sentinelaRef = useRef(null);
-  const limite = 24; // AUMENTADO PARA 24 (Ideal para infinite scroll e grelhas)
+  const limite = 24; 
   const isFetchingRef = useRef(false);
   const paginaRef = useRef(1);
   const filtrosRef = useRef(filtros);
@@ -423,55 +425,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     aplicarFiltrosInstantaneos(sugestao.patch || {}, '');
   }, [aplicarFiltrosInstantaneos]);
 
-  // CARTÃO HORIZONTAL PROTEGIDO COM LAYOUT FLUIDO
-  const renderCartaoHorizontal = (anuncio) => {
-    const isCarro = anuncio.tipo === 'carro';
-    const fotoUrl = anuncio.fotos?.[0] || anuncio.imagens?.[0] 
-      ? getImageUrl(anuncio.fotos?.[0] || anuncio.imagens?.[0], 'medium') 
-      : '';
-
-    const specs = isCarro
-      ? [
-          anuncio.carro?.ano,
-          anuncio.carro?.km != null ? `${formatarNumero(anuncio.carro.km)} km` : null,
-          anuncio.carro?.combustivel,
-          anuncio.carro?.transmissao
-        ].filter(Boolean).join(' • ')
-      : [
-          anuncio.imovel?.tipologia || anuncio.imovel?.tipoImovel,
-          anuncio.imovel?.area ? `${anuncio.imovel.area} m²` : null,
-          anuncio.imovel?.casasBanho ? `${anuncio.imovel.casasBanho} wc` : null
-        ].filter(Boolean).join(' • ');
-
-    const local = anuncio.localizacao?.cidade || anuncio.localizacao?.distrito || 'Portugal';
-    const isProfissional = anuncio.utilizador?.tipoConta === 'profissional' || anuncio.utilizador?.premiumAtivo;
-    const tipoAnunciante = isProfissional ? 'Profissional' : 'Particular';
-
-    return (
-      <Link key={anuncio._id} to={`/anuncio/${anuncio._id}`} className={`nx-horiz-card ${anuncio.destacado ? 'is-premium' : ''}`}>
-        <div className="nx-horiz-img">
-          {fotoUrl ? (
-            <img src={fotoUrl} alt={anuncio.titulo} loading="lazy" />
-          ) : (
-            <div className="nx-horiz-no-img"><Icon path={mdiViewList} size={2} color="#cbd5e1"/></div>
-          )}
-          {anuncio.destacado && <span className="nx-horiz-badge-destaque">DESTAQUE</span>}
-        </div>
-        <div className="nx-horiz-body">
-          <div className="nx-horiz-tags">
-            <span className="nx-horiz-tag-tipo">{tipoAnunciante}</span>
-            <span className="nx-horiz-tag-tipo">{isCarro ? 'Automóvel' : 'Imóvel'}</span>
-          </div>
-          <h3 className="nx-horiz-title">{anuncio.titulo}</h3>
-          <p className="nx-horiz-specs">{specs}</p>
-          <p className="nx-horiz-loc"><Icon path={mdiMap} size={0.6}/> {local}</p>
-        </div>
-        <div className="nx-horiz-action">
-          <div className="nx-horiz-price">{formatarNumero(anuncio.preco)} €</div>
-        </div>
-      </Link>
-    );
-  };
 
   const totalAnunciosReais = Number(totalResultados || resultados.length || 0);
   const mostrarPublicidadeTopo = !loading && vistaAtiva === 'lista' && totalAnunciosReais >= 3;
@@ -666,7 +619,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         }
         .pesquisa-sort { min-height: 42px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; color: #071326; padding: 0 14px; font-size: 13px; font-weight: 700; cursor: pointer; outline: none; }
         
-        /* GRELHA HORIZONTAL */
+        /* GRELHA HORIZONTAL QUE CHAMA O ANUNCIOCARD */
         .nx-list-horizontal {
           display: flex;
           flex-direction: column;
@@ -681,94 +634,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         }
         .pesquisa-skeleton-card { min-height: 200px; width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; background: linear-gradient(110deg, #ffffff 0%, #f1f5f9 44%, #ffffff 76%); background-size: 220% 100%; animation: pesquisaSkeleton 1.3s ease-in-out infinite; }
         @keyframes pesquisaSkeleton { from { background-position: 180% 0; } to { background-position: -40% 0; } }
-
-        /* CARTÃO HORIZONTAL PREMIUM PROTEGIDO */
-        .nx-horiz-card {
-          display: flex;
-          width: 100%;
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          overflow: hidden;
-          text-decoration: none;
-          color: inherit;
-          transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-        }
-        .nx-horiz-card:hover {
-          border-color: #102f50;
-          box-shadow: 0 16px 32px -16px rgba(7,19,38,0.15);
-          transform: translateY(-2px);
-        }
-        .nx-horiz-card.is-premium {
-          border: 2px solid #d9c49c;
-        }
-        .nx-horiz-img {
-          width: 260px; /* ligeiramente reduzido para dar ar ao texto */
-          flex-shrink: 0;
-          position: relative;
-          background: #f8fafc;
-        }
-        .nx-horiz-img img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .nx-horiz-no-img {
-          width: 100%; height: 100%; display: grid; place-items: center;
-        }
-        .nx-horiz-badge-destaque {
-          position: absolute;
-          top: 12px; left: 12px;
-          background: #d9c49c; color: #071326;
-          font-size: 9px; font-weight: 900;
-          padding: 4px 8px; border-radius: 6px;
-          letter-spacing: 0.05em;
-        }
-        .nx-horiz-body {
-          padding: 24px;
-          flex: 1;
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-        }
-        .nx-horiz-tags {
-          display: flex; gap: 8px; margin-bottom: 12px;
-        }
-        .nx-horiz-tag-tipo {
-          background: #f1f5f9; color: #475569;
-          font-size: 10px; font-weight: 700;
-          padding: 4px 8px; border-radius: 6px;
-          text-transform: uppercase; letter-spacing: 0.05em;
-        }
-        .nx-horiz-title {
-          font-size: 18px; font-weight: 800; color: #071326;
-          margin: 0 0 8px; line-height: 1.3;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .nx-horiz-specs {
-          font-size: 13px; color: #475569; margin: 0 0 16px; font-weight: 600;
-        }
-        .nx-horiz-loc {
-          font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 6px; margin: auto 0 0; font-weight: 600;
-        }
-        .nx-horiz-action {
-          width: 200px;
-          flex-shrink: 0;
-          padding: 24px;
-          border-left: 1px solid #f1f5f9;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: flex-end;
-          background: #fafcff;
-        }
-        .nx-horiz-price {
-          font-size: 22px; 
-          font-weight: 900; 
-          color: #071326;
-          white-space: nowrap; /* Impede o preco de partir de linha */
-        }
 
         /* COMPORTAMENTO MOBILE */
         .sidebar-mobile-overlay { display: none; position: fixed; inset: 0; z-index: 9998; background: rgba(7,19,38,.4); }
@@ -787,13 +652,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           .pesquisa-sidebar.collapsed { width: min(88vw, 380px); opacity: 1; pointer-events: auto; }
           .sidebar-mobile-overlay { display: block; opacity: 0; pointer-events: none; transition: 0.3s; }
           .pesquisa-sidebar.mobile-open ~ .sidebar-mobile-overlay { opacity: 1; pointer-events: auto; }
-        }
-
-        @media (max-width: 768px) {
-          .nx-horiz-card { flex-direction: column; }
-          .nx-horiz-img { width: 100%; height: 240px; border-bottom: 1px solid #f1f5f9; }
-          .nx-horiz-body { padding: 16px; }
-          .nx-horiz-action { width: 100%; border-left: none; border-top: 1px solid #f1f5f9; flex-direction: row; justify-content: space-between; align-items: center; padding: 16px; background: transparent; }
         }
 
         .infinite-spinner-container { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 42px 0; color: #94a3b8; }
@@ -994,10 +852,13 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                 {Array.from({ length: 5 }).map((_, index) => <div className="pesquisa-skeleton-card" key={index} />)}
               </div>
             ) : resultados.length > 0 ? (
+              
               <div className="nx-list-horizontal">
                 {resultados.map((anuncio, index) => (
                   <React.Fragment key={anuncio._id}>
-                    {renderCartaoHorizontal(anuncio)}
+                    {/* AQUI ESTÁ A MAGIA: AGORA CHAMA O ANUNCIOCARD.JSX DE VERDADE! */}
+                    <AnuncioCard anuncio={anuncio} showStatus={true} />
+                    
                     {mostrarPublicidadeInline && (index + 1) % 6 === 0 && index < resultados.length - 1 && (
                       <AdBanner mode="direct" placement={tipoSeguro === 'carro' ? 'feed_pesquisa_carros' : 'feed_pesquisa_imoveis'} vertical={tipoSeguro} variant="inline" minHeight={90} />
                     )}
@@ -1009,6 +870,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                   </div>
                 )}
               </div>
+
             ) : (
               <div className="pesquisa-empty">
                 <Icon path={mdiAlertOutline} size={1.8} color="#94a3b8" style={{ margin: '0 auto 12px' }} />
