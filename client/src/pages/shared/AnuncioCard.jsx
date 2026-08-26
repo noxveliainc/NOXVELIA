@@ -39,17 +39,6 @@ function CardIcon({ name, size = 14, color, className = '' }) {
   );
 }
 
-const INSIGHT_ICONS = {
-  Ano: 'calendar',
-  Km: 'gauge',
-  'Combustível': 'fuel',
-  Caixa: 'gearbox',
-  'Tipologia': 'home',
-  'Área': 'ruler',
-  Quartos: 'bed',
-  Garagem: 'garage',
-};
-
 export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioEliminado, forceSellerIdentity = false }) {
   const { user, signed } = useAuth();
 
@@ -75,19 +64,20 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   const idDono   = anuncio?.utilizador?._id || anuncio?.utilizador?.id || anuncio?.utilizador;
   const idLogado = user?._id || user?.id;
   const eMeuAnuncio = !forceSellerIdentity && signed && ((idDono && idLogado && String(idDono) === String(idLogado)) || !!onAnuncioEliminado);
+  
   const isPremium   = anuncio?.destacado === true;
   const isVerificado = anuncio?.utilizador?.tipo === 'admin' || anuncio?.utilizador?.premiumAtivo === true;
   const isProfissional = anuncio?.utilizador?.tipoConta === 'profissional' || anuncio?.utilizador?.tipo === 'admin';
+  const tipoAnunciante = isProfissional ? 'Profissional' : 'Particular';
+
   const isCarro = anuncio?.tipo === 'carro';
   const isImovel = !isCarro;
+  
   const marcaModeloFormatado = isCarro ? formatarMarcaModeloVeiculo(anuncio?.carro) : '';
   const tituloCard = anuncio?.titulo || marcaModeloFormatado || (isCarro ? 'Automóvel' : 'Imóvel');
-  const mostrarMarcaModeloExtra = isCarro && marcaModeloFormatado && marcaModeloFormatado !== tituloCard;
+  const local = anuncio?.localizacao?.cidade || anuncio?.localizacao?.distrito || 'Portugal';
+
   const imagemPrincipal = anuncio?.fotos?.[0] || anuncio?.imagens?.[0] || anuncio?.imagem;
-  // Tenta primeiro a variante sem corte (original); só recua para 'large'/'medium'
-  // se essa variante não existir. O contentor já usa object-fit: contain, por isso
-  // a imagem nunca é cortada aqui — se ainda aparecer cortada, a miniatura 'large'/
-  // 'medium' está a ser gerada já recortada no backend/pipeline de imagens.
   const imagemPrincipalUrl = getImageUrl(imagemPrincipal, 'original')
     || getImageUrl(imagemPrincipal, 'large')
     || getImageUrl(imagemPrincipal, 'medium')
@@ -97,18 +87,10 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
   const formatarCombustivel = (valor) => {
     if (!valor) return null;
-    const mapa = {
-      gasolina: 'Gasolina',
-      diesel: 'Diesel',
-      eletrico: 'Eletrico',
-      hibrido: 'Hibrido',
-      gpl: 'GPL',
-    };
+    const mapa = { gasolina: 'Gasolina', diesel: 'Diesel', eletrico: 'Elétrico', hibrido: 'Híbrido', gpl: 'GPL' };
     return mapa[String(valor).toLowerCase()] || valor;
   };
 
-  // Sempre o número completo, formatado à portuguesa (ex: 312.000 km).
-  // Nada de abreviaturas em "k" — nem todos os visitantes as reconhecem.
   const formatarKm = (valor) => {
     const numero = Number(valor);
     if (!Number.isFinite(numero)) return null;
@@ -120,23 +102,18 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
     if (!Number.isFinite(numero) || numero <= 0) return null;
     return `${new Intl.NumberFormat('pt-PT').format(numero)} m²`;
   };
-  const destaques = (isCarro ? [
-    { label: 'Ano', value: anuncio?.carro?.ano || null },
-    { label: 'Km', value: formatarKm(anuncio?.carro?.km) },
-    { label: 'Combustível', value: formatarCombustivel(anuncio?.carro?.combustivel) },
-    { label: 'Caixa', value: anuncio?.carro?.transmissao || null },
-  ] : [
-    { label: 'Tipologia', value: anuncio?.imovel?.tipologia || anuncio?.imovel?.tipoImovel },
-    { label: 'Área', value: formatarArea(anuncio?.imovel?.area) },
-    { label: 'Quartos', value: anuncio?.imovel?.quartos != null ? `${anuncio.imovel.quartos}` : null },
-    { label: 'Garagem', value: anuncio?.imovel?.garagem ? 'Sim' : null },
-  ]).filter(item => item.value).slice(0, 3);
 
-  const trustBadges = [
-    anuncio?.garantia && { label: 'Garantia', tone: 'trust' },
-    anuncio?.aceitaRetoma && { label: 'Retoma', tone: 'trust' },
-    isProfissional && { label: 'Profissional', tone: 'business' },
-  ].filter(Boolean).slice(0, 3);
+  const detalhesPrimarios = isCarro ? [
+    { icon: 'calendar', value: anuncio?.carro?.ano || null },
+    { icon: 'gauge', value: formatarKm(anuncio?.carro?.km) },
+    { icon: 'fuel', value: formatarCombustivel(anuncio?.carro?.combustivel) },
+    { icon: 'gearbox', value: anuncio?.carro?.transmissao || null },
+  ] : [
+    { icon: 'home', value: anuncio?.imovel?.tipologia || anuncio?.imovel?.tipoImovel },
+    { icon: 'ruler', value: formatarArea(anuncio?.imovel?.area) },
+    { icon: 'bed', value: anuncio?.imovel?.quartos != null ? `${anuncio.imovel.quartos} qts` : null },
+    { icon: 'garage', value: anuncio?.imovel?.garagem ? 'C/ Garagem' : null },
+  ];
 
   const handleAbrirModal = e => { e.preventDefault(); e.stopPropagation(); setMostrarModal(true); };
   const handleFecharModal = e => { e?.preventDefault(); e?.stopPropagation(); setMostrarModal(false); };
@@ -161,250 +138,168 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   return (
     <>
       <style>{`
-        /* ── CARD ── */
-        .nxc-wrap {
+        /* ── CARTÃO BASE HORIZONTAL ── */
+        .nx-card-horiz {
           display: flex;
-          flex-direction: column;
-          text-decoration: none;
+          width: 100%;
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 14px;
+          border-radius: 12px;
           overflow: hidden;
-          transition: border-color .18s ease, box-shadow .22s ease, transform .22s ease;
-          color: #0f172a;
+          text-decoration: none;
+          color: inherit;
+          transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
           position: relative;
-          box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
-          box-sizing: border-box;
-          min-width: 250px;
         }
-        .nxc-wrap * { box-sizing: border-box; }
-        .nxc-wrap:hover {
-          border-color: #94a3b8;
-          box-shadow: 0 16px 32px -20px rgba(15, 23, 42, .28);
+        .nx-card-horiz:hover {
+          border-color: #102f50;
+          box-shadow: 0 16px 32px -16px rgba(7,19,38,0.15);
+          transform: translateY(-2px);
+        }
+
+        /* ── O SUPER DESTAQUE ── */
+        .nx-card-horiz.is-premium {
+          border: 2px solid #d9c49c;
+          box-shadow: 0 10px 25px -10px rgba(217, 196, 156, 0.4);
+        }
+        .nx-card-horiz.is-premium:hover {
+          border-color: #c7a252;
+          box-shadow: 0 18px 40px -15px rgba(217, 196, 156, 0.5);
           transform: translateY(-3px);
         }
-        .nxc-wrap:focus-visible {
-          outline: 2px solid #102f50;
-          outline-offset: 2px;
+        .nx-card-horiz.is-premium .nxc-action-pane {
+          background: linear-gradient(135deg, #fdfbf7 0%, #f6edd7 100%);
+          border-left: 1px solid rgba(217, 196, 156, 0.3);
         }
-        .nxc-wrap.is-imovel { border-color: rgba(107, 90, 54, .2); }
-        .nxc-wrap.is-imovel:hover { border-color: rgba(120, 96, 49, .48); }
-
-        /* ── PREMIUM / DESTAQUE: tem de se ver à distância, mesmo sem hover ── */
-        .nxc-wrap.premium {
-          border: 3px solid #d9c49c;
-          background: linear-gradient(165deg, #fbf1d9 0%, #f9ecd0 45%, #f6e6c2 100%);
-          box-shadow:
-            0 0 0 1px rgba(217, 196, 156, .55),
-            0 26px 50px -22px rgba(16, 47, 80, .4),
-            0 0 0 6px rgba(217, 196, 156, .12);
-        }
-        .nxc-wrap.premium .nxc-footer { background: rgba(251, 241, 217, .6); border-top-color: rgba(217, 196, 156, .35); }
-        .nxc-wrap.premium:hover {
-          border-color: #c7a252;
-          box-shadow:
-            0 0 0 1px rgba(217, 196, 156, .75),
-            0 34px 64px -22px rgba(16, 47, 80, .5),
-            0 0 0 9px rgba(217, 196, 156, .18);
-          transform: translateY(-6px) scale(1.008);
-        }
-        .nxc-wrap.premium::before {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 7px;
-          background: linear-gradient(90deg, #0c2540 0%, #f5e6bf 22%, #d9c49c 45%, #f5e6bf 68%, #0c2540 100%);
-          background-size: 220% 100%;
-          z-index: 8;
-          animation: nxc-shimmer 3s linear infinite;
-        }
-        @keyframes nxc-shimmer {
-          0% { background-position: 0% 0; }
-          100% { background-position: 220% 0; }
-        }
-        @keyframes nxc-badge-pulse {
-          0%, 100% { box-shadow: 0 12px 24px -12px rgba(2,6,23,.8), 0 0 0 0 rgba(217,196,156,.55); }
-          50% { box-shadow: 0 12px 24px -12px rgba(2,6,23,.8), 0 0 0 6px rgba(217,196,156,0); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .nxc-wrap.premium::before { animation: none; }
-          .nxc-badge-premium { animation: none !important; }
-        }
-        .nxc-wrap.premium .nxc-price { color: #102f50; }
-        .nxc-wrap.premium .nxc-body { padding-top: 17px; }
-
-        /* ── IMAGEM: fundo desfocado da própria foto + foto completa nítida por cima ── */
-        .nxc-img {
-          position: relative;
-          width: 100%;
-          aspect-ratio: 4 / 3;
-          overflow: hidden;
-          background: #eef1f4;
-        }
-        .nxc-img-bg {
-          position: absolute;
-          inset: -12px;
-          background-size: cover;
-          background-position: center;
-          filter: blur(18px) saturate(1.15) brightness(.92);
-          transform: scale(1.08);
-        }
-        .nxc-img-scrim {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.38) 100%);
-          z-index: 2;
-          pointer-events: none;
-        }
-        .nxc-img-fg {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          object-position: center;
-          display: block;
-          z-index: 1;
-          opacity: 0;
-          transition: opacity .3s ease, transform .5s ease;
-        }
-        .nxc-img-fg.loaded { opacity: 1; }
-        .nxc-wrap:hover .nxc-img-fg { transform: scale(1.035); }
-
-        .nxc-placeholder {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #102f50;
-          background: linear-gradient(135deg, rgba(217,196,156,.18), rgba(255,255,255,.85)), #f8fafc;
-        }
-        .nxc-placeholder-inner {
-          display: grid;
-          place-items: center;
-          gap: 8px;
-          color: #102f50;
-          font-size: 10px;
-          font-weight: 900;
-          letter-spacing: .08em;
-          text-transform: uppercase;
-        }
-        .nxc-placeholder-inner svg { width: 42px; height: 42px; color: currentColor; opacity: .72; }
-        .nxc-placeholder.is-imovel {
-          color: #5f683a;
-          background: radial-gradient(circle at 24% 22%, rgba(95,104,58,.16), transparent 34%), linear-gradient(135deg, rgba(224,214,189,.44), rgba(255,255,255,.9)), #f8fafc;
-        }
-
-        /* ── BADGES ── */
-        .nxc-badge-premium {
-          position: absolute;
-          top: 14px; left: 14px;
-          background: linear-gradient(135deg, #0c2540 0%, #1b4573 55%, #b9944e 100%);
-          color: #fffaf0;
-          font-size: 11.5px; font-weight: 900;
-          padding: 8px 14px 8px 11px;
-          border-radius: 999px;
-          text-transform: uppercase; letter-spacing: .09em;
-          display: flex; align-items: center; gap: 6px;
-          z-index: 9;
-          border: 1.5px solid rgba(255, 250, 240, 0.5);
-          animation: nxc-badge-pulse 2.4s ease-in-out infinite;
-        }
-        .nxc-badge-premium svg { color: #f5e0ab; }
-
-        .nxc-badge-status {
+        .nx-badge-destaque {
           position: absolute;
           top: 12px; left: 12px;
-          font-size: 9px; font-weight: 900;
-          padding: 5px 10px; border-radius: 7px;
-          text-transform: uppercase; letter-spacing: .08em;
-          z-index: 5;
-          backdrop-filter: blur(4px);
-        }
-
-        .nxc-badge-tipo {
-          position: absolute;
-          bottom: 10px; left: 10px;
-          background: rgba(15, 23, 42, 0.55);
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          color: #f8fafc;
-          font-size: 9px; font-weight: 800;
-          padding: 4px 9px; border-radius: 6px;
-          z-index: 5;
-          text-transform: uppercase; letter-spacing: .06em;
-          backdrop-filter: blur(4px);
-        }
-
-        .nxc-delete-btn {
-          position: absolute;
-          top: 12px; right: 12px;
-          background: rgba(255, 255, 255, 0.92);
-          border: 1px solid rgba(239, 68, 68, 0.3);
-          color: #ef4444; font-size: 9px; font-weight: 800;
-          padding: 6px 10px; border-radius: 7px;
-          cursor: pointer; z-index: 10;
-          text-transform: uppercase; letter-spacing: .05em;
-          transition: background-color .16s ease, color .16s ease, border-color .16s ease;
+          background: #d9c49c; color: #071326;
+          font-size: 10px; font-weight: 900;
+          padding: 6px 10px; border-radius: 6px;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          z-index: 10;
           display: flex; align-items: center; gap: 4px;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
-        .nxc-delete-btn:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+        .nx-badge-destaque svg { color: #071326; }
 
+        /* ── IMAGEM DO CARTÃO ── */
+        .nxc-img-pane {
+          width: 260px;
+          flex-shrink: 0;
+          position: relative;
+          background: #f1f5f9;
+          overflow: hidden;
+        }
+        .nxc-img-pane img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.4s ease;
+        }
+        .nx-card-horiz:hover .nxc-img-pane img {
+          transform: scale(1.04);
+        }
+        .nxc-no-img {
+          width: 100%; height: 100%; display: grid; place-items: center; background: #e2e8f0; color: #94a3b8;
+        }
+
+        /* OUTROS BADGES DA IMAGEM */
         .nxc-photo-count {
-          position: absolute;
-          bottom: 10px; right: 10px;
-          background: rgba(15, 23, 42, 0.6);
-          border: 1px solid rgba(255, 255, 255, 0.14);
+          position: absolute; bottom: 10px; right: 10px;
+          background: rgba(15, 23, 42, 0.65);
+          border: 1px solid rgba(255, 255, 255, 0.15);
           color: #fff; font-size: 10px; font-weight: 700;
-          padding: 5px 9px; border-radius: 6px;
-          display: flex; align-items: center; gap: 4px; z-index: 5;
-          backdrop-filter: blur(4px);
+          padding: 4px 8px; border-radius: 6px;
+          display: flex; align-items: center; gap: 4px;
+          backdrop-filter: blur(4px); z-index: 5;
+        }
+        .nxc-badge-status {
+          position: absolute; top: 12px; right: 12px;
+          font-size: 9px; font-weight: 900;
+          padding: 5px 10px; border-radius: 6px;
+          text-transform: uppercase; letter-spacing: .08em;
+          z-index: 5; backdrop-filter: blur(4px);
         }
 
-        /* ── BODY ── */
-        .nxc-body {
-          padding: 14px 15px 15px;
-          display: flex; flex-direction: column; flex: 1; gap: 10px;
+        /* ── CORPO CENTRAL ── */
+        .nxc-body-pane {
+          padding: 24px;
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
         }
-        .nxc-title { font-size: 14px; font-weight: 800; color: #0f172a; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .nxc-subtitle { margin-top: -4px; font-size: 11.5px; font-weight: 700; color: #64748b; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-
-        /* ── ESPECIFICAÇÕES: uma linha de texto corrido, sem caixas nem ícones —
-           nunca corta, quebra a palavra inteira para a linha seguinte se precisar. */
-        .nxc-specs {
-          font-size: 12px;
-          font-weight: 600;
-          color: #64748b;
-          line-height: 1.5;
+        .nxc-tags-row {
+          display: flex; gap: 8px; margin-bottom: 12px; align-items: center;
         }
-        .nxc-specs-sep { margin: 0 6px; color: #cbd5e1; font-weight: 400; }
-        .nxc-wrap.is-imovel .nxc-specs { color: #7a8454; }
-
-        .nxc-featured-note {
-          width: max-content; max-width: 100%; min-height: 24px;
-          display: inline-flex; align-items: center; gap: 5px;
-          padding: 4px 9px; border: 1px solid rgba(217, 196, 156, .55); border-radius: 999px;
-          background: linear-gradient(135deg, rgba(217,196,156,.22), rgba(217,196,156,.1)); color: #102f50;
-          font-size: 12px; font-weight: 850; line-height: 1;
+        .nxc-tag-pill {
+          background: #f1f5f9; color: #475569;
+          font-size: 10px; font-weight: 800;
+          padding: 4px 8px; border-radius: 6px;
+          text-transform: uppercase; letter-spacing: 0.05em;
         }
-        .nxc-trust-strip { display: flex; flex-wrap: wrap; gap: 5px; }
-        .nxc-trust-pill { display: inline-flex; align-items: center; min-height: 22px; padding: 0 7px; border-radius: 999px; border: 1px solid #e2d1a9; background: #fff7e6; color: #102f50; font-size: 10px; font-weight: 850; white-space: nowrap; }
-        .nxc-trust-pill.business { background: rgba(16,47,80,.08); border-color: rgba(16,47,80,.18); color: #102f50; }
+        .nxc-title {
+          font-size: 19px; font-weight: 800; color: #071326;
+          margin: 0 0 16px; line-height: 1.3;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        
+        /* ── CAIXA DE ESPECIFICAÇÕES C/ ÍCONES ── */
+        .nxc-specs-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px 18px;
+          margin-bottom: auto;
+        }
+        .nxc-spec-item {
+          display: flex; align-items: center; gap: 6px;
+          font-size: 13px; font-weight: 600; color: #475569;
+        }
+        .nxc-spec-item svg { color: #94a3b8; }
 
-        /* ── PREÇO: em destaque no fim do corpo, como na referência ── */
-        .nxc-price-row { margin-top: auto; padding-top: 8px; }
-        .nxc-price { font-family: var(--nx-font-display); font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -.02em; line-height: 1; }
+        /* ── PAINEL LATERAL DIREITO (PREÇO/AÇÃO) ── */
+        .nxc-action-pane {
+          width: 220px;
+          flex-shrink: 0;
+          padding: 24px;
+          border-left: 1px solid #f1f5f9;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: flex-end;
+          background: #fafcff;
+        }
+        .nxc-price {
+          font-size: 24px; font-weight: 900; color: #071326;
+          white-space: nowrap; margin-bottom: 16px;
+        }
+        
+        /* Perfil de vendedor no cartão */
+        .nxc-seller-box {
+          display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 100%; margin-bottom: 12px;
+        }
+        .nxc-seller-name {
+          font-size: 12px; font-weight: 600; color: #64748b; text-align: right;
+          display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end;
+        }
+        .nxc-avatar {
+          width: 24px; height: 24px; border-radius: 50%; background: #e2e8f0; 
+          display: flex; align-items: center; justify-content: center; 
+          font-size: 10px; font-weight: 800; color: #64748b; overflow: hidden; flex-shrink: 0;
+        }
+        .nxc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .nxc-loc {
+          font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 4px; font-weight: 600;
+        }
 
-        /* ── FOOTER ── */
-        .nxc-footer { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #ffffff; border-top: 1px solid #eef2f6; }
-        .nxc-user { display: flex; align-items: center; gap: 8px; min-width: 0; }
-        .nxc-avatar { width: 26px; height: 26px; border-radius: 50%; background: #f8fafc; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #64748b; overflow: hidden; flex-shrink: 0; position: relative; }
-        .nxc-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-        .nxc-username { min-width: 0; display: flex; align-items: center; gap: 4px; font-size: 12px; color: #475569; font-weight: 600; white-space: normal; overflow-wrap: anywhere; line-height: 1.2; }
-        .nxc-username.mine { color: #0f172a; font-weight: 700; }
-        .nxc-loc { display: flex; align-items: center; gap: 3px; font-size: 11px; color: #64748b; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+        .nxc-icon { flex: 0 0 auto; display: inline-block; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
 
-        /* ── MODAL ── */
+        /* MODAL */
         .nxc-modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.72); z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .nxc-modal-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 32px; max-width: 400px; width: 100%; text-align: center; }
         .nxc-modal-icon { margin: 0 auto 20px; display: flex; justify-content: center; }
@@ -414,60 +309,24 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-modal-cancel { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-weight: 700; cursor: pointer; }
         .nxc-modal-delete { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #ef4444; color: #fff; font-weight: 800; cursor: pointer; }
 
-        @media (max-width: 640px) {
-          .nxc-wrap { border-radius: 12px; min-width: 0; }
-          .nxc-wrap.premium { border-width: 2px; }
-          .nxc-badge-premium, .nxc-badge-status { top: 8px; left: 8px; padding: 5px 9px; font-size: 8.5px; }
-          .nxc-badge-tipo { bottom: 8px; left: 8px; padding: 3px 7px; font-size: 8px; }
-          .nxc-photo-count { right: 8px; bottom: 8px; padding: 3px 7px; font-size: 9px; }
-          .nxc-body { padding: 11px 12px 12px; gap: 5px; }
-          .nxc-price { font-size: 17px; }
-          .nxc-title { font-size: 13px; line-height: 1.35; -webkit-line-clamp: 2; }
-          .nxc-featured-note { min-height: 18px; padding: 3px 7px; font-size: 10px; }
-          .nxc-specs { font-size: 11px; }
-          .nxc-footer { padding: 9px 12px; }
+        /* RESPONSIVO */
+        @media (max-width: 768px) {
+          .nx-card-horiz { flex-direction: column; }
+          .nxc-img-pane { width: 100%; height: 240px; border-bottom: 1px solid #f1f5f9; }
+          .nxc-body-pane { padding: 16px; }
+          .nxc-action-pane { width: 100%; border-left: none; border-top: 1px solid #f1f5f9; flex-direction: row; justify-content: space-between; align-items: center; padding: 16px; }
+          .nxc-price { margin-bottom: 0; font-size: 20px; }
+          .nxc-seller-box { margin-bottom: 0; width: auto; }
+          .nx-badge-destaque { padding: 5px 8px; font-size: 9px; }
         }
-
-        .nxc-icon { flex: 0 0 auto; display: inline-block; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
       `}</style>
 
-      <Link to={anuncioPath(anuncio)} className={`nxc-wrap ${isCarro ? 'is-carro' : 'is-imovel'}${isPremium ? ' premium' : ''}`}>
+      <Link to={anuncioPath(anuncio)} className={`nx-card-horiz ${isPremium ? 'is-premium' : ''}`}>
 
-        {/* ── IMAGEM ── */}
-        <div className="nxc-img">
-          {imagemPrincipalUrl
-            ? (
-              <>
-                <div className="nxc-img-bg" style={{ backgroundImage: `url(${imagemPrincipalUrl})` }} />
-                <div className="nxc-img-scrim" />
-                <img
-                  className={`nxc-img-fg${imgCarregada ? ' loaded' : ''}`}
-                  src={imagemPrincipalUrl}
-                  srcSet={imagemPrincipalSrcSet || undefined}
-                  sizes="(max-width: 720px) 100vw, 360px"
-                  width={imagemPrincipalDims.width}
-                  height={imagemPrincipalDims.height}
-                  alt={tituloCard}
-                  loading="lazy"
-                  decoding="async"
-                  onLoad={() => setImgCarregada(true)}
-                />
-              </>
-            )
-            : (
-              <div className={`nxc-placeholder ${isImovel ? 'is-imovel' : 'is-carro'}`}>
-                <span className="nxc-placeholder-inner">
-                  <CardIcon name={isImovel ? 'home' : 'car'} size={44} />
-                  {isImovel ? 'Imóvel sem foto' : 'Automóvel sem foto'}
-                </span>
-              </div>
-            )
-          }
-
-          <span className="nxc-badge-tipo">{isCarro ? 'Automóvel' : 'Imóvel'}</span>
-
+        {/* ── PAINEL DE IMAGEM ── */}
+        <div className="nxc-img-pane">
           {isPremium && (
-            <span className="nxc-badge-premium">
+            <span className="nx-badge-destaque">
               <CardIcon name="star" size={12} /> Destaque
             </span>
           )}
@@ -478,10 +337,22 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
             </span>
           )}
 
-          {eMeuAnuncio && (
-            <button type="button" className="nxc-delete-btn" onClick={handleAbrirModal}>
-              <CardIcon name="trash" size={12} /> Apagar
-            </button>
+          {imagemPrincipalUrl ? (
+            <img
+              src={imagemPrincipalUrl}
+              srcSet={imagemPrincipalSrcSet || undefined}
+              sizes="(max-width: 768px) 100vw, 360px"
+              width={imagemPrincipalDims.width}
+              height={imagemPrincipalDims.height}
+              alt={tituloCard}
+              loading="lazy"
+              decoding="async"
+              onLoad={() => setImgCarregada(true)}
+            />
+          ) : (
+            <div className="nxc-no-img">
+              <CardIcon name={isImovel ? 'home' : 'car'} size={44} />
+            </div>
           )}
 
           {anuncio?.fotos?.length > 1 && (
@@ -491,59 +362,42 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           )}
         </div>
 
-        {/* ── BODY ── */}
-        <div className="nxc-body">
-          <div className="nxc-title">{tituloCard}</div>
-          {mostrarMarcaModeloExtra && <div className="nxc-subtitle">{marcaModeloFormatado}</div>}
+        {/* ── PAINEL CENTRAL (TEXTO E SPECS) ── */}
+        <div className="nxc-body-pane">
+          <div className="nxc-tags-row">
+            <span className="nxc-tag-pill">{tipoAnunciante}</span>
+            <span className="nxc-tag-pill">{isCarro ? 'Automóvel' : 'Imóvel'}</span>
+          </div>
 
-          {destaques.length > 0 && (
-            <div className="nxc-specs">
-              {destaques.map((item, i) => (
-                <React.Fragment key={item.label}>
-                  {i > 0 && <span className="nxc-specs-sep">·</span>}
-                  {item.value}
-                </React.Fragment>
-              ))}
-            </div>
-          )}
+          <h3 className="nxc-title">{tituloCard}</h3>
 
-          {isPremium && (
-            <div className="nxc-featured-note">
-              <CardIcon name="star" size={12} /> Anúncio em destaque
-            </div>
-          )}
-          {trustBadges.length > 0 && (
-            <div className="nxc-trust-strip" aria-label="Sinais de confiança">
-              {trustBadges.map((badge) => <span key={badge.label} className={`nxc-trust-pill ${badge.tone || ''}`.trim()}>{badge.label}</span>)}
-            </div>
-          )}
-
-          <div className="nxc-price-row">
-            <div className="nxc-price">{preco}</div>
+          <div className="nxc-specs-grid">
+            {detalhesPrimarios.filter(d => d.value).map((det, idx) => (
+              <div key={idx} className="nxc-spec-item">
+                <CardIcon name={det.icon} size={15} />
+                <span>{det.value}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* ── FOOTER ── */}
-        <div className="nxc-footer">
-          <div className="nxc-user">
-            <div className="nxc-avatar">
-              {anuncio?.utilizador?.avatarUrl
-                ? <img src={anuncio.utilizador.avatarUrl} alt="" />
-                : inicial
-              }
-            </div>
-            <span className={`nxc-username${eMeuAnuncio ? ' mine' : ''}`}>
+        {/* ── PAINEL DIREITO (PREÇO, LOCAL E VENDEDOR) ── */}
+        <div className="nxc-action-pane">
+          <div className="nxc-seller-box">
+            <div className="nxc-seller-name">
               {eMeuAnuncio ? 'O teu anúncio' : (anuncio?.utilizador?.nome || 'Anunciante')}
-              {isVerificado && (
-                <CardIcon name="check" size={13} color="#2563eb" />
-              )}
-            </span>
+              {isVerificado && <CardIcon name="check" size={13} color="#2563eb" />}
+            </div>
+            <div className="nxc-avatar">
+              {anuncio?.utilizador?.avatarUrl ? <img src={anuncio.utilizador.avatarUrl} alt="" /> : inicial}
+            </div>
           </div>
 
-          {anuncio?.localizacao?.cidade && (
+          <div className="nxc-price">{preco}</div>
+
+          {local && (
             <div className="nxc-loc">
-              <CardIcon name="location" size={13} />
-              {anuncio.localizacao.cidade}
+              <CardIcon name="location" size={13} /> {local}
             </div>
           )}
         </div>
