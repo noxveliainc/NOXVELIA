@@ -8,7 +8,8 @@ import Fuse from 'fuse.js';
 import { Icon } from '@mdi/react';
 import { 
   mdiMap, mdiMagnify, mdiFilterVariant, mdiChevronLeft,
-  mdiChevronRight, mdiCloseCircleOutline, mdiAlertOutline, mdiViewList
+  mdiChevronRight, mdiChevronDown, mdiChevronUp, mdiCloseCircleOutline, 
+  mdiAlertOutline, mdiViewList
 } from '@mdi/js';
 import { MARCAS, OPCAO_OUTRO_VEICULO, getNomesModelosComOutro, isOpcaoOutroVeiculo, rotuloOpcaoVeiculo } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
@@ -104,6 +105,16 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [searchFocused, setSearchFocused] = useState(false);
   const [temMais, setTemMais] = useState(false);
 
+  // CONTROLO DE FILTROS EXPANSÍVEIS
+  const [expandedFilters, setExpandedFilters] = useState({
+    precoLoc: true,
+    especificos: true
+  });
+
+  const toggleFilterSection = (section) => {
+    setExpandedFilters(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
   const [sidebarMobileAberta, setSidebarMobileAberta] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
@@ -112,7 +123,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [filtros, setFiltros] = useState(filtrosIniciais);
 
   const sentinelaRef = useRef(null);
-  const limite = 12;
+  const limite = 24; // AUMENTADO PARA 24 (Ideal para infinite scroll e grelhas)
   const isFetchingRef = useRef(false);
   const paginaRef = useRef(1);
   const filtrosRef = useRef(filtros);
@@ -412,7 +423,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     aplicarFiltrosInstantaneos(sugestao.patch || {}, '');
   }, [aplicarFiltrosInstantaneos]);
 
-  // NOVO CARTÃO HORIZONTAL PREMIUM (Protegido de compressão)
+  // CARTÃO HORIZONTAL PROTEGIDO COM LAYOUT FLUIDO
   const renderCartaoHorizontal = (anuncio) => {
     const isCarro = anuncio.tipo === 'carro';
     const fotoUrl = anuncio.fotos?.[0] || anuncio.imagens?.[0] 
@@ -572,7 +583,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           box-sizing: border-box;
         }
         
-        /* SIDEBAR DE FILTROS */
+        /* SIDEBAR DE FILTROS & ACCORDIONS */
         .pesquisa-sidebar {
           width: 300px;
           flex-shrink: 0;
@@ -601,8 +612,25 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .pesquisa-filter-stat strong { display: block; color: #071326; font-size: 20px; font-weight: 900; line-height: 1; }
         .pesquisa-filter-stat span { display: block; margin-top: 4px; color: #64748b; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
         
-        .pesquisa-filter-section { margin-bottom: 24px; }
-        .pesquisa-filter-section-title { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 16px; }
+        .nx-filter-accordion {
+          border-top: 1px solid #e2e8f0;
+          padding-top: 16px;
+          margin-top: 16px;
+        }
+        .nx-filter-accordion-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          cursor: pointer;
+          margin-bottom: 12px;
+        }
+        .nx-filter-accordion-header h4 {
+          font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .1em; margin: 0;
+        }
+        .nx-filter-accordion-body {
+          margin-bottom: 8px;
+        }
+
         .pesquisa-filter-group { margin-bottom: 16px; }
         .pesquisa-filter-title { font-size: 13px; font-weight: 700; color: #071326; margin-bottom: 8px; }
         
@@ -615,7 +643,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .pesquisa-tag:hover { border-color: #102f50; color: #102f50; }
         .pesquisa-tag.active { border-color: #102f50; background: #102f50; color: #ffffff; }
         
-        .pesquisa-apply-btn { width: 100%; min-height: 48px; border: none; border-radius: 8px; background: #102f50; color: #ffffff; font-size: 14px; font-weight: 800; cursor: pointer; transition: background 0.2s; }
+        .pesquisa-apply-btn { width: 100%; min-height: 48px; border: none; border-radius: 8px; background: #102f50; color: #ffffff; font-size: 14px; font-weight: 800; cursor: pointer; transition: background 0.2s; margin-top: 16px; }
         .pesquisa-apply-btn:hover { background: #071326; }
 
         /* MAIN CONTENT & RESULTADOS */
@@ -623,12 +651,22 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           flex: 1; min-width: 0; display: flex; flex-direction: column; width: 100%;
         }
 
+        /* TOPBAR ROBUSTA */
         .pesquisa-topbar {
-          display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; width: 100%;
+          display: flex; 
+          align-items: center; 
+          justify-content: space-between; 
+          margin-bottom: 24px; 
+          padding: 16px 24px; 
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          width: 100%;
+          box-sizing: border-box;
         }
         .pesquisa-sort { min-height: 42px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; color: #071326; padding: 0 14px; font-size: 13px; font-weight: 700; cursor: pointer; outline: none; }
         
-        /* NOVA CLASSE DE GRELHA (BLINDA CONTRA O INDEX.CSS ANTIGO) */
+        /* GRELHA HORIZONTAL */
         .nx-list-horizontal {
           display: flex;
           flex-direction: column;
@@ -665,7 +703,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           border: 2px solid #d9c49c;
         }
         .nx-horiz-img {
-          width: 280px;
+          width: 260px; /* ligeiramente reduzido para dar ar ao texto */
           flex-shrink: 0;
           position: relative;
           background: #f8fafc;
@@ -715,7 +753,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 6px; margin: auto 0 0; font-weight: 600;
         }
         .nx-horiz-action {
-          width: 220px;
+          width: 200px;
           flex-shrink: 0;
           padding: 24px;
           border-left: 1px solid #f1f5f9;
@@ -726,7 +764,10 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           background: #fafcff;
         }
         .nx-horiz-price {
-          font-size: 24px; font-weight: 900; color: #071326;
+          font-size: 22px; 
+          font-weight: 900; 
+          color: #071326;
+          white-space: nowrap; /* Impede o preco de partir de linha */
         }
 
         /* COMPORTAMENTO MOBILE */
@@ -737,6 +778,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           .pesquisa-layout { flex-direction: column; padding: 0 16px 40px; }
           .nx-search-overlap { margin-top: -20px; padding: 0 16px; }
           .mobile-filter-trigger { display: flex; }
+          .pesquisa-topbar { padding: 12px 16px; }
           
           .pesquisa-sidebar {
             position: fixed; top: 0; left: 0; width: min(88vw, 380px); max-width: 380px; height: 100dvh; max-height: 100dvh; z-index: 9999; border-radius: 0; transform: translateX(-105%); transition: transform .3s ease;
@@ -824,75 +866,93 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               <div className="pesquisa-filter-stat"><strong>{loading && resultados.length === 0 ? '...' : totalResultados}</strong><span>anúncios</span></div>
             </div>
 
-            <div className="pesquisa-filter-section">
-              <div className="pesquisa-filter-section-title">Preço e localização</div>
-              <div className="pesquisa-filter-group">
-                <div className="pesquisa-filter-title">Orçamento (€)</div>
-                <div className="pesquisa-filter-grid-2">
-                  <input type="number" min="0" className="pesquisa-filter-input" placeholder="Mínimo" value={filtros.precoMin} onChange={(e) => setFiltros(f => ({ ...f, precoMin: e.target.value }))} />
-                  <input type="number" min="0" className="pesquisa-filter-input" placeholder="Máximo" value={filtros.precoMax} onChange={(e) => setFiltros(f => ({ ...f, precoMax: e.target.value }))} />
+            {/* ACCORDION 1: PREÇO E LOCALIZAÇÃO */}
+            <div className="nx-filter-accordion" style={{ borderTop: 'none', paddingTop: 0, marginTop: 0 }}>
+              <div className="nx-filter-accordion-header" onClick={() => toggleFilterSection('precoLoc')}>
+                <h4>Preço e localização</h4>
+                <Icon path={expandedFilters.precoLoc ? mdiChevronUp : mdiChevronDown} size={0.8} color="#94a3b8" />
+              </div>
+              {expandedFilters.precoLoc && (
+                <div className="nx-filter-accordion-body">
+                  <div className="pesquisa-filter-group">
+                    <div className="pesquisa-filter-title">Orçamento (€)</div>
+                    <div className="pesquisa-filter-grid-2">
+                      <input type="number" min="0" className="pesquisa-filter-input" placeholder="Mínimo" value={filtros.precoMin} onChange={(e) => setFiltros(f => ({ ...f, precoMin: e.target.value }))} />
+                      <input type="number" min="0" className="pesquisa-filter-input" placeholder="Máximo" value={filtros.precoMax} onChange={(e) => setFiltros(f => ({ ...f, precoMax: e.target.value }))} />
+                    </div>
+                  </div>
+
+                  <div className="pesquisa-filter-group">
+                    <div className="pesquisa-filter-title">Distrito</div>
+                    <select className="pesquisa-filter-input" value={filtros.distrito} onChange={(e) => setFiltros(f => ({ ...f, distrito: e.target.value, cidade: '' }))}>
+                      <option value="Todos">Portugal Inteiro</option>
+                      {DISTRITOS.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="pesquisa-filter-group">
+                    <div className="pesquisa-filter-title">Cidade</div>
+                    <select className="pesquisa-filter-input" value={filtros.cidade} onChange={(e) => setFiltros(f => ({ ...f, cidade: e.target.value }))} disabled={!filtros.distrito || filtros.distrito === 'Todos'}>
+                      <option value="">{filtros.distrito && filtros.distrito !== 'Todos' ? 'Todas as cidades' : 'Escolha o distrito'}</option>
+                      {cidadesDisponiveis.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
                 </div>
-              </div>
-
-              <div className="pesquisa-filter-group">
-                <div className="pesquisa-filter-title">Distrito</div>
-                <select className="pesquisa-filter-input" value={filtros.distrito} onChange={(e) => setFiltros(f => ({ ...f, distrito: e.target.value, cidade: '' }))}>
-                  <option value="Todos">Portugal Inteiro</option>
-                  {DISTRITOS.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </div>
-
-              <div className="pesquisa-filter-group">
-                <div className="pesquisa-filter-title">Cidade</div>
-                <select className="pesquisa-filter-input" value={filtros.cidade} onChange={(e) => setFiltros(f => ({ ...f, cidade: e.target.value }))} disabled={!filtros.distrito || filtros.distrito === 'Todos'}>
-                  <option value="">{filtros.distrito && filtros.distrito !== 'Todos' ? 'Todas as cidades' : 'Escolha o distrito'}</option>
-                  {cidadesDisponiveis.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
+              )}
             </div>
 
-            {tipoSeguro === 'carro' ? (
-              <div className="pesquisa-filter-section">
-                <div className="pesquisa-filter-section-title">Automóvel</div>
-                <div className="pesquisa-filter-group">
-                  <div className="pesquisa-filter-title">Marca</div>
-                  <select className="pesquisa-filter-input" value={filtros.marca} onChange={(e) => setFiltros(f => ({ ...f, marca: e.target.value, modelo: '' }))}>
-                    <option value="">Todas as marcas</option>
-                    {MARCAS.map(m => <option key={m} value={m}>{m}</option>)}
-                  </select>
-                </div>
-                <div className="pesquisa-filter-group">
-                  <div className="pesquisa-filter-title">Modelo</div>
-                  <select className="pesquisa-filter-input" value={filtros.modelo} onChange={(e) => setFiltros(f => ({ ...f, modelo: e.target.value }))} disabled={!filtros.marca}>
-                    <option value="">{filtros.marca ? 'Todos os modelos' : 'Escolha a marca'}</option>
-                    {modelosDisponiveis.map((mod, idx) => {
-                      const nomeModelo = normalizarModeloPesquisa(mod);
-                      return <option key={idx} value={nomeModelo}>{rotuloOpcaoVeiculo(nomeModelo, 'modelo')}</option>;
-                    })}
-                  </select>
-                </div>
-                <div className="pesquisa-filter-group">
-                  <div className="pesquisa-filter-title">Combustível</div>
-                  <div className="pesquisa-tags">
-                    {COMBUSTIVEIS.map(val => (
-                      <button key={val} type="button" className={`pesquisa-tag ${filtros.combustiveis.includes(val) ? 'active' : ''}`} onClick={() => toggleTag('combustiveis', val)}>{val}</button>
-                    ))}
-                  </div>
-                </div>
+            {/* ACCORDION 2: ESPECÍFICOS (CARRO OU IMÓVEL) */}
+            <div className="nx-filter-accordion">
+              <div className="nx-filter-accordion-header" onClick={() => toggleFilterSection('especificos')}>
+                <h4>{tipoSeguro === 'carro' ? 'Automóvel' : 'Imóvel'}</h4>
+                <Icon path={expandedFilters.especificos ? mdiChevronUp : mdiChevronDown} size={0.8} color="#94a3b8" />
               </div>
-            ) : (
-              <div className="pesquisa-filter-section">
-                <div className="pesquisa-filter-section-title">Imóvel</div>
-                <div className="pesquisa-filter-group">
-                  <div className="pesquisa-filter-title">Tipologias</div>
-                  <div className="pesquisa-tags">
-                    {TIPOLOGIAS.map(val => (
-                      <button key={val} type="button" className={`pesquisa-tag ${filtros.tipologias.includes(val) ? 'active' : ''}`} onClick={() => toggleTag('tipologias', val)}>{val}</button>
-                    ))}
-                  </div>
+              
+              {expandedFilters.especificos && (
+                <div className="nx-filter-accordion-body">
+                  {tipoSeguro === 'carro' ? (
+                    <>
+                      <div className="pesquisa-filter-group">
+                        <div className="pesquisa-filter-title">Marca</div>
+                        <select className="pesquisa-filter-input" value={filtros.marca} onChange={(e) => setFiltros(f => ({ ...f, marca: e.target.value, modelo: '' }))}>
+                          <option value="">Todas as marcas</option>
+                          {MARCAS.map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                      </div>
+                      <div className="pesquisa-filter-group">
+                        <div className="pesquisa-filter-title">Modelo</div>
+                        <select className="pesquisa-filter-input" value={filtros.modelo} onChange={(e) => setFiltros(f => ({ ...f, modelo: e.target.value }))} disabled={!filtros.marca}>
+                          <option value="">{filtros.marca ? 'Todos os modelos' : 'Escolha a marca'}</option>
+                          {modelosDisponiveis.map((mod, idx) => {
+                            const nomeModelo = normalizarModeloPesquisa(mod);
+                            return <option key={idx} value={nomeModelo}>{rotuloOpcaoVeiculo(nomeModelo, 'modelo')}</option>;
+                          })}
+                        </select>
+                      </div>
+                      <div className="pesquisa-filter-group">
+                        <div className="pesquisa-filter-title">Combustível</div>
+                        <div className="pesquisa-tags">
+                          {COMBUSTIVEIS.map(val => (
+                            <button key={val} type="button" className={`pesquisa-tag ${filtros.combustiveis.includes(val) ? 'active' : ''}`} onClick={() => toggleTag('combustiveis', val)}>{val}</button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="pesquisa-filter-group">
+                        <div className="pesquisa-filter-title">Tipologias</div>
+                        <div className="pesquisa-tags">
+                          {TIPOLOGIAS.map(val => (
+                            <button key={val} type="button" className={`pesquisa-tag ${filtros.tipologias.includes(val) ? 'active' : ''}`} onClick={() => toggleTag('tipologias', val)}>{val}</button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             <button type="button" className="pesquisa-apply-btn" onClick={executarFiltrosManuais}>Aplicar Filtros</button>
           </aside>
