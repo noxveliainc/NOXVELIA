@@ -4,7 +4,6 @@ import api from '../../services/api';
 import { getFunnelSessionId, trackFunnelEvent } from '../../utils/funnelAnalytics';
 import { useAuth } from '../../context/AuthContext';
 import { getVideoEmbedData } from '../../utils/videoEmbed';
-import AdBanner from '../../components/AdBanner';
 import Seo from '../../components/Seo';
 import { absoluteUrl, anuncioPath } from '../../utils/seo';
 import { normalizarExtras } from '../../utils/extras';
@@ -578,7 +577,7 @@ export default function Anuncio() {
         /* RESETS FUNDAMENTAIS MÓVEIS */
         *, *::before, *::after { box-sizing: border-box; }
         img { max-width: 100%; height: auto; display: block; }
-        .ano-page { background: linear-gradient(180deg, #ffffff 0%, #f8fafc 34%, #ffffff 100%); color: #0f172a; min-height: calc(100vh - 72px); padding: 28px 20px 72px; font-family: 'Inter', sans-serif; overflow-x: hidden; width: 100%; max-width: 100%; }
+        .ano-page { background: #f8fafc; color: #0f172a; min-height: calc(100vh - 72px); padding: 28px 20px 72px; font-family: 'Inter', sans-serif; overflow-x: hidden; width: 100%; max-width: 100%; }
         .ano-container { width: 100%; max-width: 1280px; margin: 0 auto; min-width: 0; }
         
         .ano-breadcrumb { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
@@ -595,21 +594,21 @@ export default function Anuncio() {
         .ano-grid > div { min-width: 0; min-height: 0; }
         @media (max-width: 960px) { .ano-grid { grid-template-columns: minmax(0, 1fr); } }
 
-        .gallery-wrap { border-radius: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; margin-bottom: 18px; box-shadow: 0 28px 70px -52px rgba(15,23,42,0.55); width: 100%; max-width: 100%; min-width: 0; }
-        .ano-page.is-featured .gallery-wrap { border-color: rgba(217,196,156,.78) !important; box-shadow: 0 28px 70px -50px rgba(16,47,80,.62), 0 0 0 1px rgba(217,196,156,.2) !important; }
+        .gallery-wrap { border-radius: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; margin-bottom: 18px; box-shadow: 0 10px 30px -15px rgba(15,23,42,0.1); width: 100%; max-width: 100%; min-width: 0; }
+        .ano-page.is-featured .gallery-wrap { border-color: rgba(217,196,156,.78) !important; box-shadow: 0 15px 40px -15px rgba(217,196,156,.3), 0 0 0 1px rgba(217,196,156,.2) !important; }
         .ano-page.is-featured .title-block,
         .ano-page.is-featured .price-panel { border-color: rgba(217,196,156,.68) !important; }
         
-        .gallery-main { position: relative; width: 100%; aspect-ratio: 16/9; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; min-width: 0; }
-        .gallery-main img { width: 100%; height: 100%; max-width: 100%; object-fit: cover; transition: transform .5s ease, opacity .3s; }
+        .gallery-main { position: relative; width: 100%; aspect-ratio: 16/9; background: #0f172a; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; min-width: 0; }
+        .gallery-main img { width: 100%; height: 100%; max-width: 100%; object-fit: contain; transition: transform .5s ease, opacity .3s; }
         .gallery-main:hover img { transform: scale(1.025); }
-        .gallery-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,.6) 0%, transparent 45%); pointer-events: none; }
+        .gallery-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(7,19,38,.8) 0%, transparent 45%); pointer-events: none; }
         .gallery-placeholder { color: #cbd5e1; opacity: 0.5; }
         .gallery-badge { position: absolute; top: 14px; left: 14px; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,.05); border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: ${accent}; display: flex; align-items: center; gap: 5px; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .gallery-badge.below-featured { top: 54px; }
         .gallery-featured-badge { position: absolute; top: 14px; left: 14px; z-index: 6; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 13px; border-radius: 999px; background: linear-gradient(135deg, #102f50 0%, #d9c49c 100%); color: #fffaf0; border: 1px solid rgba(255,250,240,.32); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 18px 34px -20px rgba(2,6,23,.78); }
-        .gallery-counter { position: absolute; top: 14px; right: 14px; background: rgba(15,23,42,.65); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 5; }
-        .gallery-zoom-hint { position: absolute; bottom: 16px; right: 14px; background: rgba(15,23,42,.55); backdrop-filter: blur(8px); border-radius: 20px; padding: 6px 11px; font-size: 11px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 5; opacity: 0; transition: opacity .2s; }
+        .gallery-counter { position: absolute; top: 14px; right: 14px; background: rgba(7,19,38,.65); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 5; }
+        .gallery-zoom-hint { position: absolute; bottom: 16px; right: 14px; background: rgba(7,19,38,.55); backdrop-filter: blur(8px); border-radius: 20px; padding: 6px 11px; font-size: 11px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; z-index: 5; opacity: 0; transition: opacity .2s; }
         .gallery-main:hover .gallery-zoom-hint { opacity: 1; }
         .gallery-bottom { position: absolute; bottom: 16px; left: 16px; right: 16px; z-index: 5; pointer-events: none; }
         .gallery-title-overlay { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(16px, 4.5vw, 26px); font-weight: 800; color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,.6); letter-spacing: -.02em; line-height: 1.25; margin-bottom: 6px; word-break: break-word; overflow-wrap: anywhere; white-space: normal; }
@@ -626,7 +625,7 @@ export default function Anuncio() {
         .thumb.active { border-color: ${accent}; opacity: 1; }
         .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-        .title-block { margin-bottom: 18px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 22px; box-shadow: 0 20px 50px -42px rgba(15,23,42,0.5); width: 100%; max-width: 100%; min-width: 0; }
+        .title-block { margin-bottom: 18px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 22px; box-shadow: 0 10px 25px -15px rgba(15,23,42,0.1); width: 100%; max-width: 100%; min-width: 0; }
         .listing-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 4vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 5px; }
         .listing-subtitle { font-size: clamp(18px, 2vw, 24px); color: #0f172a; font-weight: 800; margin-bottom: 14px; line-height: 1.25; letter-spacing: -0.01em; word-break: break-word; overflow-wrap: anywhere; }
         .meta-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; width: 100%; }
@@ -642,11 +641,10 @@ export default function Anuncio() {
         .nx-badge-item.destaque { background: #102f50; border-color: #102f50; color: #fffaf0; }
 
         .decision-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0 0 22px; width: 100%; }
-        .decision-item { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 13px 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 26px -24px rgba(15,23,42,0.45); min-width: 0; }
+        .decision-item { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 13px 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); min-width: 0; }
         .decision-icon { width: 34px; height: 34px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: ${accent}; flex-shrink: 0; }
         .decision-label { display: block; font-size: 9.5px; color: #94a3b8; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; line-height: 1; margin-bottom: 5px; }
         .decision-value { display: block; color: #0f172a; font-size: 13px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
 
         .specs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 155px), 1fr)); gap: 12px; width: 100%; }
         .spec-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; transition: border-color .2s, transform .2s, box-shadow .2s; animation: nx-rise .35s ease backwards; min-width: 0; }
@@ -659,7 +657,7 @@ export default function Anuncio() {
         .extras-group-title { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: #475569; }
         .extras-group-title::before { content: ''; width: 8px; height: 8px; border-radius: 999px; background: ${accent}; box-shadow: 0 0 0 4px rgba(217,196,156,.16); }
         .extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 10px; align-items: stretch; }
-        .extra-item { min-width: 0; min-height: 58px; display: flex; align-items: flex-start; gap: 11px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 13px 14px; font-size: 13px; font-weight: 750; color: #334155; line-height: 1.42; animation: nx-rise .35s ease backwards; box-shadow: 0 12px 28px -24px rgba(15,23,42,0.35); }
+        .extra-item { min-width: 0; min-height: 58px; display: flex; align-items: flex-start; gap: 11px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 13px 14px; font-size: 13px; font-weight: 750; color: #334155; line-height: 1.42; animation: nx-rise .35s ease backwards; box-shadow: 0 4px 10px -5px rgba(15,23,42,0.1); }
         .extra-check { width: 24px; height: 24px; border-radius: 8px; background: rgba(217,196,156,0.1); color: ${accent}; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; margin-top: -1px; }
         .extra-text { min-width: 0; overflow-wrap: anywhere; word-break: normal; white-space: normal; }
 
@@ -667,7 +665,7 @@ export default function Anuncio() {
         .desc-head { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 16px; display: flex; align-items: center; gap: 7px; }
         .desc-text { font-size: 14px; line-height: 1.8; color: #334155; white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; }
 
-        .tour-card { margin-top: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 20px 48px -42px rgba(15,23,42,.55); width: 100%; min-width: 0; }
+        .tour-card { margin-top: 22px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 10px 25px -10px rgba(15,23,42,.1); width: 100%; min-width: 0; }
         .tour-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; }
         .tour-title { display: flex; align-items: center; gap: 8px; color: #0f172a; font-size: 15px; font-weight: 850; }
         .tour-provider { padding: 4px 9px; border-radius: 999px; color: ${accent}; background: rgba(217,196,156,.08); border: 1px solid rgba(217,196,156,.18); font-size: 10px; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; }
@@ -681,7 +679,7 @@ export default function Anuncio() {
         .open-detail-title::before { content: ''; width: 18px; height: 1px; background: #d9c49c; flex: 0 0 auto; }
 
         .sidebar-sticky { position: static; display: flex; flex-direction: column; gap: 16px; max-height: none; overflow: visible; overscroll-behavior: auto; padding-right: 0; scrollbar-width: auto; width: 100%; min-width: 0; }
-        .price-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 22px; padding: 26px; box-shadow: 0 28px 70px -52px rgba(15,23,42,0.7); width: 100%; min-width: 0; }
+        .price-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 22px; padding: 26px; box-shadow: 0 10px 25px -10px rgba(15,23,42,0.1); width: 100%; min-width: 0; }
         .panel-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(28px, 3.5vw, 38px); font-weight: 800; letter-spacing: -.03em; line-height: 1; color: ${accent}; margin-bottom: 4px; }
         .panel-price-m2 { font-size: 13px; color: #64748b; font-weight: 600; margin-bottom: 16px; }
 
@@ -702,16 +700,19 @@ export default function Anuncio() {
         .contact-phone { font-size: clamp(16px, 4vw, 22px); font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 7px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
         .contact-email { font-size: 13px; color: #475569; font-weight: 600; margin-top: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
 
-        .cv-banner { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 20px; padding: 24px; text-decoration: none; display: flex; flex-direction: column; transition: all .2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); box-sizing: border-box; width: 100%; margin-top: 16px; min-width: 0; }
-        .cv-banner:hover { border-color: #7dd3fc; background: #e0f2fe; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.1); }
-        .cv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; width: 100%; box-sizing: border-box; flex-wrap: wrap; gap: 8px; }
-        .cv-discount { background: #1B4DFF; color: #fff; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .cv-desc { font-size: 14px; color: #0c4a6e; line-height: 1.5; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
-        .cv-code-wrap { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px dashed #7dd3fc; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; cursor: pointer; transition: all 0.2s; width: 100%; box-sizing: border-box; flex-wrap: wrap; gap: 8px; }
-        .cv-code-wrap:hover { background: #f8fafc; border-color: #38bdf8; }
-        .cv-code { display: flex; align-items: center; background: #f0f9ff; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 800; color: #1B4DFF; letter-spacing: 0.05em; }
-        .cv-btn { width: 100%; padding: 16px; background: #1B4DFF; color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; transition: background .2s, transform .2s; box-sizing: border-box; }
-        .cv-banner:hover .cv-btn { background: #143bc4; }
+        /* CARVERTICAL SUPER PREMIUM */
+        .cv-banner { background: #071326; border: 1px solid #d9c49c; border-radius: 20px; padding: 24px; text-decoration: none; display: flex; flex-direction: column; transition: all .2s; box-shadow: 0 10px 25px -5px rgba(217,196,156,0.15); width: 100%; margin-top: 16px; position: relative; overflow: hidden; }
+        .cv-banner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #d9c49c, #f5e6bf); }
+        .cv-banner:hover { border-color: #f0dfbb; transform: translateY(-3px); box-shadow: 0 15px 30px -5px rgba(217,196,156,0.25); }
+        .cv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .cv-discount { background: #d9c49c; color: #071326; font-size: 11px; font-weight: 900; padding: 5px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .cv-desc { font-size: 14px; color: #f8fafc; line-height: 1.5; margin-bottom: 20px; font-weight: 500; }
+        .cv-code-wrap { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); border: 1px dashed rgba(217,196,156,0.5); padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; }
+        .cv-code-wrap:hover { background: rgba(255,255,255,0.1); border-color: #d9c49c; }
+        .cv-code-label { font-size: 11px; color: #cbd5e1; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .cv-code { display: flex; align-items: center; background: #d9c49c; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 900; color: #071326; letter-spacing: 0.05em; }
+        .cv-btn { width: 100%; padding: 16px; background: #ffffff; color: #071326; border: none; border-radius: 12px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; transition: background .2s; }
+        .cv-banner:hover .cv-btn { background: #f1f5f9; }
 
         .finance-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); width: 100%; min-width: 0; }
         .finance-box .fin-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 14px; }
@@ -782,7 +783,7 @@ export default function Anuncio() {
 
         .sugeridos-section { margin-top: 64px; padding-top: 40px; border-top: 1px solid #e2e8f0; width: 100%; min-width: 0; }
         .sugeridos-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 24px; letter-spacing: -0.02em; }
-        .sugeridos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 24px; width: 100%; }
+        .sugeridos-grid { display: flex; flex-direction: column; gap: 16px; width: 100%; }
 
         .lightbox-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.98); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: nx-fade-in .2s; width: 100%; height: 100%; }
         .lightbox-close { position: absolute; top: 18px; right: 18px; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; }
@@ -1121,7 +1122,7 @@ export default function Anuncio() {
                       </div>
                       <p className="cv-desc">Verifica o histórico de acidentes, roubos e anomalias de quilometragem deste veículo.</p>
                       <div className="cv-code-wrap" onClick={(e) => { e.preventDefault(); navigator.clipboard.writeText("NOXVELIA"); alert("Código copiado com sucesso!"); }}>
-                        <span style={{ fontSize: '12px', color: '#0c4a6e', fontWeight: 600 }}>CÓDIGO DE DESCONTO:</span>
+                        <span className="cv-code-label">CÓDIGO DE DESCONTO:</span>
                         <span className="cv-code">
                           NOXVELIA <Icon path={mdiContentCopy} size={0.5} style={{marginLeft: '6px'}}/>
                         </span>
@@ -1158,15 +1159,6 @@ export default function Anuncio() {
                     </div>
                   )}
 
-                  <AdBanner
-                    mode="direct"
-                    placement="detalhe_sidebar"
-                    adsensePlacement="detail_sidebar"
-                    vertical={anuncio.tipo}
-                    variant="sidebar"
-                    minHeight={220}
-                    mobileMinHeight={120}
-                  />
                 </div>
 
                 <Link to={`/vendedor/${donoDoAnuncio?._id}`} className="seller-panel">
@@ -1233,8 +1225,6 @@ export default function Anuncio() {
               </div>
             </div>
           </div>
-
-          <AdBanner mode="direct" placement="detalhe_sugestoes" adsensePlacement="listing_before_suggestions" vertical={anuncio.tipo} minHeight={126} mobileMinHeight={78} />
 
           {sugeridos.length > 0 && (
             <div className="sugeridos-section">
