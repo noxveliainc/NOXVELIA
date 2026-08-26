@@ -19,6 +19,10 @@ import { trackFunnelEvent } from '../../utils/funnelAnalytics';
 // IMPORTAÇÃO CRUCIAL: O NOSSO NOVO CARTÃO!
 import AnuncioCard from './AnuncioCard';
 
+// IMAGENS DE FUNDO DO TOPO (HERO)
+const BG_DRIVE = 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1920&auto=format&fit=crop';
+const BG_ESTATE = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1920&auto=format&fit=crop';
+
 const TIPOLOGIAS = ['T0', 'T1', 'T2', 'T3', 'T4', 'T5+'];
 const TIPOS_IMOVEL = [
   { value: 'apartamento', label: 'Apartamento' },
@@ -444,6 +448,9 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     descSeo = `Encontra ${imovelSeo} para comprar ${locSeo}. Consulta preços, áreas e fotos na Noxvelia. Negócios sem comissões e contacto direto via WhatsApp.`;
   }
 
+  // IMAGEM DINÂMICA
+  const heroBackgroundImage = tipoSeguro === 'carro' ? BG_DRIVE : BG_ESTATE;
+
   return (
     <>
       {!seoParams && <Seo title={titleSeo} description={descSeo} path={tipoSeguro === 'carro' ? '/carros' : '/imoveis'} />}
@@ -458,14 +465,26 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           font-family: Inter, sans-serif;
         }
 
-        /* --- SLIM HERO (CABEÇALHO ESCURO) --- */
+        /* --- SLIM HERO COM IMAGEM DE FUNDO --- */
         .nx-search-hero {
-          background: #071326;
+          position: relative;
+          background-color: #071326;
+          background-size: cover;
+          background-position: center;
           color: #fffaf0;
-          padding: 40px 24px 70px;
+          padding: 60px 24px 80px; 
           text-align: left;
+          overflow: hidden;
+        }
+        .nx-search-hero-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, rgba(7,19,38,0.95) 0%, rgba(7,19,38,0.75) 40%, rgba(7,19,38,0.3) 100%);
+          z-index: 1;
         }
         .nx-search-hero-inner {
+          position: relative;
+          z-index: 2;
           max-width: 1280px;
           margin: 0 auto;
         }
@@ -485,7 +504,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         }
         .nx-search-hero p {
           font-size: 15px;
-          color: rgba(255, 250, 240, 0.7);
+          color: rgba(255, 250, 240, 0.85);
           margin: 0;
         }
 
@@ -662,8 +681,9 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
       `}</style>
 
       <div className="pesquisa-root">
-        {/* --- NOVO SLIM HERO --- */}
-        <div className="nx-search-hero">
+        {/* --- NOVO SLIM HERO COM IMAGEM DE FUNDO --- */}
+        <div className="nx-search-hero" style={{ backgroundImage: `url(${heroBackgroundImage})` }}>
+          <div className="nx-search-hero-overlay"></div>
           <div className="nx-search-hero-inner">
             <div className="nx-search-breadcrumbs">
               Noxvelia {tipoSeguro === 'carro' ? 'Drive' : 'Estate'} &rsaquo; {tipoSeguro === 'carro' ? 'Automóveis' : 'Imóveis'}
