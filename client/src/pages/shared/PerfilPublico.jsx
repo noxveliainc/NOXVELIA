@@ -193,70 +193,86 @@ export default function PerfilPublico() {
       />
       <style>{`
         .pp-root { background: #f8fafc; min-height: calc(100vh - 80px); font-family: 'Inter', sans-serif; color: #0f172a; padding-bottom: 80px; }
-        .pp-hero { position: relative; background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 36px 24px 20px; margin-bottom: 48px; overflow: hidden; }
+        
+        /* ── HERO DARK NAVY ── */
+        .pp-hero { position: relative; background: #071326; border-bottom: 4px solid #d9c49c; padding: 40px 24px 20px; margin-bottom: 48px; overflow: hidden; }
         .pp-cover { display: none; }
-        .pp-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .pp-hero-content { max-width: 1200px; margin: 0 auto; position: relative; z-index: 2; }
-        .pp-back { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; text-decoration: none; cursor: pointer; background: none; border: none; padding: 0; margin-bottom: 24px; transition: color 0.2s; }
-        .pp-back:hover { color: #0f172a; }
-        .pp-admin-back { min-height: 40px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; margin-bottom: 18px; border-radius: 10px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a; font-size: 12px; font-weight: 800; font-family: 'Inter', sans-serif; cursor: pointer; box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06); transition: all 0.2s; }
-        .pp-admin-back:hover { border-color: #94a3b8; transform: translateY(-1px); }
-        .pp-admin-note { display: inline-flex; align-items: center; gap: 8px; margin-left: 10px; color: #475569; font-size: 12px; font-weight: 700; }
-        .pp-main { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-        .pp-showcase-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: -20px 0 24px; }
-        .pp-summary-item { min-height: 86px; display: grid; align-content: center; gap: 7px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff; box-shadow: 0 18px 42px -36px rgba(15,23,42,.5); }
-        .pp-summary-item strong { color: #0f172a; font-size: 28px; line-height: 1; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .pp-hero-content { max-width: 1280px; margin: 0 auto; position: relative; z-index: 2; }
+        
+        .pp-back { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #cbd5e1; text-decoration: none; cursor: pointer; background: none; border: none; padding: 0; margin-bottom: 24px; transition: color 0.2s; }
+        .pp-back:hover { color: #fffaf0; }
+        
+        .pp-admin-back { min-height: 40px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; margin-bottom: 18px; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: #fff; font-size: 12px; font-weight: 800; font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.2s; }
+        .pp-admin-back:hover { border-color: #475569; background: #334155; }
+        .pp-admin-note { display: inline-flex; align-items: center; gap: 8px; margin-left: 10px; color: #94a3b8; font-size: 12px; font-weight: 700; }
+        
+        /* ── FORÇA O PROFILEVIEW EMBUTIDO A TER TEXTO BRANCO ── */
+        .pp-hero [class*="perfil-name"] { color: #ffffff !important; }
+        .pp-hero [class*="perfil-bio"] { color: #cbd5e1 !important; }
+        .pp-hero [class*="perfil-stats"] strong { color: #ffffff !important; }
+        .pp-hero [class*="perfil-stats"] span { color: #94a3b8 !important; }
+        .pp-hero [class*="perfil-email"] { color: #94a3b8 !important; }
+        
+        .pp-main { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+        .pp-showcase-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: -20px 0 32px; }
+        .pp-summary-item { min-height: 96px; display: grid; align-content: center; gap: 7px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 16px; background: #ffffff; box-shadow: 0 10px 25px -10px rgba(15,23,42,.05); text-align: center; }
+        .pp-summary-item strong { color: #0f172a; font-size: 32px; line-height: 1; font-weight: 900; }
         .pp-summary-item span { color: #64748b; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-        .pp-stock-panel { padding: clamp(22px, 3vw, 34px); border: 1px solid #e6e1d6; border-radius: 22px; background: #ffffff; box-shadow: 0 22px 55px -45px rgba(15,23,42,.5); }
-        .pp-section-kicker { display: block; margin-bottom: 6px; color: #102f50; font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
-        .pp-section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(26px, 3vw, 42px); line-height: 1; font-weight: 900; margin: 0; color: #0f172a; letter-spacing: -.03em; }
-        .pp-section-copy { margin: 7px 0 0; max-width: 720px; color: #64748b; font-size: 13px; line-height: 1.55; font-weight: 650; }
-        .pp-filters { margin-top: 22px; padding: clamp(15px, 2vw, 20px); border: 1px solid #e6e1d6; border-radius: 18px; background: #f7f5ef; }
+        
+        .pp-stock-panel { padding: clamp(24px, 3vw, 40px); border: 1px solid #e2e8f0; border-radius: 24px; background: #ffffff; box-shadow: 0 10px 30px -10px rgba(15,23,42,.05); }
+        .pp-section-kicker { display: block; margin-bottom: 8px; color: #102f50; font-size: 12px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+        .pp-section-title { font-size: clamp(26px, 3vw, 36px); line-height: 1.1; font-weight: 900; margin: 0; color: #0f172a; letter-spacing: -.03em; }
+        .pp-section-copy { margin: 10px 0 0; max-width: 720px; color: #64748b; font-size: 15px; line-height: 1.55; font-weight: 500; }
+        
+        .pp-filters { margin-top: 32px; padding: clamp(16px, 2vw, 24px); border: 1px solid #e2e8f0; border-radius: 16px; background: #f8fafc; }
         .pp-filter-top { display: grid; grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(140px, .75fr)) auto; gap: 12px; align-items: end; }
         .pp-filter-bottom { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
-        .pp-field { display: grid; gap: 7px; }
-        .pp-field label { color: #102f50; font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-        .pp-field input, .pp-field select { width: 100%; min-height: 44px; border: 1px solid #e6e1d6; border-radius: 12px; background: #ffffff; color: #071326; padding: 0 13px; font: inherit; font-size: 14px; font-weight: 650; outline: none; box-sizing: border-box; }
-        .pp-field input:focus-visible, .pp-field select:focus-visible, .pp-clear:focus-visible, .pp-back:focus-visible { outline: 2px solid #102f50; outline-offset: 2px; }
-        .pp-clear { min-height: 44px; padding: 0 15px; border: 1px solid #102f50; border-radius: 12px; color: #102f50; background: #ffffff; font-size: 12px; font-weight: 900; cursor: pointer; white-space: nowrap; }
-        .pp-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 24px 0 18px; }
-        .pp-preview-title { margin: 0; color: #0f172a; font-size: 17px; font-weight: 900; }
-        .pp-result-copy { margin: 3px 0 0; color: #64748b; font-size: 13px; font-weight: 650; }
-        .pp-result-count { color: #102f50; font-size: 12px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
-        .pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 22px; }
-        .pp-empty { min-height: 220px; display: grid; place-items: center; padding: 38px 20px; border: 1px dashed #cbd5e1; border-radius: 14px; background: #ffffff; text-align: center; }
+        .pp-field { display: grid; gap: 8px; }
+        .pp-field label { color: #102f50; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+        .pp-field input, .pp-field select { width: 100%; min-height: 48px; border: 1px solid #cbd5e1; border-radius: 10px; background: #ffffff; color: #071326; padding: 0 14px; font: inherit; font-size: 14px; font-weight: 600; outline: none; box-sizing: border-box; transition: 0.2s; }
+        .pp-field input:focus, .pp-field select:focus { border-color: #102f50; box-shadow: 0 0 0 3px rgba(16, 47, 80, 0.1); }
+        .pp-clear { min-height: 48px; padding: 0 20px; border: 1px solid #102f50; border-radius: 10px; color: #102f50; background: #ffffff; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: 0.2s; }
+        .pp-clear:hover { background: #f1f5f9; }
+        
+        .pp-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 32px 0 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
+        .pp-preview-title { margin: 0; color: #0f172a; font-size: 18px; font-weight: 900; }
+        .pp-result-copy { margin: 4px 0 0; color: #64748b; font-size: 14px; font-weight: 500; }
+        .pp-result-count { color: #102f50; font-size: 13px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
+        
+        /* ── GRELHA AGORA É UMA LISTA HORIZONTAL ── */
+        .pp-list { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+        
+        .pp-empty { min-height: 220px; display: grid; place-items: center; padding: 38px 20px; border: 1px dashed #cbd5e1; border-radius: 16px; background: #f8fafc; text-align: center; margin-top: 24px; }
         .pp-empty-inner { max-width: 520px; }
         .pp-empty h3 { margin: 0; color: #0f172a; font-size: 22px; line-height: 1.2; font-weight: 900; }
-        .pp-empty p { margin: 10px auto 20px; color: #64748b; font-size: 14px; line-height: 1.65; }
-        .pp-empty-btn { min-height: 42px; padding: 0 16px; border: 0; border-radius: 10px; background: #0f172a; color: #ffffff; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; }
-        .pp-empty-btn:hover { background: #1e293b; }
-        .pp-empty-standalone { margin-top: 4px; }
+        .pp-empty p { margin: 10px auto 24px; color: #64748b; font-size: 15px; line-height: 1.65; }
+        .pp-empty-btn { min-height: 46px; padding: 0 24px; border: 0; border-radius: 10px; background: #102f50; color: #ffffff; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; transition: 0.2s; }
+        .pp-empty-btn:hover { background: #071326; }
+        .pp-empty-standalone { margin-top: 4px; border: none; background: #ffffff; box-shadow: 0 10px 25px -10px rgba(15,23,42,.05); }
+
         @media (max-width: 1040px) {
           .pp-filter-top, .pp-filter-bottom { grid-template-columns: repeat(2, minmax(0, 1fr)); }
           .pp-clear { width: 100%; }
         }
         @media (max-width: 860px) {
-          .pp-showcase-summary { grid-template-columns: 1fr; margin-top: 0; }
-          .pp-stock-panel { border-radius: 18px; }
+          .pp-showcase-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0; }
+          .pp-stock-panel { border-radius: 18px; padding: 20px; }
         }
         @media (max-width: 680px) {
           .pp-hero { padding: 26px 16px 18px; margin-bottom: 30px; }
           .pp-main { padding: 0 16px; }
           .pp-filter-top, .pp-filter-bottom { grid-template-columns: 1fr; }
           .pp-toolbar { align-items: flex-start; flex-direction: column; }
+          .pp-showcase-summary { grid-template-columns: 1fr; }
         }
       `}</style>
 
       <div className="pp-root">
         <div className="pp-hero">
-          <div className="pp-cover">
-            {vendedor?.capaUrl && <img src={vendedor.capaUrl} alt="" />}
-          </div>
-
           <div className="pp-hero-content">
             <button onClick={voltarDaMontra} className={adminAVerPerfil ? 'pp-admin-back' : 'pp-back'}>
               <Icon path={adminAVerPerfil ? mdiViewDashboardOutline : mdiArrowLeft} size={0.65} />
-              {adminAVerPerfil ? 'Voltar ao painel admin' : 'Voltar atrás'}
+              {adminAVerPerfil ? 'Voltar ao painel admin' : 'Voltar à Pesquisa'}
             </button>
             {adminAVerPerfil && <span className="pp-admin-note">Vista pública aberta pelo painel</span>}
 
@@ -285,15 +301,15 @@ export default function PerfilPublico() {
               <section className="pp-stock-panel" aria-label="Stock público do vendedor">
                 <div>
                   <span className="pp-section-kicker">Stock público</span>
-                  <h2 className="pp-section-title">Anúncios de {nomeExibicao}</h2>
-                  <p className="pp-section-copy">Todo o stock público deste vendedor está agora concentrado no perfil. Filtra por categoria, preço, marca, modelo ou localização sem sair da montra.</p>
+                  <h2 className="pp-section-title">Montra de {nomeExibicao}</h2>
+                  <p className="pp-section-copy">Todo o stock público deste vendedor está agora concentrado no perfil. Filtra por categoria, preço, marca, modelo ou localização sem sair da página.</p>
                 </div>
 
                 <div className="pp-filters" aria-label="Filtros do stock">
                   <div className="pp-filter-top">
                     <div className="pp-field">
-                      <label htmlFor="pp-q">Pesquisa</label>
-                      <input id="pp-q" value={filtros.q} onChange={handleFiltro('q')} placeholder="Marca, modelo, cidade ou palavra-chave" />
+                      <label htmlFor="pp-q">Pesquisa livre</label>
+                      <input id="pp-q" value={filtros.q} onChange={handleFiltro('q')} placeholder="Marca, modelo, cidade..." />
                     </div>
                     <div className="pp-field">
                       <label htmlFor="pp-categoria">Categoria</label>
@@ -312,15 +328,15 @@ export default function PerfilPublico() {
                       </select>
                     </div>
                     <div className="pp-field">
-                      <label htmlFor="pp-ordem">Ordenar</label>
+                      <label htmlFor="pp-ordem">Ordenar por</label>
                       <select id="pp-ordem" value={filtros.ordem} onChange={handleFiltro('ordem')}>
                         <option value="destaque">Destaque primeiro</option>
                         <option value="recentes">Mais recentes</option>
-                        <option value="preco-asc">Preço crescente</option>
-                        <option value="preco-desc">Preço decrescente</option>
+                        <option value="preco-asc">Preço: Mais baixo</option>
+                        <option value="preco-desc">Preço: Mais alto</option>
                       </select>
                     </div>
-                    <button type="button" className="pp-clear" onClick={limparFiltros}>Limpar</button>
+                    <button type="button" className="pp-clear" onClick={limparFiltros}>Limpar filtros</button>
                   </div>
 
                   <div className="pp-filter-bottom">
@@ -340,11 +356,11 @@ export default function PerfilPublico() {
                     </div>
                     <div className="pp-field">
                       <label htmlFor="pp-preco-min">Preço mínimo</label>
-                      <input id="pp-preco-min" type="number" min="0" value={filtros.precoMin} onChange={handleFiltro('precoMin')} placeholder="Mínimo" />
+                      <input id="pp-preco-min" type="number" min="0" value={filtros.precoMin} onChange={handleFiltro('precoMin')} placeholder="€ Mínimo" />
                     </div>
                     <div className="pp-field">
                       <label htmlFor="pp-preco-max">Preço máximo</label>
-                      <input id="pp-preco-max" type="number" min="0" value={filtros.precoMax} onChange={handleFiltro('precoMax')} placeholder="Máximo" />
+                      <input id="pp-preco-max" type="number" min="0" value={filtros.precoMax} onChange={handleFiltro('precoMax')} placeholder="€ Máximo" />
                     </div>
                   </div>
                 </div>
@@ -358,7 +374,8 @@ export default function PerfilPublico() {
                 </div>
 
                 {anunciosFiltrados.length > 0 ? (
-                  <div className="pp-grid">
+                  /* ── AGORA USA A LISTA HORIZONTAL ── */
+                  <div className="pp-list">
                     {anunciosFiltrados.map((anuncio) => {
                       const utilizadorPopulado = anuncio?.utilizador && typeof anuncio.utilizador === 'object'
                         ? anuncio.utilizador
@@ -388,7 +405,7 @@ export default function PerfilPublico() {
             <div className="pp-empty pp-empty-standalone">
               <div className="pp-empty-inner">
                 <h3>Sem anúncios ativos de momento</h3>
-                <p>Este profissional ainda não tem anúncios ativos de momento. Pode contactar diretamente através dos dados fornecidos.</p>
+                <p>Este anunciante ainda não tem anúncios ativos de momento. Podes contactar diretamente através dos dados fornecidos no perfil.</p>
                 <button type="button" className="pp-empty-btn" onClick={() => navigate('/profissionais')}>Ver outros anunciantes</button>
               </div>
             </div>

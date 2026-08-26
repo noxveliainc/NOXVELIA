@@ -27,7 +27,6 @@ const TIPOS_LINK_PERFIL = [
 
 const criarLinkPerfilVazio = () => ({ tipo: 'website', url: '' });
 
-
 const prepararLinksParaEdicao = (linksPerfil, website) => {
   const links = Array.isArray(linksPerfil)
     ? linksPerfil.filter((link) => link?.url).slice(0, 3)
@@ -291,58 +290,67 @@ export default function Perfil() {
         .perfil-back { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #64748b; text-decoration: none; text-transform: uppercase; background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 24px; }
         
         .tabs-row { display: flex; gap: 4px; margin-bottom: 24px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 4px; width: 100%; overflow-x: auto; scrollbar-width: none; }
-        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; background: transparent; color: #64748b; text-align: center; white-space: nowrap; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer; background: transparent; color: #64748b; text-align: center; white-space: nowrap; transition: 0.2s; }
         .tab-btn.active-imovel { background: #102f50; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .tab-btn.active-carro { background: #d9c49c; color: #071326; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tab-btn.active-carro { background: #102f50; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        .cards-grid { display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%; }
-        @media (min-width: 640px) { .cards-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 24px; } }
+        /* ── GRELHA AGORA É LISTA HORIZONTAL PARA ACOMODAR O ANUNCIOCARD ── */
+        .cards-list { display: flex; flex-direction: column; gap: 24px; width: 100%; }
         
-        .card-wrapper { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 12px; width: 100%; }
+        /* O Wrapper abraça o AnuncioCard e adiciona os botões de ação do dono */
+        .card-wrapper { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px; width: 100%; box-shadow: 0 10px 25px -10px rgba(15,23,42,0.05); }
         
-        .btn-destacar, .badge-destacado, .analytics-trigger-btn { width: 100%; padding: 12px; border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; }
-        .btn-destacar { background: #fefce8; color: #a16207; border: 1px solid #fde047; }
-        .badge-destacado { background: #fefce8; color: #ca8a04; border: 1px dashed #fde047; cursor: default; }
-        .analytics-trigger-btn { background: #f8fafc; border: 1px dashed #cbd5e1; color: #64748b; }
+        .card-controls { display: flex; gap: 12px; flex-wrap: wrap; }
         
-        .analytics-panel { margin-top: 4px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; width: 100%; }
-        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; width: 100%; }
+        .btn-destacar, .badge-destacado, .analytics-trigger-btn { flex: 1; min-width: 200px; padding: 12px; border-radius: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-destacar { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .btn-destacar:hover { background: #fef3c7; border-color: #fcd34d; }
+        .badge-destacado { background: #fffbeb; color: #b45309; border: 1px dashed #fde68a; cursor: default; }
+        .analytics-trigger-btn { background: #f8fafc; border: 1px solid #cbd5e1; color: #475569; }
+        .analytics-trigger-btn:hover { background: #f1f5f9; color: #0f172a; border-color: #94a3b8; }
+        
+        .analytics-panel { padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; width: 100%; }
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; width: 100%; }
         .stat-box { text-align: center; }
-        .stat-box-val { font-size: 18px; font-weight: 800; color: #0f172a; }
-        .stat-box-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #64748b; }
+        .stat-box-val { font-size: 22px; font-weight: 900; color: #0f172a; }
+        .stat-box-lbl { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-top: 4px; }
         
-        .perfil-premium-panel { margin: 0 0 24px; border: 1px solid rgba(217,196,156,.38); border-radius: 16px; padding: 20px; background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(217,196,156,.1)); width: 100%; }
-        .perfil-premium-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; width: 100%; }
-        .perfil-premium-title { margin: 0; color: #102f50; font-size: 18px; line-height: 1.2; font-weight: 900; }
-        .perfil-premium-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%; }
-        .perfil-premium-empty { display: flex; flex-direction: column; gap: 8px; padding: 18px; border: 1px dashed rgba(16,47,80,.2); border-radius: 12px; background: rgba(255,255,255,.74); color: #475569; }
+        .perfil-premium-panel { margin: 0 0 24px; border: 1px solid rgba(217,196,156,.5); border-radius: 16px; padding: 24px; background: linear-gradient(135deg, rgba(255,255,255,1), rgba(217,196,156,.15)); width: 100%; }
+        .perfil-premium-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; width: 100%; }
+        .perfil-premium-title { margin: 0; color: #102f50; font-size: 20px; line-height: 1.2; font-weight: 900; }
+        .perfil-premium-kicker { color: #d9c49c; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 4px; margin-bottom: 4px;}
+        .perfil-premium-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; }
+        .perfil-premium-empty { display: flex; flex-direction: column; gap: 8px; padding: 20px; border: 1px dashed rgba(16,47,80,.2); border-radius: 12px; background: rgba(255,255,255,.8); color: #475569; }
         .perfil-premium-empty strong { color: #102f50; font-size: 14px; font-weight: 900; }
         .perfil-premium-empty span { font-size: 13px; line-height: 1.5; }
-        @media (min-width: 640px) { .perfil-premium-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .perfil-premium-head { flex-direction: row; justify-content: space-between; align-items: flex-start; } .perfil-premium-title { font-size: 22px; } }
+        @media (min-width: 640px) { .perfil-premium-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .perfil-premium-head { flex-direction: row; justify-content: space-between; align-items: flex-start; } .perfil-premium-title { font-size: 24px; } }
         @media (min-width: 1024px) { .perfil-premium-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
         
-        .perfil-premium-metric { min-height: 70px; display: grid; align-content: center; gap: 4px; padding: 12px; border: 1px solid rgba(226,232,240,.95); border-radius: 12px; background: rgba(255,255,255,.82); text-align: center; }
-        .perfil-premium-metric strong { color: #0f172a; font-size: 20px; line-height: 1; }
-        .perfil-premium-metric span { color: #64748b; font-size: 9px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+        .perfil-premium-metric { min-height: 76px; display: grid; align-content: center; gap: 6px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .perfil-premium-metric strong { color: #0f172a; font-size: 22px; font-weight: 900; line-height: 1; }
+        .perfil-premium-metric span { color: #64748b; font-size: 9px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
         
-        .perfil-premium-bottom { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; width: 100%; }
-        .perfil-premium-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+        .perfil-premium-bottom { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; width: 100%; }
+        .perfil-premium-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; }
         @media (min-width: 640px) { .perfil-premium-actions { flex-direction: row; justify-content: flex-start; } .perfil-premium-btn { flex: 1; } }
         
-        .perfil-premium-btn { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d9c49c; background: #d9c49c; color: #071326; font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; text-transform: uppercase; }
-        .perfil-premium-btn.secondary { background: #ffffff; color: #102f50; border-color: rgba(16,47,80,.18); }
+        .perfil-premium-btn { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #102f50; background: #102f50; color: #ffffff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .perfil-premium-btn:hover { background: #071326; border-color: #071326; }
+        .perfil-premium-btn.secondary { background: #ffffff; color: #102f50; border-color: #cbd5e1; }
+        .perfil-premium-btn.secondary:hover { background: #f8fafc; border-color: #94a3b8; }
 
-        .perfil-quality-panel { margin: 0 0 24px; border: 1px solid rgba(16,47,80,.12); border-radius: 16px; padding: 20px; background: #ffffff; width: 100%; }
-        .perfil-quality-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
-        .perfil-quality-kicker { color: #102f50; font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-        .perfil-quality-title { margin: 5px 0 0; color: #071326; font-size: 20px; line-height: 1.2; font-weight: 900; }
-        .perfil-quality-copy { margin: 6px 0 0; color: #64748b; font-size: 13px; line-height: 1.5; }
-        .perfil-quality-list { display: grid; gap: 10px; }
-        .perfil-quality-item { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; text-align: left; font: inherit; cursor: pointer; }
-        .perfil-quality-item strong { display: block; color: #0f172a; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .perfil-quality-item span span { display: block; margin-top: 4px; color: #64748b; font-size: 12px; line-height: 1.4; }
-        .perfil-quality-score { min-width: 62px; display: inline-flex; justify-content: center; padding: 8px 10px; border-radius: 999px; border: 1px solid rgba(217,196,156,.45); background: #fff9eb; color: #102f50; font-size: 12px; font-weight: 900; }
-        .perfil-quality-ok { padding: 14px; border: 1px dashed rgba(217,196,156,.52); border-radius: 12px; color: #102f50; background: #fffaf0; font-size: 13px; font-weight: 750; line-height: 1.5; }
+        .perfil-quality-panel { margin: 0 0 24px; border: 1px solid rgba(16,47,80,.12); border-radius: 16px; padding: 24px; background: #ffffff; width: 100%; }
+        .perfil-quality-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 20px; }
+        .perfil-quality-kicker { color: #102f50; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .perfil-quality-title { margin: 6px 0 0; color: #071326; font-size: 20px; line-height: 1.2; font-weight: 900; }
+        .perfil-quality-copy { margin: 8px 0 0; color: #64748b; font-size: 14px; line-height: 1.5; }
+        .perfil-quality-list { display: grid; gap: 12px; }
+        .perfil-quality-item { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; text-align: left; font: inherit; cursor: pointer; transition: 0.2s; }
+        .perfil-quality-item:hover { border-color: #94a3b8; background: #f1f5f9; }
+        .perfil-quality-item strong { display: block; color: #0f172a; font-size: 15px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .perfil-quality-item span span { display: block; margin-top: 4px; color: #64748b; font-size: 13px; line-height: 1.4; }
+        .perfil-quality-score { min-width: 62px; display: inline-flex; justify-content: center; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(217,196,156,.45); background: #fff9eb; color: #102f50; font-size: 13px; font-weight: 900; }
+        .perfil-quality-ok { padding: 16px; border: 1px dashed rgba(217,196,156,.52); border-radius: 12px; color: #102f50; background: #fffaf0; font-size: 14px; font-weight: 700; line-height: 1.5; }
 
         /* MODAIS PADRÃO */
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; width: 100%; height: 100%; }
@@ -445,17 +453,17 @@ export default function Perfil() {
                     <button type="button" className="link-remove-btn" onClick={() => removerLinkPerfil(index)}><Icon path={mdiTrashCanOutline} size={0.7} /></button>
                   </div>
                 ))}
-                <button type="button" style={{ marginTop: 8, padding: '8px 12px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px dashed #cbd5e1', background: '#f8fafc', color: '#3b82f6', width: '100%', cursor: 'pointer' }} onClick={adicionarLinkPerfil} disabled={dadosEditar.linksPerfil.length >= 3}>
-                  <Icon path={mdiPlus} size={0.6} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Adicionar Link
+                <button type="button" style={{ marginTop: 8, padding: '10px 12px', fontSize: 12, fontWeight: 700, borderRadius: 8, border: '1px dashed #cbd5e1', background: '#f8fafc', color: '#102f50', width: '100%', cursor: 'pointer' }} onClick={adicionarLinkPerfil} disabled={dadosEditar.linksPerfil.length >= 3}>
+                  <Icon path={mdiPlus} size={0.7} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Adicionar Link
                 </button>
               </div>
 
-              <div className="modal-form-group" style={{ display: 'flex', gap: 10, alignItems: 'flex-start', background: '#f8fafc', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}>
+              <div className="modal-form-group" style={{ display: 'flex', gap: 10, alignItems: 'flex-start', background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
                 <input type="checkbox" checked={dadosEditar.mostrarTelefonePublico} onChange={e => setDadosEditar({ ...dadosEditar, mostrarTelefonePublico: e.target.checked })} style={{ marginTop: 2 }} />
-                <div style={{ fontSize: 12, color: '#475569' }}><strong style={{ color: '#0f172a', display: 'block', marginBottom: 2 }}>Mostrar telemóvel público</strong>Se desligares, mostramos apenas o email.</div>
+                <div style={{ fontSize: 13, color: '#475569', lineHeight: 1.4 }}><strong style={{ color: '#0f172a', display: 'block', marginBottom: 2 }}>Mostrar telemóvel público</strong>Se desligares, mostramos apenas o email.</div>
               </div>
 
-              <button style={{ width: '100%', padding: 14, background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, marginTop: 12 }} type="submit">Guardar Alterações</button>
+              <button style={{ width: '100%', padding: 16, background: '#102f50', color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, marginTop: 12, cursor: 'pointer' }} type="submit">Guardar Alterações</button>
             </form>
           </div>
         </div>
@@ -479,7 +487,7 @@ export default function Perfil() {
               <span className="perfil-premium-kicker"><Icon path={mdiCrown} size={0.62} /> Centro PRO</span>
               <h2 className="perfil-premium-title">Visibilidade e carteira num só lugar.</h2>
             </div>
-            <span className="perfil-premium-state" style={{ background: premiumAtivoPerfil ? '#102f50' : '#f8fafc', color: premiumAtivoPerfil ? '#fff' : '#64748b' }}>
+            <span className="perfil-premium-state" style={{ background: premiumAtivoPerfil ? '#102f50' : '#f8fafc', color: premiumAtivoPerfil ? '#fff' : '#64748b', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               {premiumAtivoPerfil ? 'PRO Ativo' : 'Prévia PRO'}
             </span>
           </div>
@@ -502,9 +510,9 @@ export default function Perfil() {
 
           <div className="perfil-premium-bottom">
             <div className="perfil-premium-actions">
-              <button type="button" className="perfil-premium-btn" onClick={() => navigate('/publicar')}><Icon path={mdiPlus} size={0.6} /> Publicar</button>
-              <button type="button" className="perfil-premium-btn secondary" onClick={() => navigate('/pro')}><Icon path={mdiChartBar} size={0.6} /> Área PRO</button>
-              <button type="button" className="perfil-premium-btn secondary" onClick={() => navigate('/planos')}><Icon path={mdiCrown} size={0.6} /> Plano</button>
+              <button type="button" className="perfil-premium-btn" onClick={() => navigate('/publicar')}><Icon path={mdiPlus} size={0.7} /> Publicar</button>
+              <button type="button" className="perfil-premium-btn secondary" onClick={() => navigate('/pro')}><Icon path={mdiChartBar} size={0.7} /> Área PRO</button>
+              <button type="button" className="perfil-premium-btn secondary" onClick={() => navigate('/planos')}><Icon path={mdiCrown} size={0.7} /> Planos</button>
             </div>
           </div>
         </section>
@@ -546,20 +554,23 @@ export default function Perfil() {
           </button>
         </div>
 
-        <div className="cards-grid">
+        {/* ── AGORA USA A LISTA HORIZONTAL ── */}
+        <div className="cards-list">
           {anunciosFiltrados.map(anuncio => (
             <div key={anuncio._id} className="card-wrapper">
+              
               <AnuncioCard anuncio={anuncio} showStatus onAnuncioEliminado={handleAnuncioEliminado} />
               
-              {anuncio.destacado ? (
-                <div className="badge-destacado"><Icon path={mdiStar} size={0.6} /> Destaque Ativo</div>
-              ) : (
-                <button className="btn-destacar" onClick={() => navigate('/sucesso/' + anuncio._id)}>Promover Anúncio (1.99€)</button>
-              )}
-
-              <button className="analytics-trigger-btn" onClick={() => verAnalytics(anuncio._id)}>
-                <Icon path={mdiChartBar} size={0.6} /> {anuncioAnalisado === anuncio._id ? 'Ocultar Relatório' : 'Ver Performance'}
-              </button>
+              <div className="card-controls">
+                {anuncio.destacado ? (
+                  <div className="badge-destacado"><Icon path={mdiStar} size={0.7} /> Destaque Ativo</div>
+                ) : (
+                  <button className="btn-destacar" onClick={() => navigate('/sucesso/' + anuncio._id)}>Promover Anúncio (1.99€)</button>
+                )}
+                <button className="analytics-trigger-btn" onClick={() => verAnalytics(anuncio._id)}>
+                  <Icon path={mdiChartBar} size={0.7} /> {anuncioAnalisado === anuncio._id ? 'Ocultar Relatório' : 'Ver Performance'}
+                </button>
+              </div>
 
               {anuncioAnalisado === anuncio._id && dadosGrafico && (
                 <div className="analytics-panel">
@@ -568,14 +579,7 @@ export default function Perfil() {
                     <div className="stat-box" style={{ borderLeft: '1px solid #e2e8f0', borderRight: '1px solid #e2e8f0' }}><div className="stat-box-val" style={{ color: '#3b82f6' }}>{dadosGrafico.guardadoEmFavoritos}</div><div className="stat-box-lbl">Favoritos</div></div>
                     <div className="stat-box"><div className="stat-box-val" style={{ color: '#d9c49c' }}>{dadosGrafico.contactosGerados}</div><div className="stat-box-lbl">Mensagens</div></div>
                   </div>
-                  <div className="chart-row">
-                    {dadosGrafico.graficoSeteDias.map((dia, idx) => (
-                      <div key={idx} className="chart-bar-wrap">
-                        <div className="chart-bar" style={{ height: `${Math.max((dia.visitas / Math.max(...dadosGrafico.graficoSeteDias.map(d => d.visitas), 10)) * 100, 5)}%`, opacity: dia.visitas === 0 ? 0.3 : 1 }}></div>
-                        <div className="chart-day">{dia.dataLabel}</div>
-                      </div>
-                    ))}
-                  </div>
+                  {/* Se houver dados de gráfico diário, podem ser exibidos aqui */}
                 </div>
               )}
             </div>
