@@ -3,6 +3,7 @@ import argon2 from 'argon2';
 
 const userSchema = new mongoose.Schema({
   nome:      { type: String, required: true, trim: true },
+  slug:      { type: String, unique: true, index: true, sparse: true, trim: true }, // 🌟 NOVO: SLUG AMIGÁVEL PARA O PERFIL PÚBLICO
   email:     { type: String, required: true, unique: true, lowercase: true, trim: true },
   password:  { type: String, required: function requiredPassword() { return this.authProvider !== 'google'; }, select: false },
   telefone:  { type: String, required: true, unique: true, match: [/^\d{9}$/, 'O telemóvel deve ter exatamente 9 dígitos.'] },
@@ -21,7 +22,7 @@ const userSchema = new mongoose.Schema({
   authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
   aceitouTermosEm: { type: Date, default: null },
   
-  // 🌟 NOVO: CAPA E BIOGRAFIA DO PERFIL
+  // 🌟 CAPA E BIOGRAFIA DO PERFIL
   capaUrl:    { type: String, default: null },
   bio:        { type: String, trim: true, default: null, maxLength: 800 },
   linksPerfil: {
@@ -67,6 +68,38 @@ const userSchema = new mongoose.Schema({
   totalAvaliacoes: { type: Number, default: 0 }, // Quantas pessoas avaliaram este vendedor
 }, {
   timestamps: true
+});
+
+// 🌟 MIDDLEWARE: Gera o slug automaticamente com base no nome do stand ou utilizador
+userSchema.pre('save', async function(next) {
+  // Se o nome (ou standNome) mudou, ou se o slug ainda não existe
+  const baseName = this.standNome || this.nome;
+  if (baseName && (this.isModified('nome') || this.isModified('standNome') || !this.slug)) {
+    let baseSlug = baseName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .replace(/[^a-z0-9]/g, '-')     // Substitui símbolos por hífens
+      .replace(/-+/g, '-')            // Evita hífens duplicados
+      .replace(/^-|-$/g, '')          // Remove hífens do início ou fim
+      .trim();
+
+    if (!baseSlug) baseSlug = 'vendedor';
+
+    // Garante unicidade adicionando um sufixo numérico se o slug já existir noutra conta
+    let uniqueSlug = baseSlug;
+    let contador = 1;
+    
+    while (true) {
+      const existingUser = await mongoose.models.User.findOne({ slug: uniqueSlug, _id: { $ne: this._id } });
+      if (!existingUser) break;
+      uniqueSlug = `${baseSlug}-${contador}`;
+      contador++;
+    }
+
+    this.slug = uniqueSlug;
+  }
+  next();
 });
 
 userSchema.pre('save', async function(next) {

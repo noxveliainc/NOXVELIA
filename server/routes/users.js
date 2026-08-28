@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import argon2 from 'argon2';
 import User from '../models/User.js';
 import Anuncio from '../models/Anuncio.js';
@@ -245,10 +246,6 @@ router.get('/me/anuncios', verificarToken, async (req, res) => {
 
 router.get('/me/guardados', verificarToken, async (req, res) => {
   try {
-    // 🌟 CORREÇÃO: o anúncio é guardado/removido em "favoritos"
-    // (ver routes/anuncios.js → POST /:id/guardar). O campo
-    // "anunciosGuardados" nunca é escrito, por isso esta rota
-    // devolvia sempre [] mesmo havendo favoritos guardados.
     const userComFavoritos = await User.findById(req.user.id).populate('favoritos').lean();
     if (!userComFavoritos) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
     res.json(userComFavoritos.favoritos || []);
@@ -259,12 +256,6 @@ router.get('/me/guardados', verificarToken, async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────
 // LISTAR ANUNCIANTES COM ANÚNCIOS ATIVOS ("Profissionais")
-//    🌟 CORREÇÃO: antes só entravam utilizadores com
-//    tipoConta === 'profissional' OU premiumAtivo === true, o que
-//    deixava de fora contas particulares sem premium mesmo tendo
-//    anúncios ativos. Agora entra qualquer utilizador (particular
-//    ou profissional) com pelo menos um anúncio ativo — só os
-//    admins continuam excluídos, porque têm montra tratada à parte.
 // ─────────────────────────────────────────────────────────────
 router.get('/profissionais', async (req, res) => {
   try {
@@ -334,6 +325,7 @@ router.get('/profissionais', async (req, res) => {
               $project: {
                 _id: '$profissional._id',
                 nome: '$profissional.nome',
+                slug: '$profissional.slug',
                 avatarUrl: '$profissional.avatarUrl',
                 capaUrl: '$profissional.capaUrl',
                 bio: '$profissional.bio',
@@ -386,26 +378,41 @@ router.get('/profissionais', async (req, res) => {
     res.status(500).json({ erro: 'Erro ao carregar profissionais.' });
   }
 });
+
 // ─────────────────────────────────────────────────────────────
-// 4. VER MONTRA PÚBLICA DE UM VENDEDOR
+// 4. VER MONTRA PÚBLICA DE UM VENDEDOR (ACEITA ID OU SLUG AMIGÁVEL)
 // ─────────────────────────────────────────────────────────────
-router.get('/vendedor/:id', async (req, res) => {
+router.get('/vendedor/:identificador', async (req, res) => {
   try {
-    const vendedor = await User.findById(req.params.id).select(
-      'nome email telefone mostrarTelefonePublico mostrarMapaPerfil localidade standNome standMorada standCodigoPostal avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo verificado rating totalAvaliacoes createdAt'
+    const { identificador } = req.params;
+
+    let query;
+    if (mongoose.Types.ObjectId.isValid(identificador)) {
+      query = { _id: identificador };
+    } else {
+      query = { slug: identificador };
+    }
+
+    const vendedorDoc = await User.findOne(query).select(
+      'nome slug email telefone mostrarTelefonePublico mostrarMapaPerfil localidade standNome standMorada standCodigoPostal avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo verificado rating totalAvaliacoes createdAt'
     ).lean();
-    if (!vendedor) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
+
+    if (!vendedorDoc) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
+
+    const vendedor = { ...vendedorDoc };
     if (vendedor.tipo === 'admin') {
       delete vendedor.email;
       delete vendedor.telefone;
     } else if (vendedor.mostrarTelefonePublico === false) {
       delete vendedor.telefone;
     }
-    const anuncios = await Anuncio.find({ utilizador: req.params.id, estado: 'ativo' })
+
+    const anuncios = await Anuncio.find({ utilizador: vendedor._id, estado: 'ativo' })
       .select('_id titulo preco fotos tipo estado destacado utilizador scoreQualidade scoreDetalhes carro.marca carro.modelo carro.km carro.combustivel carro.cilindrada imovel.tipoImovel imovel.tipologia imovel.area imovel.areaTerreno imovel.quartos imovel.casasBanho localizacao.cidade localizacao.distrito createdAt')
       .sort({ destacado: -1, createdAt: -1 })
-      .populate('utilizador', 'nome avatarUrl tipo tipoConta premiumAtivo verificado')
+      .populate('utilizador', 'nome slug avatarUrl tipo tipoConta premiumAtivo verificado')
       .lean();
+
     res.json({ vendedor, anuncios });
   } catch (erro) {
     res.status(500).json({ erro: 'Erro ao carregar montra do vendedor.' });
@@ -413,18 +420,7 @@ router.get('/vendedor/:id', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// 5. 🌟 NOVO: AVALIAR UM VENDEDOR
-//    Regras de segurança:
-//    - Não podes avaliar-te a ti próprio.
-//    - Nota tem de ser um inteiro/decimal entre 1 e 5.
-//    - Um avaliador só tem UMA avaliação por vendedor — submeter
-//      outra vez ATUALIZA a anterior (evita inflação/spam de média).
-//    - Se vier `anuncioId`, confirmamos que o anúncio pertence
-//      mesmo a esse vendedor (não dá para "carimbar" o anúncio errado).
-//
-//    NOTA: ainda não existe verificação de "compra confirmada"
-//    (o sistema não guarda histórico de transações). Por agora a
-//    única barreira é estar autenticado + não ser auto-avaliação.
+// 5. AVALIAR UM VENDEDOR
 // ─────────────────────────────────────────────────────────────
 router.post('/:id/avaliar', verificarToken, async (req, res) => {
   try {
@@ -443,7 +439,6 @@ router.post('/:id/avaliar', verificarToken, async (req, res) => {
     const anunciante = await User.findById(anuncianteId);
     if (!anunciante) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
 
-    // Se vier um anúncio associado, validar que é mesmo deste vendedor
     let anuncioValido = null;
     if (anuncioId) {
       anuncioValido = await Anuncio.findOne({ _id: anuncioId, utilizador: anuncianteId });
@@ -472,10 +467,6 @@ router.post('/:id/avaliar', verificarToken, async (req, res) => {
       });
     }
 
-    // ── Recalcular a média a partir da fonte de verdade ──────
-    // Em vez de incrementar soma/total (que fica errado se uma
-    // nota antiga for editada), recalculamos sempre a partir da
-    // coleção Avaliacao. Para o volume esperado, isto é instantâneo.
     const [stats] = await Avaliacao.aggregate([
       { $match: { anunciante: anunciante._id } },
       { $group: { _id: '$anunciante', media: { $avg: '$nota' }, total: { $sum: 1 } } },
@@ -492,8 +483,6 @@ router.post('/:id/avaliar', verificarToken, async (req, res) => {
     });
 
   } catch (erro) {
-    // Proteção extra: se por alguma razão o índice único disparar
-    // (ex: pedidos em paralelo), devolver mensagem amigável em vez de 500
     if (erro.code === 11000) {
       return res.status(400).json({ erro: 'Já avaliaste este vendedor anteriormente.' });
     }
@@ -503,7 +492,7 @@ router.post('/:id/avaliar', verificarToken, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// 6. 🌟 NOVO: LISTAR AVALIAÇÕES PÚBLICAS DE UM VENDEDOR
+// 6. LISTAR AVALIAÇÕES PÚBLICAS DE UM VENDEDOR
 // ─────────────────────────────────────────────────────────────
 router.get('/:id/avaliacoes', async (req, res) => {
   try {
@@ -518,9 +507,7 @@ router.get('/:id/avaliacoes', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// 7. 🌟 NOVO: SABER SE EU JÁ AVALIEI ESTE VENDEDOR
-//    Útil no frontend para mostrar "Editar a minha avaliação"
-//    em vez de "Avaliar vendedor" quando já existe uma.
+// 7. SABER SE EU JÁ AVALIEI ESTE VENDEDOR
 // ─────────────────────────────────────────────────────────────
 router.get('/:id/minha-avaliacao', verificarToken, async (req, res) => {
   try {
