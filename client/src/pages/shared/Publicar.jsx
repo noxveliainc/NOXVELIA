@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { Icon } from '@mdi/react';
+import imageCompression from 'browser-image-compression'; // BIBLIOTECA DE COMPRESSÃO INSTANTÂNEA!
 import {
   mdiAlertCircleOutline, mdiCloudUploadOutline, mdiClose, mdiCrown, mdiCarOutline,
   mdiHomeOutline, mdiImageMultipleOutline, mdiMapMarkerOutline, mdiTagOutline,
@@ -123,7 +124,6 @@ const ETAPAS = [
   { titulo: 'Ficha técnica', descricao: 'Detalhes, extras e descrição' },
 ];
 
-// Checkbox estilizado como "chip" — reutilizado nas comodidades do imóvel
 function CampoCheckbox({ name, label, checked, onChange }) {
   return (
     <label className={`pub-checkbox-item ${checked ? 'checked' : ''}`}>
@@ -259,15 +259,38 @@ export default function Publicar() {
     }
     setUploadingImage(true);
     setErro('');
+
     try {
+      // MAGIA DA COMPRESSÃO (Frontend-side compression)
+      const compressedFiles = await Promise.all(
+        files.map(async (file) => {
+          const options = {
+            maxSizeMB: 0.8, // Comprime até o ficheiro ter cerca de 800KB (MUITO MAIS RÁPIDO)
+            maxWidthOrHeight: 1920, // Mantém a resolução Full HD para web
+            useWebWorker: true, // Usa várias threads do browser para ser super rápido
+          };
+          try {
+            return await imageCompression(file, options);
+          } catch (e) {
+            console.warn("Erro ao comprimir imagem, a enviar a original.", e);
+            return file; // Se falhar, manda a original (segurança extra)
+          }
+        })
+      );
+
       const data = new FormData();
       data.append('kind', 'listing');
-      files.forEach(file => data.append('imagens', file));
+      // Adicionamos o nome e o tipo original para o FormData perceber bem o ficheiro
+      compressedFiles.forEach((file, index) => {
+        data.append('imagens', file, files[index].name);
+      });
+
       const res = await api.post('/upload/imagens', data, { headers: { 'Content-Type': 'multipart/form-data' } });
       const imagens = normalizeUploadedImages(res.data);
       if (imagens.length) setFotos(prev => [...prev, ...imagens]);
+
     } catch (err) {
-      setErro(err.response?.data?.erro || 'Erro ao carregar as imagens.');
+      setErro(err.response?.data?.erro || 'Erro ao carregar as imagens. A tua internet pode estar instável.');
     } finally {
       setUploadingImage(false);
     }
@@ -438,101 +461,125 @@ export default function Publicar() {
   return (
     <>
       <style>{`
-        .pub-root { background: var(--cor-fundo-suave, #f4f6f2); color: var(--cor-texto, #102326); min-height: 100vh; font-family: var(--nx-font-body, 'Inter', sans-serif); padding: 36px 20px 100px; box-sizing: border-box; }
-        .pub-container { max-width: 860px; margin: 0 auto; width: 100%; }
+        .pub-root { background: #f8fafc; color: #0f172a; min-height: 100vh; font-family: 'Inter', sans-serif; padding: 40px 20px 100px; box-sizing: border-box; }
+        .pub-container { max-width: 900px; margin: 0 auto; width: 100%; }
 
-        .pub-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--cor-borda, #dfe8e4); padding-bottom: 20px; margin-bottom: 24px; }
-        .pub-title { font-family: var(--nx-font-display, 'Space Grotesk'), sans-serif; font-size: clamp(22px, 3vw, 28px); font-weight: 900; margin: 0; color: var(--cor-navy, #102f50); }
-        .pub-draft-hint { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--cor-texto-secundario, #5d6b78); font-size: 12px; }
-        .pub-draft-dot { width: 6px; height: 6px; border-radius: 50%; background: #3ecf8e; flex-shrink: 0; }
+        .pub-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 32px; }
+        .pub-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(26px, 3.5vw, 36px); font-weight: 900; margin: 0; color: #0f172a; letter-spacing: -0.02em; line-height: 1.1; }
+        .pub-draft-hint { display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; color: #64748b; font-size: 13px; font-weight: 600; }
+        .pub-draft-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
 
-        .pub-step-indicator { display: flex; gap: 10px; margin-bottom: 28px; }
-        .pub-step-item { flex: 1; display: grid; gap: 6px; }
-        .pub-step-pill { height: 5px; border-radius: 999px; background: var(--cor-borda, #dfe8e4); transition: background .25s ease; }
-        .pub-step-pill.active { background: var(--cor-champagne, #d9c49c); }
-        .pub-step-pill.completed { background: var(--cor-navy, #102f50); }
-        .pub-step-label { font-size: 11px; font-weight: 800; letter-spacing: .04em; color: var(--cor-texto-secundario, #8b9299); }
-        .pub-step-item.current .pub-step-label { color: var(--cor-navy, #102f50); }
+        .pub-step-indicator { display: flex; gap: 16px; margin-bottom: 40px; }
+        .pub-step-item { flex: 1; display: grid; gap: 8px; }
+        .pub-step-pill { height: 6px; border-radius: 999px; background: #e2e8f0; transition: background .3s ease; }
+        .pub-step-pill.active { background: #d9c49c; }
+        .pub-step-pill.completed { background: #102f50; }
+        .pub-step-label { font-size: 12px; font-weight: 800; letter-spacing: .05em; color: #64748b; text-transform: uppercase; }
+        .pub-step-item.current .pub-step-label { color: #102f50; }
         .pub-step-desc { display: none; }
-        @media (min-width: 640px) { .pub-step-desc { display: block; font-size: 11px; color: var(--cor-texto-secundario, #8b9299); margin-top: -2px; } }
+        @media (min-width: 640px) { .pub-step-desc { display: block; font-size: 13px; color: #94a3b8; font-weight: 500; } }
 
-        .pub-card { background: #ffffff; border: 1px solid var(--cor-borda, #dfe8e4); border-radius: 20px; padding: clamp(20px, 4vw, 32px); box-shadow: 0 12px 32px rgba(16,35,38,0.04); }
-        .pub-section-title { margin: 0 0 4px; font-family: var(--nx-font-display, 'Space Grotesk'), sans-serif; font-size: 18px; font-weight: 800; color: var(--cor-navy, #102f50); }
-        .pub-subsection-title { margin: 8px 0 -6px; font-size: 12px; font-weight: 850; letter-spacing: .07em; text-transform: uppercase; color: var(--cor-texto-secundario, #8b9299); }
-        .pub-label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--cor-texto-secundario, #4f646a); margin-bottom: 8px; }
+        .pub-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: clamp(24px, 5vw, 48px); box-shadow: 0 20px 40px -20px rgba(15,23,42,0.08); }
+        .pub-section-title { margin: 0 0 24px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; color: #071326; letter-spacing: -0.01em; }
+        
+        .pub-label { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 10px; }
         .pub-label-count { text-transform: none; font-weight: 600; opacity: .7; letter-spacing: 0; }
-        .pub-input { width: 100%; padding: 12px 16px; background: var(--cor-fundo-suave, #f8faf7); border: 1px solid var(--cor-borda, #dfe8e4); border-radius: 11px; color: var(--cor-texto, #102326); font-size: 14px; outline: none; transition: all 0.2s; box-sizing: border-box; }
-        .pub-input:focus { border-color: var(--cor-champagne, #d9c49c); background: #ffffff; box-shadow: 0 0 0 3px rgba(217,196,156,0.28); }
-        .pub-input:disabled { color: #9aa6b2; background: #f0efe9; }
-        .pub-hint { margin: 4px 0 0; font-size: 12px; color: var(--cor-texto-secundario, #8b9299); }
+        
+        .pub-input { width: 100%; padding: 14px 16px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; color: #0f172a; font-size: 15px; font-weight: 500; outline: none; transition: all 0.2s; box-sizing: border-box; }
+        .pub-input:focus { border-color: #102f50; background: #ffffff; box-shadow: 0 0 0 3px rgba(16, 47, 80, 0.1); }
+        .pub-input:disabled { color: #94a3b8; background: #f1f5f9; cursor: not-allowed; }
+        .pub-hint { margin: 6px 0 0; font-size: 13px; color: #64748b; font-weight: 500; }
 
-        .pub-actions-row { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--cor-borda, #dfe8e4); }
-        .pub-btn-primary { padding: 14px 26px; background: var(--cor-navy, #102f50); color: #ffffff; border: none; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; transition: transform 0.15s, background .15s; letter-spacing: 0.02em; display: inline-flex; align-items: center; gap: 8px; }
-        .pub-btn-primary:hover:not(:disabled) { transform: translateY(-1px); background: #071f38; }
-        .pub-btn-primary:disabled { opacity: .6; cursor: not-allowed; transform: none; }
-        .pub-btn-secondary { padding: 14px 22px; background: transparent; border: 1px solid var(--cor-borda, #dfe8e4); color: var(--cor-texto-secundario, #4f646a); border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; transition: background .15s, color .15s; }
-        .pub-btn-secondary:hover { background: var(--cor-fundo-suave, #f8faf7); color: var(--cor-texto, #102326); }
+        .pub-actions-row { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 24px; border-top: 1px solid #e2e8f0; }
+        .pub-btn-primary { padding: 16px 32px; background: #102f50; color: #ffffff; border: none; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; transition: transform 0.15s, background .15s, box-shadow .15s; letter-spacing: 0.02em; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 8px 16px -8px rgba(16,47,80,0.6); }
+        .pub-btn-primary:hover:not(:disabled) { transform: translateY(-2px); background: #071326; box-shadow: 0 12px 20px -8px rgba(16,47,80,0.8); }
+        .pub-btn-primary:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        .pub-btn-secondary { padding: 16px 28px; background: transparent; border: 1px solid #cbd5e1; color: #475569; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; display: inline-flex; align-items: center; gap: 8px; }
+        .pub-btn-secondary:hover { background: #f8fafc; color: #0f172a; border-color: #94a3b8; }
 
-        .pub-error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.22); color: #dc3545; padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .pub-error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #b91c1c; padding: 16px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; line-height: 1.5; }
 
-        .pub-category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .pub-category-card { display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 14px; border: 1.5px solid var(--cor-borda, #dfe8e4); background: #ffffff; cursor: pointer; transition: all .15s ease; text-align: left; }
+        .pub-category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .pub-category-card { display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0; background: #ffffff; cursor: pointer; transition: all .2s ease; text-align: left; box-shadow: 0 4px 6px -4px rgba(15,23,42,0.05); }
+        .pub-category-card:hover { border-color: #cbd5e1; background: #f8fafc; transform: translateY(-2px); }
         .pub-category-card svg { flex-shrink: 0; }
-        .pub-category-card strong { display: block; font-size: 14px; font-weight: 800; }
-        .pub-category-card span { display: block; font-size: 12px; color: var(--cor-texto-secundario, #8b9299); margin-top: 2px; }
-        .pub-category-card.active { border-color: var(--cor-navy, #102f50); background: var(--cor-navy, #102f50); color: #fff; }
+        .pub-category-card strong { display: block; font-size: 16px; font-weight: 800; color: #0f172a; }
+        .pub-category-card span { display: block; font-size: 13px; color: #64748b; margin-top: 2px; font-weight: 500; }
+        .pub-category-card.active { border-color: #102f50; background: #102f50; color: #fff; box-shadow: 0 10px 20px -10px rgba(16,47,80,0.5); }
+        .pub-category-card.active strong { color: #ffffff; }
         .pub-category-card.active span { color: rgba(255,255,255,.72); }
-        .pub-category-card.active .pub-cat-icon { background: rgba(255,255,255,.14); color: #fff; }
-        .pub-cat-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--cor-fundo-suave, #f0efe9); color: var(--cor-navy, #102f50); }
+        .pub-category-card.active .pub-cat-icon { background: rgba(255,255,255,.1); color: #d9c49c; }
+        .pub-cat-icon { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; background: #f1f5f9; color: #475569; }
 
-        .pub-dropzone { border: 2px dashed var(--cor-borda, #b9cac4); border-radius: 14px; padding: 26px; display: block; text-align: center; cursor: pointer; background: var(--cor-fundo-suave, #f8faf7); transition: border-color .15s, background .15s; }
-        .pub-dropzone.active-drag { border-color: var(--cor-champagne, #d9c49c); background: #fffaf0; }
-        .pub-dropzone strong { display: block; font-weight: 700; font-size: 13px; margin-top: 8px; color: var(--cor-texto, #102326); }
-        .pub-dropzone small { display: block; margin-top: 4px; font-size: 12px; color: var(--cor-texto-secundario, #8b9299); }
+        /* DROPZONE PREMIUM */
+        .pub-dropzone { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 40px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; background: #f8fafc; transition: all .2s ease; margin-bottom: 24px; }
+        .pub-dropzone:hover, .pub-dropzone.active-drag { border-color: #d9c49c; background: #fffdf5; }
+        .pub-dropzone-icon { width: 64px; height: 64px; border-radius: 50%; background: #ffffff; border: 1px solid #e2e8f0; display: grid; place-items: center; margin-bottom: 16px; color: #102f50; box-shadow: 0 4px 10px rgba(15,23,42,0.05); transition: 0.2s; }
+        .pub-dropzone:hover .pub-dropzone-icon { transform: scale(1.05); color: #d9c49c; border-color: #d9c49c; }
+        .pub-dropzone strong { display: block; font-weight: 800; font-size: 16px; color: #0f172a; margin-bottom: 6px; }
+        .pub-dropzone small { display: block; font-size: 13px; color: #64748b; font-weight: 500; }
 
-        .pub-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; margin-top: 12px; }
-        .pub-thumb { position: relative; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; border: 1px solid var(--cor-borda, #dfe8e4); }
+        .pub-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px; }
+        .pub-thumb { position: relative; aspect-ratio: 4/3; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(15,23,42,0.05); }
         .pub-thumb img { width: 100%; height: 100%; object-fit: cover; }
-        .pub-thumb-cover { position: absolute; bottom: 4px; left: 4px; padding: 2px 7px; border-radius: 999px; background: rgba(16,47,80,.82); color: #fff; font-size: 9px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
-        .pub-thumb-del { position: absolute; top: 4px; right: 4px; background: #dc3545; color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; display: grid; place-items: center; cursor: pointer; }
+        .pub-thumb-cover { position: absolute; bottom: 8px; left: 8px; padding: 4px 10px; border-radius: 6px; background: rgba(16,47,80,.9); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; backdrop-filter: blur(4px); }
+        .pub-thumb-del { position: absolute; top: 8px; right: 8px; background: #ef4444; color: #fff; border: none; border-radius: 50%; width: 26px; height: 26px; display: grid; place-items: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .pub-thumb-del:hover { background: #b91c1c; transform: scale(1.1); }
 
-        .pub-toggle-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .pub-toggle-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         .pub-toggle-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
-        .pub-toggle-pill { padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--cor-borda, #dfe8e4); background: #fff; font-size: 13px; font-weight: 700; color: var(--cor-texto, #102326); cursor: pointer; transition: all .12s ease; }
-        .pub-toggle-pill.active { border-color: var(--cor-navy, #102f50); background: var(--cor-navy, #102f50); color: #fff; }
+        .pub-toggle-pill { padding: 14px; border-radius: 12px; border: 1px solid #cbd5e1; background: #ffffff; font-size: 14px; font-weight: 700; color: #475569; cursor: pointer; transition: all .15s ease; }
+        .pub-toggle-pill:hover { border-color: #94a3b8; background: #f8fafc; }
+        .pub-toggle-pill.active { border-color: #102f50; background: #102f50; color: #fff; box-shadow: 0 6px 12px -4px rgba(16,47,80,0.3); }
 
-        .pub-checkbox-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .pub-checkbox-item { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--cor-borda, #dfe8e4); background: #fff; font-size: 13px; font-weight: 650; cursor: pointer; transition: all .12s ease; }
-        .pub-checkbox-item.checked { border-color: var(--cor-champagne, #d9c49c); background: #fffaf0; }
-        .pub-checkbox-item input { accent-color: var(--cor-navy, #102f50); width: 15px; height: 15px; flex-shrink: 0; }
+        .pub-checkbox-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .pub-checkbox-item { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 12px; border: 1px solid #cbd5e1; background: #ffffff; font-size: 14px; font-weight: 600; color: #475569; cursor: pointer; transition: all .15s ease; }
+        .pub-checkbox-item:hover { background: #f8fafc; border-color: #94a3b8; }
+        .pub-checkbox-item.checked { border-color: #d9c49c; background: #fffcf5; color: #0f172a; font-weight: 700; }
+        .pub-checkbox-item input { accent-color: #102f50; width: 18px; height: 18px; flex-shrink: 0; }
 
-        .pub-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
-        .pub-chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 999px; background: var(--cor-fundo-suave, #f0efe9); border: 1px solid var(--cor-borda, #dfe8e4); font-size: 12px; font-weight: 700; }
-        .pub-chip button { background: none; border: none; cursor: pointer; display: grid; place-items: center; color: #8b9299; padding: 0; }
-        .pub-chip-add { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: #fff; border: 1.5px dashed var(--cor-borda, #dfe8e4); font-size: 12px; font-weight: 700; color: var(--cor-navy, #102f50); cursor: pointer; }
-        .pub-extra-input-row { display: flex; gap: 8px; }
+        .pub-chip-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+        .pub-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; background: #f1f5f9; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; color: #334155; }
+        .pub-chip button { background: none; border: none; cursor: pointer; display: grid; place-items: center; color: #64748b; padding: 0; transition: 0.2s; }
+        .pub-chip button:hover { color: #ef4444; }
+        
+        .pub-chip-add { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: #ffffff; border: 1px dashed #cbd5e1; font-size: 13px; font-weight: 600; color: #102f50; cursor: pointer; transition: 0.2s; }
+        .pub-chip-add:hover { background: #f8fafc; border-color: #102f50; }
+        
+        .pub-extra-input-row { display: flex; gap: 12px; }
         .pub-extra-input-row .pub-input { flex: 1; }
 
-        .pub-quality-bar { height: 6px; border-radius: 999px; background: var(--cor-borda, #dfe8e4); overflow: hidden; margin-top: 6px; }
-        .pub-quality-bar > div { height: 100%; background: linear-gradient(90deg, var(--cor-champagne, #d9c49c), #3ecf8e); transition: width .25s ease; }
+        .pub-quality-bar { height: 8px; border-radius: 999px; background: #e2e8f0; overflow: hidden; margin-top: 8px; }
+        .pub-quality-bar > div { height: 100%; background: linear-gradient(90deg, #d9c49c, #10b981); transition: width .4s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        .pub-gratis-banner { background: #fffaf0; border: 1px solid var(--cor-champagne, #d9c49c); border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; font-size: 13px; color: #46566d; }
+        .pub-gratis-banner { background: #fffbeb; border: 1px solid #fde68a; border-radius: 16px; padding: 16px 20px; margin-bottom: 24px; font-size: 14px; color: #b45309; font-weight: 500; display: flex; align-items: center; gap: 12px; }
+        .pub-gratis-banner strong { color: #92400e; font-weight: 800; }
 
-        .pub-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .pub-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-        .pub-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        @media (max-width: 768px) { .pub-grid-2, .pub-grid-3, .pub-grid-4, .pub-checkbox-grid, .pub-toggle-grid.cols-3 { grid-template-columns: 1fr 1fr; } .pub-grid-4 { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 480px) { .pub-grid-2, .pub-grid-3, .pub-grid-4, .pub-checkbox-grid { grid-template-columns: 1fr; } }
+        .pub-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .pub-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .pub-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        
+        @media (max-width: 768px) { 
+          .pub-grid-2, .pub-grid-3, .pub-grid-4, .pub-checkbox-grid, .pub-toggle-grid.cols-3 { grid-template-columns: 1fr 1fr; gap: 16px; } 
+          .pub-actions-row { flex-direction: column-reverse; gap: 16px; }
+          .pub-btn-primary, .pub-btn-secondary { width: 100%; justify-content: center; }
+        }
+        @media (max-width: 480px) { 
+          .pub-grid-2, .pub-grid-3, .pub-grid-4, .pub-checkbox-grid, .pub-category-grid, .pub-toggle-grid, .pub-toggle-grid.cols-3 { grid-template-columns: 1fr; } 
+        }
       `}</style>
 
       {modalPremiumAberto && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(16,35,38,0.6)', backdropFilter: 'blur(6px)', zIndex: 999, display: 'grid', placeItems: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', padding: 40, borderRadius: 24, maxWidth: 460, textAlign: 'center' }}>
-            <Icon path={mdiCrown} size={2} color="var(--cor-champagne, #d9c49c)" style={{ margin: '0 auto 16px' }} />
-            <h2 style={{ fontFamily: 'var(--nx-font-display), sans-serif', fontSize: 24, margin: '0 0 10px', color: 'var(--cor-navy, #102f50)' }}>Limite gratuito atingido</h2>
-            <p style={{ color: '#4f646a', fontSize: 14, lineHeight: 1.6, margin: '0 0 24px' }}>Atingiste o limite do plano gratuito ({limiteGratis} anúncios). Para publicar mais anúncios sem restrições, ativa o teu plano Premium.</p>
-            <button onClick={() => navigate('/premium-confirmar')} className="pub-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>Aderir ao Premium</button>
-            <button onClick={() => setModalPremiumAberto(false)} className="pub-btn-secondary" style={{ width: '100%', justifyContent: 'center', marginTop: 10 }}>Fechar</button>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'grid', placeItems: 'center', padding: 24 }}>
+          <div style={{ background: '#fff', padding: '48px 32px', borderRadius: 24, maxWidth: 440, width: '100%', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+            <div style={{ width: 64, height: 64, background: '#fffbeb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+              <Icon path={mdiCrown} size={1.8} color="#d9c49c" />
+            </div>
+            <h2 style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 28, margin: '0 0 16px', color: '#0f172a', fontWeight: 900, letterSpacing: '-0.02em' }}>Limite gratuito atingido</h2>
+            <p style={{ color: '#475569', fontSize: 15, lineHeight: 1.6, margin: '0 0 32px' }}>Atingiste o limite do plano gratuito ({limiteGratis} anúncios). Para publicares mais anúncios sem restrições, ativa o teu plano Premium.</p>
+            <button onClick={() => navigate('/premium-confirmar')} className="pub-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>Ativar PRO</button>
+            <button onClick={() => setModalPremiumAberto(false)} className="pub-btn-secondary" style={{ width: '100%', justifyContent: 'center', marginTop: 12, border: 'none' }}>Cancelar e Fechar</button>
           </div>
         </div>
       )}
@@ -541,10 +588,12 @@ export default function Publicar() {
         <div className="pub-container">
           <div className="pub-header">
             <div>
-              <h1 className="pub-title">Publicar anúncio</h1>
-              <span className="pub-draft-hint"><span className="pub-draft-dot" /> Rascunho guardado automaticamente</span>
+              <h1 className="pub-title">Publicar Anúncio</h1>
+              <span className="pub-draft-hint"><span className="pub-draft-dot" /> Rascunho guardado com sucesso</span>
             </div>
-            <button onClick={() => navigate(-1)} className="pub-btn-secondary">Cancelar</button>
+            <button onClick={() => navigate(-1)} className="pub-btn-secondary">
+              <Icon path={mdiClose} size={0.8} /> Cancelar
+            </button>
           </div>
 
           <div className="pub-step-indicator">
@@ -553,7 +602,7 @@ export default function Publicar() {
               return (
                 <div className={`pub-step-item ${passoAtual === numero ? 'current' : ''}`} key={etapa.titulo}>
                   <span className={`pub-step-pill ${passoAtual >= numero ? 'active' : ''} ${passoAtual > numero ? 'completed' : ''}`} />
-                  <span className="pub-step-label">{numero}. {etapa.titulo}</span>
+                  <span className="pub-step-label">Passo {numero} - {etapa.titulo}</span>
                   <span className="pub-step-desc">{etapa.descricao}</span>
                 </div>
               );
@@ -562,13 +611,14 @@ export default function Publicar() {
 
           {usoGratisAtivo && passoAtual === 1 && (
             <div className="pub-gratis-banner">
-              <strong>Plano gratuito:</strong> Anúncio {proximoAnuncioGratis} de {limiteGratis} permitidos ({restantesGratis} restante{restantesGratis === 1 ? '' : 's'}).
+              <Icon path={mdiInformationOutline} size={1} />
+              <div><strong>Plano Base:</strong> Vais publicar o anúncio {proximoAnuncioGratis} de {limiteGratis} gratuitos na tua conta. Tens {restantesGratis} vaga(s) disponível(eis).</div>
             </div>
           )}
 
           {erro && (
             <div className="pub-error">
-              <Icon path={mdiAlertCircleOutline} size={0.8} style={{ flexShrink: 0 }} />
+              <Icon path={mdiAlertCircleOutline} size={1} style={{ flexShrink: 0, marginTop: 2 }} />
               <span>{erro}</span>
             </div>
           )}
@@ -578,46 +628,47 @@ export default function Publicar() {
 
               {/* PASSO 1: Categoria, Título e Preço */}
               {passoAtual === 1 && (
-                <div style={{ display: 'grid', gap: 20 }}>
-                  <h3 className="pub-section-title">O que pretendes publicar?</h3>
+                <div style={{ display: 'grid', gap: 24 }}>
+                  <h3 className="pub-section-title">O que pretendes anunciar hoje?</h3>
 
                   <div>
-                    <label className="pub-label">Categoria</label>
+                    <label className="pub-label">Selecione a Categoria</label>
                     <div className="pub-category-grid">
                       <button type="button" onClick={() => setForm(f => ({ ...f, tipo: 'carro' }))} className={`pub-category-card ${form.tipo === 'carro' ? 'active' : ''}`}>
-                        <span className="pub-cat-icon"><Icon path={mdiCarOutline} size={1} /></span>
-                        <span><strong>Automóvel</strong><span>Noxvelia Drive</span></span>
+                        <span className="pub-cat-icon"><Icon path={mdiCarOutline} size={1.2} /></span>
+                        <span><strong>Automóvel</strong><span>Veículos ligeiros e comerciais</span></span>
                       </button>
                       <button type="button" onClick={() => setForm(f => ({ ...f, tipo: 'imovel' }))} className={`pub-category-card ${form.tipo === 'imovel' ? 'active' : ''}`}>
-                        <span className="pub-cat-icon"><Icon path={mdiHomeOutline} size={1} /></span>
-                        <span><strong>Imóvel</strong><span>Noxvelia Estate</span></span>
+                        <span className="pub-cat-icon"><Icon path={mdiHomeOutline} size={1.2} /></span>
+                        <span><strong>Imóvel</strong><span>Casas, terrenos e espaços</span></span>
                       </button>
                     </div>
                   </div>
 
                   <div>
                     <label className="pub-label">
-                      Título do anúncio *
+                      Título atrativo *
                       <span className="pub-label-count">{form.titulo.length}/100</span>
                     </label>
-                    <input className="pub-input" name="titulo" value={form.titulo} onChange={handle} required maxLength={100} placeholder={form.tipo === 'carro' ? 'Ex: Audi A3 Sportback 1.6 TDI' : 'Ex: Apartamento T2 com Garagem e Varanda'} />
+                    <input className="pub-input" name="titulo" value={form.titulo} onChange={handle} required maxLength={100} placeholder={form.tipo === 'carro' ? 'Ex: Audi A3 Sportback S-Line 1.6 TDI 2021' : 'Ex: Apartamento T2 com Terraço no centro de Lisboa'} />
+                    <p className="pub-hint">Inclui as informações principais para captar a atenção no título.</p>
                   </div>
 
                   <div>
-                    <label className="pub-label"><Icon path={mdiTagOutline} size={0.55} /> Preço (€) *</label>
-                    <input className="pub-input" name="preco" type="number" min="0" value={form.preco} onChange={handle} required placeholder={form.tipo === 'carro' ? '19900' : '250000'} />
+                    <label className="pub-label">Preço de Venda (€) *</label>
+                    <input className="pub-input" name="preco" type="number" min="0" value={form.preco} onChange={handle} required placeholder={form.tipo === 'carro' ? '19900' : '250000'} style={{ fontSize: '20px', fontWeight: 800 }} />
                   </div>
                 </div>
               )}
 
               {/* PASSO 2: Fotos, Localização e Contactos */}
               {passoAtual === 2 && (
-                <div style={{ display: 'grid', gap: 20 }}>
-                  <h3 className="pub-section-title">Fotografias e contactos</h3>
+                <div style={{ display: 'grid', gap: 24 }}>
+                  <h3 className="pub-section-title">Apresentação e Visibilidade</h3>
 
                   <div>
                     <label className="pub-label">
-                      <span><Icon path={mdiImageMultipleOutline} size={0.55} /> Fotografias (mínimo 1) *</span>
+                      <span>Galeria de Imagens (Obrigatório) *</span>
                       <span className="pub-label-count">{fotos.length}/10</span>
                     </label>
                     <label
@@ -627,17 +678,22 @@ export default function Publicar() {
                       onDrop={handleDrop}
                     >
                       <input type="file" multiple onChange={handleImageUpload} disabled={uploadingImage} style={{ display: 'none' }} accept="image/*" />
-                      <Icon path={mdiCloudUploadOutline} size={1.2} color="#4f646a" />
-                      <strong>{uploadingImage ? 'A carregar imagens...' : 'Clica ou arrasta as fotografias para aqui'}</strong>
-                      <small>A primeira fotografia será usada como capa do anúncio.</small>
+                      <div className="pub-dropzone-icon">
+                        <Icon path={mdiCloudUploadOutline} size={1.5} />
+                      </div>
+                      <strong>{uploadingImage ? 'A otimizar e carregar fotografias...' : 'Clica aqui ou arrasta as tuas fotos (Até 10)'}</strong>
+                      <small>As fotos são otimizadas automaticamente para a Web. A primeira será a capa.</small>
                     </label>
+
                     {fotos.length > 0 && (
                       <div className="pub-gallery">
                         {fotos.map((f, i) => (
                           <div key={i} className="pub-thumb">
                             <img src={getImageUrl(f, 'thumbnail')} alt="" />
-                            {i === 0 && <span className="pub-thumb-cover">Capa</span>}
-                            <button type="button" onClick={() => setFotos(arr => arr.filter((_, idx) => idx !== i))} className="pub-thumb-del"><Icon path={mdiClose} size={0.5} /></button>
+                            {i === 0 && <span className="pub-thumb-cover">Foto Capa</span>}
+                            <button type="button" onClick={() => setFotos(arr => arr.filter((_, idx) => idx !== i))} className="pub-thumb-del" title="Remover foto">
+                              <Icon path={mdiClose} size={0.7} />
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -646,16 +702,16 @@ export default function Publicar() {
 
                   <div className="pub-grid-2">
                     <div>
-                      <label className="pub-label"><Icon path={mdiMapMarkerOutline} size={0.55} /> Distrito *</label>
+                      <label className="pub-label">Distrito do Bem *</label>
                       <select className="pub-input" name="distrito" value={form.distrito} onChange={handle} required>
-                        <option value="">Selecionar distrito</option>
+                        <option value="">Seleciona um distrito</option>
                         {DISTRITOS.map(d => <option key={d} value={d}>{d}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="pub-label">Cidade / Concelho *</label>
                       <select className="pub-input" name="cidade" value={form.cidade} onChange={handle} required disabled={!form.distrito}>
-                        <option value="">{form.distrito ? 'Selecionar cidade' : 'Escolhe o distrito'}</option>
+                        <option value="">{form.distrito ? 'Seleciona o concelho' : 'Escolhe o distrito primeiro'}</option>
                         {cidadesDisponiveis.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
@@ -663,58 +719,58 @@ export default function Publicar() {
 
                   <div className="pub-grid-2">
                     <div>
-                      <label className="pub-label">Telemóvel de contacto {ehAdmin ? '' : '*'}</label>
-                      <input className="pub-input" name="telefone" type="tel" value={form.telefone} onChange={handle} required={!ehAdmin} placeholder="9XX XXX XXX" />
+                      <label className="pub-label">Telemóvel {ehAdmin ? '' : '*'}</label>
+                      <input className="pub-input" name="telefone" type="tel" value={form.telefone} onChange={handle} required={!ehAdmin} placeholder="Ex: 912 345 678" />
                     </div>
                     <div>
-                      <label className="pub-label">Email de contacto {ehAdmin ? '' : '*'}</label>
-                      <input className="pub-input" name="email" type="email" value={form.email} onChange={handle} required={!ehAdmin} placeholder="exemplo@email.com" />
+                      <label className="pub-label">Email {ehAdmin ? '' : '*'}</label>
+                      <input className="pub-input" name="email" type="email" value={form.email} onChange={handle} required={!ehAdmin} placeholder="teu@email.com" />
                     </div>
                   </div>
-                  {ehAdmin && <p className="pub-hint"><Icon path={mdiInformationOutline} size={0.5} /> Como administrador só precisas de preencher um dos contactos.</p>}
+                  {ehAdmin && <p className="pub-hint"><Icon path={mdiInformationOutline} size={0.6} /> Como administrador deves preencher no mínimo um dos contactos caso faças a gestão direta.</p>}
                 </div>
               )}
 
               {/* PASSO 3: Ficha Técnica Completa, Extras e Descrição */}
               {passoAtual === 3 && (
-                <div style={{ display: 'grid', gap: 20 }}>
-                  <h3 className="pub-section-title">Ficha técnica e detalhes</h3>
+                <div style={{ display: 'grid', gap: 24 }}>
+                  <h3 className="pub-section-title">Ficha Técnica e Detalhes Finais</h3>
 
                   {form.tipo === 'carro' ? (
-                    <div style={{ display: 'grid', gap: 16 }}>
+                    <div style={{ display: 'grid', gap: 20 }}>
                       <div className="pub-grid-2">
                         <div>
                           <label className="pub-label">Marca *</label>
                           <select className="pub-input" name="marca" value={form.marca} onChange={handle} required>
-                            <option value="">Selecionar marca</option>
+                            <option value="">Selecione...</option>
                             {MARCAS.map(m => <option key={m} value={m}>{m}</option>)}
-                            <option value={OPCAO_OUTRO_VEICULO}>Outra marca</option>
+                            <option value={OPCAO_OUTRO_VEICULO}>Outra marca não listada</option>
                           </select>
                           {form.marca === OPCAO_OUTRO_VEICULO && (
-                            <input className="pub-input" name="marcaPersonalizada" value={form.marcaPersonalizada} onChange={handle} placeholder="Escreve a marca" required style={{ marginTop: 8 }} />
+                            <input className="pub-input" name="marcaPersonalizada" value={form.marcaPersonalizada} onChange={handle} placeholder="Qual é a marca?" required style={{ marginTop: 8 }} />
                           )}
                         </div>
                         <div>
                           <label className="pub-label">Modelo *</label>
                           <select className="pub-input" name="modelo" value={form.modelo} onChange={handle} required disabled={!form.marca}>
-                            <option value="">{form.marca ? 'Selecionar modelo' : 'Escolhe a marca'}</option>
+                            <option value="">{form.marca ? 'Selecione...' : 'Escolha a marca'}</option>
                             {modelosDisponiveis.map((mod, idx) => <option key={idx} value={mod}>{mod}</option>)}
-                            {form.marca && <option value={OPCAO_OUTRO_VEICULO}>Outro modelo</option>}
+                            {form.marca && <option value={OPCAO_OUTRO_VEICULO}>Outro modelo não listado</option>}
                           </select>
                           {form.modelo === OPCAO_OUTRO_VEICULO && (
-                            <input className="pub-input" name="modeloPersonalizado" value={form.modeloPersonalizado} onChange={handle} placeholder="Escreve o modelo" required style={{ marginTop: 8 }} />
+                            <input className="pub-input" name="modeloPersonalizado" value={form.modeloPersonalizado} onChange={handle} placeholder="Qual é o modelo?" required style={{ marginTop: 8 }} />
                           )}
                         </div>
                       </div>
 
                       <div className="pub-grid-2">
                         <div>
-                          <label className="pub-label">Versão</label>
-                          <input className="pub-input" name="versao" value={form.versao} onChange={handle} placeholder="Ex: Sport 150cv" />
+                          <label className="pub-label">Versão (Equipamento)</label>
+                          <input className="pub-input" name="versao" value={form.versao} onChange={handle} placeholder="Ex: Avant 2.0 TDI S-Tronic" />
                         </div>
                         <div>
-                          <label className="pub-label">Cor</label>
-                          <input className="pub-input" name="cor" value={form.cor} onChange={handle} placeholder="Ex: Cinzento Nardo" />
+                          <label className="pub-label">Cor Exterior</label>
+                          <input className="pub-input" name="cor" value={form.cor} onChange={handle} placeholder="Ex: Preto metalizado" />
                         </div>
                       </div>
 
@@ -731,7 +787,7 @@ export default function Publicar() {
                           <input className="pub-input" name="ano" type="number" min="1930" max={ANO_ATUAL + 1} value={form.ano} onChange={handle} required placeholder="2020" />
                         </div>
                         <div>
-                          <label className="pub-label">Km *</label>
+                          <label className="pub-label">Quilómetros *</label>
                           <input className="pub-input" name="km" type="number" min="0" value={form.km} onChange={handle} required placeholder="95000" />
                         </div>
                         <div>
@@ -746,21 +802,21 @@ export default function Publicar() {
                           <select className="pub-input" name="combustivel" value={form.combustivel} onChange={handle} required>
                             <option value="diesel">Diesel</option>
                             <option value="gasolina">Gasolina</option>
-                            <option value="eletrico">Elétrico</option>
+                            <option value="eletrico">Elétrico 100%</option>
                             <option value="hibrido">Híbrido</option>
                             <option value="gpl">GPL</option>
                           </select>
                         </div>
                         <div>
-                          <label className="pub-label">Transmissão *</label>
+                          <label className="pub-label">Caixa *</label>
                           <select className="pub-input" name="transmissao" value={form.transmissao} onChange={handle} required disabled={form.combustivel === 'eletrico'}>
                             <option value="manual">Manual</option>
-                            <option value="automatico">Automático</option>
+                            <option value="automatico">Automática</option>
                           </select>
                         </div>
                         <div>
-                          <label className="pub-label">{form.combustivel === 'eletrico' ? 'Cilindrada (n/a)' : 'Cilindrada (cm³)'}</label>
-                          <input className="pub-input" name="cilindrada" type="number" min="1" max="10000" value={form.cilindrada} onChange={handle} disabled={form.combustivel === 'eletrico'} placeholder="1600" />
+                          <label className="pub-label">{form.combustivel === 'eletrico' ? 'Cilindrada (N/A)' : 'Cilindrada (cm³)'}</label>
+                          <input className="pub-input" name="cilindrada" type="number" min="1" max="10000" value={form.cilindrada} onChange={handle} disabled={form.combustivel === 'eletrico'} placeholder="1968" />
                         </div>
                       </div>
 
@@ -774,7 +830,7 @@ export default function Publicar() {
                           <input className="pub-input" name="lugares" type="number" min="1" max="9" value={form.lugares} onChange={handle} required placeholder="5" />
                         </div>
                         <div>
-                          <label className="pub-label">Secção *</label>
+                          <label className="pub-label">Condição *</label>
                           <select className="pub-input" name="seccao" value={form.seccao} onChange={handle} required>
                             {SECCOES_CARRO.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
                           </select>
@@ -782,7 +838,7 @@ export default function Publicar() {
                       </div>
 
                       <div>
-                        <label className="pub-label">Tipo de veículo *</label>
+                        <label className="pub-label">Categoria de veículo *</label>
                         <div className="pub-toggle-grid cols-3">
                           {TIPOS_VEICULO_CARRO.map(item => (
                             <button type="button" key={item.value} className={`pub-toggle-pill ${form.tipoVeiculo === item.value ? 'active' : ''}`} onClick={() => setForm(f => ({ ...f, tipoVeiculo: item.value }))}>{item.label}</button>
@@ -791,7 +847,7 @@ export default function Publicar() {
                       </div>
 
                       <div>
-                        <label className="pub-label">Tração *</label>
+                        <label className="pub-label">Eixo de Tração *</label>
                         <div className="pub-toggle-grid cols-3">
                           {TRACOES_CARRO.map(item => (
                             <button type="button" key={item.value} className={`pub-toggle-pill ${form.tracao === item.value ? 'active' : ''}`} onClick={() => setForm(f => ({ ...f, tracao: item.value }))}>{item.label}</button>
@@ -801,35 +857,36 @@ export default function Publicar() {
 
                       <div className="pub-grid-2">
                         <div>
-                          <label className="pub-label">Garantia</label>
+                          <label className="pub-label">Garantia Incluída?</label>
                           <select className="pub-input" name="garantia" value={form.garantia} onChange={handle}>
-                            <option value="">Sem garantia</option>
+                            <option value="">Sem garantia (Particular)</option>
                             {OPCOES_GARANTIA.map(g => <option key={g} value={g}>{g}</option>)}
                           </select>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'flex-end' }}>
                           <label className={`pub-checkbox-item ${form.aceitaRetoma ? 'checked' : ''}`} style={{ width: '100%', justifyContent: 'center' }}>
                             <input type="checkbox" name="aceitaRetoma" checked={form.aceitaRetoma} onChange={handle} />
-                            <span>Aceita retoma</span>
+                            <span>Aceito Retoma / Troca</span>
                           </label>
                         </div>
                       </div>
 
                       <div>
-                        <label className="pub-label">Número de chassi / VIN (opcional, para carVertical)</label>
-                        <input className="pub-input" name="vin" value={form.vin} onChange={handle} placeholder="17 caracteres" maxLength={17} style={{ textTransform: 'uppercase' }} />
+                        <label className="pub-label">Número de Chassi (VIN)</label>
+                        <input className="pub-input" name="vin" value={form.vin} onChange={handle} placeholder="Opcional. Permite associar relatório carVertical." maxLength={17} style={{ textTransform: 'uppercase' }} />
+                        <p className="pub-hint">Apenas 17 caracteres. Sem letras I, O ou Q.</p>
                       </div>
                     </div>
                   ) : (
-                    <div style={{ display: 'grid', gap: 16 }}>
+                    <div style={{ display: 'grid', gap: 20 }}>
                       <div className="pub-grid-3">
                         <div>
                           <label className="pub-label">Estado</label>
                           <select className="pub-input" name="estado" value={form.estado} onChange={handle}>
-                            <option value="Novo">Novo</option>
+                            <option value="Novo">Novo / Em planta</option>
                             <option value="Usado">Usado</option>
-                            <option value="Renovado">Renovado</option>
-                            <option value="Para remodelar">Para remodelar</option>
+                            <option value="Renovado">Remodelado</option>
+                            <option value="Para remodelar">Para remodelar / Ruína</option>
                           </select>
                         </div>
                         <div>
@@ -849,17 +906,17 @@ export default function Publicar() {
 
                       <div className="pub-grid-3">
                         <div>
-                          <label className="pub-label">Área útil (m²)</label>
-                          <input className="pub-input" name="area" type="number" min="0" value={form.area} onChange={handle} placeholder="120" />
+                          <label className="pub-label">Área Útil (m²)</label>
+                          <input className="pub-input" name="area" type="number" min="0" value={form.area} onChange={handle} placeholder="Ex: 120" />
                         </div>
                         <div>
-                          <label className="pub-label">Área terreno (m²)</label>
-                          <input className="pub-input" name="areaTerreno" type="number" min="0" value={form.areaTerreno} onChange={handle} placeholder="300" />
+                          <label className="pub-label">Área Terreno (m²)</label>
+                          <input className="pub-input" name="areaTerreno" type="number" min="0" value={form.areaTerreno} onChange={handle} placeholder="Ex: 300 (opcional)" />
                         </div>
                         <div>
-                          <label className="pub-label">Certificado energético</label>
+                          <label className="pub-label">Classificação Energética</label>
                           <select className="pub-input" name="certEnergetico" value={form.certEnergetico} onChange={handle}>
-                            {['A+', 'A', 'B', 'B-', 'C', 'D', 'E', 'F', 'Isento'].map(c => <option key={c} value={c}>{c}</option>)}
+                            {['A+', 'A', 'B', 'B-', 'C', 'D', 'E', 'F', 'Isento', 'Em Processo'].map(c => <option key={c} value={c}>{c}</option>)}
                           </select>
                         </div>
                       </div>
@@ -868,29 +925,29 @@ export default function Publicar() {
                         {!TIPOS_SEM_TIPOLOGIA.includes(form.tipoImovel) && (
                           <div>
                             <label className="pub-label">Quartos</label>
-                            <input className="pub-input" name="quartos" type="number" min="0" value={form.quartos} onChange={handle} placeholder="2" />
+                            <input className="pub-input" name="quartos" type="number" min="0" value={form.quartos} onChange={handle} placeholder="3" />
                           </div>
                         )}
                         {form.tipoImovel !== 'terreno' && (
                           <div>
-                            <label className="pub-label">Casas de banho</label>
-                            <input className="pub-input" name="casasBanho" type="number" min="0" value={form.casasBanho} onChange={handle} placeholder="1" />
+                            <label className="pub-label">Casas de Banho</label>
+                            <input className="pub-input" name="casasBanho" type="number" min="0" value={form.casasBanho} onChange={handle} placeholder="2" />
                           </div>
                         )}
                         <div>
-                          <label className="pub-label">Ano construção</label>
+                          <label className="pub-label">Ano Construção</label>
                           <input className="pub-input" name="anoConstrucao" type="number" min="1800" max={ANO_ATUAL} value={form.anoConstrucao} onChange={handle} placeholder="2005" />
                         </div>
                         {form.tipoImovel !== 'terreno' && (
                           <div>
-                            <label className="pub-label">Andar</label>
-                            <input className="pub-input" name="andar" type="number" value={form.andar} onChange={handle} placeholder="3" />
+                            <label className="pub-label">Piso / Andar</label>
+                            <input className="pub-input" name="andar" type="number" value={form.andar} onChange={handle} placeholder="Ex: 3" />
                           </div>
                         )}
                       </div>
 
                       <div>
-                        <label className="pub-label">Comodidades</label>
+                        <label className="pub-label">Características Especiais</label>
                         <div className="pub-checkbox-grid">
                           {COMODIDADES_IMOVEL.filter(c => !(form.tipoImovel === 'terreno' && ['garagem', 'elevador', 'mobilado', 'condominio'].includes(c.name))).map(c => (
                             <CampoCheckbox key={c.name} name={c.name} label={c.label} checked={form[c.name]} onChange={handle} />
@@ -901,58 +958,61 @@ export default function Publicar() {
                   )}
 
                   <div>
-                    <label className="pub-label">Extras / equipamento</label>
+                    <label className="pub-label">Detalhes & Extras Livres</label>
                     {equipamento.length > 0 && (
-                      <div className="pub-chip-row" style={{ marginBottom: 10 }}>
+                      <div className="pub-chip-row">
                         {equipamento.map((extra, idx) => (
                           <span className="pub-chip" key={`${extra}-${idx}`}>
                             {extra}
-                            <button type="button" onClick={() => handleRemoveExtra(idx)}><Icon path={mdiClose} size={0.5} /></button>
+                            <button type="button" onClick={() => handleRemoveExtra(idx)}><Icon path={mdiClose} size={0.6} /></button>
                           </span>
                         ))}
                       </div>
                     )}
                     {extrasRapidosDisponiveis.length > 0 && (
-                      <div className="pub-chip-row" style={{ marginBottom: 10 }}>
+                      <div className="pub-chip-row">
                         {extrasRapidosDisponiveis.map(extra => (
                           <button type="button" key={extra} className="pub-chip-add" onClick={() => handleAddExtraRapido(extra)}>
-                            <Icon path={mdiPlus} size={0.5} /> {extra}
+                            <Icon path={mdiPlus} size={0.6} /> {extra}
                           </button>
                         ))}
                       </div>
                     )}
-                    <div className="pub-extra-input-row">
-                      <input className="pub-input" value={novoExtra} onChange={(e) => setNovoExtra(e.target.value)} placeholder="Adicionar outro extra e pressionar Enter" onKeyDown={(e) => { if (e.key === 'Enter') handleAddExtra(e); }} />
+                    <div className="pub-extra-input-row" style={{ marginTop: 12 }}>
+                      <input className="pub-input" value={novoExtra} onChange={(e) => setNovoExtra(e.target.value)} placeholder="Escreve um extra e carrega em Adicionar" onKeyDown={(e) => { if (e.key === 'Enter') handleAddExtra(e); }} />
                       <button type="button" className="pub-btn-secondary" onClick={handleAddExtra}>Adicionar</button>
                     </div>
                   </div>
 
                   <div>
                     <label className="pub-label">
-                      Descrição do anúncio
+                      Descrição Detalhada do Anúncio
                       <span className="pub-label-count">{form.descricao.length}/2000</span>
                     </label>
-                    <textarea className="pub-input" name="descricao" value={form.descricao} onChange={handle} rows={4} maxLength={2000} placeholder="Detalhes adicionais, estado de conservação, pontos fortes..." style={{ resize: 'vertical' }} />
+                    <textarea className="pub-input" name="descricao" value={form.descricao} onChange={handle} rows={6} maxLength={2000} placeholder="Não deixes pontas soltas. Descreve o estado de conservação real, revisões recentes, motivo de venda ou outros aspetos que ajudem a converter quem está a ler o anúncio..." style={{ resize: 'vertical', lineHeight: 1.6 }} />
                   </div>
 
                   <div>
-                    <label className="pub-label">Tour virtual / vídeo (opcional)</label>
-                    <input type="url" className="pub-input" name="videoUrl" value={form.videoUrl} onChange={handle} placeholder="https://www.youtube.com/watch?v=..." />
+                    <label className="pub-label">Link para Vídeo (Opcional)</label>
+                    <input type="url" className="pub-input" name="videoUrl" value={form.videoUrl} onChange={handle} placeholder="Cola aqui um link válido do Youtube ou Matterport (3D Tour)" />
                   </div>
 
                   {ehAdmin && (
-                    <label className={`pub-checkbox-item ${form.destacado ? 'checked' : ''}`} style={{ width: 'fit-content' }}>
-                      <input type="checkbox" name="destacado" checked={form.destacado} onChange={handle} />
-                      <span>Marcar como anúncio destacado</span>
-                    </label>
+                    <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px dashed #cbd5e1' }}>
+                      <label className={`pub-checkbox-item ${form.destacado ? 'checked' : ''}`} style={{ width: 'fit-content', border: 'none', background: 'transparent' }}>
+                        <input type="checkbox" name="destacado" checked={form.destacado} onChange={handle} />
+                        <span style={{ fontWeight: 800 }}>Forçar Destaque Administrativo (Aparece na Home)</span>
+                      </label>
+                    </div>
                   )}
 
                   {qualidade != null && (
-                    <div>
-                      <label className="pub-label">
-                        Qualidade do anúncio
-                        <span className="pub-label-count">{Math.round(qualidade)}%</span>
+                    <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
+                      <label className="pub-label" style={{ marginBottom: 4 }}>
+                        Pontuação do teu anúncio
+                        <span className="pub-label-count" style={{ fontWeight: 900, color: '#102f50' }}>{Math.round(qualidade)}%</span>
                       </label>
+                      <p style={{ margin: '0 0 12px', fontSize: 12, color: '#64748b' }}>Anúncios com mais de 80% recebem 3x mais contactos.</p>
                       <div className="pub-quality-bar"><div style={{ width: `${Math.min(100, Math.max(0, qualidade))}%` }} /></div>
                     </div>
                   )}
@@ -962,17 +1022,17 @@ export default function Publicar() {
               <div className="pub-actions-row">
                 {passoAtual > 1 ? (
                   <button type="button" onClick={recuarPasso} className="pub-btn-secondary">
-                    <Icon path={mdiArrowLeft} size={0.7} /> Anterior
+                    <Icon path={mdiArrowLeft} size={0.8} /> Voltar ao Passo Anterior
                   </button>
                 ) : <div />}
 
                 {passoAtual < 3 ? (
                   <button type="button" onClick={avancarPasso} className="pub-btn-primary">
-                    Seguinte <Icon path={mdiArrowRight} size={0.7} />
+                    Avançar para o Passo {passoAtual + 1} <Icon path={mdiArrowRight} size={0.8} />
                   </button>
                 ) : (
                   <button type="submit" disabled={loading || uploadingImage} className="pub-btn-primary">
-                    {loading ? 'A publicar...' : 'Publicar anúncio agora'} <Icon path={mdiCheck} size={0.7} />
+                    {loading ? 'A finalizar publicação...' : 'Concluir e Publicar Anúncio'} <Icon path={mdiCheck} size={0.8} />
                   </button>
                 )}
               </div>
