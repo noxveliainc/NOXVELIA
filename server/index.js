@@ -58,7 +58,6 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Permite chamadas sem origin (ex: mobile apps, postman) ou se estiver na lista
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -68,7 +67,7 @@ const corsOptions = {
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200 // Algumas versões antigas de browsers falham em OPTIONS sem 200
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
@@ -110,8 +109,10 @@ app.use(requestMetrics);
 app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
 app.use('/api/partnerships/resend/webhook', express.raw({ type: 'application/json' }));
 
-app.use(express.json({ limit: '2mb' }));
-app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+// 🔥 AQUI ESTÁ A CORREÇÃO: Limite aumentado para 100MB
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+
 app.use((req, res, next) => {
   if (Buffer.isBuffer(req.body)) return next();
   req.body = sanitize(req.body);
