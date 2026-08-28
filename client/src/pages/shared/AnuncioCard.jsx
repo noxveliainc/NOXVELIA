@@ -144,7 +144,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nx-card-horiz {
           display: flex;
           width: 100%;
-          min-height: 210px;
+          min-height: 200px; /* Reduzido ligeiramente para um formato perfeito */
           background: #ffffff;
           border: 1px solid #e2e8f0;
           border-radius: 12px;
@@ -188,14 +188,14 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         }
         .nx-badge-destaque svg { color: #071326; }
 
-        /* ── IMAGEM DO CARTÃO ── */
+        /* ── IMAGEM DO CARTÃO (Dimensões perfeitas 4:3) ── */
         .nxc-img-pane {
-          width: 310px;
-          min-height: 210px;
+          width: 280px; /* Largura perfeita para não sobrar fundo desfocado */
           flex-shrink: 0;
           position: relative;
           background: #0f172a; 
           overflow: hidden;
+          display: flex;
         }
         
         .nxc-img-bg {
@@ -203,7 +203,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           inset: -24px;
           background-size: cover;
           background-position: center;
-          filter: blur(16px) brightness(0.5);
+          filter: blur(16px) brightness(0.5); 
           z-index: 0;
         }
         
@@ -212,7 +212,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: contain;
+          object-fit: contain; /* GARANTIA ABSOLUTA DE NÃO CORTAR */
           z-index: 1;
           transition: transform 0.4s ease;
         }
@@ -249,7 +249,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           min-width: 0;
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          justify-content: center; 
         }
         .nxc-tags-row {
           display: flex; gap: 8px; margin-bottom: 12px; align-items: center;
@@ -291,7 +291,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           background: #fafcff;
         }
         .nxc-price {
-          font-size: 26px;
+          font-size: 26px; 
           font-weight: 900; color: #071326;
           white-space: nowrap; margin-bottom: 16px;
         }
