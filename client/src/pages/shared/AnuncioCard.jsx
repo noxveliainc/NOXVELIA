@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { anuncioPath } from '../../utils/seo';
@@ -41,6 +41,8 @@ function CardIcon({ name, size = 14, color, className = '' }) {
 
 export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioEliminado, forceSellerIdentity = false }) {
   const { user, signed } = useAuth();
+  const locationPath = useLocation().pathname;
+  const inMyProfile = locationPath.includes('/perfil') && !forceSellerIdentity;
 
   const [eliminando, setEliminando] = useState(false);
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -142,7 +144,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nx-card-horiz {
           display: flex;
           width: 100%;
-          min-height: 210px; /* Garante que o cartão não encolhe demasiado */
+          min-height: 210px;
           background: #ffffff;
           border: 1px solid #e2e8f0;
           border-radius: 12px;
@@ -186,10 +188,10 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         }
         .nx-badge-destaque svg { color: #071326; }
 
-        /* ── IMAGEM DO CARTÃO (Mais Larga e Alta) ── */
+        /* ── IMAGEM DO CARTÃO ── */
         .nxc-img-pane {
-          width: 310px; /* Alargado para ter mais protagonismo */
-          min-height: 210px; /* Altura mínima para a imagem expandir */
+          width: 310px;
+          min-height: 210px;
           flex-shrink: 0;
           position: relative;
           background: #0f172a; 
@@ -201,7 +203,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           inset: -24px;
           background-size: cover;
           background-position: center;
-          filter: blur(16px) brightness(0.5); /* Fundo um pouco mais escuro para contrastar o carro */
+          filter: blur(16px) brightness(0.5);
           z-index: 0;
         }
         
@@ -210,7 +212,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: contain; /* Nunca corta! */
+          object-fit: contain;
           z-index: 1;
           transition: transform 0.4s ease;
         }
@@ -247,7 +249,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           min-width: 0;
           display: flex;
           flex-direction: column;
-          justify-content: center; /* Centrado verticalmente agora que tem mais altura */
+          justify-content: center;
         }
         .nxc-tags-row {
           display: flex; gap: 8px; margin-bottom: 12px; align-items: center;
@@ -289,7 +291,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           background: #fafcff;
         }
         .nxc-price {
-          font-size: 26px; /* Ligeiramente maior */
+          font-size: 26px;
           font-weight: 900; color: #071326;
           white-space: nowrap; margin-bottom: 16px;
         }
@@ -341,16 +343,18 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         {/* ── PAINEL DE IMAGEM ── */}
         <div className="nxc-img-pane">
-          {isPremium && (
+          {/* Se for Destaque, exibe a etiqueta de Destaque Dourada e ignora qualquer outra etiqueta de status */}
+          {isPremium ? (
             <span className="nx-badge-destaque">
               <CardIcon name="star" size={12} /> Destaque
             </span>
-          )}
-
-          {!isPremium && showStatus && anuncio?.estado && !eMeuAnuncio && (
-            <span className="nxc-badge-status" style={{ background: status.bg, color: status.color, border: `1px solid ${status.border}` }}>
-              {status.label}
-            </span>
+          ) : (
+            /* Se NÃO for destaque, SÓ MOSTRA status como 'Pausado'/'A expirar' SE estiver na Área Pessoal do Vendedor */
+            showStatus && anuncio?.estado && anuncio.estado !== 'ativo' && inMyProfile && (
+              <span className="nxc-badge-status" style={{ background: status.bg, color: status.color, border: `1px solid ${status.border}` }}>
+                {status.label}
+              </span>
+            )
           )}
 
           {imagemPrincipalUrl ? (

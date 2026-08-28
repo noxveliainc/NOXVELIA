@@ -97,15 +97,18 @@ export default function PerfilPublico() {
   const isProfissional = vendedor?.tipoConta === 'profissional' || isAdmin;
   const linksPerfilVisiveis = obterLinksVisiveisPerfil(vendedor);
 
+  // 🔥 SOLUÇÃO: Filtramos para que apenas anúncios ATIVOS apareçam no perfil público
+  const anunciosAtivos = useMemo(() => anuncios.filter(a => a.estado === 'ativo'), [anuncios]);
+
   const totais = useMemo(() => ({
-    todos: anuncios.length,
-    carro: anuncios.filter((anuncio) => anuncio.tipo === 'carro').length,
-    imovel: anuncios.filter((anuncio) => anuncio.tipo === 'imovel').length,
-    destacados: anuncios.filter((anuncio) => anuncio.destacado).length,
-  }), [anuncios]);
+    todos: anunciosAtivos.length,
+    carro: anunciosAtivos.filter((anuncio) => anuncio.tipo === 'carro').length,
+    imovel: anunciosAtivos.filter((anuncio) => anuncio.tipo === 'imovel').length,
+    destacados: anunciosAtivos.filter((anuncio) => anuncio.destacado).length,
+  }), [anunciosAtivos]);
 
   const opcoes = useMemo(() => {
-    const carros = anuncios.filter((anuncio) => anuncio.tipo === 'carro');
+    const carros = anunciosAtivos.filter((anuncio) => anuncio.tipo === 'carro');
     const carrosDaMarca = filtros.marca
       ? carros.filter((anuncio) => obterMarca(anuncio) === filtros.marca)
       : carros;
@@ -113,16 +116,16 @@ export default function PerfilPublico() {
     return {
       marcas: unicoOrdenado(carros.map(obterMarca)),
       modelos: unicoOrdenado(carrosDaMarca.map(obterModelo)),
-      distritos: unicoOrdenado(anuncios.map(obterDistrito)),
+      distritos: unicoOrdenado(anunciosAtivos.map(obterDistrito)),
     };
-  }, [anuncios, filtros.marca]);
+  }, [anunciosAtivos, filtros.marca]);
 
   const anunciosFiltrados = useMemo(() => {
     const termo = normalizarTexto(filtros.q);
     const min = numero(filtros.precoMin);
     const max = numero(filtros.precoMax);
 
-    const filtrados = anuncios.filter((anuncio) => {
+    const filtrados = anunciosAtivos.filter((anuncio) => {
       if (filtros.categoria === 'carro' && anuncio.tipo !== 'carro') return false;
       if (filtros.categoria === 'imovel' && anuncio.tipo !== 'imovel') return false;
       if (filtros.categoria === 'destacados' && !anuncio.destacado) return false;
@@ -153,7 +156,7 @@ export default function PerfilPublico() {
       return Number(b.destacado === true) - Number(a.destacado === true)
         || new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     });
-  }, [anuncios, filtros]);
+  }, [anunciosAtivos, filtros]);
 
   const handleFiltro = (campo) => (event) => {
     const valor = event.target.value;
@@ -289,7 +292,7 @@ export default function PerfilPublico() {
         </div>
 
         <div className="pp-main">
-          {anuncios.length > 0 ? (
+          {anunciosAtivos.length > 0 ? (
             <>
               <div className="pp-showcase-summary" aria-label="Resumo da montra">
                 <div className="pp-summary-item"><strong>{totais.todos}</strong><span>anúncios ativos</span></div>
@@ -370,7 +373,7 @@ export default function PerfilPublico() {
                     <h3 className="pp-preview-title">Anúncios ativos</h3>
                     <p className="pp-result-copy">Resultados do stock ativo de {nomeExibicao}.</p>
                   </div>
-                  <span className="pp-result-count">{anunciosFiltrados.length} de {anuncios.length}</span>
+                  <span className="pp-result-count">{anunciosFiltrados.length} de {anunciosAtivos.length}</span>
                 </div>
 
                 {anunciosFiltrados.length > 0 ? (

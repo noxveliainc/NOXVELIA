@@ -10,7 +10,7 @@ import {
   mdiChartBar, mdiDomain,
   mdiClose, mdiCrown, mdiStar, mdiChevronLeft, mdiPencil, mdiEarth,
   mdiWeb, mdiInstagram, mdiFacebook, mdiLinkedin, mdiYoutube, mdiMusicNote, mdiWhatsapp,
-  mdiPlus, mdiTrashCanOutline
+  mdiPlus, mdiTrashCanOutline, mdiStorefrontOutline
 } from '@mdi/js';
 import { getImageUrl, normalizeUploadedImages } from '../../utils/images';
 
@@ -234,11 +234,13 @@ export default function Perfil() {
     setTimeout(() => setLinkCopiado(false), 2000);
   };
 
-  const anunciosFiltrados = anuncios.filter(a => a.tipo === abaActiva);
-  const totalImoveis = anuncios.filter(a => a.tipo === 'imovel').length;
-  const totalCarros = anuncios.filter(a => a.tipo === 'carro').length;
+  const anunciosVisiveis = anuncios.filter(a => a.estado !== 'apagado' && a.estado !== 'vendido');
+  const anunciosFiltrados = anunciosVisiveis.filter(a => a.tipo === abaActiva);
+  const totalImoveis = anunciosVisiveis.filter(a => a.tipo === 'imovel').length;
+  const totalCarros = anunciosVisiveis.filter(a => a.tipo === 'carro').length;
   const linksPerfilVisiveis = obterLinksVisiveisPerfil(utilizador);
-  const anunciosAtivosPerfil = anuncios.filter(a => a.estado !== 'apagado');
+  const anunciosAtivosPerfil = anunciosVisiveis;
+  
   const totalDestacadosPerfil = anunciosAtivosPerfil.filter(a => a.destacado).length;
   const totalVisitasPerfil = anunciosAtivosPerfil.reduce((total, anuncio) => total + Number(anuncio.visitas || 0), 0);
   const totalGuardadosPerfil = anunciosAtivosPerfil.reduce((total, anuncio) => total + Number(anuncio.guardados || 0), 0);
@@ -253,6 +255,8 @@ export default function Perfil() {
     || totalContactosPerfil > 0
     || totalGuardadosPerfil > 0
     || mediaQualidadePerfil > 0;
+  
+  const isProfissional = utilizador?.tipoConta === 'profissional' || utilizador?.tipo === 'admin';
   const premiumAtivoPerfil = utilizador?.premiumAtivo === true || utilizador?.tipo === 'admin';
   const anunciosParaMelhorarPerfil = anunciosAtivosPerfil
     .filter((anuncio) => Number(anuncio.scoreQualidade || 0) < 8)
@@ -294,10 +298,8 @@ export default function Perfil() {
         .tab-btn.active-imovel { background: #102f50; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .tab-btn.active-carro { background: #102f50; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        /* ── GRELHA AGORA É LISTA HORIZONTAL PARA ACOMODAR O ANUNCIOCARD ── */
         .cards-list { display: flex; flex-direction: column; gap: 24px; width: 100%; }
         
-        /* O Wrapper abraça o AnuncioCard e adiciona os botões de ação do dono */
         .card-wrapper { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px; width: 100%; box-shadow: 0 10px 25px -10px rgba(15,23,42,0.05); }
         
         .card-controls { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -315,6 +317,34 @@ export default function Perfil() {
         .stat-box-val { font-size: 22px; font-weight: 900; color: #0f172a; }
         .stat-box-lbl { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-top: 4px; }
         
+        /* ── BANNER EVOLUÇÃO PROFISSIONAL ── */
+        .perfil-upgrade-banner {
+          background: linear-gradient(135deg, #102f50 0%, #0a1f35 100%);
+          border-radius: 20px;
+          padding: 24px 32px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 24px;
+          margin: 16px 0 32px;
+          box-shadow: 0 15px 35px -10px rgba(16,47,80,0.4);
+          border: 1px solid rgba(217,196,156,0.3);
+          flex-wrap: wrap;
+        }
+        .upgrade-content { display: flex; align-items: center; gap: 20px; flex: 1; }
+        .upgrade-icon { color: #d9c49c; background: rgba(217,196,156,0.1); padding: 12px; border-radius: 16px; flex-shrink: 0; }
+        .upgrade-content h3 { color: #ffffff; font-size: 20px; margin: 0 0 6px; font-weight: 800; }
+        .upgrade-content p { color: #94a3b8; font-size: 14px; margin: 0; line-height: 1.5; }
+        .upgrade-content p strong { color: #e2e8f0; }
+        .upgrade-btn {
+          background: #d9c49c; color: #071326; border: none; padding: 14px 24px; border-radius: 12px; font-weight: 900; font-size: 14px; cursor: pointer; white-space: nowrap; transition: 0.2s; box-shadow: 0 4px 12px rgba(217,196,156,0.3);
+        }
+        .upgrade-btn:hover { background: #f0dfbb; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(217,196,156,0.5); }
+        @media (max-width: 768px) {
+          .perfil-upgrade-banner { padding: 20px; flex-direction: column; align-items: flex-start; text-align: left; }
+          .upgrade-btn { width: 100%; text-align: center; justify-content: center; }
+        }
+
         .perfil-premium-panel { margin: 0 0 24px; border: 1px solid rgba(217,196,156,.5); border-radius: 16px; padding: 24px; background: linear-gradient(135deg, rgba(255,255,255,1), rgba(217,196,156,.15)); width: 100%; }
         .perfil-premium-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; width: 100%; }
         .perfil-premium-title { margin: 0; color: #102f50; font-size: 20px; line-height: 1.2; font-weight: 900; }
@@ -481,6 +511,22 @@ export default function Perfil() {
           uploadingAvatar={uploadingAvatar} uploadingCapa={uploadingCapa} linkCopiado={linkCopiado}
         />
 
+        {/* 🌟 NOVO: BANNER DE EVOLUÇÃO PARA QUEM NÃO É PROFISSIONAL 🌟 */}
+        {!isProfissional && (
+          <section className="perfil-upgrade-banner">
+            <div className="upgrade-content">
+              <Icon path={mdiStorefrontOutline} size={2.2} className="upgrade-icon" />
+              <div>
+                <h3>És um profissional do ramo?</h3>
+                <p>Muda a tua conta para <strong>Stand ou Imobiliária</strong>. É grátis, ganhas mais confiança dos teus clientes e acesso a métricas exclusivas.</p>
+              </div>
+            </div>
+            <button onClick={() => setMostrarModalEvolucao(true)} className="upgrade-btn">
+              Evoluir para Conta Profissional
+            </button>
+          </section>
+        )}
+
         <section className="perfil-premium-panel">
           <div className="perfil-premium-head">
             <div>
@@ -579,7 +625,6 @@ export default function Perfil() {
                     <div className="stat-box" style={{ borderLeft: '1px solid #e2e8f0', borderRight: '1px solid #e2e8f0' }}><div className="stat-box-val" style={{ color: '#3b82f6' }}>{dadosGrafico.guardadoEmFavoritos}</div><div className="stat-box-lbl">Favoritos</div></div>
                     <div className="stat-box"><div className="stat-box-val" style={{ color: '#d9c49c' }}>{dadosGrafico.contactosGerados}</div><div className="stat-box-lbl">Mensagens</div></div>
                   </div>
-                  {/* Se houver dados de gráfico diário, podem ser exibidos aqui */}
                 </div>
               )}
             </div>

@@ -25,9 +25,6 @@ import { DISTRITOS, DISTRITOS_CIDADES_PT } from '../../data/localizacoes';
 import './Landing.css';
 
 const CARVERTICAL_URL = 'https://www.carvertical.deal/27H3X8P/CXW7M6/?source_id=AFF&sub1=noxvelia';
-// Usa o asset real já existente em client/public em vez de hotlink externo ao Unsplash:
-// mais rápido (sem pedido a domínio externo), sem dependência de terceiros, e já é o
-// visual "coast" pensado para a marca. Ajusta o nome do ficheiro se tiveres outro preferido.
 const HERO_IMG = '/noxvelia-hero-coast.webp';
 const CARVERTICAL_PREVIEW_IMG = '/carvertical-preview.png';
 
@@ -116,8 +113,7 @@ export default function Landing() {
       })
       .catch(() => {});
 
-    api
-      .get('/market-news?limit=10')
+    api.get('/market-news?limit=10')
       .then(({ data }) => {
         if (!ativo) return;
         const items = Array.isArray(data?.items) ? data.items : [];
@@ -130,13 +126,16 @@ export default function Landing() {
         if (ativo) setLoadingNews(false);
       });
 
-    api
-      .get('/anuncios/em-alta/semana')
+    // 🔥 SOLUÇÃO: Pedir todo o stock recente em vez de apenas os "Em Alta"
+    api.get('/anuncios?limit=12')
       .then(({ data }) => {
         if (!ativo) return;
+        const listaAnuncios = Array.isArray(data) ? data : (data.anuncios || []);
+        
+        // Separamos em carros e imóveis
         setExemplos({
-          carro: (data?.carro || []).slice(0, 5),
-          imovel: (data?.imovel || []).slice(0, 5)
+          carro: listaAnuncios.filter(a => a.tipo === 'carro').slice(0, 6),
+          imovel: listaAnuncios.filter(a => a.tipo === 'imovel').slice(0, 6)
         });
       })
       .catch(() => {
@@ -205,19 +204,30 @@ export default function Landing() {
       <Link
         key={anuncio._id}
         to={anuncioPath(anuncio)}
-        className="nx-card-oportunidade"
+        className={`nx-card-oportunidade ${anuncio.destacado ? 'is-premium' : ''}`}
         onClick={() => guardarContextoVisual(origem)}
         aria-label={`Abrir anúncio: ${anuncio.titulo}`}
       >
         <div className="nx-card-img-wrap">
           {foto ? (
-            <img src={foto} alt={anuncio.titulo} loading="lazy" width={400} height={300} />
+            <>
+              {/* O fundo esfumado para preencher espaços vazios elegantemente */}
+              <div className="nx-card-img-bg" style={{ backgroundImage: `url(${foto})` }}></div>
+              {/* A imagem em si, sem cortes */}
+              <img className="nx-card-img-fg" src={foto} alt={anuncio.titulo} loading="lazy" />
+            </>
           ) : (
             <div className="nx-card-no-photo">
               {isCarro ? <Car size={30} /> : <HomeIcon size={30} />}
             </div>
           )}
-          <span className="nx-card-badge">DESTAQUE</span>
+          {/* Aparece o badge DESTAQUE Dourado SÓ SE for pago/premium */}
+          {anuncio.destacado && (
+            <span className="nx-card-badge">
+              <Star size={10} style={{ marginRight: 4, display: 'inline-block', verticalAlign: 'middle', marginTop: '-2px' }}/>
+              DESTAQUE
+            </span>
+          )}
         </div>
 
         <div className="nx-card-content">
@@ -236,7 +246,7 @@ export default function Landing() {
   const renderSkeletons = () => (
     <div className="nx-oportunidades-grid" aria-label="A carregar anúncios" aria-busy="true">
       {[1, 2, 3, 4].map((item) => (
-        <div key={item} className="nx-skeleton" style={{ minHeight: '380px', borderRadius: '14px' }} />
+        <div key={item} className="nx-skeleton" style={{ minHeight: '380px', borderRadius: '16px' }} />
       ))}
     </div>
   );
@@ -246,8 +256,6 @@ export default function Landing() {
   const numContas = Number(resumoPublico?.usersCount ?? 0);
   const numVisitas = Number(visitasGlobais);
 
-  // Só mostra estatísticas com números que já transmitem confiança;
-  // esconder valores muito baixos evita o efeito "plataforma vazia" (ver prompt mestre).
   const statsDisponiveis = [
     { key: 'carros', icon: Car, valor: numCarros, label: 'Automóveis', min: 5 },
     { key: 'imoveis', icon: HomeIcon, valor: numImoveis, label: 'Imóveis', min: 5 },
@@ -265,6 +273,103 @@ export default function Landing() {
         path="/"
         jsonLd={[siteIdentityJsonLd, homePageJsonLd]}
       />
+      
+      {/* ESTILOS INJETADOS PARA GARANTIR DESIGN LUXO NOS CARTÕES DA HOME */}
+      <style>{`
+        .nx-card-oportunidade {
+          display: flex;
+          flex-direction: column;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          overflow: hidden;
+          text-decoration: none;
+          color: inherit;
+          transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+          height: 100%;
+        }
+        .nx-card-oportunidade:hover {
+          border-color: #102f50;
+          box-shadow: 0 16px 32px -16px rgba(7,19,38,0.15);
+          transform: translateY(-3px);
+        }
+        .nx-card-oportunidade.is-premium {
+          border: 2px solid #d9c49c;
+          box-shadow: 0 10px 20px -10px rgba(217,196,156,0.3);
+        }
+        .nx-card-oportunidade.is-premium:hover {
+          border-color: #c7a252;
+          box-shadow: 0 15px 30px -10px rgba(217,196,156,0.4);
+        }
+        
+        .nx-card-img-wrap {
+          width: 100%;
+          aspect-ratio: 4/3;
+          position: relative;
+          background: #0f172a;
+          overflow: hidden;
+        }
+        .nx-card-img-bg {
+          position: absolute;
+          inset: -24px;
+          background-size: cover;
+          background-position: center;
+          filter: blur(16px) brightness(0.5);
+          z-index: 0;
+        }
+        .nx-card-img-fg {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          z-index: 1;
+          transition: transform 0.4s ease;
+        }
+        .nx-card-oportunidade:hover .nx-card-img-fg {
+          transform: scale(1.04);
+        }
+        .nx-card-no-photo {
+          width: 100%; height: 100%; display: grid; place-items: center; background: #e2e8f0; color: #94a3b8; z-index: 1; position: relative;
+        }
+        .nx-card-badge {
+          position: absolute;
+          top: 12px; left: 12px;
+          background: #d9c49c; color: #071326;
+          font-size: 10px; font-weight: 900;
+          padding: 6px 10px; border-radius: 6px;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          z-index: 5;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+          display: flex; align-items: center;
+        }
+        .nx-card-content {
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+        .nx-card-type {
+          font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: 0.05em; margin-bottom: 8px;
+        }
+        .nx-card-title {
+          font-size: 17px; font-weight: 800; color: #071326; margin: 0 0 8px; line-height: 1.3;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .nx-card-meta {
+          font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 16px;
+        }
+        .nx-card-footer {
+          margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid #f1f5f9;
+        }
+        .nx-card-price {
+          font-size: 20px; font-weight: 900; color: #102f50;
+        }
+        .nx-card-loc {
+          font-size: 12px; color: #94a3b8; font-weight: 600;
+        }
+      `}</style>
 
       <NavbarLanding />
 
@@ -421,12 +526,12 @@ export default function Landing() {
           </section>
         )}
 
-        {/* 3. STOCK EM DESTAQUE */}
+        {/* 3. STOCK RECENTE & EM DESTAQUE */}
         <section className="nx-section nx-bg-light" data-aos="fade-up">
           <div className="nx-shell">
             <div className="nx-section-header">
               <div>
-                <span className="nx-kicker">STOCK EM DESTAQUE</span>
+                <span className="nx-kicker">STOCK DISPONÍVEL</span>
                 <h2>As melhores oportunidades</h2>
               </div>
               <div className="nx-header-right">
@@ -447,7 +552,7 @@ export default function Landing() {
             ) : (
               <div className="nx-empty-card">
                 <Car size={30} />
-                <span>De momento não existem anúncios em destaque na plataforma.</span>
+                <span>De momento não existem anúncios publicados na plataforma.</span>
               </div>
             )}
           </div>
