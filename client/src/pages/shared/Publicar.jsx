@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { Icon } from '@mdi/react';
-import imageCompression from 'browser-image-compression'; // BIBLIOTECA DE COMPRESSÃO INSTANTÂNEA!
+import imageCompression from 'browser-image-compression';
 import {
   mdiAlertCircleOutline, mdiCloudUploadOutline, mdiClose, mdiCrown, mdiCarOutline,
   mdiHomeOutline, mdiImageMultipleOutline, mdiMapMarkerOutline, mdiTagOutline,
-  mdiPlus, mdiInformationOutline, mdiArrowLeft, mdiArrowRight, mdiCheck
+  mdiPlus, mdiInformationOutline, mdiArrowLeft, mdiArrowRight, mdiCheck, mdiLoading
 } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
@@ -171,6 +171,12 @@ export default function Publicar() {
 
   const ehAdmin = user?.tipo === 'admin';
 
+  // 🔥 FUNÇÃO MÁGICA: Define o erro e força o scroll para o topo!
+  const mostrarErro = (mensagem) => {
+    setErro(mensagem);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   useEffect(() => {
     try {
       localStorage.setItem('@Noxvelia:rascunho_anuncio', JSON.stringify(form));
@@ -254,33 +260,31 @@ export default function Publicar() {
   const processarFicheiros = async (files) => {
     if (!files.length) return;
     if (fotos.length + files.length > 10) {
-      setErro('Apenas podes carregar no máximo 10 fotografias por anúncio.');
+      mostrarErro('Apenas podes carregar no máximo 10 fotografias por anúncio.');
       return;
     }
     setUploadingImage(true);
     setErro('');
 
     try {
-      // MAGIA DA COMPRESSÃO (Frontend-side compression)
       const compressedFiles = await Promise.all(
         files.map(async (file) => {
           const options = {
-            maxSizeMB: 0.8, // Comprime até o ficheiro ter cerca de 800KB (MUITO MAIS RÁPIDO)
-            maxWidthOrHeight: 1920, // Mantém a resolução Full HD para web
-            useWebWorker: true, // Usa várias threads do browser para ser super rápido
+            maxSizeMB: 0.8,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
           };
           try {
             return await imageCompression(file, options);
           } catch (e) {
             console.warn("Erro ao comprimir imagem, a enviar a original.", e);
-            return file; // Se falhar, manda a original (segurança extra)
+            return file; 
           }
         })
       );
 
       const data = new FormData();
       data.append('kind', 'listing');
-      // Adicionamos o nome e o tipo original para o FormData perceber bem o ficheiro
       compressedFiles.forEach((file, index) => {
         data.append('imagens', file, files[index].name);
       });
@@ -290,7 +294,7 @@ export default function Publicar() {
       if (imagens.length) setFotos(prev => [...prev, ...imagens]);
 
     } catch (err) {
-      setErro(err.response?.data?.erro || 'Erro ao carregar as imagens. A tua internet pode estar instável.');
+      mostrarErro(err.response?.data?.erro || 'Erro ao carregar as imagens. Verifica a tua ligação.');
     } finally {
       setUploadingImage(false);
     }
@@ -327,7 +331,7 @@ export default function Publicar() {
   };
 
   const validarPasso2 = () => {
-    if (fotos.length === 0) return 'É obrigatório carregar pelo menos 1 fotografia.';
+    if (fotos.length === 0) return 'É obrigatório carregar pelo menos 1 fotografia da galeria.';
     if (!form.distrito || !form.cidade) return 'Seleciona o distrito e a cidade.';
     const contacto = validarContactosAnuncio(form, ehAdmin);
     if (contacto.erro) return contacto.erro;
@@ -336,13 +340,18 @@ export default function Publicar() {
 
   const avancarPasso = () => {
     setErro('');
+    if (uploadingImage) {
+      mostrarErro('Por favor, aguarda que as imagens terminem de ser carregadas antes de avançar.');
+      return;
+    }
+
     if (passoAtual === 1) {
       const err = validarPasso1();
-      if (err) { setErro(err); return; }
+      if (err) { mostrarErro(err); return; }
     }
     if (passoAtual === 2) {
       const err = validarPasso2();
-      if (err) { setErro(err); return; }
+      if (err) { mostrarErro(err); return; }
     }
     setPassoAtual(p => Math.min(3, p + 1));
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -356,16 +365,21 @@ export default function Publicar() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (uploadingImage) {
+      mostrarErro('Por favor, aguarda que as imagens terminem de ser carregadas.');
+      return;
+    }
+    
     setLoading(true);
     setErro('');
 
     if (form.tipo === 'carro') {
       const erroCarro = validarCamposCarro(form);
-      if (erroCarro) { setErro(erroCarro); setLoading(false); return; }
+      if (erroCarro) { mostrarErro(erroCarro); setLoading(false); return; }
     }
 
     if (form.videoUrl && !isSupportedVideoUrl(form.videoUrl)) {
-      setErro('Utiliza um link válido do YouTube ou de um tour Matterport.');
+      mostrarErro('Utiliza um link válido do YouTube ou de um tour Matterport.');
       setLoading(false);
       return;
     }
@@ -437,9 +451,9 @@ export default function Publicar() {
         setModalPremiumAberto(true);
       } else {
         const erroBackend = err.response?.data?.erro || err.response?.data?.detalhes;
-        if (Array.isArray(erroBackend)) setErro(erroBackend.join(' | '));
-        else if (typeof erroBackend === 'object' && erroBackend !== null) setErro(Object.values(erroBackend).join(' | '));
-        else setErro(erroBackend || 'Não foi possível publicar o anúncio.');
+        if (Array.isArray(erroBackend)) mostrarErro(erroBackend.join(' | '));
+        else if (typeof erroBackend === 'object' && erroBackend !== null) mostrarErro(Object.values(erroBackend).join(' | '));
+        else mostrarErro(erroBackend || 'Não foi possível publicar o anúncio.');
       }
     } finally {
       setLoading(false);
@@ -512,15 +526,19 @@ export default function Publicar() {
         .pub-category-card.active .pub-cat-icon { background: rgba(255,255,255,.1); color: #d9c49c; }
         .pub-cat-icon { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; background: #f1f5f9; color: #475569; }
 
-        /* DROPZONE PREMIUM */
-        .pub-dropzone { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 40px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; background: #f8fafc; transition: all .2s ease; margin-bottom: 24px; }
+        /* DROPZONE PREMIUM E ESTADOS DE UPLOAD */
+        .pub-dropzone { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 40px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; background: #f8fafc; transition: all .2s ease; margin-bottom: 8px; }
         .pub-dropzone:hover, .pub-dropzone.active-drag { border-color: #d9c49c; background: #fffdf5; }
         .pub-dropzone-icon { width: 64px; height: 64px; border-radius: 50%; background: #ffffff; border: 1px solid #e2e8f0; display: grid; place-items: center; margin-bottom: 16px; color: #102f50; box-shadow: 0 4px 10px rgba(15,23,42,0.05); transition: 0.2s; }
         .pub-dropzone:hover .pub-dropzone-icon { transform: scale(1.05); color: #d9c49c; border-color: #d9c49c; }
         .pub-dropzone strong { display: block; font-weight: 800; font-size: 16px; color: #0f172a; margin-bottom: 6px; }
         .pub-dropzone small { display: block; font-size: 13px; color: #64748b; font-weight: 500; }
+        
+        .upload-banner { margin: 12px 0 24px; padding: 16px; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 12px; display: flex; align-items: center; gap: 12px; color: #0369a1; font-weight: 700; font-size: 14px; }
+        .spin-icon { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .pub-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px; }
+        .pub-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px; margin-top: 16px; margin-bottom: 24px;}
         .pub-thumb { position: relative; aspect-ratio: 4/3; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(15,23,42,0.05); }
         .pub-thumb img { width: 100%; height: 100%; object-fit: cover; }
         .pub-thumb-cover { position: absolute; bottom: 8px; left: 8px; padding: 4px 10px; border-radius: 6px; background: rgba(16,47,80,.9); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; backdrop-filter: blur(4px); }
@@ -668,7 +686,7 @@ export default function Publicar() {
 
                   <div>
                     <label className="pub-label">
-                      <span>Galeria de Imagens (Obrigatório) *</span>
+                      <span>Galeria de Imagens (Mínimo 1) *</span>
                       <span className="pub-label-count">{fotos.length}/10</span>
                     </label>
                     <label
@@ -681,11 +699,19 @@ export default function Publicar() {
                       <div className="pub-dropzone-icon">
                         <Icon path={mdiCloudUploadOutline} size={1.5} />
                       </div>
-                      <strong>{uploadingImage ? 'A otimizar e carregar fotografias...' : 'Clica aqui ou arrasta as tuas fotos (Até 10)'}</strong>
+                      <strong>{uploadingImage ? 'A preparar as tuas imagens...' : 'Clica aqui ou arrasta as tuas fotos (Até 10)'}</strong>
                       <small>As fotos são otimizadas automaticamente para a Web. A primeira será a capa.</small>
                     </label>
 
-                    {fotos.length > 0 && (
+                    {/* AVISO VISUAL DE UPLOAD EM CURSO */}
+                    {uploadingImage && (
+                      <div className="upload-banner">
+                        <Icon path={mdiLoading} size={1.2} className="spin-icon" />
+                        <span>A otimizar e a enviar fotografias para o servidor... Aguarda um momento.</span>
+                      </div>
+                    )}
+
+                    {fotos.length > 0 && !uploadingImage && (
                       <div className="pub-gallery">
                         {fotos.map((f, i) => (
                           <div key={i} className="pub-thumb">
@@ -1027,12 +1053,12 @@ export default function Publicar() {
                 ) : <div />}
 
                 {passoAtual < 3 ? (
-                  <button type="button" onClick={avancarPasso} className="pub-btn-primary">
-                    Avançar para o Passo {passoAtual + 1} <Icon path={mdiArrowRight} size={0.8} />
+                  <button type="button" onClick={avancarPasso} className="pub-btn-primary" disabled={uploadingImage}>
+                    {uploadingImage ? 'A aguardar imagens...' : <>Avançar para o Passo {passoAtual + 1} <Icon path={mdiArrowRight} size={0.8} /></>}
                   </button>
                 ) : (
                   <button type="submit" disabled={loading || uploadingImage} className="pub-btn-primary">
-                    {loading ? 'A finalizar publicação...' : 'Concluir e Publicar Anúncio'} <Icon path={mdiCheck} size={0.8} />
+                    {uploadingImage ? 'A aguardar imagens...' : (loading ? 'A publicar...' : <>Concluir e Publicar Anúncio <Icon path={mdiCheck} size={0.8} /></>)}
                   </button>
                 )}
               </div>
