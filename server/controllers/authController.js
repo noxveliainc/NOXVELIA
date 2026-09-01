@@ -164,6 +164,7 @@ export const register = async (req, res) => {
 
     res.status(201).json({ mensagem: 'Registo criado com sucesso. Por favor, verifica o teu e-mail para ativar a conta.' });
   } catch (error) {
+    console.error('ERRO CRU DO MONGOOSE NO REGISTO:', error);
     if (error?.code === 11000) {
       if (error.keyPattern?.email || error.keyValue?.email) return res.status(409).json({ erro: 'Ja existe uma conta com este email.' });
       if (error.keyPattern?.telefone || error.keyValue?.telefone) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telemovel.' });
