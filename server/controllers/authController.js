@@ -168,6 +168,7 @@ export const register = async (req, res) => {
       if (error.keyPattern?.email || error.keyValue?.email) return res.status(409).json({ erro: 'Ja existe uma conta com este email.' });
       if (error.keyPattern?.telefone || error.keyValue?.telefone) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telemovel.' });
       if (error.keyPattern?.googleId || error.keyValue?.googleId) return res.status(409).json({ erro: 'Esta conta Google ja esta ligada a outro utilizador.' });
+      if (error.keyPattern?.slug || error.keyValue?.slug) return res.status(409).json({ erro: 'O nome escolhido gera um identificador público já existente. Tenta alterar ligeiramente o nome.' });
       return res.status(409).json({ erro: 'Ja existe uma conta com estes dados.' });
     }
 
@@ -276,12 +277,14 @@ export const googleAuth = async (req, res) => {
       if (error.keyPattern?.email || error.keyValue?.email) return res.status(409).json({ erro: 'Ja existe uma conta com este email.' });
       if (error.keyPattern?.telefone || error.keyValue?.telefone) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telemovel.' });
       if (error.keyPattern?.googleId || error.keyValue?.googleId) return res.status(409).json({ erro: 'Esta conta Google ja esta ligada a outro utilizador.' });
+      if (error.keyPattern?.slug || error.keyValue?.slug) return res.status(409).json({ erro: 'O nome escolhido gera um identificador público já existente. Tenta alterar ligeiramente o nome.' });
     }
     const status = error?.statusCode || 500;
     if (status >= 500) console.error('Erro no login Google:', error);
     return res.status(status).json({ erro: error?.message || 'Não foi possível continuar com Google.' });
   }
 };
+
 // ─────────────────────────────────────────────────────────────
 // 3. CONFIRMAÇÃO DE EMAIL
 // ─────────────────────────────────────────────────────────────
