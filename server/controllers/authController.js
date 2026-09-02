@@ -239,8 +239,17 @@ export const googleAuth = async (req, res) => {
     const conta = tipoConta === 'profissional' ? 'profissional' : 'particular';
     const telefonePublico = mostrarTelefonePublico === false || mostrarTelefonePublico === 'false' ? false : true;
 
+    // 🔥 GATILHO REPOSTO: Se a conta é nova e ainda não submeteu localidade ou não aceitou termos, manda o frontend abrir o questionário
+    if (!localidadeLimpa || !termosAceites(aceitouTermos)) {
+      return res.status(202).json({
+        requiresCompletion: true,
+        profile: { nome: google.nome, email: google.email, avatarUrl: google.avatarUrl },
+      });
+    }
+
     if (nomeLimpo.length < 2 || nomeLimpo.length > 100) return res.status(400).json({ erro: 'Indica o nome que deve aparecer na Noxvelia.' });
     
+    // Telefone opcional: só valida formato se vier preenchido
     if (telefoneNormalizado && !telefoneValido(telefoneNormalizado)) {
       return res.status(400).json({ erro: 'Indica um numero de telefone valido.' });
     }
@@ -254,7 +263,7 @@ export const googleAuth = async (req, res) => {
       nome: nomeLimpo,
       email: google.email,
       mostrarTelefonePublico: telefonePublico,
-      localidade: localidadeLimpa || undefined,
+      localidade: localidadeLimpa,
       tipo: 'cliente',
       tipoConta: conta,
       avatarUrl: google.avatarUrl,
