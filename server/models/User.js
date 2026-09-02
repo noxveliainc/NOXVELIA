@@ -32,8 +32,8 @@ const userSchema = new mongoose.Schema({
   nif:        { type: String, trim: true, default: null },
   website:    { type: String, trim: true, default: null },
   avatarUrl:  { type: String, default: null },
-googleId:   { type: String, unique: true, sparse: true, trim: true }, // <-- Sem default: null!
-//   authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
+  googleId:   { type: String, unique: true, sparse: true, trim: true },
+  authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
   aceitouTermosEm: { type: Date, default: null },
   
   capaUrl:    { type: String, default: null },
@@ -101,7 +101,7 @@ userSchema.pre('save', async function(next) {
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '') 
-        .replace(/[^a-z0-9]/g, '-')     
+        .replace(/[^a-z0-9]/g, '-')    
         .replace(/-+/g, '-')            
         .replace(/^-|-$/g, '')          
         .trim();
@@ -112,7 +112,6 @@ userSchema.pre('save', async function(next) {
       let contador = 1;
       
       while (true) {
-        // Usa this.constructor em vez de chamar mongoose.models explicitamente
         const existingUser = await this.constructor.findOne({ slug: uniqueSlug, _id: { $ne: this._id } });
         if (!existingUser) break;
         uniqueSlug = `${baseSlug}-${contador}`;
@@ -124,12 +123,13 @@ userSchema.pre('save', async function(next) {
     next();
   } catch (error) {
     console.error('Erro na geração segura do slug:', error);
-    next(error); // Permite ao servidor não colapsar
+    next(error);
   }
 });
 
+// 🌟 CORREÇÃO CRUCIAL: Só aplica argon2 se a password existir e tiver sido modificada
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password') || !this.password) return next();
   try {
     this.password = await argon2.hash(this.password, {
       type: argon2.argon2id,
@@ -142,7 +142,10 @@ userSchema.pre('save', async function(next) {
 });
 
 userSchema.methods.comparePassword = async function(candidatePassword) {
-  try { return await argon2.verify(this.password, candidatePassword); }
+  try { 
+    if (!this.password) return false;
+    return await argon2.verify(this.password, candidatePassword); 
+  }
   catch (error) { return false; }
 };
 
