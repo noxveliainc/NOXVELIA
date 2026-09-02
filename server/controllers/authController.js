@@ -115,7 +115,7 @@ export const register = async (req, res) => {
     if (!validarPasswordSegura(password)) {
       return res.status(400).json({ erro: 'A palavra-passe tem de ter 9 a 128 caracteres, 1 maiuscula, 1 numero e 1 caracter especial.' });
     }
-    if (!telefoneValido(telefoneNormalizado)) {
+    if (telefoneNormalizado && !telefoneValido(telefoneNormalizado)) {
       return res.status(400).json({ erro: 'Indica um numero de telefone valido (opcional).' });
     }
     if (!termosAceites(aceitouTermos)) {
@@ -234,17 +234,12 @@ export const googleAuth = async (req, res) => {
     const conta = tipoConta === 'profissional' ? 'profissional' : 'particular';
     const telefonePublico = mostrarTelefonePublico === false || mostrarTelefonePublico === 'false' ? false : true;
 
-    if (!telefoneNormalizado && !localidadeLimpa && !termosAceites(aceitouTermos)) {
-      return res.status(202).json({
-        requiresCompletion: true,
-        profile: { nome: google.nome, email: google.email, avatarUrl: google.avatarUrl },
-      });
-    }
-
     if (nomeLimpo.length < 2 || nomeLimpo.length > 100) return res.status(400).json({ erro: 'Indica o nome que deve aparecer na Noxvelia.' });
-    if (!telefoneValido(telefoneNormalizado)) return res.status(400).json({ erro: 'Indica um numero de telefone valido.' });
-    if (!localidadeLimpa) return res.status(400).json({ erro: 'Seleciona o teu distrito.' });
-    if (!termosAceites(aceitouTermos)) return res.status(400).json({ erro: 'Tens de aceitar os Termos e Condições para criar a conta.' });
+    
+    // 🌟 Telefone e Localidade totalmente opcionais no Google
+    if (telefoneNormalizado && !telefoneValido(telefoneNormalizado)) {
+      return res.status(400).json({ erro: 'Indica um numero de telefone valido.' });
+    }
 
     if (telefoneNormalizado) {
       const telefoneExists = await User.findOne({ telefone: telefoneNormalizado });
@@ -256,7 +251,7 @@ export const googleAuth = async (req, res) => {
       email: google.email,
       telefone: telefoneNormalizado || null,
       mostrarTelefonePublico: telefonePublico,
-      localidade: localidadeLimpa,
+      localidade: localidadeLimpa || null,
       tipo: 'cliente',
       tipoConta: conta,
       avatarUrl: google.avatarUrl,
