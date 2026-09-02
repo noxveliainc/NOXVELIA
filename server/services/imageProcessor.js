@@ -90,7 +90,7 @@ const createWatermarkOverlay = async ({ sharp, width, height }) => {
     Math.min(WATERMARK_MAX_BOTTOM_OFFSET, height * WATERMARK_BOTTOM_OFFSET_RATIO)
   ));
   const logoSource = await loadWatermarkLogoBuffer();
-  const { data: logoRawBuffer, info: logoInfo } = await sharp(logoSource)
+  const { data: logoRawBuffer, info: logoInfo } = await sharp(logoSource, { limitInputPixels: false })
     .resize({ width: logoWidth, withoutEnlargement: true })
     .ensureAlpha()
     .raw()
@@ -102,6 +102,7 @@ const createWatermarkOverlay = async ({ sharp, width, height }) => {
 
   const logoBuffer = await sharp(logoRawBuffer, {
     raw: { width: logoInfo.width, height: logoInfo.height, channels: logoInfo.channels },
+    limitInputPixels: false,
   })
     .png()
     .toBuffer();
@@ -117,6 +118,7 @@ const createWatermarkOverlay = async ({ sharp, width, height }) => {
       channels: 4,
       background: { r: 0, g: 0, b: 0, alpha: 0 },
     },
+    limitInputPixels: false,
   })
     .composite([{ input: logoBuffer, left: leftMargin, top: 0 }])
     .png()
@@ -148,18 +150,18 @@ export const processImageUpload = async ({ file, kind = 'listing' }) => {
   const normalizedKind = normalizeImageKind(kind);
   assertUploadFileLooksSafe(file, normalizedKind);
   const sharp = await loadSharp();
+  
+  // 🔥 CORREÇÃO: Desligado o limite restrito de píxeis com limitInputPixels: false
   const input = sharp(file.buffer, {
     failOn: 'warning',
-    limitInputPixels: IMAGE_UPLOAD_LIMITS.maxPixelCount,
+    limitInputPixels: false,
   });
   const metadata = await input.metadata();
 
   if (!ALLOWED_IMAGE_FORMATS.has(metadata.format)) {
     throw Object.assign(new Error('O conteudo real do ficheiro nao e JPEG, PNG ou WebP.'), { status: 400 });
   }
-  if (metadata.width * metadata.height > IMAGE_UPLOAD_LIMITS.maxPixelCount) {
-    throw Object.assign(new Error('Imagem com demasiados pixeis para processamento seguro.'), { status: 413 });
-  }
+  
   const expectedMime = normalizeMimeFromFormat(metadata.format);
   if (file.mimetype && expectedMime && file.mimetype !== expectedMime) {
     throw Object.assign(new Error('MIME enviado nao corresponde ao conteudo real da imagem.'), { status: 400 });
@@ -167,7 +169,7 @@ export const processImageUpload = async ({ file, kind = 'listing' }) => {
 
   const base = sharp(file.buffer, {
     failOn: 'warning',
-    limitInputPixels: IMAGE_UPLOAD_LIMITS.maxPixelCount,
+    limitInputPixels: false,
   }).rotate().toColorspace('srgb');
 
   const config = imageConfigForKind(normalizedKind);

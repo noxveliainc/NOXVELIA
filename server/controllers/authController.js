@@ -214,6 +214,12 @@ export const googleAuth = async (req, res) => {
     const { credential, nome, mostrarTelefonePublico, localidade, tipoConta, aceitouTermos } = req.body;
     const google = await verificarGoogleCredential(credential);
 
+    const telefoneNormalizado = telefoneLimpo(req.body.telefone);
+    const localidadeLimpa = typeof localidade === 'string' ? localidade.trim().slice(0, 120) : '';
+    const nomeLimpo = (typeof nome === 'string' && nome.trim().length >= 2 ? nome.trim() : google.nome).slice(0, 100);
+    const conta = tipoConta === 'profissional' ? 'profissional' : 'particular';
+    const telefonePublico = mostrarTelefonePublico === false || mostrarTelefonePublico === 'false' ? false : true;
+
     let utilizador = await User.findOne({
       $or: [{ googleId: google.googleId }, { email: google.email }],
     }).select('+password +tokenVerificacao +expiracaoToken');
@@ -222,6 +228,23 @@ export const googleAuth = async (req, res) => {
       if (utilizador.googleId && utilizador.googleId !== google.googleId) {
         return res.status(409).json({ erro: 'Este email ja esta ligado a outra conta Google.' });
       }
+
+      // 🔥 CORREÇÃO: Força o questionário se a conta antiga não tiver localidade ou termos preenchidos!
+      if (!utilizador.localidade || !utilizador.aceitouTermosEm) {
+        if (!localidadeLimpa || !termosAceites(aceitouTermos)) {
+          return res.status(202).json({
+            requiresCompletion: true,
+            profile: { nome: utilizador.nome, email: utilizador.email, avatarUrl: utilizador.avatarUrl || google.avatarUrl },
+          });
+        } else {
+          // Atualiza a conta incompleta com os dados preenchidos no questionário
+          utilizador.localidade = localidadeLimpa;
+          utilizador.aceitouTermosEm = new Date();
+          utilizador.tipoConta = conta;
+          if (telefoneNormalizado) utilizador.telefone = telefoneNormalizado;
+        }
+      }
+
       if (!utilizador.googleId) utilizador.googleId = google.googleId;
       if (!utilizador.avatarUrl && google.avatarUrl) utilizador.avatarUrl = google.avatarUrl;
       if (!utilizador.verificado) {
@@ -229,17 +252,12 @@ export const googleAuth = async (req, res) => {
         utilizador.tokenVerificacao = undefined;
         utilizador.expiracaoToken = undefined;
       }
+      
       await utilizador.save({ validateBeforeSave: false });
       return responderSessao(res, utilizador);
     }
 
-    const telefoneNormalizado = telefoneLimpo(req.body.telefone);
-    const localidadeLimpa = typeof localidade === 'string' ? localidade.trim().slice(0, 120) : '';
-    const nomeLimpo = (typeof nome === 'string' && nome.trim().length >= 2 ? nome.trim() : google.nome).slice(0, 100);
-    const conta = tipoConta === 'profissional' ? 'profissional' : 'particular';
-    const telefonePublico = mostrarTelefonePublico === false || mostrarTelefonePublico === 'false' ? false : true;
-
-    // 🔥 GATILHO REPOSTO: Se a conta é nova e ainda não submeteu localidade ou não aceitou termos, manda o frontend abrir o questionário
+    // Gatilho original para contas 100% novas
     if (!localidadeLimpa || !termosAceites(aceitouTermos)) {
       return res.status(202).json({
         requiresCompletion: true,
@@ -249,7 +267,6 @@ export const googleAuth = async (req, res) => {
 
     if (nomeLimpo.length < 2 || nomeLimpo.length > 100) return res.status(400).json({ erro: 'Indica o nome que deve aparecer na Noxvelia.' });
     
-    // Telefone opcional: só valida formato se vier preenchido
     if (telefoneNormalizado && !telefoneValido(telefoneNormalizado)) {
       return res.status(400).json({ erro: 'Indica um numero de telefone valido.' });
     }
