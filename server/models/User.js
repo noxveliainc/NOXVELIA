@@ -6,7 +6,22 @@ const userSchema = new mongoose.Schema({
   slug:      { type: String, unique: true, index: true, sparse: true, trim: true }, // 🌟 SLUG AMIGÁVEL PARA O PERFIL PÚBLICO
   email:     { type: String, required: true, unique: true, lowercase: true, trim: true },
   password:  { type: String, required: function requiredPassword() { return this.authProvider !== 'google'; }, select: false },
-  telefone:  { type: String, required: true, unique: true, match: [/^\d{9}$/, 'O telemóvel deve ter exatamente 9 dígitos.'] },
+  
+  // 🌟 TELEFONE: Agora flexível e opcional (aceita indicativos e fixos nacionais)
+  telefone:  { 
+    type: String, 
+    default: null, 
+    trim: true,
+    validate: {
+      validator: function(v) {
+        if (!v) return true;
+        const clean = v.replace(/\D/g, '');
+        return clean.length >= 9 && clean.length <= 13;
+      },
+      message: 'Indique um número de telefone ou telemóvel válido.'
+    }
+  },
+  
   mostrarTelefonePublico: { type: Boolean, default: true },
   localidade: { type: String, trim: true },
   standNome: { type: String, trim: true, default: null, maxLength: 120 },
@@ -25,6 +40,20 @@ const userSchema = new mongoose.Schema({
   // 🌟 CAPA E BIOGRAFIA DO PERFIL
   capaUrl:    { type: String, default: null },
   bio:        { type: String, trim: true, default: null, maxLength: 800 },
+  
+  // 🌟 NOVO: ESTRUTURA PARA O MINI-SITE DO STAND / SOBRE NÓS
+  sobreNos: {
+    descricaoLonga: { type: String, trim: true, default: null, maxLength: 3000 },
+    fotoEquipaUrl: { type: String, default: null },
+    horario: { type: String, trim: true, default: null, maxLength: 300 },
+    equipa: [{
+      nome: { type: String, trim: true },
+      cargo: { type: String, trim: true },
+      telefone: { type: String, trim: true },
+      email: { type: String, trim: true, lowercase: true }
+    }]
+  },
+
   linksPerfil: {
     type: [{
       tipo: {

@@ -7,7 +7,7 @@ import ProfileView, { obterLinksVisiveisPerfil } from './ProfileView';
 import LoadingScreen from '../../components/LoadingScreen';
 import { Icon } from '@mdi/react';
 import { 
-  mdiChartBar, mdiDomain,
+  mdiChartBar, mdiDomain, mdiAccountGroup,
   mdiClose, mdiCrown, mdiStar, mdiChevronLeft, mdiPencil, mdiEarth,
   mdiWeb, mdiInstagram, mdiFacebook, mdiLinkedin, mdiYoutube, mdiMusicNote, mdiWhatsapp,
   mdiPlus, mdiTrashCanOutline, mdiStorefrontOutline
@@ -67,6 +67,12 @@ export default function Perfil() {
   const [dadosEditar, setDadosEditar] = useState({
     bio: '', website: '', localidade: '', standNome: '', standMorada: '', standCodigoPostal: '',
     mostrarTelefonePublico: true, mostrarMapaPerfil: false, linksPerfil: [criarLinkPerfilVazio()]
+  });
+
+  // 🌟 NOVO: ESTADOS PARA O MINI-SITE / SOBRE NÓS
+  const [mostrarModalSobreNos, setMostrarModalSobreNos] = useState(false);
+  const [dadosSobreNos, setDadosSobreNos] = useState({
+    descricaoLonga: '', horario: '', equipa: []
   });
 
   const rotaVoltar = abaActiva === 'carro' ? '/carros' : '/imoveis';
@@ -169,6 +175,50 @@ export default function Perfil() {
     setMostrarModalEditar(true);
   };
 
+  // 🌟 NOVO: FUNÇÕES PARA O MINI-SITE
+  const abrirEdicaoSobreNos = () => {
+    setDadosSobreNos({
+      descricaoLonga: utilizador?.sobreNos?.descricaoLonga || '',
+      horario: utilizador?.sobreNos?.horario || '',
+      equipa: utilizador?.sobreNos?.equipa || []
+    });
+    setMostrarModalSobreNos(true);
+  };
+
+  const atualizarMembroEquipa = (index, campo, valor) => {
+    setDadosSobreNos(prev => ({
+      ...prev,
+      equipa: prev.equipa.map((m, i) => (i === index ? { ...m, [campo]: valor } : m))
+    }));
+  };
+
+  const adicionarMembroEquipa = () => {
+    setDadosSobreNos(prev => ({
+      ...prev, equipa: [...prev.equipa, { nome: '', cargo: '', telefone: '', email: '' }]
+    }));
+  };
+
+  const removerMembroEquipa = (index) => {
+    setDadosSobreNos(prev => ({
+      ...prev, equipa: prev.equipa.filter((_, i) => i !== index)
+    }));
+  };
+
+  const salvarSobreNos = async (e) => {
+    e.preventDefault();
+    try {
+      setIsDeleting(true);
+      setMostrarModalSobreNos(false);
+      const res = await api.put('/users/me', { sobreNos: dadosSobreNos });
+      setUtilizador(res.data);
+      if (atualizarUser) atualizarUser(res.data);
+    } catch {
+      alert('Erro ao guardar os dados da equipa.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const atualizarLinkPerfil = (index, campo, valor) => {
     setDadosEditar(prev => ({ ...prev, linksPerfil: prev.linksPerfil.map((link, i) => (i === index ? { ...link, [campo]: valor } : link)) }));
   };
@@ -228,7 +278,8 @@ export default function Perfil() {
   };
 
   const copiarLinkMontra = () => {
-    const link = `${window.location.origin}/vendedor/${utilizador._id}`;
+    const identificador = utilizador?.slug || utilizador?._id;
+    const link = `${window.location.origin}/vendedor/${identificador}`;
     navigator.clipboard.writeText(link);
     setLinkCopiado(true);
     setTimeout(() => setLinkCopiado(false), 2000);
@@ -271,21 +322,9 @@ export default function Perfil() {
       <style>{`
         /* ── RESET GLOBAL ABSOLUTO E ANTI-OVERFLOW ── */
         .nx-perfil-view {
-          width: 100%;
-          max-width: 100%;
-          overflow-x: hidden;
-          background: #f8fafc;
-          min-height: calc(100vh - 72px);
-          padding: 20px 12px;
-          display: flex;
-          justify-content: center;
-          font-family: 'Inter', sans-serif;
-          color: #0f172a;
-          box-sizing: border-box;
+          width: 100%; max-width: 100%; overflow-x: hidden; background: #f8fafc; min-height: calc(100vh - 72px); padding: 20px 12px; display: flex; justify-content: center; font-family: 'Inter', sans-serif; color: #0f172a; box-sizing: border-box;
         }
-        .nx-perfil-view *, .nx-perfil-view *::before, .nx-perfil-view *::after {
-          box-sizing: border-box;
-        }
+        .nx-perfil-view *, .nx-perfil-view *::before, .nx-perfil-view *::after { box-sizing: border-box; }
         @media (min-width: 768px) { .nx-perfil-view { padding: 40px 24px; } }
 
         .perfil-moldura { width: 100%; max-width: 1100px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); position: relative; overflow-x: hidden; }
@@ -299,9 +338,7 @@ export default function Perfil() {
         .tab-btn.active-carro { background: #102f50; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
         .cards-list { display: flex; flex-direction: column; gap: 24px; width: 100%; }
-        
         .card-wrapper { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px; width: 100%; box-shadow: 0 10px 25px -10px rgba(15,23,42,0.05); }
-        
         .card-controls { display: flex; gap: 12px; flex-wrap: wrap; }
         
         .btn-destacar, .badge-destacado, .analytics-trigger-btn { flex: 1; min-width: 200px; padding: 12px; border-radius: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; transition: 0.2s; }
@@ -318,32 +355,15 @@ export default function Perfil() {
         .stat-box-lbl { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-top: 4px; }
         
         /* ── BANNER EVOLUÇÃO PROFISSIONAL ── */
-        .perfil-upgrade-banner {
-          background: linear-gradient(135deg, #102f50 0%, #0a1f35 100%);
-          border-radius: 20px;
-          padding: 24px 32px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 24px;
-          margin: 16px 0 32px;
-          box-shadow: 0 15px 35px -10px rgba(16,47,80,0.4);
-          border: 1px solid rgba(217,196,156,0.3);
-          flex-wrap: wrap;
-        }
+        .perfil-upgrade-banner { background: linear-gradient(135deg, #102f50 0%, #0a1f35 100%); border-radius: 20px; padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; margin: 16px 0 32px; box-shadow: 0 15px 35px -10px rgba(16,47,80,0.4); border: 1px solid rgba(217,196,156,0.3); flex-wrap: wrap; }
         .upgrade-content { display: flex; align-items: center; gap: 20px; flex: 1; }
         .upgrade-icon { color: #d9c49c; background: rgba(217,196,156,0.1); padding: 12px; border-radius: 16px; flex-shrink: 0; }
         .upgrade-content h3 { color: #ffffff; font-size: 20px; margin: 0 0 6px; font-weight: 800; }
         .upgrade-content p { color: #94a3b8; font-size: 14px; margin: 0; line-height: 1.5; }
         .upgrade-content p strong { color: #e2e8f0; }
-        .upgrade-btn {
-          background: #d9c49c; color: #071326; border: none; padding: 14px 24px; border-radius: 12px; font-weight: 900; font-size: 14px; cursor: pointer; white-space: nowrap; transition: 0.2s; box-shadow: 0 4px 12px rgba(217,196,156,0.3);
-        }
+        .upgrade-btn { background: #d9c49c; color: #071326; border: none; padding: 14px 24px; border-radius: 12px; font-weight: 900; font-size: 14px; cursor: pointer; white-space: nowrap; transition: 0.2s; box-shadow: 0 4px 12px rgba(217,196,156,0.3); }
         .upgrade-btn:hover { background: #f0dfbb; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(217,196,156,0.5); }
-        @media (max-width: 768px) {
-          .perfil-upgrade-banner { padding: 20px; flex-direction: column; align-items: flex-start; text-align: left; }
-          .upgrade-btn { width: 100%; text-align: center; justify-content: center; }
-        }
+        @media (max-width: 768px) { .perfil-upgrade-banner { padding: 20px; flex-direction: column; align-items: flex-start; text-align: left; } .upgrade-btn { width: 100%; text-align: center; justify-content: center; } }
 
         .perfil-premium-panel { margin: 0 0 24px; border: 1px solid rgba(217,196,156,.5); border-radius: 16px; padding: 24px; background: linear-gradient(135deg, rgba(255,255,255,1), rgba(217,196,156,.15)); width: 100%; }
         .perfil-premium-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; width: 100%; }
@@ -397,6 +417,9 @@ export default function Perfil() {
         
         .modal-select { width: 100%; height: 48px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 700; }
         .link-remove-btn { width: 44px; height: 48px; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff; color: #94a3b8; display: flex; align-items: center; justify-content: center; }
+
+        /* GRID PARA A EQUIPA NO MODAL */
+        .equipa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
         
         /* CORREÇÃO DO PROFILEVIEW EMBUTIDO */
         .perfil-moldura [class*="perfil-header"] { border-radius: 16px; overflow: hidden; width: 100%; max-width: 100%; display: flex; flex-direction: column; }
@@ -499,6 +522,51 @@ export default function Perfil() {
         </div>
       )}
 
+      {/* 🌟 NOVO MODAL: SOBRE NÓS E EQUIPA (SÓ PROFISSIONAIS) */}
+      {mostrarModalSobreNos && (
+        <div className="modal-overlay">
+          <div className="modal-card" style={{ maxWidth: 600 }}>
+            <button className="modal-close" onClick={() => setMostrarModalSobreNos(false)}><Icon path={mdiClose} size={1} /></button>
+            <h2 style={{ fontSize: 20, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}><Icon path={mdiAccountGroup} size={1} color="#d9c49c" /> Gerir Mini-site</h2>
+            <p style={{ fontSize: 13, color: '#64748b', marginBottom: 24 }}>Preenche a história e a equipa do teu stand para aparecer na aba "Sobre Nós".</p>
+            
+            <form onSubmit={salvarSobreNos}>
+              <div className="modal-form-group">
+                <label>Sobre o Stand (História, serviços, missão)</label>
+                <textarea className="modal-input" style={{ minHeight: 120 }} value={dadosSobreNos.descricaoLonga} onChange={e => setDadosSobreNos({...dadosSobreNos, descricaoLonga: e.target.value})} maxLength={3000} placeholder="Descreve a história do stand, as vossas garantias..." />
+              </div>
+
+              <div className="modal-form-group">
+                <label>Horário de Funcionamento</label>
+                <input className="modal-input" type="text" value={dadosSobreNos.horario} onChange={e => setDadosSobreNos({...dadosSobreNos, horario: e.target.value})} placeholder="Ex: Seg a Sex: 09h-19h | Sáb: 10h-13h" />
+              </div>
+
+              <div className="modal-form-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><label style={{ margin: 0 }}>A nossa Equipa</label></div>
+                {dadosSobreNos.equipa.map((membro, index) => (
+                  <div key={index} style={{ padding: 16, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, marginBottom: 12, position: 'relative' }}>
+                    <button type="button" onClick={() => removerMembroEquipa(index)} style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Icon path={mdiTrashCanOutline} size={0.8} /></button>
+                    <div className="equipa-grid">
+                      <input className="modal-input" type="text" placeholder="Nome" value={membro.nome} onChange={e => atualizarMembroEquipa(index, 'nome', e.target.value)} required />
+                      <input className="modal-input" type="text" placeholder="Cargo (Ex: Vendedor)" value={membro.cargo} onChange={e => atualizarMembroEquipa(index, 'cargo', e.target.value)} required />
+                    </div>
+                    <div className="equipa-grid">
+                      <input className="modal-input" type="text" placeholder="Telefone" value={membro.telefone} onChange={e => atualizarMembroEquipa(index, 'telefone', e.target.value)} />
+                      <input className="modal-input" type="email" placeholder="Email" value={membro.email} onChange={e => atualizarMembroEquipa(index, 'email', e.target.value)} />
+                    </div>
+                  </div>
+                ))}
+                <button type="button" style={{ padding: '12px', fontSize: 13, fontWeight: 700, borderRadius: 8, border: '1px dashed #cbd5e1', background: '#ffffff', color: '#102f50', width: '100%', cursor: 'pointer' }} onClick={adicionarMembroEquipa}>
+                  <Icon path={mdiPlus} size={0.7} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Adicionar Membro da Equipa
+                </button>
+              </div>
+
+              <button style={{ width: '100%', padding: 16, background: '#102f50', color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, marginTop: 12, cursor: 'pointer' }} type="submit">Gravar Mini-site</button>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="perfil-moldura">
         <button onClick={() => navigate(rotaVoltar)} className="perfil-back">
           <Icon path={mdiChevronLeft} size={0.7} /> {labelVoltar}
@@ -511,7 +579,16 @@ export default function Perfil() {
           uploadingAvatar={uploadingAvatar} uploadingCapa={uploadingCapa} linkCopiado={linkCopiado}
         />
 
-        {/* 🌟 NOVO: BANNER DE EVOLUÇÃO PARA QUEM NÃO É PROFISSIONAL 🌟 */}
+        {/* 🌟 BOTÃO EXTRA PARA EDITAR O MINI-SITE (APENAS PROFISSIONAIS) */}
+        {isProfissional && (
+          <div style={{ marginTop: '-12px', marginBottom: '32px', display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <button onClick={abrirEdicaoSobreNos} style={{ padding: '10px 16px', background: '#fff9eb', color: '#b45309', border: '1px solid #fde68a', borderRadius: '8px', fontSize: '13px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+              <Icon path={mdiAccountGroup} size={0.7} /> Editar Página "Sobre Nós"
+            </button>
+          </div>
+        )}
+
+        {/* BANNER DE EVOLUÇÃO PARA QUEM NÃO É PROFISSIONAL */}
         {!isProfissional && (
           <section className="perfil-upgrade-banner">
             <div className="upgrade-content">
@@ -600,7 +677,6 @@ export default function Perfil() {
           </button>
         </div>
 
-        {/* ── AGORA USA A LISTA HORIZONTAL ── */}
         <div className="cards-list">
           {anunciosFiltrados.map(anuncio => (
             <div key={anuncio._id} className="card-wrapper">

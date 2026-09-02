@@ -213,6 +213,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           width: 100%;
           height: 100%;
           object-fit: contain; /* GARANTIA ABSOLUTA DE NÃO CORTAR */
+          background-color: #f8fafc; /* NOVO: Fundo neutro e elegante */
           z-index: 1;
           transition: transform 0.4s ease;
         }

@@ -8,7 +8,7 @@ import AnuncioCard from './AnuncioCard';
 import ProfileView, { obterLinksVisiveisPerfil } from './ProfileView';
 import LoadingScreen from '../../components/LoadingScreen';
 import { Icon } from '@mdi/react';
-import { mdiArrowLeft, mdiViewDashboardOutline } from '@mdi/js';
+import { mdiArrowLeft, mdiViewDashboardOutline, mdiAccountCircleOutline, mdiEmailOutline, mdiPhoneOutline, mdiClockOutline } from '@mdi/js';
 import { formatarMarcaModeloVeiculo } from '../../data/marcasModelos';
 
 const normalizarTexto = (valor) => String(valor || '')
@@ -53,6 +53,9 @@ export default function PerfilPublico() {
   const [erro, setErro] = useState('');
   const [linkCopiado, setLinkCopiado] = useState(false);
   const [filtros, setFiltros] = useState(filtrosIniciais);
+  
+  // 🌟 NOVO: ESTADO PARA NAVEGAR ENTRE "STOCK" E "SOBRE NÓS"
+  const [abaActiva, setAbaActiva] = useState('stock'); // 'stock' | 'sobre'
 
   const voltarDaMontra = () => {
     if (adminAVerPerfil) {
@@ -83,7 +86,7 @@ export default function PerfilPublico() {
   }, [id]);
 
   const copiarLinkMontra = () => {
-    const link = window.location.href;
+    const link = window.location.href; 
     navigator.clipboard.writeText(link);
     setLinkCopiado(true);
     setTimeout(() => setLinkCopiado(false), 2000);
@@ -96,8 +99,9 @@ export default function PerfilPublico() {
     : nomeBase;
   const isProfissional = vendedor?.tipoConta === 'profissional' || isAdmin;
   const linksPerfilVisiveis = obterLinksVisiveisPerfil(vendedor);
+  
+  const temSobreNos = isProfissional && vendedor?.sobreNos && (vendedor.sobreNos.descricaoLonga || (vendedor.sobreNos.equipa && vendedor.sobreNos.equipa.length > 0));
 
-  // 🔥 SOLUÇÃO: Filtramos para que apenas anúncios ATIVOS apareçam no perfil público
   const anunciosAtivos = useMemo(() => anuncios.filter(a => a.estado === 'ativo'), [anuncios]);
 
   const totais = useMemo(() => ({
@@ -197,9 +201,7 @@ export default function PerfilPublico() {
       <style>{`
         .pp-root { background: #f8fafc; min-height: calc(100vh - 80px); font-family: 'Inter', sans-serif; color: #0f172a; padding-bottom: 80px; }
         
-        /* ── HERO DARK NAVY ── */
-        .pp-hero { position: relative; background: #071326; border-bottom: 4px solid #d9c49c; padding: 40px 24px 20px; margin-bottom: 48px; overflow: hidden; }
-        .pp-cover { display: none; }
+        .pp-hero { position: relative; background: #071326; padding: 40px 24px 20px; }
         .pp-hero-content { max-width: 1280px; margin: 0 auto; position: relative; z-index: 2; }
         
         .pp-back { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #cbd5e1; text-decoration: none; cursor: pointer; background: none; border: none; padding: 0; margin-bottom: 24px; transition: color 0.2s; }
@@ -209,14 +211,38 @@ export default function PerfilPublico() {
         .pp-admin-back:hover { border-color: #475569; background: #334155; }
         .pp-admin-note { display: inline-flex; align-items: center; gap: 8px; margin-left: 10px; color: #94a3b8; font-size: 12px; font-weight: 700; }
         
-        /* ── FORÇA O PROFILEVIEW EMBUTIDO A TER TEXTO BRANCO ── */
         .pp-hero [class*="perfil-name"] { color: #ffffff !important; }
         .pp-hero [class*="perfil-bio"] { color: #cbd5e1 !important; }
         .pp-hero [class*="perfil-stats"] strong { color: #ffffff !important; }
         .pp-hero [class*="perfil-stats"] span { color: #94a3b8 !important; }
         .pp-hero [class*="perfil-email"] { color: #94a3b8 !important; }
         
+        /* 🌟 NAVEGAÇÃO DE TABS (MONTRA vs SOBRE NÓS) */
+        .pp-nav-wrapper { background: #071326; border-bottom: 4px solid #d9c49c; margin-bottom: 48px; padding: 0 24px; }
+        .pp-nav { max-width: 1280px; margin: 0 auto; display: flex; gap: 32px; }
+        .pp-nav-btn { background: none; border: none; padding: 16px 0; color: #94a3b8; font-size: 15px; font-weight: 700; cursor: pointer; position: relative; transition: 0.2s; }
+        .pp-nav-btn:hover { color: #e2e8f0; }
+        .pp-nav-btn.active { color: #ffffff; }
+        .pp-nav-btn.active::after { content: ''; position: absolute; bottom: -4px; left: 0; right: 0; height: 4px; background: #d9c49c; border-top-left-radius: 4px; border-top-right-radius: 4px; }
+
         .pp-main { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+        
+        /* ── ESTILOS DA ABA "SOBRE NÓS" ── */
+        .pp-about-panel { padding: clamp(24px, 3vw, 40px); border: 1px solid #e2e8f0; border-radius: 24px; background: #ffffff; box-shadow: 0 10px 30px -10px rgba(15,23,42,.05); margin-bottom: 32px; }
+        .pp-about-title { font-size: 28px; font-weight: 900; margin: 0 0 20px; color: #0f172a; }
+        .pp-about-text { font-size: 16px; line-height: 1.7; color: #475569; white-space: pre-wrap; margin-bottom: 32px; }
+        .pp-about-schedule { display: inline-flex; align-items: center; gap: 8px; padding: 16px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 700; color: #102f50; margin-bottom: 32px; }
+        
+        .pp-team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .pp-team-card { padding: 20px; border: 1px solid #e2e8f0; border-radius: 16px; background: #f8fafc; display: flex; flex-direction: column; gap: 12px; }
+        .pp-team-head { display: flex; align-items: center; gap: 12px; }
+        .pp-team-icon { width: 48px; height: 48px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #64748b; }
+        .pp-team-name { font-size: 16px; font-weight: 800; color: #0f172a; margin: 0; }
+        .pp-team-role { font-size: 13px; font-weight: 700; color: #102f50; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+        .pp-team-contact { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #475569; font-weight: 600; text-decoration: none; }
+        .pp-team-contact:hover { color: #102f50; }
+
+        /* ── ESTILOS DA MONTRA (EXISTENTES) ── */
         .pp-showcase-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: -20px 0 32px; }
         .pp-summary-item { min-height: 96px; display: grid; align-content: center; gap: 7px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 16px; background: #ffffff; box-shadow: 0 10px 25px -10px rgba(15,23,42,.05); text-align: center; }
         .pp-summary-item strong { color: #0f172a; font-size: 32px; line-height: 1; font-weight: 900; }
@@ -242,7 +268,6 @@ export default function PerfilPublico() {
         .pp-result-copy { margin: 4px 0 0; color: #64748b; font-size: 14px; font-weight: 500; }
         .pp-result-count { color: #102f50; font-size: 13px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
         
-        /* ── GRELHA AGORA É UMA LISTA HORIZONTAL ── */
         .pp-list { display: flex; flex-direction: column; gap: 20px; width: 100%; }
         
         .pp-empty { min-height: 220px; display: grid; place-items: center; padding: 38px 20px; border: 1px dashed #cbd5e1; border-radius: 16px; background: #f8fafc; text-align: center; margin-top: 24px; }
@@ -262,7 +287,8 @@ export default function PerfilPublico() {
           .pp-stock-panel { border-radius: 18px; padding: 20px; }
         }
         @media (max-width: 680px) {
-          .pp-hero { padding: 26px 16px 18px; margin-bottom: 30px; }
+          .pp-hero { padding: 26px 16px 18px; }
+          .pp-nav-wrapper { margin-bottom: 30px; }
           .pp-main { padding: 0 16px; }
           .pp-filter-top, .pp-filter-bottom { grid-template-columns: 1fr; }
           .pp-toolbar { align-items: flex-start; flex-direction: column; }
@@ -291,127 +317,192 @@ export default function PerfilPublico() {
           </div>
         </div>
 
+        {/* 🌟 NAVEGAÇÃO ENTRE ABAS */}
+        <div className="pp-nav-wrapper">
+          <div className="pp-nav">
+            <button className={`pp-nav-btn ${abaActiva === 'stock' ? 'active' : ''}`} onClick={() => setAbaActiva('stock')}>
+              Stock Ativo ({totais.todos})
+            </button>
+            {temSobreNos && (
+              <button className={`pp-nav-btn ${abaActiva === 'sobre' ? 'active' : ''}`} onClick={() => setAbaActiva('sobre')}>
+                Sobre Nós
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="pp-main">
-          {anunciosAtivos.length > 0 ? (
-            <>
-              <div className="pp-showcase-summary" aria-label="Resumo da montra">
-                <div className="pp-summary-item"><strong>{totais.todos}</strong><span>anúncios ativos</span></div>
-                <div className="pp-summary-item"><strong>{totais.carro}</strong><span>automóveis</span></div>
-                <div className="pp-summary-item"><strong>{totais.imovel}</strong><span>imóveis</span></div>
-                <div className="pp-summary-item"><strong>{totais.destacados}</strong><span>destaques</span></div>
-              </div>
-
-              <section className="pp-stock-panel" aria-label="Stock público do vendedor">
-                <div>
-                  <span className="pp-section-kicker">Stock público</span>
-                  <h2 className="pp-section-title">Montra de {nomeExibicao}</h2>
-                  <p className="pp-section-copy">Todo o stock público deste vendedor está agora concentrado no perfil. Filtra por categoria, preço, marca, modelo ou localização sem sair da página.</p>
+          {abaActiva === 'sobre' && temSobreNos ? (
+            /* 🌟 SEPARADOR: SOBRE NÓS E EQUIPA */
+            <div className="pp-about-panel">
+              <h2 className="pp-about-title">Sobre {nomeExibicao}</h2>
+              
+              {vendedor.sobreNos.horario && (
+                <div className="pp-about-schedule">
+                  <Icon path={mdiClockOutline} size={0.9} color="#102f50" />
+                  <span>{vendedor.sobreNos.horario}</span>
                 </div>
+              )}
 
-                <div className="pp-filters" aria-label="Filtros do stock">
-                  <div className="pp-filter-top">
-                    <div className="pp-field">
-                      <label htmlFor="pp-q">Pesquisa livre</label>
-                      <input id="pp-q" value={filtros.q} onChange={handleFiltro('q')} placeholder="Marca, modelo, cidade..." />
-                    </div>
-                    <div className="pp-field">
-                      <label htmlFor="pp-categoria">Categoria</label>
-                      <select id="pp-categoria" value={filtros.categoria} onChange={handleFiltro('categoria')}>
-                        <option value="todos">Tudo</option>
-                        <option value="carro">Automóveis</option>
-                        <option value="imovel">Imóveis</option>
-                        <option value="destacados">Destaques</option>
-                      </select>
-                    </div>
-                    <div className="pp-field">
-                      <label htmlFor="pp-distrito">Distrito</label>
-                      <select id="pp-distrito" value={filtros.distrito} onChange={handleFiltro('distrito')}>
-                        <option value="">Portugal inteiro</option>
-                        {opcoes.distritos.map((distrito) => <option key={distrito} value={distrito}>{distrito}</option>)}
-                      </select>
-                    </div>
-                    <div className="pp-field">
-                      <label htmlFor="pp-ordem">Ordenar por</label>
-                      <select id="pp-ordem" value={filtros.ordem} onChange={handleFiltro('ordem')}>
-                        <option value="destaque">Destaque primeiro</option>
-                        <option value="recentes">Mais recentes</option>
-                        <option value="preco-asc">Preço: Mais baixo</option>
-                        <option value="preco-desc">Preço: Mais alto</option>
-                      </select>
-                    </div>
-                    <button type="button" className="pp-clear" onClick={limparFiltros}>Limpar filtros</button>
-                  </div>
-
-                  <div className="pp-filter-bottom">
-                    <div className="pp-field">
-                      <label htmlFor="pp-marca">Marca</label>
-                      <select id="pp-marca" value={filtros.marca} onChange={handleFiltro('marca')}>
-                        <option value="">Todas</option>
-                        {opcoes.marcas.map((marca) => <option key={marca} value={marca}>{marca}</option>)}
-                      </select>
-                    </div>
-                    <div className="pp-field">
-                      <label htmlFor="pp-modelo">Modelo</label>
-                      <select id="pp-modelo" value={filtros.modelo} onChange={handleFiltro('modelo')}>
-                        <option value="">Todos</option>
-                        {opcoes.modelos.map((modelo) => <option key={modelo} value={modelo}>{modelo}</option>)}
-                      </select>
-                    </div>
-                    <div className="pp-field">
-                      <label htmlFor="pp-preco-min">Preço mínimo</label>
-                      <input id="pp-preco-min" type="number" min="0" value={filtros.precoMin} onChange={handleFiltro('precoMin')} placeholder="€ Mínimo" />
-                    </div>
-                    <div className="pp-field">
-                      <label htmlFor="pp-preco-max">Preço máximo</label>
-                      <input id="pp-preco-max" type="number" min="0" value={filtros.precoMax} onChange={handleFiltro('precoMax')} placeholder="€ Máximo" />
-                    </div>
-                  </div>
+              {vendedor.sobreNos.descricaoLonga && (
+                <div className="pp-about-text">
+                  {vendedor.sobreNos.descricaoLonga}
                 </div>
+              )}
 
-                <div className="pp-toolbar">
-                  <div>
-                    <h3 className="pp-preview-title">Anúncios ativos</h3>
-                    <p className="pp-result-copy">Resultados do stock ativo de {nomeExibicao}.</p>
+              {vendedor.sobreNos.equipa && vendedor.sobreNos.equipa.length > 0 && (
+                <>
+                  <h3 style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', margin: '40px 0 20px', borderTop: '1px solid #e2e8f0', paddingTop: 32 }}>A nossa equipa</h3>
+                  <div className="pp-team-grid">
+                    {vendedor.sobreNos.equipa.map((membro, i) => (
+                      <div key={i} className="pp-team-card">
+                        <div className="pp-team-head">
+                          <div className="pp-team-icon"><Icon path={mdiAccountCircleOutline} size={1.2} /></div>
+                          <div>
+                            <p className="pp-team-name">{membro.nome}</p>
+                            <p className="pp-team-role">{membro.cargo}</p>
+                          </div>
+                        </div>
+                        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {membro.telefone && (
+                            <a href={`tel:${membro.telefone}`} className="pp-team-contact">
+                              <Icon path={mdiPhoneOutline} size={0.7} /> {membro.telefone}
+                            </a>
+                          )}
+                          {membro.email && (
+                            <a href={`mailto:${membro.email}`} className="pp-team-contact">
+                              <Icon path={mdiEmailOutline} size={0.7} /> {membro.email}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <span className="pp-result-count">{anunciosFiltrados.length} de {anunciosAtivos.length}</span>
-                </div>
-
-                {anunciosFiltrados.length > 0 ? (
-                  /* ── AGORA USA A LISTA HORIZONTAL ── */
-                  <div className="pp-list">
-                    {anunciosFiltrados.map((anuncio) => {
-                      const utilizadorPopulado = anuncio?.utilizador && typeof anuncio.utilizador === 'object'
-                        ? anuncio.utilizador
-                        : vendedor;
-
-                      return (
-                        <AnuncioCard
-                          key={anuncio._id}
-                          anuncio={{ ...anuncio, utilizador: utilizadorPopulado }}
-                          forceSellerIdentity
-                        />
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="pp-empty">
-                    <div className="pp-empty-inner">
-                      <h3>Sem resultados para estes filtros</h3>
-                      <p>Experimenta limpar os filtros ou procurar por outra marca, localização ou intervalo de preço.</p>
-                      <button type="button" className="pp-empty-btn" onClick={limparFiltros}>Limpar filtros</button>
-                    </div>
-                  </div>
-                )}
-              </section>
-            </>
-          ) : (
-            <div className="pp-empty pp-empty-standalone">
-              <div className="pp-empty-inner">
-                <h3>Sem anúncios ativos de momento</h3>
-                <p>Este anunciante ainda não tem anúncios ativos de momento. Podes contactar diretamente através dos dados fornecidos no perfil.</p>
-                <button type="button" className="pp-empty-btn" onClick={() => navigate('/profissionais')}>Ver outros anunciantes</button>
-              </div>
+                </>
+              )}
             </div>
+          ) : (
+            /* 🌟 SEPARADOR: STOCK DE ANÚNCIOS (ORIGINAL) */
+            anunciosAtivos.length > 0 ? (
+              <>
+                <div className="pp-showcase-summary" aria-label="Resumo da montra">
+                  <div className="pp-summary-item"><strong>{totais.todos}</strong><span>anúncios ativos</span></div>
+                  <div className="pp-summary-item"><strong>{totais.carro}</strong><span>automóveis</span></div>
+                  <div className="pp-summary-item"><strong>{totais.imovel}</strong><span>imóveis</span></div>
+                  <div className="pp-summary-item"><strong>{totais.destacados}</strong><span>destaques</span></div>
+                </div>
+
+                <section className="pp-stock-panel" aria-label="Stock público do vendedor">
+                  <div>
+                    <span className="pp-section-kicker">Stock público</span>
+                    <h2 className="pp-section-title">Montra de {nomeExibicao}</h2>
+                    <p className="pp-section-copy">Todo o stock público deste vendedor está agora concentrado no perfil. Filtra por categoria, preço, marca, modelo ou localização sem sair da página.</p>
+                  </div>
+
+                  <div className="pp-filters" aria-label="Filtros do stock">
+                    <div className="pp-filter-top">
+                      <div className="pp-field">
+                        <label htmlFor="pp-q">Pesquisa livre</label>
+                        <input id="pp-q" value={filtros.q} onChange={handleFiltro('q')} placeholder="Marca, modelo, cidade..." />
+                      </div>
+                      <div className="pp-field">
+                        <label htmlFor="pp-categoria">Categoria</label>
+                        <select id="pp-categoria" value={filtros.categoria} onChange={handleFiltro('categoria')}>
+                          <option value="todos">Tudo</option>
+                          <option value="carro">Automóveis</option>
+                          <option value="imovel">Imóveis</option>
+                          <option value="destacados">Destaques</option>
+                        </select>
+                      </div>
+                      <div className="pp-field">
+                        <label htmlFor="pp-distrito">Distrito</label>
+                        <select id="pp-distrito" value={filtros.distrito} onChange={handleFiltro('distrito')}>
+                          <option value="">Portugal inteiro</option>
+                          {opcoes.distritos.map((distrito) => <option key={distrito} value={distrito}>{distrito}</option>)}
+                        </select>
+                      </div>
+                      <div className="pp-field">
+                        <label htmlFor="pp-ordem">Ordenar por</label>
+                        <select id="pp-ordem" value={filtros.ordem} onChange={handleFiltro('ordem')}>
+                          <option value="destaque">Destaque primeiro</option>
+                          <option value="recentes">Mais recentes</option>
+                          <option value="preco-asc">Preço: Mais baixo</option>
+                          <option value="preco-desc">Preço: Mais alto</option>
+                        </select>
+                      </div>
+                      <button type="button" className="pp-clear" onClick={limparFiltros}>Limpar filtros</button>
+                    </div>
+
+                    <div className="pp-filter-bottom">
+                      <div className="pp-field">
+                        <label htmlFor="pp-marca">Marca</label>
+                        <select id="pp-marca" value={filtros.marca} onChange={handleFiltro('marca')}>
+                          <option value="">Todas</option>
+                          {opcoes.marcas.map((marca) => <option key={marca} value={marca}>{marca}</option>)}
+                        </select>
+                      </div>
+                      <div className="pp-field">
+                        <label htmlFor="pp-modelo">Modelo</label>
+                        <select id="pp-modelo" value={filtros.modelo} onChange={handleFiltro('modelo')}>
+                          <option value="">Todos</option>
+                          {opcoes.modelos.map((modelo) => <option key={modelo} value={modelo}>{modelo}</option>)}
+                        </select>
+                      </div>
+                      <div className="pp-field">
+                        <label htmlFor="pp-preco-min">Preço mínimo</label>
+                        <input id="pp-preco-min" type="number" min="0" value={filtros.precoMin} onChange={handleFiltro('precoMin')} placeholder="€ Mínimo" />
+                      </div>
+                      <div className="pp-field">
+                        <label htmlFor="pp-preco-max">Preço máximo</label>
+                        <input id="pp-preco-max" type="number" min="0" value={filtros.precoMax} onChange={handleFiltro('precoMax')} placeholder="€ Máximo" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pp-toolbar">
+                    <div>
+                      <h3 className="pp-preview-title">Anúncios ativos</h3>
+                      <p className="pp-result-copy">Resultados do stock ativo de {nomeExibicao}.</p>
+                    </div>
+                    <span className="pp-result-count">{anunciosFiltrados.length} de {anunciosAtivos.length}</span>
+                  </div>
+
+                  {anunciosFiltrados.length > 0 ? (
+                    <div className="pp-list">
+                      {anunciosFiltrados.map((anuncio) => {
+                        const utilizadorPopulado = anuncio?.utilizador && typeof anuncio.utilizador === 'object'
+                          ? anuncio.utilizador
+                          : vendedor;
+
+                        return (
+                          <AnuncioCard
+                            key={anuncio._id}
+                            anuncio={{ ...anuncio, utilizador: utilizadorPopulado }}
+                            forceSellerIdentity
+                          />
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="pp-empty">
+                      <div className="pp-empty-inner">
+                        <h3>Sem resultados para estes filtros</h3>
+                        <p>Experimenta limpar os filtros ou procurar por outra marca, localização ou intervalo de preço.</p>
+                        <button type="button" className="pp-empty-btn" onClick={limparFiltros}>Limpar filtros</button>
+                      </div>
+                    </div>
+                  )}
+                </section>
+              </>
+            ) : (
+              <div className="pp-empty pp-empty-standalone">
+                <div className="pp-empty-inner">
+                  <h3>Sem anúncios ativos de momento</h3>
+                  <p>Este anunciante ainda não tem anúncios ativos de momento. Podes contactar diretamente através dos dados fornecidos no perfil.</p>
+                  <button type="button" className="pp-empty-btn" onClick={() => navigate('/profissionais')}>Ver outros anunciantes</button>
+                </div>
+              </div>
+            )
           )}
         </div>
       </div>
