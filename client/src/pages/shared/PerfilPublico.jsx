@@ -8,7 +8,7 @@ import AnuncioCard from './AnuncioCard';
 import ProfileView, { obterLinksVisiveisPerfil } from './ProfileView';
 import LoadingScreen from '../../components/LoadingScreen';
 import { Icon } from '@mdi/react';
-import { mdiArrowLeft, mdiViewDashboardOutline, mdiAccountCircleOutline, mdiEmailOutline, mdiPhoneOutline, mdiClockOutline, mdiStorefrontOutline } from '@mdi/js';
+import { mdiArrowLeft, mdiViewDashboardOutline, mdiAccountCircleOutline, mdiEmailOutline, mdiPhoneOutline, mdiClockOutline, mdiStorefrontOutline, mdiShieldCheckOutline } from '@mdi/js';
 import { formatarMarcaModeloVeiculo } from '../../data/marcasModelos';
 
 const normalizarTexto = (valor) => String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -142,26 +142,28 @@ export default function PerfilPublico() {
 
         .pp-main { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
         
-        .pp-about-panel { padding: clamp(24px, 3vw, 40px); border: 1px solid #e2e8f0; border-radius: 24px; background: #ffffff; box-shadow: 0 10px 30px -10px rgba(15,23,42,.05); margin-bottom: 32px; }
-        .pp-about-title { font-size: 28px; font-weight: 900; margin: 0 0 20px; color: #0f172a; display: flex; align-items: center; gap: 10px; }
-        .pp-about-text { font-size: 16px; line-height: 1.7; color: #475569; white-space: pre-wrap; margin-bottom: 32px; background: #fafcff; padding: 24px; border-radius: 16px; border: 1px dashed #cbd5e1; }
-        .pp-about-schedule { display: inline-flex; align-items: center; gap: 8px; padding: 16px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 700; color: #102f50; margin-bottom: 32px; }
+        /* 🌟 DESIGN PREMIUM PARA A SECÇÃO "SOBRE NÓS" / MINI-SITE */
+        .pp-about-panel { padding: clamp(32px, 4vw, 56px); border: 1px solid rgba(217,196,156,0.3); border-radius: 32px; background: linear-gradient(135deg, #ffffff 0%, #fcfbf9 100%); box-shadow: 0 20px 40px -15px rgba(10,31,53,0.08); margin-bottom: 32px; }
+        .pp-about-header-flex { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
+        .pp-about-title { font-size: 32px; font-weight: 900; margin: 0; color: #071326; display: flex; align-items: center; gap: 12px; letter-spacing: -0.02em; }
+        .pp-about-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 99px; color: #b45309; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
         
-        .pp-team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .pp-team-card { padding: 20px; border: 1px solid #e2e8f0; border-radius: 16px; background: #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 12px; transition: 0.2s; }
-        .pp-team-card:hover { border-color: #cbd5e1; transform: translateY(-2px); }
-        .pp-team-head { display: flex; align-items: center; gap: 12px; }
-        .pp-team-icon { width: 52px; height: 52px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #64748b; overflow: hidden; border: 1px solid #e2e8f0; }
-        .pp-team-name { font-size: 17px; font-weight: 800; color: #0f172a; margin: 0; }
-        .pp-team-role { font-size: 12px; font-weight: 800; color: #102f50; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
-        .pp-team-contact { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #475569; font-weight: 600; text-decoration: none; padding: 8px 12px; background: #f8fafc; border-radius: 8px; }
-        .pp-team-contact:hover { background: #f1f5f9; color: #102f50; }
+        .pp-about-schedule { display: inline-flex; align-items: center; gap: 10px; padding: 14px 20px; background: #071326; border: 1px solid #102f50; border-radius: 14px; font-weight: 700; color: #ffffff; margin-bottom: 28px; box-shadow: 0 4px 12px rgba(7,19,38,0.15); }
+        .pp-about-schedule span { color: #d9c49c; font-weight: 800; }
+        
+        .pp-about-text { font-size: 16px; line-height: 1.8; color: #334155; white-space: pre-wrap; margin-bottom: 40px; background: #f8fafc; padding: 28px; border-radius: 20px; border: 1px solid #e2e8f0; position: relative; }
+        .pp-about-text::before { content: '“'; position: absolute; top: -10px; left: 24px; font-size: 50px; color: #d9c49c; font-family: serif; line-height: 1; }
+        
+        .pp-team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+        .pp-team-card { padding: 24px; border: 1px solid #e2e8f0; border-radius: 20px; background: #ffffff; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 16px; transition: all 0.3s ease; }
+        .pp-team-card:hover { border-color: #d9c49c; transform: translateY(-4px); box-shadow: 0 15px 35px -10px rgba(217,196,156,0.2); }
+        .pp-team-head { display: flex; align-items: center; gap: 16px; }
+        .pp-team-icon { width: 64px; height: 64px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #64748b; overflow: hidden; border: 2px solid #d9c49c; flex-shrink: 0; }
+        .pp-team-name { font-size: 18px; font-weight: 900; color: #071326; margin: 0 0 2px; }
+        .pp-team-role { font-size: 11px; font-weight: 900; color: #b45309; text-transform: uppercase; letter-spacing: 0.08em; margin: 0; background: #fffbeb; padding: 3px 8px; border-radius: 6px; display: inline-block; }
+        .pp-team-contact { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #475569; font-weight: 700; text-decoration: none; padding: 10px 14px; background: #f8fafc; border-radius: 10px; border: 1px solid #f1f5f9; transition: 0.2s; }
+        .pp-team-contact:hover { background: #071326; color: #ffffff; border-color: #071326; }
 
-        .pp-showcase-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: -20px 0 32px; }
-        .pp-summary-item { min-height: 96px; display: grid; align-content: center; gap: 7px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 16px; background: #ffffff; box-shadow: 0 10px 25px -10px rgba(15,23,42,.05); text-align: center; }
-        .pp-summary-item strong { color: #0f172a; font-size: 32px; line-height: 1; font-weight: 900; }
-        .pp-summary-item span { color: #64748b; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-        
         .pp-stock-panel { padding: clamp(24px, 3vw, 40px); border: 1px solid #e2e8f0; border-radius: 24px; background: #ffffff; box-shadow: 0 10px 30px -10px rgba(15,23,42,.05); }
         .pp-section-kicker { display: block; margin-bottom: 8px; color: #102f50; font-size: 12px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
         .pp-section-title { font-size: clamp(26px, 3vw, 36px); line-height: 1.1; font-weight: 900; margin: 0; color: #0f172a; letter-spacing: -.03em; }
@@ -188,8 +190,10 @@ export default function PerfilPublico() {
         .pp-empty-inner { max-width: 520px; }
         .pp-empty h3 { margin: 0; color: #0f172a; font-size: 22px; line-height: 1.2; font-weight: 900; }
         .pp-empty p { margin: 10px auto 24px; color: #64748b; font-size: 15px; line-height: 1.65; }
-        .pp-empty-btn { min-height: 46px; padding: 0 24px; border: 0; border-radius: 10px; background: #102f50; color: #ffffff; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; transition: 0.2s; }
-        .pp-empty-btn:hover { background: #071326; }
+        
+        /* 🌟 CORREÇÃO DO BOTÃO ESCONDIDO (CONTRASTE ALTO E ELEGANTE) */
+        .pp-empty-btn { min-height: 48px; padding: 0 28px; border: 0; border-radius: 12px; background: #071326; color: #ffffff; font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(7,19,38,0.3); }
+        .pp-empty-btn:hover { background: #102f50; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16,47,80,0.4); }
         .pp-empty-standalone { margin-top: 4px; border: none; background: #ffffff; box-shadow: 0 10px 25px -10px rgba(15,23,42,.05); }
 
         @media (max-width: 1040px) {
@@ -197,7 +201,6 @@ export default function PerfilPublico() {
           .pp-clear { width: 100%; }
         }
         @media (max-width: 860px) {
-          .pp-showcase-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0; }
           .pp-stock-panel { border-radius: 18px; padding: 20px; }
         }
         @media (max-width: 680px) {
@@ -206,7 +209,6 @@ export default function PerfilPublico() {
           .pp-main { padding: 0 16px; }
           .pp-filter-top, .pp-filter-bottom { grid-template-columns: 1fr; }
           .pp-toolbar { align-items: flex-start; flex-direction: column; }
-          .pp-showcase-summary { grid-template-columns: 1fr; }
         }
       `}</style>
 
@@ -233,10 +235,13 @@ export default function PerfilPublico() {
         <div className="pp-main">
           {abaActiva === 'sobre' && temSobreNos ? (
             <div className="pp-about-panel">
-              <h2 className="pp-about-title">Sobre {nomeExibicao}</h2>
+              <div className="pp-about-header-flex">
+                <h2 className="pp-about-title"><Icon path={mdiStorefrontOutline} size={1} color="#d9c49c" /> Sobre {nomeExibicao}</h2>
+                <div className="pp-about-badge"><Icon path={mdiShieldCheckOutline} size={0.7} /> Stand Verificado</div>
+              </div>
               
               {vendedor.sobreNos.horario && (
-                <div className="pp-about-schedule"><Icon path={mdiClockOutline} size={0.9} color="#102f50" /> <span>{vendedor.sobreNos.horario}</span></div>
+                <div className="pp-about-schedule"><Icon path={mdiClockOutline} size={0.9} color="#d9c49c" /> <span>Horário:</span> {vendedor.sobreNos.horario}</div>
               )}
 
               {vendedor.sobreNos.descricaoLonga && (
@@ -245,7 +250,7 @@ export default function PerfilPublico() {
 
               {vendedor.sobreNos.equipa && vendedor.sobreNos.equipa.length > 0 && (
                 <>
-                  <h3 style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', margin: '40px 0 20px', borderTop: '1px solid #e2e8f0', paddingTop: 32 }}>A nossa equipa comercial</h3>
+                  <h3 style={{ fontSize: 22, fontWeight: 900, color: '#071326', margin: '40px 0 20px', borderTop: '2px solid #f1f5f9', paddingTop: 32 }}>A nossa equipa comercial</h3>
                   <div className="pp-team-grid">
                     {vendedor.sobreNos.equipa.map((membro, i) => (
                       <div key={i} className="pp-team-card">
@@ -259,9 +264,9 @@ export default function PerfilPublico() {
                           </div>
                           <div><p className="pp-team-name">{membro.nome}</p><p className="pp-team-role">{membro.cargo}</p></div>
                         </div>
-                        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                          {membro.telefone && <a href={`tel:${membro.telefone}`} className="pp-team-contact"><Icon path={mdiPhoneOutline} size={0.7} /> {membro.telefone}</a>}
-                          {membro.email && <a href={`mailto:${membro.email}`} className="pp-team-contact"><Icon path={mdiEmailOutline} size={0.7} /> {membro.email}</a>}
+                        <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {membro.telefone && <a href={`tel:${membro.telefone}`} className="pp-team-contact"><Icon path={mdiPhoneOutline} size={0.7} color="#071326" /> {membro.telefone}</a>}
+                          {membro.email && <a href={`mailto:${membro.email}`} className="pp-team-contact"><Icon path={mdiEmailOutline} size={0.7} color="#071326" /> {membro.email}</a>}
                         </div>
                       </div>
                     ))}

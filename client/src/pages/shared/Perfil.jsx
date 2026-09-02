@@ -81,7 +81,7 @@ export default function Perfil() {
 
   const [mostrarModalSobreNos, setMostrarModalSobreNos] = useState(false);
   const [dadosSobreNos, setDadosSobreNos] = useState({
-    descricaoLonga: '', hSemanaDas: '', hSemanaAte: '', hFdsDas: '', hFdsAte: '', equipa: []
+    descricaoLonga: '', hSemanaDas: '', hSemanaAte: '', hFdsDas: '', hFdsAte: '', hDomDas: '', hDomAte: '', equipa: []
   });
 
   const rotaVoltar = abaActiva === 'carro' ? '/carros' : '/imoveis';
@@ -177,7 +177,7 @@ export default function Perfil() {
     setMostrarModalEditar(true);
   };
 
- const abrirEdicaoSobreNos = () => {
+  const abrirEdicaoSobreNos = () => {
     const h = parseHorario(utilizador?.sobreNos?.horario);
     setDadosSobreNos({
       descricaoLonga: utilizador?.sobreNos?.descricaoLonga || '',
@@ -234,6 +234,23 @@ export default function Perfil() {
 
   const salvarSobreNos = async (e) => {
     e.preventDefault();
+
+    const validarIntervalo = (das, ate, nomeDia) => {
+      if ((das && !ate) || (!das && ate)) {
+        alert(`Por favor, preenche tanto a abertura como o fecho para o dia: ${nomeDia}.`);
+        return false;
+      }
+      if (das && ate && das >= ate) {
+        alert(`O horário de ${nomeDia} é inválido: a hora de fecho (${ate}) tem de ser posterior à hora de abertura (${das}).`);
+        return false;
+      }
+      return true;
+    };
+
+    if (!validarIntervalo(dadosSobreNos.hSemanaDas, dadosSobreNos.hSemanaAte, 'Dias Úteis')) return;
+    if (!validarIntervalo(dadosSobreNos.hFdsDas, dadosSobreNos.hFdsAte, 'Sábado')) return;
+    if (!validarIntervalo(dadosSobreNos.hDomDas, dadosSobreNos.hDomAte, 'Domingo')) return;
+
     const arr = [];
     if (dadosSobreNos.hSemanaDas && dadosSobreNos.hSemanaAte) {
       arr.push(`Seg a Sex: ${dadosSobreNos.hSemanaDas} às ${dadosSobreNos.hSemanaAte}`);
@@ -354,52 +371,6 @@ export default function Perfil() {
         .stat-box-val { font-size: 22px; font-weight: 900; color: #0f172a; }
         .stat-box-lbl { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-top: 4px; }
         
-        .perfil-upgrade-banner { background: linear-gradient(135deg, #102f50 0%, #0a1f35 100%); border-radius: 20px; padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; margin: 16px 0 32px; box-shadow: 0 15px 35px -10px rgba(16,47,80,0.4); border: 1px solid rgba(217,196,156,0.3); flex-wrap: wrap; }
-        .upgrade-content { display: flex; align-items: center; gap: 20px; flex: 1; }
-        .upgrade-icon { color: #d9c49c; background: rgba(217,196,156,0.1); padding: 12px; border-radius: 16px; flex-shrink: 0; }
-        .upgrade-content h3 { color: #ffffff; font-size: 20px; margin: 0 0 6px; font-weight: 800; }
-        .upgrade-content p { color: #94a3b8; font-size: 14px; margin: 0; line-height: 1.5; }
-        .upgrade-btn { background: #d9c49c; color: #071326; border: none; padding: 14px 24px; border-radius: 12px; font-weight: 900; font-size: 14px; cursor: pointer; white-space: nowrap; transition: 0.2s; box-shadow: 0 4px 12px rgba(217,196,156,0.3); }
-        .upgrade-btn:hover { background: #f0dfbb; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(217,196,156,0.5); }
-        @media (max-width: 768px) { .perfil-upgrade-banner { padding: 20px; flex-direction: column; align-items: flex-start; text-align: left; } .upgrade-btn { width: 100%; text-align: center; justify-content: center; } }
-
-        .perfil-premium-panel { margin: 0 0 24px; border: 1px solid rgba(217,196,156,.5); border-radius: 16px; padding: 24px; background: linear-gradient(135deg, rgba(255,255,255,1), rgba(217,196,156,.15)); width: 100%; }
-        .perfil-premium-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; width: 100%; }
-        .perfil-premium-title { margin: 0; color: #102f50; font-size: 20px; line-height: 1.2; font-weight: 900; }
-        .perfil-premium-kicker { color: #d9c49c; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 4px; margin-bottom: 4px;}
-        .perfil-premium-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; }
-        .perfil-premium-empty { display: flex; flex-direction: column; gap: 8px; padding: 20px; border: 1px dashed rgba(16,47,80,.2); border-radius: 12px; background: rgba(255,255,255,.8); color: #475569; }
-        .perfil-premium-empty strong { color: #102f50; font-size: 14px; font-weight: 900; }
-        .perfil-premium-empty span { font-size: 13px; line-height: 1.5; }
-        @media (min-width: 640px) { .perfil-premium-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .perfil-premium-head { flex-direction: row; justify-content: space-between; align-items: flex-start; } .perfil-premium-title { font-size: 24px; } }
-        @media (min-width: 1024px) { .perfil-premium-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
-        
-        .perfil-premium-metric { min-height: 76px; display: grid; align-content: center; gap: 6px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
-        .perfil-premium-metric strong { color: #0f172a; font-size: 22px; font-weight: 900; line-height: 1; }
-        .perfil-premium-metric span { color: #64748b; font-size: 9px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-        
-        .perfil-premium-bottom { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; width: 100%; }
-        .perfil-premium-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-        @media (min-width: 640px) { .perfil-premium-actions { flex-direction: row; justify-content: flex-start; } .perfil-premium-btn { flex: 1; } }
-        
-        .perfil-premium-btn { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #102f50; background: #102f50; color: #ffffff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        .perfil-premium-btn:hover { background: #071326; border-color: #071326; }
-        .perfil-premium-btn.secondary { background: #ffffff; color: #102f50; border-color: #cbd5e1; }
-        .perfil-premium-btn.secondary:hover { background: #f8fafc; border-color: #94a3b8; }
-
-        .perfil-quality-panel { margin: 0 0 24px; border: 1px solid rgba(16,47,80,.12); border-radius: 16px; padding: 24px; background: #ffffff; width: 100%; }
-        .perfil-quality-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 20px; }
-        .perfil-quality-kicker { color: #102f50; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-        .perfil-quality-title { margin: 6px 0 0; color: #071326; font-size: 20px; line-height: 1.2; font-weight: 900; }
-        .perfil-quality-copy { margin: 8px 0 0; color: #64748b; font-size: 14px; line-height: 1.5; }
-        .perfil-quality-list { display: grid; gap: 12px; }
-        .perfil-quality-item { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; text-align: left; font: inherit; cursor: pointer; transition: 0.2s; }
-        .perfil-quality-item:hover { border-color: #94a3b8; background: #f1f5f9; }
-        .perfil-quality-item strong { display: block; color: #0f172a; font-size: 15px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .perfil-quality-item span span { display: block; margin-top: 4px; color: #64748b; font-size: 13px; line-height: 1.4; }
-        .perfil-quality-score { min-width: 62px; display: inline-flex; justify-content: center; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(217,196,156,.45); background: #fff9eb; color: #102f50; font-size: 13px; font-weight: 900; }
-        .perfil-quality-ok { padding: 16px; border: 1px dashed rgba(217,196,156,.52); border-radius: 12px; color: #102f50; background: #fffaf0; font-size: 14px; font-weight: 700; line-height: 1.5; }
-
         /* PREVIEW SOBRE NÓS */
         .preview-sobre-title { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0; }
         .preview-sobre-horario { display: inline-flex; align-items: center; gap: 8px; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; font-weight: 700; color: #102f50; margin-bottom: 24px; font-size: 14px;}
@@ -505,84 +476,123 @@ export default function Perfil() {
 
       {mostrarModalSobreNos && (
         <div className="modal-overlay">
-          <div className="modal-card" style={{ maxWidth: 650 }}>
+          <div className="modal-card" style={{ maxWidth: 720, padding: '36px 32px' }}>
             <button className="modal-close" onClick={() => setMostrarModalSobreNos(false)}><Icon path={mdiClose} size={1} /></button>
-            <h2 style={{ fontSize: 20, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}><Icon path={mdiStorefrontOutline} size={1} color="#d9c49c" /> Gerir O Meu Stand</h2>
-            <p style={{ fontSize: 13, color: '#64748b', marginBottom: 24 }}>Apresenta a tua empresa, horários e fotos da equipa.</p>
             
-            <form onSubmit={salvarSobreNos}>
-              <div className="modal-form-group">
-                <label style={{ fontSize: 12, fontWeight: 800, color: '#102f50', textTransform: 'uppercase' }}>História e Garantias</label>
-                <textarea className="modal-input" style={{ minHeight: 100, marginTop: 6 }} value={dadosSobreNos.descricaoLonga} onChange={e => setDadosSobreNos({...dadosSobreNos, descricaoLonga: e.target.value})} maxLength={3000} placeholder="Conta a história do teu Stand, os serviços e garantias que oferecem aos clientes..." />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+              <div style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: 10, borderRadius: 12, color: '#b45309' }}>
+                <Icon path={mdiStorefrontOutline} size={1.2} />
+              </div>
+              <div>
+                <h2 style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', margin: 0 }}>Gerir o Meu Stand</h2>
+                <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>Configura a identidade pública, os horários e a equipa comercial.</p>
+              </div>
+            </div>
+            
+            <form onSubmit={salvarSobreNos} style={{ marginTop: 24 }}>
+              
+              <div style={{ marginBottom: 24, background: '#f8fafc', padding: 20, borderRadius: 16, border: '1px solid #e2e8f0' }}>
+                <label style={{ fontSize: 12, fontWeight: 900, color: '#102f50', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>História e Garantias da Empresa</label>
+                <textarea 
+                  className="modal-input" 
+                  style={{ minHeight: 110, background: '#ffffff', resize: 'vertical' }} 
+                  value={dadosSobreNos.descricaoLonga} 
+                  onChange={e => setDadosSobreNos({...dadosSobreNos, descricaoLonga: e.target.value})} 
+                  maxLength={3000} 
+                  placeholder="Conta a história do teu Stand, os serviços de excelência e as garantias que oferecem aos clientes..." 
+                />
+                <span style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginTop: 6, textAlign: 'right' }}>Máximo 3000 caracteres</span>
               </div>
 
-             <div className="modal-form-group" style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-                <label style={{ fontSize: 12, fontWeight: 800, color: '#102f50', textTransform: 'uppercase', display: 'block', marginBottom: 12 }}>Horários de Funcionamento</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, width: 110 }}>Dias Úteis:</span>
-                  <input type="time" className="modal-input" style={{ width: 'auto', padding: '10px' }} value={dadosSobreNos.hSemanaDas} onChange={e => setDadosSobreNos(p => ({...p, hSemanaDas: e.target.value}))} />
-                  <span style={{ fontSize: 13, color: '#64748b' }}>às</span>
-                  <input type="time" className="modal-input" style={{ width: 'auto', padding: '10px' }} value={dadosSobreNos.hSemanaAte} onChange={e => setDadosSobreNos(p => ({...p, hSemanaAte: e.target.value}))} />
+              <div style={{ marginBottom: 24, background: '#f8fafc', padding: 20, borderRadius: 16, border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <label style={{ fontSize: 12, fontWeight: 900, color: '#102f50', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Horários de Funcionamento</label>
+                  <span style={{ fontSize: 11, color: '#64748b', background: '#e2e8f0', padding: '2px 8px', borderRadius: 6, fontWeight: 700 }}>Opcional (Deixa em branco se encerrado)</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, width: 110 }}>Sábado:</span>
-                  <input type="time" className="modal-input" style={{ width: 'auto', padding: '10px' }} value={dadosSobreNos.hFdsDas} onChange={e => setDadosSobreNos(p => ({...p, hFdsDas: e.target.value}))} />
-                  <span style={{ fontSize: 13, color: '#64748b' }}>às</span>
-                  <input type="time" className="modal-input" style={{ width: 'auto', padding: '10px' }} value={dadosSobreNos.hFdsAte} onChange={e => setDadosSobreNos(p => ({...p, hFdsAte: e.target.value}))} />
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12, background: '#ffffff', padding: '12px 16px', borderRadius: 12, border: '1px solid #cbd5e1' }}>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', minWidth: 110 }}>Dias Úteis:</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input type="time" className="modal-input" style={{ width: '110px', padding: '8px', textAlign: 'center', fontWeight: 700 }} value={dadosSobreNos.hSemanaDas} onChange={e => setDadosSobreNos(p => ({...p, hSemanaDas: e.target.value}))} />
+                    <span style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>às</span>
+                    <input type="time" className="modal-input" style={{ width: '110px', padding: '8px', textAlign: 'center', fontWeight: 700 }} value={dadosSobreNos.hSemanaAte} onChange={e => setDadosSobreNos(p => ({...p, hSemanaAte: e.target.value}))} />
+                  </div>
                 </div>
-                {/* 🌟 ADICIONA AQUI O DOMINGO */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, width: 110 }}>Domingo:</span>
-                  <input type="time" className="modal-input" style={{ width: 'auto', padding: '10px' }} value={dadosSobreNos.hDomDas} onChange={e => setDadosSobreNos(p => ({...p, hDomDas: e.target.value}))} />
-                  <span style={{ fontSize: 13, color: '#64748b' }}>às</span>
-                  <input type="time" className="modal-input" style={{ width: 'auto', padding: '10px' }} value={dadosSobreNos.hDomAte} onChange={e => setDadosSobreNos(p => ({...p, hDomAte: e.target.value}))} />
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12, background: '#ffffff', padding: '12px 16px', borderRadius: 12, border: '1px solid #cbd5e1' }}>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', minWidth: 110 }}>Sábado:</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input type="time" className="modal-input" style={{ width: '110px', padding: '8px', textAlign: 'center', fontWeight: 700 }} value={dadosSobreNos.hFdsDas} onChange={e => setDadosSobreNos(p => ({...p, hFdsDas: e.target.value}))} />
+                    <span style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>às</span>
+                    <input type="time" className="modal-input" style={{ width: '110px', padding: '8px', textAlign: 'center', fontWeight: 700 }} value={dadosSobreNos.hFdsAte} onChange={e => setDadosSobreNos(p => ({...p, hFdsAte: e.target.value}))} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, background: '#ffffff', padding: '12px 16px', borderRadius: 12, border: '1px solid #cbd5e1' }}>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', minWidth: 110 }}>Domingo:</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input type="time" className="modal-input" style={{ width: '110px', padding: '8px', textAlign: 'center', fontWeight: 700 }} value={dadosSobreNos.hDomDas} onChange={e => setDadosSobreNos(p => ({...p, hDomDas: e.target.value}))} />
+                    <span style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>às</span>
+                    <input type="time" className="modal-input" style={{ width: '110px', padding: '8px', textAlign: 'center', fontWeight: 700 }} value={dadosSobreNos.hDomAte} onChange={e => setDadosSobreNos(p => ({...p, hDomAte: e.target.value}))} />
+                  </div>
                 </div>
               </div>
 
-              <div className="modal-form-group">
-                <label style={{ fontSize: 12, fontWeight: 800, color: '#102f50', textTransform: 'uppercase', display: 'block', marginBottom: 12 }}>A Nossa Equipa</label>
+              <div style={{ marginBottom: 28, background: '#f8fafc', padding: 20, borderRadius: 16, border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <label style={{ fontSize: 12, fontWeight: 900, color: '#102f50', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Equipa Comercial ({dadosSobreNos.equipa.length})</label>
+                  <span style={{ fontSize: 11, color: '#64748b' }}>Aparece no mini-site público</span>
+                </div>
+
                 {dadosSobreNos.equipa.map((membro, index) => (
-                  <div key={index} style={{ padding: 16, background: '#fafcff', border: '1px solid #cbd5e1', borderRadius: 12, marginBottom: 12, position: 'relative', display: 'flex', gap: 16 }}>
-                    <button type="button" onClick={() => removerMembroEquipa(index)} style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Icon path={mdiTrashCanOutline} size={0.8} /></button>
+                  <div key={index} style={{ padding: 16, background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 14, marginBottom: 14, position: 'relative', display: 'flex', gap: 16, alignItems: 'flex-start', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                    <button type="button" onClick={() => removerMembroEquipa(index)} style={{ position: 'absolute', top: 14, right: 14, background: '#fff1f2', border: '1px solid #fecdd3', borderRadius: 8, width: 32, height: 32, display: 'grid', placeItems: 'center', color: '#e11d48', cursor: 'pointer', transition: '0.2s' }} title="Remover membro">
+                      <Icon path={mdiTrashCanOutline} size={0.7} />
+                    </button>
                     
-                    <div style={{ position: 'relative', width: 68, height: 68, flexShrink: 0, borderRadius: '50%', background: '#e2e8f0', overflow: 'hidden', border: '2px solid #fff', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+                    <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0, borderRadius: '50%', background: '#f1f5f9', overflow: 'hidden', border: '2px solid #e2e8f0', display: 'grid', placeItems: 'center' }}>
                       {membro.fotoUrl ? (
                          <img src={membro.fotoUrl} alt="Foto" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
-                         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
-                            <Icon path={mdiCameraPlusOutline} size={1.2} />
+                         <div style={{ color: '#94a3b8' }}>
+                            <Icon path={mdiCameraPlusOutline} size={1.1} />
                          </div>
                       )}
                       <input type="file" accept="image/*" title="Alterar foto" onChange={e => handleUploadFotoMembro(index, e.target.files[0])} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
                       {uploadingMembro === index && (
-                         <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)', display: 'grid', placeItems: 'center' }}>
-                            <span style={{ fontSize: 10, fontWeight: 'bold' }}>...</span>
+                         <div style={{ position: 'absolute', inset: '0', background: 'rgba(255,255,255,0.8)', display: 'grid', placeItems: 'center' }}>
+                            <span style={{ fontSize: 10, fontWeight: 900, color: '#102f50' }}>...</span>
                          </div>
                       )}
                     </div>
 
-                    <div style={{ flex: 1, display: 'grid', gap: 8 }}>
+                    <div style={{ flex: 1, display: 'grid', gap: 10, paddingRight: 24 }}>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                        <input className="modal-input" type="text" placeholder="Nome do vendedor *" value={membro.nome} onChange={e => atualizarMembroEquipa(index, 'nome', e.target.value)} required />
-                        <input className="modal-input" type="text" placeholder="Cargo (Ex: Comercial) *" value={membro.cargo} onChange={e => atualizarMembroEquipa(index, 'cargo', e.target.value)} required />
+                        <input className="modal-input" type="text" placeholder="Nome completo *" value={membro.nome} onChange={e => atualizarMembroEquipa(index, 'nome', e.target.value)} required style={{ background: '#fcfcfc' }} />
+                        <input className="modal-input" type="text" placeholder="Cargo (Ex: Gestor Comercial) *" value={membro.cargo} onChange={e => atualizarMembroEquipa(index, 'cargo', e.target.value)} required style={{ background: '#fcfcfc' }} />
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                        <input className="modal-input" type="tel" placeholder="Telefone (9 dígitos)" value={membro.telefone} 
+                        <input className="modal-input" type="tel" placeholder="Telemóvel (9 dígitos)" value={membro.telefone} 
                           onChange={e => {
                             const apenasNumeros = e.target.value.replace(/\D/g, '').slice(0, 9);
                             atualizarMembroEquipa(index, 'telefone', apenasNumeros);
                           }} 
+                          style={{ background: '#fcfcfc' }}
                         />
-                        <input className="modal-input" type="email" placeholder="Email (Opcional)" value={membro.email} onChange={e => atualizarMembroEquipa(index, 'email', e.target.value)} />
+                        <input className="modal-input" type="email" placeholder="Email profissional" value={membro.email} onChange={e => atualizarMembroEquipa(index, 'email', e.target.value)} style={{ background: '#fcfcfc' }} />
                       </div>
                     </div>
                   </div>
                 ))}
-                <button type="button" style={{ padding: '12px', fontSize: 13, fontWeight: 700, borderRadius: 8, border: '1px dashed #cbd5e1', background: '#ffffff', color: '#102f50', width: '100%', cursor: 'pointer' }} onClick={adicionarMembroEquipa}>
-                  <Icon path={mdiPlus} size={0.7} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Adicionar Trabalhador
+
+                <button type="button" style={{ padding: '12px', fontSize: 13, fontWeight: 800, borderRadius: 10, border: '2px dashed #cbd5e1', background: '#ffffff', color: '#102f50', width: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: '0.2s' }} onClick={adicionarMembroEquipa}>
+                  <Icon path={mdiPlus} size={0.8} /> Adicionar Novo Trabalhador
                 </button>
               </div>
-              <button style={{ width: '100%', padding: 16, background: '#102f50', color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, marginTop: 12, cursor: 'pointer' }} type="submit">Guardar as Alterações</button>
+
+              <button style={{ width: '100%', padding: 16, background: '#071326', color: '#fff', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 15px rgba(7,19,38,0.3)', transition: '0.2s' }} type="submit">
+                Guardar as Alterações do Stand
+              </button>
             </form>
           </div>
         </div>
