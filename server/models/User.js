@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
       validator: function(v) {
         if (!v) return true;
         const clean = v.replace(/\D/g, '');
-        return clean.length >= 9 && clean.length <= 15; // 🌟 REGRA DOS FIXOS/MÓVEIS: 9 a 15 dígitos
+        return clean.length >= 9 && clean.length <= 15;
       },
       message: 'Indique um número de telefone ou telemóvel válido.'
     }
@@ -91,33 +91,41 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// 🌟 SLUG GERADO COM SEGURANÇA MÁXIMA
 userSchema.pre('save', async function(next) {
-  const baseName = this.standNome || this.nome;
-  if (baseName && (this.isModified('nome') || this.isModified('standNome') || !this.slug)) {
-    let baseSlug = baseName
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') 
-      .replace(/[^a-z0-9]/g, '-')     
-      .replace(/-+/g, '-')            
-      .replace(/^-|-$/g, '')          
-      .trim();
-
-    if (!baseSlug) baseSlug = 'vendedor';
-
-    let uniqueSlug = baseSlug;
-    let contador = 1;
+  try {
+    const baseName = this.standNome || this.nome || 'vendedor';
     
-    while (true) {
-      const existingUser = await mongoose.models.User.findOne({ slug: uniqueSlug, _id: { $ne: this._id } });
-      if (!existingUser) break;
-      uniqueSlug = `${baseSlug}-${contador}`;
-      contador++;
-    }
+    if (this.isModified('nome') || this.isModified('standNome') || !this.slug) {
+      let baseSlug = baseName
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') 
+        .replace(/[^a-z0-9]/g, '-')     
+        .replace(/-+/g, '-')            
+        .replace(/^-|-$/g, '')          
+        .trim();
 
-    this.slug = uniqueSlug;
+      if (!baseSlug) baseSlug = 'vendedor';
+
+      let uniqueSlug = baseSlug;
+      let contador = 1;
+      
+      while (true) {
+        // Usa this.constructor em vez de chamar mongoose.models explicitamente
+        const existingUser = await this.constructor.findOne({ slug: uniqueSlug, _id: { $ne: this._id } });
+        if (!existingUser) break;
+        uniqueSlug = `${baseSlug}-${contador}`;
+        contador++;
+      }
+
+      this.slug = uniqueSlug;
+    }
+    next();
+  } catch (error) {
+    console.error('Erro na geração segura do slug:', error);
+    next(error); // Permite ao servidor não colapsar
   }
-  next();
 });
 
 userSchema.pre('save', async function(next) {
@@ -135,7 +143,7 @@ userSchema.pre('save', async function(next) {
 
 userSchema.methods.comparePassword = async function(candidatePassword) {
   try { return await argon2.verify(this.password, candidatePassword); }
-  catch (error) { console.error('Erro na verificação:', error); return false; }
+  catch (error) { return false; }
 };
 
 const User = mongoose.model('User', userSchema);
