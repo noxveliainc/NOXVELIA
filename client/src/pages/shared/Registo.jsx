@@ -41,9 +41,10 @@ export default function Registo() {
   const destinoVoltar = loginBackPath(location.state, '/');
   const registoGoogle = Boolean(googleCredential);
   const destinoDepoisAuth = () => loginDestinationPath(location.state, destinoVoltar);
+  
   const handleTelefoneChange = (e) => {
     const apenasNumeros = e.target.value.replace(/\D/g, '');
-    if (apenasNumeros.length <= 9) {
+    if (apenasNumeros.length <= 15) { // 🌟 PERMITE ATÉ 15 DÍGITOS PARA SUPORTAR FIXOS E INTERNACIONAIS
       setFormData({ ...formData, telefone: apenasNumeros });
     }
   };
@@ -72,9 +73,9 @@ export default function Registo() {
       }
     }
 
-    const telefoneRegex = /^9[1236]\d{7}$/;
-    if (!telefoneRegex.test(formData.telefone)) {
-      setErro('O número tem de ser um telemóvel português válido.');
+    // 🌟 SE TIVER TELEFONE PREENCHIDO, VALIDA SE TEM ENTRE 9 E 15 NÚMEROS (Aceita fixos e móveis)
+    if (formData.telefone && (formData.telefone.length < 9 || formData.telefone.length > 15)) {
+      setErro('Se introduzires um telefone, tem de ser um número válido (entre 9 a 15 dígitos).');
       return;
     }
 
@@ -104,7 +105,7 @@ export default function Registo() {
         const resposta = await loginGoogle({
           credential: googleCredential,
           nome: formData.nome,
-          telefone: formData.telefone,
+          telefone: formData.telefone || null,
           mostrarTelefonePublico: formData.mostrarTelefonePublico,
           localidade: formData.localidade,
           tipoConta: formData.tipoConta,
@@ -125,7 +126,7 @@ export default function Registo() {
         nome: formData.nome,
         email: formData.email,
         password: formData.password,
-        telefone: formData.telefone,
+        telefone: formData.telefone || null, // 🌟 ENVIA NULL SE ESTIVER VAZIO
         mostrarTelefonePublico: formData.mostrarTelefonePublico,
         localidade: formData.localidade,
         tipo: 'cliente',
@@ -150,7 +151,7 @@ export default function Registo() {
       else if (err.response?.data?.code === 11000 || err.response?.data?.error?.code === 11000) {
         const erroRaw = JSON.stringify(err.response?.data);
         if (erroRaw.includes('email')) setErro('Este email já se encontra registado.');
-        else if (erroRaw.includes('telefone')) setErro('Este número de telemóvel já se encontra em uso.');
+        else if (erroRaw.includes('telefone')) setErro('Este número já se encontra em uso.');
         else setErro('Já existe uma conta com estes dados.');
       } else {
         setErro('Erro ao efetuar o registo. Verifica os teus dados e a ligação à internet.');
@@ -473,16 +474,16 @@ export default function Registo() {
             <div className="modal-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
             </div>
-            <h2 style={{ fontFamily: 'var(--nx-font-display)', fontSize: '24px', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>Verifica os teus contactos</h2>
+            <h2 style={{ fontFamily: 'var(--nx-font-display)', fontSize: '24px', fontWeight: 800, color: '#0f172a', margin: '0 0 12px' }}>Verifica os teus dados</h2>
             <p style={{ fontSize: '15px', color: '#64748b', marginBottom: '24px', lineHeight: 1.6 }}>
               {registoGoogle ? 'A tua conta Google já confirma o email. Confirma agora os dados que vão identificar a tua conta na Noxvelia.' : 'Vamos enviar um email de confirmação. Vais precisar de clicar no link para ativar a tua conta antes de iniciares sessão. Confirma que os dados estão corretos.'}
             </p>
 
             <div className="modal-data-box">
               <div style={{ marginBottom: '8px', color: '#0f172a', fontSize: '15px' }}><strong style={{color: '#64748b', fontWeight: 600}}>Email:</strong> {formData.email}</div>
-              <div style={{ marginBottom: '8px', color: '#0f172a', fontSize: '15px' }}><strong style={{color: '#64748b', fontWeight: 600}}>Telemóvel:</strong> {formData.telefone}</div>
+              <div style={{ marginBottom: '8px', color: '#0f172a', fontSize: '15px' }}><strong style={{color: '#64748b', fontWeight: 600}}>Telefone:</strong> {formData.telefone || 'Não indicado'}</div>
               <div style={{ color: '#0f172a', fontSize: '15px' }}>
-                <strong style={{color: '#64748b', fontWeight: 600}}>Telemóvel público:</strong> {formData.mostrarTelefonePublico ? 'Sim, mostrar nos anúncios e no perfil' : 'Não, mostrar apenas email'}
+                <strong style={{color: '#64748b', fontWeight: 600}}>Telefone público:</strong> {formData.mostrarTelefonePublico ? 'Sim, mostrar nos anúncios e no perfil' : 'Não, mostrar apenas email'}
               </div>
             </div>
 
@@ -492,7 +493,7 @@ export default function Registo() {
                 checked={contactoConfirmado}
                 onChange={e => setContactoConfirmado(e.target.checked)}
               />
-              <span>Confirmo que o email e o telefone estão corretos e que tenho acesso aos mesmos.</span>
+              <span>Confirmo que os dados estão corretos e que tenho acesso aos mesmos.</span>
             </label>
 
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -530,7 +531,7 @@ export default function Registo() {
 
           {erro && <div className="auth-error">{erro}</div>}
 
-                    {!registoGoogle && googleAuthAvailable && (
+          {!registoGoogle && googleAuthAvailable && (
             <>
               <GoogleAuthButton
                 text="signup_with"
@@ -556,44 +557,45 @@ export default function Registo() {
             {!registoGoogle && (
               <>
                 <div className="password-grid">
-                              <div className="auth-form-group">
-                                <label>Palavra-passe</label>
-                                <div className="auth-input-wrapper">
-                                  <input className="auth-input" type={mostrarPassword ? "text" : "password"} placeholder="•••••••••" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required />
-                                  <button type="button" className="auth-toggle-pwd" onClick={() => setMostrarPassword(!mostrarPassword)}>
-                                    {mostrarPassword ? (
-                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                                    ) : (
-                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
+                  <div className="auth-form-group">
+                    <label>Palavra-passe</label>
+                    <div className="auth-input-wrapper">
+                      <input className="auth-input" type={mostrarPassword ? "text" : "password"} placeholder="•••••••••" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required />
+                      <button type="button" className="auth-toggle-pwd" onClick={() => setMostrarPassword(!mostrarPassword)}>
+                        {mostrarPassword ? (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                        ) : (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
 
-                              <div className="auth-form-group">
-                                <label>Confirmar Password</label>
-                                <div className="auth-input-wrapper">
-                                  <input className="auth-input" type={mostrarConfirmarPassword ? "text" : "password"} placeholder="•••••••••" value={formData.confirmarPassword} onChange={e => setFormData({...formData, confirmarPassword: e.target.value})} required />
-                                  <button type="button" className="auth-toggle-pwd" onClick={() => setMostrarConfirmarPassword(!mostrarConfirmarPassword)}>
-                                    {mostrarConfirmarPassword ? (
-                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                                    ) : (
-                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
+                  <div className="auth-form-group">
+                    <label>Confirmar Password</label>
+                    <div className="auth-input-wrapper">
+                      <input className="auth-input" type={mostrarConfirmarPassword ? "text" : "password"} placeholder="•••••••••" value={formData.confirmarPassword} onChange={e => setFormData({...formData, confirmarPassword: e.target.value})} required />
+                      <button type="button" className="auth-toggle-pwd" onClick={() => setMostrarConfirmarPassword(!mostrarConfirmarPassword)}>
+                        {mostrarConfirmarPassword ? (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                        ) : (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
-                            <span className="auth-hint" style={{ marginTop: '-12px', marginBottom: '20px' }}>
-                              Mínimo: 9 caracteres, 1 maiúscula, 1 número e 1 carácter especial (!@#$...).
-                            </span>
+                <span className="auth-hint" style={{ marginTop: '-12px', marginBottom: '20px' }}>
+                  Mínimo: 9 caracteres, 1 maiúscula, 1 número e 1 carácter especial (!@#$...).
+                </span>
               </>
             )}
 
+            {/* 🌟 TELEFONE AGORA É OPCIONAL (REMOVIDO O REQUIRED) E AVISA O CLIENTE DISSO */}
             <div className="auth-form-group">
-              <label>Telemóvel</label>
-              <input className="auth-input" type="tel" placeholder="Ex: 912345678" value={formData.telefone} onChange={handleTelefoneChange} required />
+              <label>Telefone / Telemóvel (Opcional)</label>
+              <input className="auth-input" type="tel" placeholder="Ex: 912345678" value={formData.telefone} onChange={handleTelefoneChange} />
             </div>
 
             <label className="auth-phone-visibility">
@@ -603,8 +605,8 @@ export default function Registo() {
                 onChange={e => setFormData({ ...formData, mostrarTelefonePublico: e.target.checked })}
               />
               <span>
-                <strong>Pretendes mostrar este número de telemóvel nos teus anúncios e no teu perfil?</strong>
-                <small>Se disseres que não, apresentamos apenas o email como contacto público.</small>
+                <strong>Pretendes mostrar este número nos teus anúncios e no teu perfil?</strong>
+                <small>Se disseres que não (ou não meteres número), apresentamos apenas o email como contacto.</small>
               </span>
             </label>
 
