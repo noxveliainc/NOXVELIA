@@ -26,7 +26,6 @@ const googleClientIds = () => String(process.env.GOOGLE_CLIENT_ID || process.env
 const termosAceites = (valor) => valor === true || valor === 'true' || valor === 'on';
 const telefoneLimpo = (valor) => String(valor || '').replace(/\s/g, '').trim();
 
-// 🌟 REGRA DOS FIXOS: Aceita qualquer número (fixo ou móvel) com 9 a 15 dígitos. Opcional.
 const telefoneValido = (valor) => {
   if (!valor) return true; 
   const limpo = valor.replace(/\D/g, '');
@@ -175,6 +174,7 @@ export const register = async (req, res) => {
       if (error.keyPattern?.slug || error.keyValue?.slug) return res.status(409).json({ erro: 'O nome escolhido gera um identificador público já existente. Tenta alterar ligeiramente o nome.' });
       return res.status(409).json({ erro: 'Ja existe uma conta com estes dados.' });
     }
+    console.error('ERRO CRU DO MONGOOSE NO REGISTO:', error);
     res.status(500).json({ erro: 'Erro interno no servidor ao tentar registar.' });
   }
 };

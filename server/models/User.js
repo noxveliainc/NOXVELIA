@@ -32,7 +32,10 @@ const userSchema = new mongoose.Schema({
   nif:        { type: String, trim: true, default: null },
   website:    { type: String, trim: true, default: null },
   avatarUrl:  { type: String, default: null },
-  googleId:   { type: String, unique: true, sparse: true, trim: true },
+  
+  // 🌟 CORREÇÃO: Usar default: undefined para o MongoDB ignorar campo ausente no índice unique/sparse
+  googleId:   { type: String, unique: true, sparse: true, trim: true, default: undefined },
+  
   authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
   aceitouTermosEm: { type: Date, default: null },
   
@@ -127,7 +130,6 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// 🌟 CORREÇÃO CRUCIAL: Só aplica argon2 se a password existir e tiver sido modificada
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password') || !this.password) return next();
   try {
