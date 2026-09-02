@@ -35,13 +35,15 @@ const prepararLinksParaEdicao = (linksPerfil, website) => {
 };
 
 const parseHorario = (hStr) => {
-  let hSemanaDas = '', hSemanaAte = '', hFdsDas = '', hFdsAte = '';
-  if (!hStr) return { hSemanaDas, hSemanaAte, hFdsDas, hFdsAte };
+  let hSemanaDas = '', hSemanaAte = '', hFdsDas = '', hFdsAte = '', hDomDas = '', hDomAte = '';
+  if (!hStr) return { hSemanaDas, hSemanaAte, hFdsDas, hFdsAte, hDomDas, hDomAte };
   const semMatch = hStr.match(/Seg a Sex: (\d{2}:\d{2}) às (\d{2}:\d{2})/);
   if (semMatch) { hSemanaDas = semMatch[1]; hSemanaAte = semMatch[2]; }
   const fdsMatch = hStr.match(/Sábado: (\d{2}:\d{2}) às (\d{2}:\d{2})/);
   if (fdsMatch) { hFdsDas = fdsMatch[1]; hFdsAte = fdsMatch[2]; }
-  return { hSemanaDas, hSemanaAte, hFdsDas, hFdsAte };
+  const domMatch = hStr.match(/Domingo: (\d{2}:\d{2}) às (\d{2}:\d{2})/);
+  if (domMatch) { hDomDas = domMatch[1]; hDomAte = domMatch[2]; }
+  return { hSemanaDas, hSemanaAte, hFdsDas, hFdsAte, hDomDas, hDomAte };
 };
 
 export default function Perfil() {
@@ -175,7 +177,7 @@ export default function Perfil() {
     setMostrarModalEditar(true);
   };
 
-  const abrirEdicaoSobreNos = () => {
+ const abrirEdicaoSobreNos = () => {
     const h = parseHorario(utilizador?.sobreNos?.horario);
     setDadosSobreNos({
       descricaoLonga: utilizador?.sobreNos?.descricaoLonga || '',
@@ -183,6 +185,8 @@ export default function Perfil() {
       hSemanaAte: h.hSemanaAte,
       hFdsDas: h.hFdsDas,
       hFdsAte: h.hFdsAte,
+      hDomDas: h.hDomDas,
+      hDomAte: h.hDomAte,
       equipa: utilizador?.sobreNos?.equipa || []
     });
     setMostrarModalSobreNos(true);
@@ -236,6 +240,9 @@ export default function Perfil() {
     }
     if (dadosSobreNos.hFdsDas && dadosSobreNos.hFdsAte) {
       arr.push(`Sábado: ${dadosSobreNos.hFdsDas} às ${dadosSobreNos.hFdsAte}`);
+    }
+    if (dadosSobreNos.hDomDas && dadosSobreNos.hDomAte) {
+      arr.push(`Domingo: ${dadosSobreNos.hDomDas} às ${dadosSobreNos.hDomAte}`);
     }
     const horarioFormatado = arr.join(' | ');
 
@@ -509,7 +516,7 @@ export default function Perfil() {
                 <textarea className="modal-input" style={{ minHeight: 100, marginTop: 6 }} value={dadosSobreNos.descricaoLonga} onChange={e => setDadosSobreNos({...dadosSobreNos, descricaoLonga: e.target.value})} maxLength={3000} placeholder="Conta a história do teu Stand, os serviços e garantias que oferecem aos clientes..." />
               </div>
 
-              <div className="modal-form-group" style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
+             <div className="modal-form-group" style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
                 <label style={{ fontSize: 12, fontWeight: 800, color: '#102f50', textTransform: 'uppercase', display: 'block', marginBottom: 12 }}>Horários de Funcionamento</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 13, fontWeight: 700, width: 110 }}>Dias Úteis:</span>
@@ -517,11 +524,18 @@ export default function Perfil() {
                   <span style={{ fontSize: 13, color: '#64748b' }}>às</span>
                   <input type="time" className="modal-input" style={{ width: 'auto', padding: '10px' }} value={dadosSobreNos.hSemanaAte} onChange={e => setDadosSobreNos(p => ({...p, hSemanaAte: e.target.value}))} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 13, fontWeight: 700, width: 110 }}>Sábado:</span>
                   <input type="time" className="modal-input" style={{ width: 'auto', padding: '10px' }} value={dadosSobreNos.hFdsDas} onChange={e => setDadosSobreNos(p => ({...p, hFdsDas: e.target.value}))} />
                   <span style={{ fontSize: 13, color: '#64748b' }}>às</span>
                   <input type="time" className="modal-input" style={{ width: 'auto', padding: '10px' }} value={dadosSobreNos.hFdsAte} onChange={e => setDadosSobreNos(p => ({...p, hFdsAte: e.target.value}))} />
+                </div>
+                {/* 🌟 ADICIONA AQUI O DOMINGO */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, width: 110 }}>Domingo:</span>
+                  <input type="time" className="modal-input" style={{ width: 'auto', padding: '10px' }} value={dadosSobreNos.hDomDas} onChange={e => setDadosSobreNos(p => ({...p, hDomDas: e.target.value}))} />
+                  <span style={{ fontSize: 13, color: '#64748b' }}>às</span>
+                  <input type="time" className="modal-input" style={{ width: 'auto', padding: '10px' }} value={dadosSobreNos.hDomAte} onChange={e => setDadosSobreNos(p => ({...p, hDomAte: e.target.value}))} />
                 </div>
               </div>
 
