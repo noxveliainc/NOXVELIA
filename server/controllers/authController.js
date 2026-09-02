@@ -136,11 +136,10 @@ export const register = async (req, res) => {
       if (telefoneExists) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telefone.' });
     }
 
-    const novoUtilizador = new User({
+    const dadosNovoUtilizador = {
       nome: nomeLimpo,
       email: emailLower,
       password,
-      telefone: telefoneNormalizado || null,
       mostrarTelefonePublico: telefonePublico,
       localidade: typeof localidade === 'string' ? localidade.trim().slice(0, 120) : undefined,
       tipo: 'cliente',
@@ -152,7 +151,13 @@ export const register = async (req, res) => {
       verificado: false,
       rating: 0,
       totalAvaliacoes: 0,
-    });
+    };
+
+    if (telefoneNormalizado) {
+      dadosNovoUtilizador.telefone = telefoneNormalizado;
+    }
+
+    const novoUtilizador = new User(dadosNovoUtilizador);
 
     const tokenPlano = crypto.randomBytes(32).toString('hex');
     novoUtilizador.tokenVerificacao = crypto.createHash('sha256').update(tokenPlano).digest('hex');
@@ -236,7 +241,6 @@ export const googleAuth = async (req, res) => {
 
     if (nomeLimpo.length < 2 || nomeLimpo.length > 100) return res.status(400).json({ erro: 'Indica o nome que deve aparecer na Noxvelia.' });
     
-    // 🌟 Telefone e Localidade totalmente opcionais no Google
     if (telefoneNormalizado && !telefoneValido(telefoneNormalizado)) {
       return res.status(400).json({ erro: 'Indica um numero de telefone valido.' });
     }
@@ -246,12 +250,11 @@ export const googleAuth = async (req, res) => {
       if (telefoneExists) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telefone.' });
     }
 
-    utilizador = await User.create({
+    const dadosCriacaoGoogle = {
       nome: nomeLimpo,
       email: google.email,
-      telefone: telefoneNormalizado || null,
       mostrarTelefonePublico: telefonePublico,
-      localidade: localidadeLimpa || null,
+      localidade: localidadeLimpa || undefined,
       tipo: 'cliente',
       tipoConta: conta,
       avatarUrl: google.avatarUrl,
@@ -261,7 +264,13 @@ export const googleAuth = async (req, res) => {
       verificado: true,
       rating: 0,
       totalAvaliacoes: 0,
-    });
+    };
+
+    if (telefoneNormalizado) {
+      dadosCriacaoGoogle.telefone = telefoneNormalizado;
+    }
+
+    utilizador = await User.create(dadosCriacaoGoogle);
 
     return responderSessao(res, utilizador, 201);
   } catch (error) {
