@@ -32,8 +32,8 @@ const userSchema = new mongoose.Schema({
   nif:        { type: String, trim: true, default: null },
   website:    { type: String, trim: true, default: null },
   avatarUrl:  { type: String, default: null },
-  googleId:   { type: String, unique: true, sparse: true, trim: true, default: null },
-  authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
+googleId:   { type: String, unique: true, sparse: true, trim: true }, // <-- Sem default: null!
+//   authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
   aceitouTermosEm: { type: Date, default: null },
   
   capaUrl:    { type: String, default: null },
