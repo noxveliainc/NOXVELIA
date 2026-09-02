@@ -20,6 +20,7 @@
     "animejs": "^4.5.0",
     "aos": "^2.3.4",
     "axios": "^1.7.2",
+    "browser-image-compression": "^2.0.2",
     "fuse.js": "^7.4.2",
     "gsap": "^3.15.0",
     "leaflet": "^1.9.4",
