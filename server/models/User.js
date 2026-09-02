@@ -3,11 +3,10 @@ import argon2 from 'argon2';
 
 const userSchema = new mongoose.Schema({
   nome:      { type: String, required: true, trim: true },
-  slug:      { type: String, unique: true, index: true, sparse: true, trim: true }, // 🌟 SLUG AMIGÁVEL PARA O PERFIL PÚBLICO
+  slug:      { type: String, unique: true, index: true, sparse: true, trim: true },
   email:     { type: String, required: true, unique: true, lowercase: true, trim: true },
   password:  { type: String, required: function requiredPassword() { return this.authProvider !== 'google'; }, select: false },
   
-  // 🌟 TELEFONE: Agora flexível e opcional (aceita indicativos e fixos nacionais)
   telefone:  { 
     type: String, 
     default: null, 
@@ -16,7 +15,7 @@ const userSchema = new mongoose.Schema({
       validator: function(v) {
         if (!v) return true;
         const clean = v.replace(/\D/g, '');
-        return clean.length >= 9 && clean.length <= 13;
+        return clean.length >= 9 && clean.length <= 15; // 🌟 REGRA DOS FIXOS/MÓVEIS: 9 a 15 dígitos
       },
       message: 'Indique um número de telefone ou telemóvel válido.'
     }
@@ -37,20 +36,18 @@ const userSchema = new mongoose.Schema({
   authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
   aceitouTermosEm: { type: Date, default: null },
   
-  // 🌟 CAPA E BIOGRAFIA DO PERFIL
   capaUrl:    { type: String, default: null },
   bio:        { type: String, trim: true, default: null, maxLength: 800 },
   
-  // 🌟 NOVO: ESTRUTURA PARA O MINI-SITE DO STAND / SOBRE NÓS
   sobreNos: {
     descricaoLonga: { type: String, trim: true, default: null, maxLength: 3000 },
-    fotoEquipaUrl: { type: String, default: null },
     horario: { type: String, trim: true, default: null, maxLength: 300 },
     equipa: [{
       nome: { type: String, trim: true },
       cargo: { type: String, trim: true },
       telefone: { type: String, trim: true },
-      email: { type: String, trim: true, lowercase: true }
+      email: { type: String, trim: true, lowercase: true },
+      fotoUrl: { type: String, default: null }
     }]
   },
 
@@ -73,43 +70,37 @@ const userSchema = new mongoose.Schema({
   favoritos:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'Anuncio' }],
   anunciosGuardados: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Anuncio' }],
 
-  // ── PREMIUM ────────────────────────────────────────────────
   premiumAtivo:             { type: Boolean, default: false },
   dataExpiracaoPremium:     { type: Date,    default: null },
   proximoPagamentoPremium:  { type: Date,    default: null },
   limiteAnuncios:           { type: Number,  default: 5 },
 
-  // ── STRIPE (subscrição mensal) ─────────────────────────────
   stripeCustomerId:     { type: String, default: null },
   stripeSubscriptionId: { type: String, default: null },
 
-  // ── VERIFICAÇÃO DE EMAIL ────────────────────────────
   verificado:       { type: Boolean, default: false },
   tokenVerificacao: { type: String, select: false },
   expiracaoToken:   { type: Date, select: false },
 
-  // ── RESET DE PASSWORD ──────────────────────────────────────
   passwordResetToken:   { type: String, select: false },
   passwordResetExpires: { type: Date,   select: false },
 
-  // 🌟 SISTEMA DE CONFIANÇA / REPUTAÇÃO DO VENDEDOR
-  rating:          { type: Number, default: 0 }, // Pontuação de 0 a 5 estrelas
-  totalAvaliacoes: { type: Number, default: 0 }, // Quantas pessoas avaliaram este vendedor
+  rating:          { type: Number, default: 0 },
+  totalAvaliacoes: { type: Number, default: 0 },
 }, {
   timestamps: true
 });
 
-// 🌟 MIDDLEWARE: Gera o slug automaticamente com base no nome do stand ou utilizador
 userSchema.pre('save', async function(next) {
   const baseName = this.standNome || this.nome;
   if (baseName && (this.isModified('nome') || this.isModified('standNome') || !this.slug)) {
     let baseSlug = baseName
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-      .replace(/[^a-z0-9]/g, '-')     // Substitui símbolos por hífens
-      .replace(/-+/g, '-')            // Evita hífens duplicados
-      .replace(/^-|-$/g, '')          // Remove hífens do início ou fim
+      .replace(/[\u0300-\u036f]/g, '') 
+      .replace(/[^a-z0-9]/g, '-')     
+      .replace(/-+/g, '-')            
+      .replace(/^-|-$/g, '')          
       .trim();
 
     if (!baseSlug) baseSlug = 'vendedor';

@@ -63,16 +63,11 @@ const normalizarLinksPerfil = (links = []) => {
     .filter(Boolean);
 };
 
-// ─────────────────────────────────────────────────────────────
-// BUSCAR DADOS DO UTILIZADOR CONECTADO
-// ─────────────────────────────────────────────────────────────
 router.get('/me', verificarToken, async (req, res) => {
   try {
     const utilizador = await User.findById(req.user.id).select('+premiumAtivo +dataExpiracaoPremium +proximoPagamentoPremium');
     if (!utilizador) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
 
-    // Fallback para acessos Premium atribuídos manualmente com data de expiração.
-    // As subscrições Stripe são sincronizadas por webhook.
     if (
       utilizador.premiumAtivo &&
       utilizador.dataExpiracaoPremium &&
@@ -90,9 +85,6 @@ router.get('/me', verificarToken, async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────
-// 1. EDITAR PERFIL (INCLUI EMAIL E TELEFONE)
-// ─────────────────────────────────────────────────────────────
 router.put('/me', verificarToken, async (req, res) => {
   try {
     const {
@@ -111,13 +103,13 @@ router.put('/me', verificarToken, async (req, res) => {
       mostrarTelefonePublico,
       mostrarMapaPerfil,
       tipoConta,
-      nif
+      nif,
+      sobreNos
     } = req.body;
 
     const userOriginal = await User.findById(req.user.id);
     if (!userOriginal) return res.status(404).json({ erro: 'Utilizador não encontrado.' });
 
-    // 🌟 Verificar se o novo email já está em uso por outra pessoa
     if (email && email !== userOriginal.email) {
       const emailEmUso = await User.findOne({ email });
       if (emailEmUso) return res.status(400).json({ erro: 'Este email já está registado noutra conta.' });
@@ -141,6 +133,9 @@ router.put('/me', verificarToken, async (req, res) => {
       camposParaAtualizar.mostrarMapaPerfil = mostrarMapaPerfil === true || mostrarMapaPerfil === 'true';
     }
     if (nif !== undefined) camposParaAtualizar.nif = String(nif).trim() || null;
+
+    // 🌟 Autorização do Mini-site
+    if (sobreNos !== undefined) camposParaAtualizar.sobreNos = sobreNos;
 
     if (bio !== undefined) {
       const bioLimpa = String(bio).trim();
@@ -200,9 +195,6 @@ router.put('/me', verificarToken, async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────
-// 2. ALTERAR PALAVRA-PASSE NA ÁREA LOGADA
-// ─────────────────────────────────────────────────────────────
 router.put('/me/password', verificarToken, async (req, res) => {
   try {
     const { passwordAtual, novaPassword } = req.body;
@@ -227,14 +219,10 @@ router.put('/me/password', verificarToken, async (req, res) => {
 
     res.json({ mensagem: 'Palavra-passe alterada com sucesso.' });
   } catch (erro) {
-    console.error('Erro ao alterar password:', erro);
     res.status(500).json({ erro: 'Erro ao alterar a palavra-passe.' });
   }
 });
 
-// ─────────────────────────────────────────────────────────────
-// 3. VER OS MEUS ANÚNCIOS E GUARDADOS
-// ─────────────────────────────────────────────────────────────
 router.get('/me/anuncios', verificarToken, async (req, res) => {
   try {
     const meusAnuncios = await Anuncio.find({ utilizador: req.user.id }).sort({ createdAt: -1 }).lean();
@@ -254,9 +242,6 @@ router.get('/me/guardados', verificarToken, async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────
-// LISTAR ANUNCIANTES COM ANÚNCIOS ATIVOS ("Profissionais")
-// ─────────────────────────────────────────────────────────────
 router.get('/profissionais', async (req, res) => {
   try {
     const page = Math.max(1, Number(req.query.page) || 1);
@@ -379,9 +364,6 @@ router.get('/profissionais', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────
-// 4. VER MONTRA PÚBLICA DE UM VENDEDOR (ACEITA ID OU SLUG AMIGÁVEL)
-// ─────────────────────────────────────────────────────────────
 router.get('/vendedor/:identificador', async (req, res) => {
   try {
     const { identificador } = req.params;
@@ -394,7 +376,7 @@ router.get('/vendedor/:identificador', async (req, res) => {
     }
 
     const vendedorDoc = await User.findOne(query).select(
-      'nome slug email telefone mostrarTelefonePublico mostrarMapaPerfil localidade standNome standMorada standCodigoPostal avatarUrl capaUrl bio tipoConta website linksPerfil tipo premiumAtivo verificado rating totalAvaliacoes createdAt'
+      'nome slug email telefone mostrarTelefonePublico mostrarMapaPerfil localidade standNome standMorada standCodigoPostal avatarUrl capaUrl bio sobreNos tipoConta website linksPerfil tipo premiumAtivo verificado rating totalAvaliacoes createdAt'
     ).lean();
 
     if (!vendedorDoc) return res.status(404).json({ erro: 'Vendedor não encontrado.' });
@@ -419,9 +401,6 @@ router.get('/vendedor/:identificador', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────
-// 5. AVALIAR UM VENDEDOR
-// ─────────────────────────────────────────────────────────────
 router.post('/:id/avaliar', verificarToken, async (req, res) => {
   try {
     const anuncianteId = req.params.id;
@@ -486,14 +465,10 @@ router.post('/:id/avaliar', verificarToken, async (req, res) => {
     if (erro.code === 11000) {
       return res.status(400).json({ erro: 'Já avaliaste este vendedor anteriormente.' });
     }
-    console.error('Erro ao registar avaliação:', erro);
     res.status(500).json({ erro: 'Erro ao registar a avaliação.' });
   }
 });
 
-// ─────────────────────────────────────────────────────────────
-// 6. LISTAR AVALIAÇÕES PÚBLICAS DE UM VENDEDOR
-// ─────────────────────────────────────────────────────────────
 router.get('/:id/avaliacoes', async (req, res) => {
   try {
     const avaliacoes = await Avaliacao.find({ anunciante: req.params.id })
@@ -506,9 +481,6 @@ router.get('/:id/avaliacoes', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────
-// 7. SABER SE EU JÁ AVALIEI ESTE VENDEDOR
-// ─────────────────────────────────────────────────────────────
 router.get('/:id/minha-avaliacao', verificarToken, async (req, res) => {
   try {
     const minhaAvaliacao = await Avaliacao.findOne({

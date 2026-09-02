@@ -7,7 +7,6 @@ import { assinarToken } from '../utils/jwt.js';
 
 const PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{9,128}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const TELEFONE_PT_PATTERN = /^9[1236]\d{7}$/;
 const validarPasswordSegura = (password) => typeof password === 'string' && PASSWORD_PATTERN.test(password);
 const googleClient = new OAuth2Client();
 
@@ -26,7 +25,13 @@ const googleClientIds = () => String(process.env.GOOGLE_CLIENT_ID || process.env
 
 const termosAceites = (valor) => valor === true || valor === 'true' || valor === 'on';
 const telefoneLimpo = (valor) => String(valor || '').replace(/\s/g, '').trim();
-const telefoneValido = (valor) => TELEFONE_PT_PATTERN.test(telefoneLimpo(valor));
+
+// 🌟 REGRA DOS FIXOS: Aceita qualquer número (fixo ou móvel) com 9 a 15 dígitos. Opcional.
+const telefoneValido = (valor) => {
+  if (!valor) return true; 
+  const limpo = valor.replace(/\D/g, '');
+  return limpo.length >= 9 && limpo.length <= 15;
+};
 
 const dadosUtilizadorAuth = (utilizador) => ({
   id: utilizador._id,
@@ -96,9 +101,6 @@ const verificarGoogleCredential = async (credential) => {
   };
 };
 
-// ─────────────────────────────────────────────────────────────
-// 1. REGISTO DE UTILIZADOR
-// ─────────────────────────────────────────────────────────────
 export const register = async (req, res) => {
   try {
     const { nome, email, password, mostrarTelefonePublico, localidade, tipoConta, nif, website, aceitouTermos } = req.body;
@@ -115,7 +117,7 @@ export const register = async (req, res) => {
       return res.status(400).json({ erro: 'A palavra-passe tem de ter 9 a 128 caracteres, 1 maiuscula, 1 numero e 1 caracter especial.' });
     }
     if (!telefoneValido(telefoneNormalizado)) {
-      return res.status(400).json({ erro: 'Indica um numero de telemovel portugues valido.' });
+      return res.status(400).json({ erro: 'Indica um numero de telefone valido (opcional).' });
     }
     if (!termosAceites(aceitouTermos)) {
       return res.status(400).json({ erro: 'Tens de aceitar os Termos e Condições para criar a conta.' });
@@ -130,14 +132,16 @@ export const register = async (req, res) => {
     const userExists = await User.findOne({ email: emailLower });
     if (userExists) return res.status(409).json({ erro: 'Ja existe uma conta com este email.' });
 
-    const telefoneExists = await User.findOne({ telefone: telefoneNormalizado });
-    if (telefoneExists) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telemovel.' });
+    if (telefoneNormalizado) {
+      const telefoneExists = await User.findOne({ telefone: telefoneNormalizado });
+      if (telefoneExists) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telefone.' });
+    }
 
     const novoUtilizador = new User({
       nome: nomeLimpo,
       email: emailLower,
       password,
-      telefone: telefoneNormalizado,
+      telefone: telefoneNormalizado || null,
       mostrarTelefonePublico: telefonePublico,
       localidade: typeof localidade === 'string' ? localidade.trim().slice(0, 120) : undefined,
       tipo: 'cliente',
@@ -164,23 +168,17 @@ export const register = async (req, res) => {
 
     res.status(201).json({ mensagem: 'Registo criado com sucesso. Por favor, verifica o teu e-mail para ativar a conta.' });
   } catch (error) {
-    console.error('ERRO CRU DO MONGOOSE NO REGISTO:', error);
     if (error?.code === 11000) {
       if (error.keyPattern?.email || error.keyValue?.email) return res.status(409).json({ erro: 'Ja existe uma conta com este email.' });
-      if (error.keyPattern?.telefone || error.keyValue?.telefone) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telemovel.' });
+      if (error.keyPattern?.telefone || error.keyValue?.telefone) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telefone.' });
       if (error.keyPattern?.googleId || error.keyValue?.googleId) return res.status(409).json({ erro: 'Esta conta Google ja esta ligada a outro utilizador.' });
       if (error.keyPattern?.slug || error.keyValue?.slug) return res.status(409).json({ erro: 'O nome escolhido gera um identificador público já existente. Tenta alterar ligeiramente o nome.' });
       return res.status(409).json({ erro: 'Ja existe uma conta com estes dados.' });
     }
-
-    console.error('Erro no registo:', error);
     res.status(500).json({ erro: 'Erro interno no servidor ao tentar registar.' });
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// 2. LOGIN DE UTILIZADOR
-// ─────────────────────────────────────────────────────────────
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -202,14 +200,10 @@ export const login = async (req, res) => {
 
     return responderSessao(res, utilizador);
   } catch (erro) {
-    console.error('ERRO NO LOGIN:', erro);
     res.status(500).json({ erro: 'Erro no servidor ao tentar iniciar sessão.' });
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// 3. LOGIN / REGISTO COM GOOGLE
-// ─────────────────────────────────────────────────────────────
 export const googleAuth = async (req, res) => {
   try {
     const { credential, nome, mostrarTelefonePublico, localidade, tipoConta, aceitouTermos } = req.body;
@@ -248,17 +242,19 @@ export const googleAuth = async (req, res) => {
     }
 
     if (nomeLimpo.length < 2 || nomeLimpo.length > 100) return res.status(400).json({ erro: 'Indica o nome que deve aparecer na Noxvelia.' });
-    if (!telefoneValido(telefoneNormalizado)) return res.status(400).json({ erro: 'Indica um numero de telemovel portugues valido.' });
+    if (!telefoneValido(telefoneNormalizado)) return res.status(400).json({ erro: 'Indica um numero de telefone valido.' });
     if (!localidadeLimpa) return res.status(400).json({ erro: 'Seleciona o teu distrito.' });
     if (!termosAceites(aceitouTermos)) return res.status(400).json({ erro: 'Tens de aceitar os Termos e Condições para criar a conta.' });
 
-    const telefoneExists = await User.findOne({ telefone: telefoneNormalizado });
-    if (telefoneExists) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telemovel.' });
+    if (telefoneNormalizado) {
+      const telefoneExists = await User.findOne({ telefone: telefoneNormalizado });
+      if (telefoneExists) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telefone.' });
+    }
 
     utilizador = await User.create({
       nome: nomeLimpo,
       email: google.email,
-      telefone: telefoneNormalizado,
+      telefone: telefoneNormalizado || null,
       mostrarTelefonePublico: telefonePublico,
       localidade: localidadeLimpa,
       tipo: 'cliente',
@@ -276,19 +272,15 @@ export const googleAuth = async (req, res) => {
   } catch (error) {
     if (error?.code === 11000) {
       if (error.keyPattern?.email || error.keyValue?.email) return res.status(409).json({ erro: 'Ja existe uma conta com este email.' });
-      if (error.keyPattern?.telefone || error.keyValue?.telefone) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telemovel.' });
+      if (error.keyPattern?.telefone || error.keyValue?.telefone) return res.status(409).json({ erro: 'Ja existe uma conta com este numero de telefone.' });
       if (error.keyPattern?.googleId || error.keyValue?.googleId) return res.status(409).json({ erro: 'Esta conta Google ja esta ligada a outro utilizador.' });
       if (error.keyPattern?.slug || error.keyValue?.slug) return res.status(409).json({ erro: 'O nome escolhido gera um identificador público já existente. Tenta alterar ligeiramente o nome.' });
     }
     const status = error?.statusCode || 500;
-    if (status >= 500) console.error('Erro no login Google:', error);
     return res.status(status).json({ erro: error?.message || 'Não foi possível continuar com Google.' });
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// 3. CONFIRMAÇÃO DE EMAIL
-// ─────────────────────────────────────────────────────────────
 export const verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
@@ -310,14 +302,10 @@ export const verifyEmail = async (req, res) => {
 
     res.json({ mensagem: 'Email verificado com sucesso! Já podes iniciar sessão.' });
   } catch (erro) {
-    console.error('Erro no verifyEmail:', erro);
     res.status(500).json({ erro: 'Erro ao verificar o email.' });
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// 4. PEDIDO DE RECUPERAÇÃO DE PASSWORD
-// ─────────────────────────────────────────────────────────────
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -357,23 +345,12 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// 5. APLICAÇÃO DA NOVA PASSWORD
-// ─────────────────────────────────────────────────────────────
 export const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
     const { password } = req.body;
 
-    const validarPassword = (pwd) => {
-      const temTamanho = pwd.length >= 9;
-      const temMaiuscula = /[A-Z]/.test(pwd);
-      const temNumero = /\d/.test(pwd);
-      const temEspecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
-      return temTamanho && temMaiuscula && temNumero && temEspecial;
-    };
-
-    if (!validarPassword(password)) {
+    if (!validarPasswordSegura(password)) {
       return res.status(400).json({ 
         erro: 'A palavra-passe tem de ter pelo menos 9 caracteres, 1 maiúscula, 1 número e 1 carácter especial.' 
       });
@@ -397,7 +374,6 @@ export const resetPassword = async (req, res) => {
 
     res.json({ mensagem: 'Palavra-passe atualizada com sucesso. Já podes iniciar sessão.' });
   } catch (erro) {
-    console.error('Erro no resetPassword:', erro);
     res.status(500).json({ erro: 'Ocorreu um erro ao redefinir a palavra-passe.' });
   }
 };
