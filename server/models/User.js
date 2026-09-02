@@ -152,5 +152,25 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 };
 
 const User = mongoose.model('User', userSchema);
+
+// 🔥 CÓDIGO DE LIMPEZA AUTOMÁTICA
+mongoose.connection.once('open', async () => {
+  try {
+    // Força a base de dados a apagar o bloqueio antigo do telemóvel
+    await mongoose.connection.collection('users').dropIndex('telefone_1');
+    console.log('✅ SUCESSO: O bloqueio fantasma do telemóvel foi destruído para sempre!');
+  } catch (err) {
+    // Ignora silenciosamente se o índice já não existir
+  }
+  
+  try {
+    // Garante que o Mongoose sincroniza as regras novas
+    await User.syncIndexes();
+    console.log('✅ Índices atualizados com sucesso!');
+  } catch (err) {
+    console.log('Aviso ao sincronizar índices:', err.message);
+  }
+});
+
 export { User };
 export default User;
