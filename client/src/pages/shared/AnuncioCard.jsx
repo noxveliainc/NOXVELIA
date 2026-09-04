@@ -140,11 +140,12 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
   return (
     <>
       <style>{`
-        /* ── CARTÃO BASE HORIZONTAL ── */
+        /* ── CARTÃO BASE HORIZONTAL (CORRIGIDO PARA ALTURA UNIFORME) ── */
         .nx-card-horiz {
           display: flex;
           width: 100%;
-          min-height: 200px; /* Reduzido ligeiramente para um formato perfeito */
+          min-height: 220px;
+          height: 100%; /* Garante alinhamento rigoroso na grelha */
           background: #ffffff;
           border: 1px solid #e2e8f0;
           border-radius: 12px;
@@ -188,9 +189,9 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         }
         .nx-badge-destaque svg { color: #071326; }
 
-        /* ── IMAGEM DO CARTÃO (Dimensões perfeitas 4:3) ── */
+        /* ── IMAGEM DO CARTÃO ── */
         .nxc-img-pane {
-          width: 280px; /* Largura perfeita para não sobrar fundo desfocado */
+          width: 280px;
           flex-shrink: 0;
           position: relative;
           background: #0f172a; 
@@ -212,8 +213,8 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: contain; /* GARANTIA ABSOLUTA DE NÃO CORTAR */
-          background-color: #f8fafc; /* NOVO: Fundo neutro e elegante */
+          object-fit: contain;
+          background-color: #f8fafc;
           z-index: 1;
           transition: transform 0.4s ease;
         }
@@ -225,7 +226,6 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           width: 100%; height: 100%; display: grid; place-items: center; background: #e2e8f0; color: #94a3b8; z-index: 1; position: relative;
         }
 
-        /* OUTROS BADGES DA IMAGEM */
         .nxc-photo-count {
           position: absolute; bottom: 10px; right: 10px;
           background: rgba(15, 23, 42, 0.65);
@@ -243,17 +243,17 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           z-index: 5; backdrop-filter: blur(4px);
         }
 
-        /* ── CORPO CENTRAL ── */
+        /* ── CORPO CENTRAL (FORÇADO A PREENCHER ESPAÇO) ── */
         .nxc-body-pane {
           padding: 24px;
           flex: 1;
           min-width: 0;
           display: flex;
           flex-direction: column;
-          justify-content: center; 
+          justify-content: space-between; /* Distribui o espaço uniformemente */
         }
         .nxc-tags-row {
-          display: flex; gap: 8px; margin-bottom: 12px; align-items: center;
+          display: flex; gap: 8px; margin-bottom: 8px; align-items: center;
         }
         .nxc-tag-pill {
           background: #f1f5f9; color: #475569;
@@ -263,15 +263,16 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         }
         .nxc-title {
           font-size: 19px; font-weight: 800; color: #071326;
-          margin: 0 0 16px; line-height: 1.3;
+          margin: 0 0 12px; line-height: 1.3;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
         
-        /* ── CAIXA DE ESPECIFICAÇÕES C/ ÍCONES ── */
+        /* ── ESPECIFICAÇÕES ── */
         .nxc-specs-grid {
           display: flex;
           flex-wrap: wrap;
-          gap: 12px 18px;
+          gap: 10px 18px;
+          margin-top: auto; /* Empurra para baixo de forma consistente */
         }
         .nxc-spec-item {
           display: flex; align-items: center; gap: 6px;
@@ -279,7 +280,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         }
         .nxc-spec-item svg { color: #94a3b8; }
 
-        /* ── PAINEL LATERAL DIREITO (PREÇO/AÇÃO) ── */
+        /* ── PAINEL LATERAL DIREITO ── */
         .nxc-action-pane {
           width: 220px;
           flex-shrink: 0;
@@ -287,19 +288,19 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
           border-left: 1px solid #f1f5f9;
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          justify-content: space-between; /* Mantém preço em baixo e dono em cima perfeitamente alinhados */
           align-items: flex-end;
           background: #fafcff;
         }
         .nxc-price {
           font-size: 26px; 
           font-weight: 900; color: #071326;
-          white-space: nowrap; margin-bottom: 16px;
+          white-space: nowrap; 
+          margin: auto 0; /* Centra verticalmente o preço */
         }
         
-        /* Perfil de vendedor no cartão */
         .nxc-seller-box {
-          display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 100%; margin-bottom: 12px;
+          display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 100%;
         }
         .nxc-seller-name {
           font-size: 12px; font-weight: 600; color: #64748b; text-align: right;
@@ -313,7 +314,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
         .nxc-avatar img { width: 100%; height: 100%; object-fit: cover; }
         
         .nxc-loc {
-          font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 4px; font-weight: 600;
+          font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 4px; font-weight: 600; width: 100%; justify-content: flex-end;
         }
 
         .nxc-icon { flex: 0 0 auto; display: inline-block; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
@@ -330,12 +331,14 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         /* RESPONSIVO */
         @media (max-width: 768px) {
-          .nx-card-horiz { flex-direction: column; min-height: auto; }
+          .nx-card-horiz { flex-direction: column; min-height: auto; height: auto; }
           .nxc-img-pane { width: 100%; height: 260px; min-height: auto; border-bottom: 1px solid #f1f5f9; }
-          .nxc-body-pane { padding: 16px; }
+          .nxc-body-pane { padding: 16px; justify-content: flex-start; }
+          .nxc-specs-grid { margin-top: 12px; }
           .nxc-action-pane { width: 100%; border-left: none; border-top: 1px solid #f1f5f9; flex-direction: row; justify-content: space-between; align-items: center; padding: 16px; }
-          .nxc-price { margin-bottom: 0; font-size: 20px; }
-          .nxc-seller-box { margin-bottom: 0; width: auto; }
+          .nxc-price { margin: 0; font-size: 20px; }
+          .nxc-seller-box { width: auto; }
+          .nxc-loc { justify-content: flex-start; margin-top: 4px; }
           .nx-badge-destaque { padding: 5px 8px; font-size: 9px; }
         }
       `}</style>
@@ -344,13 +347,11 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         {/* ── PAINEL DE IMAGEM ── */}
         <div className="nxc-img-pane">
-          {/* Se for Destaque, exibe a etiqueta de Destaque Dourada e ignora qualquer outra etiqueta de status */}
           {isPremium ? (
             <span className="nx-badge-destaque">
               <CardIcon name="star" size={12} /> Destaque
             </span>
           ) : (
-            /* Se NÃO for destaque, SÓ MOSTRA status como 'Pausado'/'A expirar' SE estiver na Área Pessoal do Vendedor */
             showStatus && anuncio?.estado && anuncio.estado !== 'ativo' && inMyProfile && (
               <span className="nxc-badge-status" style={{ background: status.bg, color: status.color, border: `1px solid ${status.border}` }}>
                 {status.label}
@@ -360,9 +361,7 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
           {imagemPrincipalUrl ? (
             <>
-              {/* O fundo esfumado e escurecido */}
               <div className="nxc-img-bg" style={{ backgroundImage: `url(${imagemPrincipalUrl})` }}></div>
-              {/* A imagem principal que nunca corta */}
               <img
                 className="nxc-img-fg"
                 src={imagemPrincipalUrl}
@@ -391,12 +390,14 @@ export default function AnuncioCard({ anuncio, showStatus = false, onAnuncioElim
 
         {/* ── PAINEL CENTRAL (TEXTO E SPECS) ── */}
         <div className="nxc-body-pane">
-          <div className="nxc-tags-row">
-            <span className="nxc-tag-pill">{tipoAnunciante}</span>
-            <span className="nxc-tag-pill">{isCarro ? 'Automóvel' : 'Imóvel'}</span>
-          </div>
+          <div>
+            <div className="nxc-tags-row">
+              <span className="nxc-tag-pill">{tipoAnunciante}</span>
+              <span className="nxc-tag-pill">{isCarro ? 'Automóvel' : 'Imóvel'}</span>
+            </div>
 
-          <h3 className="nxc-title">{tituloCard}</h3>
+            <h3 className="nxc-title">{tituloCard}</h3>
+          </div>
 
           <div className="nxc-specs-grid">
             {detalhesPrimarios.filter(d => d.value).map((det, idx) => (

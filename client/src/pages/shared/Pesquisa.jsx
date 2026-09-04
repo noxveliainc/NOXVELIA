@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
@@ -7,8 +7,7 @@ import useDebounce from '../../hooks/useDebounce';
 import Fuse from 'fuse.js';
 import { Icon } from '@mdi/react';
 import { 
-  mdiMap, mdiMagnify, mdiFilterVariant, mdiChevronLeft,
-  mdiChevronRight, mdiChevronDown, mdiChevronUp, mdiCloseCircleOutline, 
+  mdiMagnify, mdiFilterVariant, mdiCloseCircleOutline, 
   mdiAlertOutline
 } from '@mdi/js';
 import { MARCAS, OPCAO_OUTRO_VEICULO, getNomesModelosComOutro, isOpcaoOutroVeiculo, rotuloOpcaoVeiculo } from '../../data/marcasModelos';
@@ -16,7 +15,7 @@ import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 import { publishIntentState } from '../../utils/navigationState';
 import { trackFunnelEvent } from '../../utils/funnelAnalytics';
 
-// IMPORTAÇÃO CRUCIAL: O NOSSO NOVO CARTÃO!
+// IMPORTAÇÃO CRUCIAL: O NOSSO CARTÃO!
 import AnuncioCard from './AnuncioCard';
 
 // IMAGENS DE FUNDO DO TOPO (HERO)
@@ -46,8 +45,6 @@ const TIPOS_VEICULO = [
   { value: 'pickup', label: 'Pick-up' },
   { value: 'comercial', label: 'Comercial' },
 ];
-
-const MapaResultados = lazy(() => import('../../components/imoveis/MapaResultados'));
 
 const dividirParamLista = (valor) => String(valor || '').split(',').map((item) => item.trim()).filter(Boolean);
 const formatarNumero = (valor) => Number(valor).toLocaleString('pt-PT');
@@ -101,7 +98,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const publicarState = publishIntentState(location, tipoSeguro === 'carro' ? '/carros' : '/imoveis');
 
   const [resultados, setResultados] = useState([]);
-  const [dadosMapa, setDadosMapa] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMais, setLoadingMais] = useState(false);
   const [error, setError] = useState(null);
@@ -124,7 +120,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   const [sidebarMobileAberta, setSidebarMobileAberta] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const [vistaAtiva, setVistaAtiva] = useState('lista');
 
   const [filtros, setFiltros] = useState(filtrosIniciais);
 
@@ -199,20 +194,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
       if (filtrosAtuais.garagem) params.set('garagem', 'true');
     }
   }, []);
-
-  const carregarDadosMapa = useCallback(async () => {
-    try {
-      const filtrosAtuais = filtrosRef.current;
-      const buscaAtual = buscaRef.current;
-      const tipoFinal = filtrosAtuais.tipo || tipoSeguro;
-      const params = new URLSearchParams();
-      params.set('tipo', tipoFinal);
-      adicionarFiltrosAosParams(params, filtrosAtuais, tipoFinal);
-      if (buscaAtual && buscaAtual.trim()) params.set('q', buscaAtual.trim());
-      const { data } = await api.get(`/anuncios/pesquisa/mapa?${params.toString()}`);
-      setDadosMapa(Array.isArray(data) ? data : []);
-    } catch (err) { console.warn('Erro ao carregar mapa:', err); }
-  }, [adicionarFiltrosAosParams, tipoSeguro]);
 
   const puxarDadosServidor = useCallback(async (paginaAlvo, acumular = false, tipoForcado = null) => {
     if (isFetchingRef.current) return;
@@ -295,13 +276,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
   }, [debouncedQuery, puxarDadosServidor]);
 
   useEffect(() => {
-    if (vistaAtiva !== 'mapa') return undefined;
-    const timer = setTimeout(() => { carregarDadosMapa(); }, 60);
-    return () => clearTimeout(timer);
-  }, [filtros, debouncedQuery, carregarDadosMapa, vistaAtiva]);
-
-  useEffect(() => {
-    if (!temMais || vistaAtiva === 'mapa') return;
+    if (!temMais) return;
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
         const proximaPagina = paginaRef.current + 1;
@@ -311,7 +286,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     const sentinela = sentinelaRef.current;
     if (sentinela) observer.observe(sentinela);
     return () => observer.disconnect();
-  }, [temMais, puxarDadosServidor, vistaAtiva]);
+  }, [temMais, puxarDadosServidor]);
 
   const toggleTag = (campo, valor) => {
     setFiltros(prev => {
@@ -429,9 +404,8 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     aplicarFiltrosInstantaneos(sugestao.patch || {}, '');
   }, [aplicarFiltrosInstantaneos]);
 
-
   const totalAnunciosReais = Number(totalResultados || resultados.length || 0);
-  const mostrarPublicidadeTopo = !loading && vistaAtiva === 'lista' && totalAnunciosReais >= 3;
+  const mostrarPublicidadeTopo = !loading && totalAnunciosReais >= 3;
   const mostrarPublicidadeInline = !loading && totalAnunciosReais >= 8;
 
   const locSeo = filtros.cidade ? `em ${filtros.cidade}` : (filtros.distrito && filtros.distrito !== 'Todos' ? `em ${filtros.distrito}` : 'em Portugal');
@@ -448,14 +422,12 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
     descSeo = `Encontra ${imovelSeo} para comprar ${locSeo}. Consulta preços, áreas e fotos na Noxvelia. Negócios sem comissões e contacto direto via WhatsApp.`;
   }
 
-  // IMAGEM DINÂMICA
   const heroBackgroundImage = tipoSeguro === 'carro' ? BG_DRIVE : BG_ESTATE;
 
   return (
     <>
       {!seoParams && <Seo title={titleSeo} description={descSeo} path={tipoSeguro === 'carro' ? '/carros' : '/imoveis'} />}
       <style>{`
-        /* Reset de estilos da pesquisa */
         .pesquisa-root {
           min-height: 100vh;
           display: flex;
@@ -464,8 +436,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           color: #071326;
           font-family: Inter, sans-serif;
         }
-
-        /* --- SLIM HERO COM IMAGEM DE FUNDO --- */
         .nx-search-hero {
           position: relative;
           background-color: #071326;
@@ -507,8 +477,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           color: rgba(255, 250, 240, 0.85);
           margin: 0;
         }
-
-        /* --- OMNIBAR FIX: LARGURA 100% --- */
         .nx-search-overlap {
           width: 100%;
           max-width: 1280px;
@@ -541,8 +509,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           width: 100%; min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; text-align: left;
         }
         .pesquisa-suggestion:hover { background: #f1f5f9; }
-
-        /* --- LAYOUT 2 COLUNAS --- */
         .pesquisa-layout {
           max-width: 1280px;
           margin: 0 auto;
@@ -554,8 +520,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           flex: 1;
           box-sizing: border-box;
         }
-        
-        /* SIDEBAR DE FILTROS & ACCORDIONS */
         .pesquisa-sidebar {
           width: 300px;
           flex-shrink: 0;
@@ -573,17 +537,14 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .pesquisa-sidebar.collapsed {
           width: 0; opacity: 0; padding: 0; border: none; overflow: hidden; pointer-events: none;
         }
-
         .pesquisa-sidebar-header {
           display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid #e2e8f0;
         }
         .pesquisa-sidebar-header strong { font-size: 16px; font-weight: 800; color: #071326; }
-        
         .pesquisa-filter-status { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 24px; }
         .pesquisa-filter-stat { padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; text-align: center; }
         .pesquisa-filter-stat strong { display: block; color: #071326; font-size: 20px; font-weight: 900; line-height: 1; }
         .pesquisa-filter-stat span { display: block; margin-top: 4px; color: #64748b; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
-        
         .nx-filter-accordion {
           border-top: 1px solid #e2e8f0;
           padding-top: 16px;
@@ -602,28 +563,20 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         .nx-filter-accordion-body {
           margin-bottom: 8px;
         }
-
         .pesquisa-filter-group { margin-bottom: 16px; }
         .pesquisa-filter-title { font-size: 13px; font-weight: 700; color: #071326; margin-bottom: 8px; }
-        
         .pesquisa-filter-input { width: 100%; min-height: 44px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; color: #071326; padding: 0 12px; font-size: 13px; font-weight: 600; outline: none; transition: border-color .2s; }
         .pesquisa-filter-input:focus { border-color: #102f50; box-shadow: 0 0 0 3px rgba(16, 47, 80, 0.1); }
         .pesquisa-filter-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-        
         .pesquisa-tags { display: flex; flex-wrap: wrap; gap: 8px; }
         .pesquisa-tag { flex: 1 1 calc(50% - 8px); min-height: 38px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; color: #64748b; padding: 0 10px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .pesquisa-tag:hover { border-color: #102f50; color: #102f50; }
         .pesquisa-tag.active { border-color: #102f50; background: #102f50; color: #ffffff; }
-        
         .pesquisa-apply-btn { width: 100%; min-height: 48px; border: none; border-radius: 8px; background: #102f50; color: #ffffff; font-size: 14px; font-weight: 800; cursor: pointer; transition: background 0.2s; margin-top: 16px; }
         .pesquisa-apply-btn:hover { background: #071326; }
-
-        /* MAIN CONTENT & RESULTADOS */
         .pesquisa-main-content {
           flex: 1; min-width: 0; display: flex; flex-direction: column; width: 100%;
         }
-
-        /* TOPBAR ROBUSTA */
         .pesquisa-topbar {
           display: flex; 
           align-items: center; 
@@ -637,8 +590,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           box-sizing: border-box;
         }
         .pesquisa-sort { min-height: 42px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; color: #071326; padding: 0 14px; font-size: 13px; font-weight: 700; cursor: pointer; outline: none; }
-        
-        /* GRELHA HORIZONTAL QUE CHAMA O ANUNCIOCARD */
         .nx-list-horizontal {
           display: flex;
           flex-direction: column;
@@ -653,17 +604,13 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
         }
         .pesquisa-skeleton-card { min-height: 200px; width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; background: linear-gradient(110deg, #ffffff 0%, #f1f5f9 44%, #ffffff 76%); background-size: 220% 100%; animation: pesquisaSkeleton 1.3s ease-in-out infinite; }
         @keyframes pesquisaSkeleton { from { background-position: 180% 0; } to { background-position: -40% 0; } }
-
-        /* COMPORTAMENTO MOBILE */
         .sidebar-mobile-overlay { display: none; position: fixed; inset: 0; z-index: 9998; background: rgba(7,19,38,.4); }
         .mobile-filter-trigger { display: none; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background: #102f50; color: #fff; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; margin-bottom: 16px; }
-
         @media (max-width: 1024px) {
           .pesquisa-layout { flex-direction: column; padding: 0 16px 40px; }
           .nx-search-overlap { margin-top: -20px; padding: 0 16px; }
           .mobile-filter-trigger { display: flex; }
           .pesquisa-topbar { padding: 12px 16px; }
-          
           .pesquisa-sidebar {
             position: fixed; top: 0; left: 0; width: min(88vw, 380px); max-width: 380px; height: 100dvh; max-height: 100dvh; z-index: 9999; border-radius: 0; transform: translateX(-105%); transition: transform .3s ease;
           }
@@ -672,7 +619,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           .sidebar-mobile-overlay { display: block; opacity: 0; pointer-events: none; transition: 0.3s; }
           .pesquisa-sidebar.mobile-open ~ .sidebar-mobile-overlay { opacity: 1; pointer-events: auto; }
         }
-
         .infinite-spinner-container { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 42px 0; color: #94a3b8; }
         .infinite-dot-pulse { width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; display: inline-block; animation: pulse .6s infinite alternate; }
         .infinite-dot-pulse:nth-child(2) { animation-delay: .2s; }
@@ -681,7 +627,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
       `}</style>
 
       <div className="pesquisa-root">
-        {/* --- NOVO SLIM HERO COM IMAGEM DE FUNDO --- */}
         <div className="nx-search-hero" style={{ backgroundImage: `url(${heroBackgroundImage})` }}>
           <div className="nx-search-hero-overlay"></div>
           <div className="nx-search-hero-inner">
@@ -693,7 +638,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           </div>
         </div>
 
-        {/* --- OMNIBAR SOBREPOSTA --- */}
         <div className="nx-search-overlap">
           <div style={{ position: 'relative', width: '100%' }}>
             <div className="pesquisa-omnibar-wrapper">
@@ -726,13 +670,11 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
           </div>
         </div>
 
-        {/* OVERLAY MOBILE PARA SIDEBAR */}
         {sidebarMobileAberta && (
           <div className="sidebar-mobile-overlay" onClick={() => setSidebarMobileAberta(false)} aria-hidden="true" />
         )}
 
         <div className="pesquisa-layout">
-          {/* SIDEBAR DE FILTROS */}
           <aside className={`pesquisa-sidebar ${isSidebarOpen ? '' : 'collapsed'} ${sidebarMobileAberta ? 'mobile-open' : ''}`}>
             <div className="pesquisa-sidebar-header">
               <strong>Filtros Avançados</strong>
@@ -744,7 +686,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               <div className="pesquisa-filter-stat"><strong>{loading && resultados.length === 0 ? '...' : totalResultados}</strong><span>anúncios</span></div>
             </div>
 
-            {/* ACCORDION 1: PREÇO E LOCALIZAÇÃO */}
             <div className="nx-filter-accordion" style={{ borderTop: 'none', paddingTop: 0, marginTop: 0 }}>
               <div className="nx-filter-accordion-header" onClick={() => toggleFilterSection('precoLoc')}>
                 <h4>Preço e localização</h4>
@@ -779,7 +720,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               )}
             </div>
 
-            {/* ACCORDION 2: ESPECÍFICOS (CARRO OU IMÓVEL) */}
             <div className="nx-filter-accordion">
               <div className="nx-filter-accordion-header" onClick={() => toggleFilterSection('especificos')}>
                 <h4>{tipoSeguro === 'carro' ? 'Automóvel' : 'Imóvel'}</h4>
@@ -835,9 +775,7 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
             <button type="button" className="pesquisa-apply-btn" onClick={executarFiltrosManuais}>Aplicar Filtros</button>
           </aside>
 
-          {/* CONTEÚDO PRINCIPAL */}
           <main className="pesquisa-main-content">
-            
             <button type="button" onClick={() => setSidebarMobileAberta(true)} className="mobile-filter-trigger">
               <Icon path={mdiFilterVariant} size={0.8} /> Filtrar Resultados
             </button>
@@ -861,22 +799,14 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
               <AdBanner mode="direct" placement={tipoSeguro === 'carro' ? 'listagem_topo_carros' : 'listagem_topo_imoveis'} vertical={tipoSeguro} minHeight={100} style={{ marginBottom: 20 }} />
             )}
 
-            {vistaAtiva === 'mapa' ? (
-              <div className="pesquisa-map-shell">
-                <Suspense fallback={<div style={{ padding: 40, textAlign: 'center' }}>A carregar mapa...</div>}>
-                  <MapaResultados anuncios={dadosMapa} tipo={tipoSeguro} />
-                </Suspense>
-              </div>
-            ) : loading && resultados.length === 0 ? (
+            {loading && resultados.length === 0 ? (
               <div className="nx-skeleton-list">
                 {Array.from({ length: 5 }).map((_, index) => <div className="pesquisa-skeleton-card" key={index} />)}
               </div>
             ) : resultados.length > 0 ? (
-              
               <div className="nx-list-horizontal">
                 {resultados.map((anuncio, index) => (
                   <React.Fragment key={anuncio._id}>
-                    {/* AQUI ESTÁ A MAGIA: AGORA CHAMA O ANUNCIOCARD.JSX DE VERDADE! */}
                     <AnuncioCard anuncio={anuncio} showStatus={true} />
                     
                     {mostrarPublicidadeInline && (index + 1) % 6 === 0 && index < resultados.length - 1 && (
@@ -890,7 +820,6 @@ export default function Pesquisa({ tipoPadrao = 'imovel', seoParams = null }) {
                   </div>
                 )}
               </div>
-
             ) : (
               <div className="pesquisa-empty">
                 <Icon path={mdiAlertOutline} size={1.8} color="#94a3b8" style={{ margin: '0 auto 12px' }} />
