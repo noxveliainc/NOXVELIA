@@ -15,12 +15,31 @@ const SpinnerIcon = () => (
   </svg>
 );
 
+const ShieldCheckIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+  </svg>
+);
+
+const LockClosedIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+  </svg>
+);
+
+const RefreshIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+  </svg>
+);
+
 export default function Planos() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { sincronizarUser, user, signed } = useAuth();
   const [loadingStripe, setLoadingStripe] = useState(false);
   const [aSincronizar, setASincronizar] = useState(false);
+  
   const temSubscricaoStripe = Boolean(user?.stripeCustomerId || user?.stripeSubscriptionId);
   const temAcessoProfissionalManual = Boolean(user?.premiumAtivo && !temSubscricaoStripe);
   const proximoPagamento = user?.proximoPagamentoPremium ? new Date(user.proximoPagamentoPremium) : null;
@@ -39,7 +58,6 @@ export default function Planos() {
     ? proximoPagamento.toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
     : null;
 
-  // Quando o Stripe devolve com sucesso, sincroniza o estado premium
   useEffect(() => {
     const resultado = searchParams.get('premium');
     if (resultado === 'sucesso' && signed) {
@@ -71,7 +89,6 @@ export default function Planos() {
     navigate('/premium-confirmar');
   };
 
-  // Abre o Billing Portal da Stripe para quem já é PRO gerir a subscrição
   const abrirPortalCliente = async () => {
     setLoadingStripe(true);
     try {
@@ -86,20 +103,19 @@ export default function Planos() {
   };
 
   const featuresParticular = [
-    'Até 5 anúncios ativos',
-    'Suporte base por email',
+    'Até 5 anúncios ativos em simultâneo',
+    'Contacto direto via WhatsApp e Telefone',
+    'Suporte base dedicado por email',
   ];
 
   const featuresProfissional = [
-    'Anúncios ilimitados em carros e imóveis',
-    'Destaque automático nos anúncios publicados',
-    'Prioridade nos resultados de pesquisa',
-    'Montra pública com contactos, links e mapa opcional',
-    'Painel PRO com métricas da tua carteira',
-    'Edição de anúncios ativos depois de publicados',
-    'Regras claras: se cancelares, os anúncios ativos continuam online',
+    'Anúncios ilimitados em Automóveis e Imóveis',
+    'Destaque automático de máxima prioridade nas buscas',
+    'Montra corporativa exclusiva para a sua marca ou stand',
+    'Painel PRO avançado com métricas de desempenho em tempo real',
+    'Liberdade total para editar anúncios ativos sempre que precisar',
+    'Transparência garantida: cancele quando quiser sem perder anúncios ativos',
   ];
-
 
   return (
     <>
@@ -108,34 +124,35 @@ export default function Planos() {
 
         .pl-root {
           font-family: 'Inter', sans-serif;
-          background: #ffffff;
+          background: #fdfdfd;
           color: #0f172a;
-          height: auto;
+          min-height: 100vh;
           box-sizing: border-box;
-          padding: 48px 24px 60px;
+          padding: 56px 24px 80px;
         }
 
         .pl-header {
-          max-width: 640px;
-          margin: 0 auto 36px;
+          max-width: 700px;
+          margin: 0 auto 48px;
           text-align: center;
         }
         .pl-eyebrow {
-          font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
-          color: #64748b; margin-bottom: 8px; display: block;
+          font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em;
+          color: #102f50; background: rgba(16, 47, 80, 0.06); padding: 6px 14px; border-radius: 100px;
+          display: inline-block; margin-bottom: 14px;
         }
         .pl-header h1 {
           font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: clamp(28px, 3.5vw, 38px);
+          font-size: clamp(32px, 4vw, 42px);
           font-weight: 800;
           letter-spacing: -0.03em;
-          margin-bottom: 8px;
-          margin-top: 0;
+          margin-bottom: 12px;
+          color: #071326;
         }
         .pl-header p {
-          font-size: 14.5px;
-          color: #64748b;
-          line-height: 1.5;
+          font-size: 16px;
+          color: #5d6b78;
+          line-height: 1.6;
           margin: 0;
         }
 
@@ -143,67 +160,70 @@ export default function Planos() {
           text-align: center;
           font-size: 13px;
           font-weight: 600;
-          color: #d9c49c;
-          margin-bottom: 20px;
+          color: #102f50;
+          background: rgba(217,196,156,0.15);
+          padding: 10px;
+          border-radius: 8px;
+          max-width: 400px;
+          margin: 0 auto 24px;
         }
 
         .pl-active-panel {
-          max-width: 780px;
+          max-width: 820px;
           margin: 0 auto;
-          padding: 26px;
-          border: 1px solid #e2e8f0;
-          border-radius: 24px;
+          padding: 36px;
+          border: 1px solid #e6e1d6;
+          border-radius: 20px;
           background: #ffffff;
-          box-shadow: 0 20px 45px -30px rgba(15, 23, 42, 0.32);
+          box-shadow: 0 20px 45px -20px rgba(7, 19, 38, 0.08);
         }
         .pl-active-head {
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
           gap: 16px;
-          margin-bottom: 20px;
+          margin-bottom: 28px;
         }
         .pl-active-head h2 {
-          margin: 6px 0 4px;
+          margin: 8px 0 6px;
           font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 25px;
-          letter-spacing: 0;
+          font-size: 28px;
+          color: #071326;
         }
         .pl-active-head p {
           margin: 0;
-          color: #64748b;
-          font-size: 13.5px;
-          line-height: 1.5;
+          color: #5d6b78;
+          font-size: 15px;
         }
         .pl-active-status {
           flex: 0 0 auto;
-          padding: 8px 12px;
+          padding: 8px 16px;
           border-radius: 999px;
-          background: rgba(16, 47, 80, .08);
+          background: rgba(16, 47, 80, 0.08);
           color: #102f50;
-          font-size: 11px;
-          font-weight: 900;
+          font-size: 12px;
+          font-weight: 800;
           letter-spacing: .08em;
           text-transform: uppercase;
         }
         .pl-active-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 14px;
-          margin-bottom: 18px;
+          gap: 16px;
+          margin-bottom: 24px;
         }
         .pl-active-metric {
-          padding: 18px;
-          border: 1px solid #e2e8f0;
-          border-radius: 16px;
-          background: #fbfaf7;
+          padding: 22px;
+          border: 1px solid #e6e1d6;
+          border-radius: 14px;
+          background: #f7f5ef;
         }
         .pl-active-label {
           display: block;
           margin-bottom: 8px;
-          color: #64748b;
+          color: #5d6b78;
           font-size: 11px;
-          font-weight: 850;
+          font-weight: 800;
           letter-spacing: .08em;
           text-transform: uppercase;
         }
@@ -211,234 +231,226 @@ export default function Planos() {
           display: block;
           color: #071326;
           font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 24px;
-          font-weight: 850;
+          font-size: 26px;
+          font-weight: 800;
           line-height: 1.1;
         }
         .pl-active-small {
           display: block;
-          margin-top: 7px;
-          color: #64748b;
-          font-size: 12px;
-          line-height: 1.45;
+          margin-top: 8px;
+          color: #5d6b78;
+          font-size: 13px;
+          line-height: 1.4;
         }
         .pl-active-actions {
           display: flex;
-          gap: 10px;
+          gap: 12px;
           flex-wrap: wrap;
         }
         .pl-active-actions .pl-btn {
           width: auto;
-          min-width: 190px;
-          padding-inline: 18px;
+          min-width: 210px;
+          padding-inline: 24px;
         }
+
         .pl-grid {
-          max-width: 780px;
+          max-width: 900px;
           margin: 0 auto;
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 24px;
+          gap: 32px;
           align-items: stretch;
-        }
-        .pl-premium-strip {
-          max-width: 780px;
-          margin: 0 auto 24px;
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 12px;
-        }
-        .pl-premium-note {
-          min-height: 118px;
-          border: 1px solid #e2e8f0;
-          border-radius: 18px;
-          padding: 18px;
-          background: #ffffff;
-          box-shadow: 0 10px 25px -18px rgba(15, 23, 42, 0.16);
-          position: relative;
-          overflow: hidden;
-        }
-        .pl-premium-note::before {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 3px;
-          background: linear-gradient(90deg, #102f50, #d9c49c);
-        }
-        .pl-premium-note strong {
-          display: block;
-          color: #102f50;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 15px;
-          margin-bottom: 8px;
-        }
-        .pl-premium-note span {
-          display: block;
-          color: #64748b;
-          font-size: 12.5px;
-          line-height: 1.5;
-          font-weight: 650;
         }
 
         .pl-card {
           background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 24px;
-          padding: 32px 24px 24px;
+          border: 1px solid #e6e1d6;
+          border-radius: 20px;
+          padding: 38px 32px 32px;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 10px 25px -8px rgba(15, 23, 42, 0.06);
+          box-shadow: 0 15px 35px -10px rgba(7, 19, 38, 0.05);
           position: relative;
           box-sizing: border-box;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .pl-card:hover {
+          box-shadow: 0 20px 40px -12px rgba(16, 47, 80, 0.12);
         }
 
         .pl-card--pro {
-          border-color: #cbd5e1;
-          overflow: hidden;
-        }
-        .pl-card--pro::before {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 4px;
-          background: linear-gradient(90deg, #102f50, #d9c49c);
+          border: 2px solid #102f50;
         }
 
         .pl-badge {
           display: inline-block;
-          font-size: 10.5px;
+          font-size: 11px;
           font-weight: 800;
-          letter-spacing: 0.06em;
+          letter-spacing: 0.08em;
           text-transform: uppercase;
-          color: #0f172a;
-          background: #ffffff;
-          border: 1px solid rgba(217,196,156,.38);
-          padding: 4px 10px;
+          color: #102f50;
+          background: #f7f5ef;
+          border: 1px solid #e6e1d6;
+          padding: 6px 14px;
           border-radius: 100px;
-          margin-bottom: 14px;
+          margin-bottom: 16px;
           width: fit-content;
         }
-        .pl-badge--active {
-          background: rgba(217, 196, 156, 0.18);
-          border-color: rgba(217, 196, 156, 0.48);
-          color: #102f50;
+        .pl-badge--pro {
+          background: #102f50;
+          color: #d9c49c;
+          border-color: #102f50;
         }
 
         .pl-plan-name {
           font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 17px;
+          font-size: 22px;
           font-weight: 800;
-          margin-bottom: 4px;
+          color: #071326;
+          margin-bottom: 6px;
         }
 
         .pl-plan-desc {
-          font-size: 13px;
-          color: #64748b;
+          font-size: 14px;
+          color: #5d6b78;
           line-height: 1.5;
-          margin-bottom: 20px;
+          margin-bottom: 24px;
+          min-height: 42px;
         }
 
         .pl-price {
           font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 32px;
+          font-size: 38px;
           font-weight: 800;
+          color: #071326;
           letter-spacing: -0.02em;
-          margin-bottom: 20px;
+          margin-bottom: 24px;
           display: flex;
           align-items: baseline;
           gap: 6px;
         }
         .pl-price span {
           font-family: 'Inter', sans-serif;
-          font-size: 12.5px;
-          font-weight: 500;
-          color: #64748b;
+          font-size: 14px;
+          font-weight: 600;
+          color: #5d6b78;
         }
 
         .pl-features {
           list-style: none;
           padding: 0;
-          margin: 0 0 24px;
+          margin: 0 0 32px;
           flex: 1;
         }
         .pl-features li {
           display: flex;
           align-items: flex-start;
-          gap: 9px;
-          font-size: 13px;
-          color: #334155;
-          line-height: 1.45;
-          margin-bottom: 10px;
+          gap: 12px;
+          font-size: 14px;
+          color: #071326;
+          line-height: 1.5;
+          margin-bottom: 14px;
+          font-weight: 500;
         }
         .pl-features svg {
-          width: 15px; height: 15px;
+          width: 18px; height: 18px;
           flex-shrink: 0;
           margin-top: 1px;
-          color: #d9c49c;
+          color: #102f50;
         }
-        .pl-card:not(.pl-card--pro) .pl-features svg { color: #94a3b8; }
+        .pl-card--pro .pl-features svg { color: #d9c49c; }
 
         .pl-btn {
           width: 100%;
-          padding: 13px;
+          padding: 14px 20px;
           border-radius: 12px;
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 700;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
+          gap: 10px;
           border: 1px solid transparent;
-          transition: filter 0.2s, background 0.2s, color 0.2s;
+          transition: all 0.2s ease;
           box-sizing: border-box;
         }
         .pl-btn:disabled { opacity: 0.7; cursor: default; }
-        .pl-btn--manual:disabled { opacity: 1; }
 
         .pl-btn--ghost {
-          background: transparent;
-          border-color: #e2e8f0;
-          color: #0f172a;
+          background: #f7f5ef;
+          border-color: #e6e1d6;
+          color: #071326;
         }
-        .pl-btn--ghost:hover { background: #f8fafc; }
+        .pl-btn--ghost:hover { background: #ede8dc; }
 
         .pl-btn--primary {
-          background: #0f172a;
+          background: #102f50;
           color: #ffffff;
+          box-shadow: 0 4px 12px rgba(16, 47, 80, 0.2);
         }
-        .pl-btn--primary:hover { filter: brightness(1.15); }
+        .pl-btn--primary:hover { background: #071326; transform: translateY(-1px); }
 
         .pl-btn--outline-pro {
-          background: transparent;
-          border-color: #d9c49c;
+          background: #ffffff;
+          border-color: #102f50;
           color: #102f50;
         }
-        .pl-btn--outline-pro:hover { background: #ffffff; }
+        .pl-btn--outline-pro:hover { background: #f7f5ef; }
 
         .pl-spinner {
-          width: 16px; height: 16px;
+          width: 18px; height: 18px;
           animation: pl-spin 0.8s linear infinite;
         }
         @keyframes pl-spin { to { transform: rotate(360deg); } }
 
-        .pl-note {
-          max-width: 780px;
-          margin: 20px auto 0;
-          text-align: center;
-          font-size: 12px;
-          color: #94a3b8;
+        /* SEÇÃO DE CONFIANÇA & GARANTIA */
+        .pl-trust-section {
+          max-width: 900px;
+          margin: 48px auto 0;
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 20px;
+          padding-top: 32px;
+          border-top: 1px solid #e6e1d6;
         }
-        .pl-manual-note {
-          margin: 10px 0 0;
-          color: #64748b;
-          font-size: 12px;
-          line-height: 1.45;
+        .pl-trust-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+        }
+        .pl-trust-icon {
+          color: #102f50;
+          background: #f7f5ef;
+          padding: 10px;
+          border-radius: 10px;
+          flex-shrink: 0;
+        }
+        .pl-trust-content h4 {
+          font-size: 13.5px;
+          font-weight: 800;
+          color: #071326;
+          margin: 0 0 4px;
+        }
+        .pl-trust-content p {
+          font-size: 12.5px;
+          color: #5d6b78;
+          margin: 0;
+          line-height: 1.4;
         }
 
-        @media (max-width: 720px) {
-          .pl-grid { grid-template-columns: 1fr; max-width: 380px; }
-          .pl-premium-strip { grid-template-columns: 1fr; max-width: 380px; }
-          .pl-active-panel { max-width: 380px; padding: 20px; }
+        .pl-manual-note {
+          margin: 12px 0 0;
+          color: #5d6b78;
+          font-size: 12.5px;
+          line-height: 1.5;
+          text-align: center;
+        }
+
+        @media (max-width: 768px) {
+          .pl-grid { grid-template-columns: 1fr; max-width: 420px; }
+          .pl-trust-section { grid-template-columns: 1fr; max-width: 420px; }
+          .pl-active-panel { max-width: 420px; padding: 24px; }
           .pl-active-head, .pl-active-actions { flex-direction: column; }
           .pl-active-grid { grid-template-columns: 1fr; }
           .pl-active-actions .pl-btn { width: 100%; }
@@ -447,110 +459,140 @@ export default function Planos() {
 
       <div className="pl-root">
         <div className="pl-header">
-          <span className="pl-eyebrow">Planos</span>
-          <h1>Escolhe como queres vender</h1>
-          <p>Publica com mais visibilidade e menos limites em carros e imóveis.</p>
+          <span className="pl-eyebrow">Transparência & Confiança</span>
+          <h1>Planos simples, sem surpresas nem comissões</h1>
+          <p>Escolha a modalidade ideal para potenciar os seus negócios no mercado automóvel e imobiliário em Portugal.</p>
         </div>
 
         {aSincronizar && (
-          <p className="pl-sync">A confirmar o teu pagamento...</p>
+          <div className="pl-sync">A sincronizar o seu estado com a Stripe...</div>
         )}
-
 
         {user?.premiumAtivo ? (
           <section className="pl-active-panel" aria-label="Estado do plano PRO">
             <div className="pl-active-head">
               <div>
-                <span className="pl-badge pl-badge--active">Plano atual</span>
-                <h2>PRO ativo</h2>
-                <p>{temAcessoProfissionalManual ? 'Acesso atribuído pela administração.' : 'A tua subscrição está ativa na Stripe.'}</p>
+                <span className="pl-badge pl-badge--pro">Conta Verificada</span>
+                <h2>Subscrição PRO Ativa</h2>
+                <p>{temAcessoProfissionalManual ? 'Acesso corporativo atribuído pela administração.' : 'A sua subscrição está ativa e protegida de forma segura.'}</p>
               </div>
               <span className="pl-active-status">Ativo</span>
             </div>
 
             <div className="pl-active-grid">
               <div className="pl-active-metric">
-                <span className="pl-active-label">Próximo pagamento</span>
+                <span className="pl-active-label">Próxima Renovação</span>
                 <strong className="pl-active-value">
-                  {temAcessoProfissionalManual ? 'Sem cobrança' : textoDiasRestantes || 'A confirmar'}
+                  {temAcessoProfissionalManual ? 'Sem termo' : textoDiasRestantes || 'A calcular'}
                 </strong>
                 <span className="pl-active-small">
                   {temAcessoProfissionalManual
-                    ? 'Este plano não tem portal Stripe associado.'
-                    : dataProximoPagamento || 'A data aparece após sincronização da subscrição.'}
+                    ? 'Acesso especial sem faturação automática recorrente.'
+                    : dataProximoPagamento || 'Atualizado diretamente pela plataforma de pagamentos.'}
                 </span>
               </div>
               <div className="pl-active-metric">
-                <span className="pl-active-label">Renovação</span>
+                <span className="pl-active-label">Investimento</span>
                 <strong className="pl-active-value">10,99€ / mês</strong>
-                <span className="pl-active-small">Cobrança automática no método de pagamento guardado na Stripe.</span>
+                <span className="pl-active-small">Sem comissões ocultas por cada negócio fechado com sucesso.</span>
               </div>
             </div>
 
             <div className="pl-active-actions">
               {!temAcessoProfissionalManual && (
                 <button className="pl-btn pl-btn--outline-pro" onClick={abrirPortalCliente} disabled={loadingStripe}>
-                  {loadingStripe ? <SpinnerIcon /> : 'Gerir subscrição'}
+                  {loadingStripe ? <SpinnerIcon /> : 'Gerir Faturação e Cartões'}
                 </button>
               )}
               <button className="pl-btn pl-btn--primary" type="button" onClick={() => navigate('/pro')}>
-                Abrir painel PRO
+                Aceder ao Painel PRO
               </button>
             </div>
           </section>
         ) : (
-        <div className="pl-grid">
-          {/* PLANO GRATUITO */}
-          <div className="pl-card">
-            <span className="pl-badge">Particular</span>
-            <div className="pl-plan-name">Para quem vende pontualmente</div>
-            <p className="pl-plan-desc">Ideal para colocar um imóvel ou um automóvel à venda, sem compromisso.</p>
-            <div className="pl-price">Gratuito</div>
-            <ul className="pl-features">
-              {featuresParticular.map((f) => (
-                <li key={f}><CheckIcon />{f}</li>
-              ))}
-            </ul>
-            <button className="pl-btn pl-btn--ghost" onClick={() => signed ? navigate('/perfil') : navigate('/registo')}>
-              {signed ? 'Ir para o meu Perfil' : 'Começar grátis'}
-            </button>
+          <div className="pl-grid">
+            {/* PLANO GRATUITO */}
+            <div className="pl-card">
+              <span className="pl-badge">Particular</span>
+              <div className="pl-plan-name">Início Gratuito</div>
+              <p className="pl-plan-desc">Perfeito para particulares que pretendem vender de forma rápida e direta.</p>
+              <div className="pl-price">0€ <span>/sem custos</span></div>
+              <ul className="pl-features">
+                {featuresParticular.map((f) => (
+                  <li key={f}><CheckIcon />{f}</li>
+                ))}
+              </ul>
+              <button className="pl-btn pl-btn--ghost" onClick={() => signed ? navigate('/perfil') : navigate('/registo')}>
+                {signed ? 'Ir para o meu Perfil' : 'Criar Conta Gratuita'}
+              </button>
+            </div>
+
+            {/* PLANO PREMIUM / PRO */}
+            <div className="pl-card pl-card--pro">
+              <span className="pl-badge pl-badge--pro">Recomendado Profissionais</span>
+              <div className="pl-plan-name">Noxvelia PRO</div>
+              <p className="pl-plan-desc">Desenhado para stands e agências imobiliárias maximizarem conversões.</p>
+              <div className="pl-price">10,99€ <span>/mês (IVA inc.)</span></div>
+              <ul className="pl-features">
+                {featuresProfissional.map((f) => (
+                  <li key={f}><CheckIcon />{f}</li>
+                ))}
+              </ul>
+
+              {temAcessoProfissionalManual ? (
+                <>
+                  <button className="pl-btn pl-btn--outline-pro" disabled>
+                    Plano PRO Ativo
+                  </button>
+                  <p className="pl-manual-note">
+                    Acesso gerido diretamente pela administração Noxvelia.
+                  </p>
+                </>
+              ) : user?.premiumAtivo ? (
+                <button className="pl-btn pl-btn--outline-pro" onClick={abrirPortalCliente} disabled={loadingStripe}>
+                  {loadingStripe ? <SpinnerIcon /> : 'Gerir Minha Subscrição'}
+                </button>
+              ) : (
+                <button className="pl-btn pl-btn--primary" onClick={iniciarAssinatura} disabled={loadingStripe}>
+                  {loadingStripe ? <SpinnerIcon /> : 'Ativar Plano PRO em Segurança'}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* SECÇÃO DE CONFIANÇA TOTAL (Elimina o receio de pagar) */}
+        <div className="pl-trust-section">
+          <div className="pl-trust-item">
+            <div className="pl-trust-icon">
+              <LockClosedIcon />
+            </div>
+            <div className="pl-trust-content">
+              <h4>Pagamento 100% Protegido</h4>
+              <p>Processado com encriptação bancária de ponta a ponta através da infraestrutura global da Stripe.</p>
+            </div>
           </div>
 
-          {/* PLANO PREMIUM */}
-          <div className="pl-card pl-card--pro">
-            <span className={`pl-badge ${user?.premiumAtivo ? 'pl-badge--active' : ''}`}>
-              {user?.premiumAtivo ? 'O teu plano atual' : 'Mais escolhido'}
-            </span>
-            <div className="pl-plan-name">PRO</div>
-            <p className="pl-plan-desc">Para stands e imobiliárias que operam nos dois mundos NOXVELIA.</p>
-            <div className="pl-price">10.99€ <span>/mês</span></div>
-            <ul className="pl-features">
-              {featuresProfissional.map((f) => (
-                <li key={f}><CheckIcon />{f}</li>
-              ))}
-            </ul>
+          <div className="pl-trust-item">
+            <div className="pl-trust-icon">
+              <RefreshIcon />
+            </div>
+            <div className="pl-trust-content">
+              <h4>Flexibilidade Total</h4>
+              <p>Cancele ou altere a sua subscrição de forma autónoma e imediata a qualquer momento no portal de cliente.</p>
+            </div>
+          </div>
 
-            {temAcessoProfissionalManual ? (
-              <>
-                <button className="pl-btn pl-btn--outline-pro pl-btn--manual" disabled>
-                  Plano PRO ativo
-                </button>
-                <p className="pl-manual-note">
-                  Este acesso foi atribuído pela administração e não tem portal de faturação Stripe.
-                </p>
-              </>
-            ) : user?.premiumAtivo ? (
-              <button className="pl-btn pl-btn--outline-pro" onClick={abrirPortalCliente} disabled={loadingStripe}>
-                {loadingStripe ? <SpinnerIcon /> : 'Gerir a Minha Subscrição'}
-              </button>
-            ) : (
-              <button className="pl-btn pl-btn--primary" onClick={iniciarAssinatura} disabled={loadingStripe}>
-                Ver detalhes e aderir
-              </button>
-            )}
+          <div className="pl-trust-item">
+            <div className="pl-trust-icon">
+              <ShieldCheckIcon />
+            </div>
+            <div className="pl-trust-content">
+              <h4>Garantia Sem Comissões</h4>
+              <p>A Noxvelia não cobra qualquer comissão sobre a venda dos seus automóveis ou imóveis. O lucro é 100% seu.</p>
+            </div>
           </div>
         </div>
-        )}
       </div>
     </>
   );

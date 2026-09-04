@@ -1,357 +1,593 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  ArrowRight,
-  BadgeEuro,
-  Clock3,
-  ExternalLink,
-  ImagePlus,
-  MousePointerClick,
-  UploadCloud,
-} from 'lucide-react';
-import api from '../../services/api';
-import Seo from '../../components/Seo';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { pathWithSearch } from '../../utils/navigationState';
+import Seo from '../../components/Seo';
+import api from '../../services/api';
+import { Icon } from '@mdi/react';
+import { 
+  mdiBullhorn, mdiImage, mdiLinkVariant, mdiCalendarClock, 
+  mdiShieldCheck, mdiLockCheck, mdiCheckCircle, mdiOpenInNew 
+} from '@mdi/js';
 
-const DURACOES = [
-  { dias: 7, preco: '4,99 €', label: '7 Dias' },
-  { dias: 14, preco: '8,99 €', label: '14 Dias' },
-  { dias: 30, preco: '14,99 €', label: '30 Dias' },
+const POSICOES_BANNER = [
+  { id: 'topo_carros', label: 'Topo Automóveis', desc: 'Banner horizontal em destaque no topo da página de carros', precoBase: 4.99 },
+  { id: 'feed_carros', label: 'Meio do Feed Automóveis', desc: 'Banner inserido estrategicamente entre os cartões de carros', precoBase: 4.99 },
+  { id: 'topo_imoveis', label: 'Topo Imóveis', desc: 'Banner horizontal em destaque no topo da página de imóveis', precoBase: 4.99 },
+  { id: 'feed_imoveis', label: 'Meio do Feed Imóveis', desc: 'Banner inserido estrategicamente entre os cartões de imóveis', precoBase: 4.99 },
+  { id: 'lateral_anuncio', label: 'Lateral do Anúncio', desc: 'Formato retângulo lateral de alta visibilidade nos detalhes', precoBase: 4.99 },
+  { id: 'fundo_anuncio', label: 'Fundo do Anúncio', desc: 'Posicionado no encerramento das páginas de detalhe', precoBase: 4.99 },
+  { id: 'inicio_institucional', label: 'Página Inicial (Landing)', desc: 'Banner institucional de máxima exposição na homepage', precoBase: 6.99 }
 ];
 
-const POSICOES = [
-  { id: 'listagem_topo_carros', vertical: 'carro', label: 'Topo Automóveis', formato: 'Banner horizontal' },
-  { id: 'feed_pesquisa_carros', vertical: 'carro', label: 'Meio do Feed Automóveis', formato: 'Banner entre cartões' },
-  { id: 'listagem_fundo_carros', vertical: 'carro', label: 'Fundo Automóveis', formato: 'Banner horizontal' },
-  { id: 'listagem_topo_imoveis', vertical: 'imovel', label: 'Topo Imóveis', formato: 'Banner horizontal' },
-  { id: 'feed_pesquisa_imoveis', vertical: 'imovel', label: 'Meio do Feed Imóveis', formato: 'Banner entre cartões' },
-  { id: 'listagem_fundo_imoveis', vertical: 'imovel', label: 'Fundo Imóveis', formato: 'Banner horizontal' },
-  { id: 'detalhe_sidebar', vertical: 'todos', label: 'Lateral do Anúncio', formato: 'Retângulo lateral' },
-  { id: 'detalhe_sugestoes', vertical: 'todos', label: 'Fundo do Anúncio', formato: 'Banner horizontal' },
-  { id: 'landing_between_highlights', vertical: 'todos', label: 'Página Inicial', formato: 'Banner institucional' },
+const DURACOES = [
+  { dias: 7, label: '7 Dias', mult: 1, poupanca: null },
+  { dias: 14, label: '14 Dias', mult: 1.8, poupanca: 'Mais popular' },
+  { dias: 30, label: '30 Dias', mult: 3, poupanca: 'Melhor valor (-40%)' }
 ];
 
 export default function Patrocinios() {
-  const [searchParams] = useSearchParams();
-  const location = useLocation();
   const navigate = useNavigate();
-  const fileRef = useRef(null);
-  const { signed } = useAuth();
+  const { user, signed } = useAuth();
 
-  const posicaoInicial = POSICOES.some((item) => item.id === searchParams.get('posicao'))
-    ? searchParams.get('posicao')
-    : 'feed_pesquisa_carros';
-  const posicaoInicialInfo = POSICOES.find((item) => item.id === posicaoInicial);
-
-  const [form, setForm] = useState({
-    titulo: '',
-    imagemUrl: '',
-    linkDestino: '',
-    posicao: posicaoInicial,
-    vertical: searchParams.get('vertical') || posicaoInicialInfo?.vertical || 'todos',
-    duracaoDias: 14,
-  });
-  
+  const [nomeCampanha, setNomeCampanha] = useState('');
+  const [posicaoSelecionada, setPosicaoSelecionada] = useState('topo_carros');
+  const [duracaoSelecionada, setDuracaoSelecionada] = useState(14);
+  const [imagemUrl, setImagemUrl] = useState('');
+  const [linkDestino, setLinkDestino] = useState('');
+  const [loadingUpload, setLoadingUpload] = useState(false);
+  const [loadingCheckout, setLoadingCheckout] = useState(false);
   const [erro, setErro] = useState('');
-  const [feedback, setFeedback] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
-  const pagamento = searchParams.get('pagamento');
+  // Cálculo dinâmico do preço baseado na posição e duração
+  const posicaoObj = POSICOES_BANNER.find(p => p.id === posicaoSelecionada) || POSICOES_BANNER[0];
+  const duracaoObj = DURACOES.find(d => d.dias === duracaoSelecionada) || DURACOES[1];
+  const precoTotal = Number((posicaoObj.precoBase * duracaoObj.mult).toFixed(2));
 
-  const posicaoSelecionada = useMemo(
-    () => POSICOES.find((item) => item.id === form.posicao) || POSICOES[0],
-    [form.posicao],
-  );
-
-  const duracaoSelecionada = useMemo(
-    () => DURACOES.find((item) => item.dias === Number(form.duracaoDias)) || DURACOES[1],
-    [form.duracaoDias],
-  );
-
-  const previewTitle = form.titulo.trim() || 'Nome da sua marca';
-  const previewDestination = form.linkDestino.trim() || 'https://o-seu-site.pt';
-  const previewIsSidebar = posicaoSelecionada.id === 'detalhe_sidebar';
-
-  const updateForm = (campo, valor) => {
-    setForm((atual) => {
-      const next = { ...atual, [campo]: valor };
-      if (campo === 'posicao') {
-        const novaPosicao = POSICOES.find((item) => item.id === valor);
-        next.vertical = novaPosicao?.vertical || 'todos';
-      }
-      return next;
-    });
-  };
-
-  const pedirLogin = () => {
-    navigate('/login', {
-      state: {
-        from: pathWithSearch(location),
-        returnTo: pathWithSearch(location),
-      },
-    });
-  };
-
-  const uploadCriativo = async (event) => {
-    const file = event.target.files?.[0];
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
     if (!file) return;
-    if (!signed) {
-      pedirLogin();
-      return;
-    }
-
-    const data = new FormData();
-    data.append('imagens', file);
-    data.append('kind', 'cover');
-    data.append('altText', form.titulo || 'Patrocínio Noxvelia');
-
-    setUploading(true);
+    setLoadingUpload(true);
     setErro('');
     try {
-      const response = await api.post('/upload/imagens', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
-      if (response.data?.url) {
-        updateForm('imagemUrl', response.data.url);
-        setFeedback('Criativo carregado com sucesso.');
+      if (res.data?.url) {
+        setImagemUrl(res.data.url);
+      } else {
+        throw new Error('URL não retornado');
       }
-    } catch (error) {
-      setErro(error.response?.data?.erro || 'Não foi possível carregar o criativo.');
+    } catch {
+      setErro('Erro ao carregar imagem. Tente novamente ou cole o link direto.');
     } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = '';
+      setLoadingUpload(false);
     }
   };
 
-  const iniciarPagamento = async (event) => {
-    event.preventDefault();
-    setErro('');
-    setFeedback('');
-
+  const handleCriarCampanhaECheckout = async (e) => {
+    e.preventDefault();
     if (!signed) {
-      pedirLogin();
+      navigate('/login', { state: { from: '/patrocinios' } });
+      return;
+    }
+    if (!nomeCampanha.trim() || !imagemUrl.trim() || !linkDestino.trim()) {
+      setErro('Por favor, preencha o nome, adicione a imagem criativa e o link de destino.');
       return;
     }
 
-    if (!form.titulo.trim() || !form.imagemUrl.trim() || !form.linkDestino.trim()) {
-      setErro('Preencha o nome da campanha, carregue um criativo e insira o link de destino.');
-      return;
-    }
+    setLoadingCheckout(true);
+    setErro('');
 
-    setLoading(true);
     try {
-      const { data } = await api.post('/stripe/criar-checkout-patrocinio', form);
-      if (data?.url) window.location.href = data.url;
-    } catch (error) {
-      setErro(error.response?.data?.erro || 'Não foi possível iniciar o pagamento.');
-      setLoading(false);
+      // Criação da intenção / banner patrocinado pendente no backend
+      const res = await api.post('/banners/patrocinados', {
+        titulo: nomeCampanha,
+        posicao: posicaoSelecionada,
+        imagemUrl,
+        linkDestino,
+        dias: duracaoSelecionada,
+        valor: precoTotal
+      });
+
+      const checkoutUrl = res.data?.url || res.data?.checkoutUrl;
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+      } else {
+        throw new Error('Sessão de pagamento Stripe não iniciada.');
+      }
+    } catch (err) {
+      setErro(err.response?.data?.erro || 'Erro ao iniciar o processo de pagamento. Tente novamente.');
+      setLoadingCheckout(false);
     }
   };
 
   return (
-    <div className="sponsor-page">
-      <Seo
-        title="Anunciar Marca | NOXVELIA"
-        description="Posicione a sua marca na NOXVELIA. Crie a sua campanha de publicidade em minutos."
-        path="/patrocinios"
+    <>
+      <Seo 
+        title="Patrocínios e Campanhas Publicitárias | Noxvelia" 
+        description="Promova a sua marca, stand ou imobiliária nos melhores espaços do portal Noxvelia em Portugal. Visibilidade direta com zero intermediários." 
+        path="/patrocinios" 
       />
+
       <style>{`
-        .sponsor-page { min-height: 100vh; background: var(--cor-fundo); color: var(--cor-texto); font-family: var(--nx-font-body); }
-        .sponsor-shell { width: min(1180px, calc(100% - 36px)); margin: 0 auto; }
-        
-        .sponsor-hero { padding: 64px 0 44px; background: #102f50; color: #fffaf0; text-align: center; }
-        .sponsor-kicker { display: inline-flex; align-items: center; gap: 8px; color: #d9c49c; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 16px; }
-        .sponsor-hero h1 { margin: 0 auto 16px; font-size: clamp(34px, 4vw, 54px); font-family: var(--nx-font-display); font-weight: 900; line-height: 1.1; max-width: 700px; }
-        .sponsor-hero p { margin: 0 auto; color: rgba(255,250,240,0.8); font-size: 16px; line-height: 1.6; max-width: 600px; }
-        
-        .sponsor-section { padding: 54px 0; }
-        .sponsor-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(380px, 0.8fr); gap: 32px; align-items: start; }
-        
-        .sponsor-panel { border: 1px solid var(--cor-borda); border-radius: 16px; background: #ffffff; padding: 32px; box-shadow: 0 12px 32px -20px rgba(7,19,38,.1); }
-        .sponsor-panel h2 { margin: 0 0 24px; font-size: 22px; font-weight: 900; font-family: var(--nx-font-display); }
-        
-        .sponsor-form { display: grid; gap: 20px; }
-        .sponsor-field { display: grid; gap: 8px; }
-        .sponsor-field label, .sponsor-group-title { color: var(--cor-texto-secundario); font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
-        .sponsor-field input { width: 100%; min-height: 48px; border: 1px solid var(--cor-borda); border-radius: 10px; background: #fcfbfa; color: var(--cor-texto); padding: 0 14px; font-size: 14px; font-weight: 600; outline: none; transition: border-color 0.2s; }
-        .sponsor-field input:focus { border-color: var(--cor-champagne); background: #ffffff; }
-        
-        .sponsor-duration-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-        .sponsor-position-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        
-        .sponsor-choice { border: 1px solid var(--cor-borda); border-radius: 10px; background: #fcfbfa; padding: 14px; text-align: left; cursor: pointer; transition: all 0.2s; color: var(--cor-texto); }
-        .sponsor-choice:hover { border-color: #d9c49c; }
-        .sponsor-choice.is-selected { border-color: #d9c49c; background: rgba(217, 196, 156, 0.25); color: #102f50; }
-.sponsor-choice.is-selected strong { color: #102f50; }
-.sponsor-choice.is-selected span { color: #102f50; opacity: 0.85; }
-        
-        .sponsor-choice strong { display: block; font-size: 15px; font-weight: 800; margin-bottom: 2px; }
-        .sponsor-choice span { display: block; color: var(--cor-texto-secundario); font-size: 12px; line-height: 1.4; }
-        
-        .sponsor-upload-row { display: flex; gap: 12px; align-items: center; }
-        .sponsor-button { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; border: none; background: #102f50; color: #ffffff; padding: 0 24px; font-size: 14px; font-weight: 800; cursor: pointer; transition: transform 0.2s, filter 0.2s; width: 100%; }
-        .sponsor-button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.1); }
-        .sponsor-button:disabled { opacity: 0.6; cursor: not-allowed; }
-        .sponsor-button.secondary { width: auto; background: #fcfbfa; border: 1px solid var(--cor-borda); color: var(--cor-texto); }
-        .sponsor-button.secondary:hover { border-color: #102f50; }
-        
-        /* Preview Side */
-        .sponsor-preview-shell { position: sticky; top: 24px; display: grid; gap: 20px; }
-        .sponsor-browser { overflow: hidden; border: 1px solid var(--cor-borda); border-radius: 12px; background: var(--cor-fundo-suave); }
-        .sponsor-browser-top { display: flex; gap: 6px; align-items: center; min-height: 36px; padding: 0 14px; border-bottom: 1px solid var(--cor-borda); background: #ffffff; }
-        .sponsor-browser-dot { width: 10px; height: 10px; border-radius: 50%; background: #e0e0e0; }
-        .sponsor-browser-dot:nth-child(1) { background: #ff5f56; }
-        .sponsor-browser-dot:nth-child(2) { background: #ffbd2e; }
-        .sponsor-browser-dot:nth-child(3) { background: #27c93f; }
-        .sponsor-browser-body { padding: 20px; }
-        
-        .sponsor-mock-list { display: grid; gap: 12px; }
-        .sponsor-mock-card { height: 50px; border-radius: 8px; background: #ffffff; border: 1px solid rgba(7,19,38,.06); }
-        
-        .sponsor-ad-preview { position: relative; overflow: hidden; min-height: 140px; border-radius: 10px; background: #102f50; color: #ffffff; }
-        .sponsor-ad-preview.sidebar { min-height: 240px; }
-        .sponsor-ad-preview img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-        .sponsor-ad-preview::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(7,19,38,.9) 0%, rgba(7,19,38,.2) 100%); }
-        
-        .sponsor-ad-content { position: relative; z-index: 1; display: flex; min-height: inherit; flex-direction: column; justify-content: flex-end; gap: 6px; padding: 20px; }
-        .sponsor-ad-label { position: absolute; top: 12px; left: 12px; z-index: 2; border-radius: 4px; background: rgba(255,255,255,.9); color: #102f50; padding: 4px 8px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
-        .sponsor-ad-content strong { font-size: 18px; font-weight: 800; line-height: 1.2; }
-        .sponsor-ad-link { display: inline-flex; width: fit-content; align-items: center; gap: 6px; border-radius: 6px; background: rgba(255,255,255,.15); color: #ffffff; padding: 6px 12px; font-size: 11px; font-weight: 700; border: 1px solid rgba(255,255,255,0.3); font-style: normal; }
-        
-        .sponsor-price-summary { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid var(--cor-borda); }
-        .sponsor-price-summary span { color: var(--cor-texto-secundario); font-size: 13px; font-weight: 600; }
-        .sponsor-price-summary strong { font-size: 24px; font-weight: 900; color: #102f50; }
-        
-        .sponsor-alert { border-radius: 8px; padding: 14px; font-size: 13px; font-weight: 700; margin-bottom: 20px; }
-        .sponsor-alert.ok { background: rgba(36,184,171,.15); color: #0d5c56; border: 1px solid rgba(36,184,171,.3); }
-        .sponsor-alert.err { background: rgba(239,68,68,.1); color: #b91c1c; border: 1px solid rgba(239,68,68,.2); }
-        
-        @media (max-width: 980px) { .sponsor-grid { grid-template-columns: 1fr; } .sponsor-preview-shell { position: static; } }
-        @media (max-width: 620px) { .sponsor-position-grid, .sponsor-duration-grid { grid-template-columns: 1fr; } .sponsor-upload-row { flex-direction: column; align-items: stretch; } }
+        .pat-root {
+          font-family: 'Inter', sans-serif;
+          background: #fdfdfd;
+          color: #071326;
+          min-height: 100vh;
+          padding: 48px 24px 80px;
+          box-sizing: border-box;
+        }
+
+        .pat-container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        .pat-header {
+          text-align: center;
+          max-width: 700px;
+          margin: 0 auto 48px;
+        }
+        .pat-eyebrow {
+          font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em;
+          color: #102f50; background: rgba(16, 47, 80, 0.06); padding: 6px 14px; border-radius: 100px;
+          display: inline-block; margin-bottom: 14px;
+        }
+        .pat-header h1 {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: clamp(30px, 4vw, 40px);
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          margin: 0 0 12px;
+          color: #071326;
+        }
+        .pat-header p {
+          font-size: 15.5px;
+          color: #5d6b78;
+          line-height: 1.6;
+          margin: 0;
+        }
+
+        .pat-layout {
+          display: grid;
+          grid-template-columns: 1fr 420px;
+          gap: 32px;
+          align-items: flex-start;
+        }
+
+        /* CARTÕES DE CONFIGURAÇÃO */
+        .pat-card {
+          background: #ffffff;
+          border: 1px solid #e6e1d6;
+          border-radius: 20px;
+          padding: 32px;
+          margin-bottom: 24px;
+          box-shadow: 0 10px 30px -10px rgba(7, 19, 38, 0.04);
+        }
+        .pat-card-title {
+          font-size: 16px;
+          font-weight: 800;
+          color: #071326;
+          margin: 0 0 6px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .pat-card-desc {
+          font-size: 13.5px;
+          color: #5d6b78;
+          margin: 0 0 20px;
+        }
+
+        .pat-label {
+          display: block;
+          font-size: 12px;
+          font-weight: 800;
+          color: #071326;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 8px;
+        }
+        .pat-input {
+          width: 100%;
+          min-height: 48px;
+          border: 1px solid #e6e1d6;
+          border-radius: 10px;
+          background: #ffffff;
+          color: #071326;
+          padding: 0 16px;
+          font-size: 14px;
+          font-weight: 600;
+          outline: none;
+          box-sizing: border-box;
+          transition: border-color 0.2s;
+        }
+        .pat-input:focus {
+          border-color: #102f50;
+          box-shadow: 0 0 0 3px rgba(16, 47, 80, 0.08);
+        }
+
+        /* GRELHA DE POSIÇÕES */
+        .pat-positions-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+        .pat-pos-option {
+          border: 1px solid #e6e1d6;
+          border-radius: 12px;
+          padding: 16px;
+          background: #ffffff;
+          cursor: pointer;
+          text-align: left;
+          transition: all 0.2s ease;
+        }
+        .pat-pos-option:hover {
+          border-color: #102f50;
+          background: #f7f5ef;
+        }
+        .pat-pos-option.active {
+          border: 2px solid #102f50;
+          background: #f7f5ef;
+          box-shadow: 0 4px 12px rgba(16, 47, 80, 0.08);
+        }
+        .pat-pos-title {
+          font-size: 13.5px;
+          font-weight: 800;
+          color: #071326;
+          margin-bottom: 4px;
+        }
+        .pat-pos-sub {
+          font-size: 11.5px;
+          color: #5d6b78;
+          line-height: 1.4;
+        }
+
+        /* GRELHA DE DURAÇÃO */
+        .pat-duration-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+        }
+        .pat-dur-option {
+          border: 1px solid #e6e1d6;
+          border-radius: 12px;
+          padding: 16px 12px;
+          background: #ffffff;
+          cursor: pointer;
+          text-align: center;
+          transition: all 0.2s ease;
+        }
+        .pat-dur-option:hover {
+          border-color: #102f50;
+          background: #f7f5ef;
+        }
+        .pat-dur-option.active {
+          border: 2px solid #102f50;
+          background: #f7f5ef;
+          box-shadow: 0 4px 12px rgba(16, 47, 80, 0.08);
+        }
+        .pat-dur-days {
+          font-size: 15px;
+          font-weight: 800;
+          color: #071326;
+          margin-bottom: 4px;
+        }
+        .pat-dur-price {
+          font-size: 13px;
+          font-weight: 700;
+          color: #102f50;
+          margin-bottom: 4px;
+        }
+        .pat-dur-badge {
+          font-size: 9.5px;
+          font-weight: 800;
+          color: #854d0e;
+          background: #fef08a;
+          padding: 2px 6px;
+          border-radius: 4px;
+          display: inline-block;
+        }
+
+        /* UPLOAD DE CRIATIVO */
+        .pat-upload-box {
+          border: 2px dashed #cbd5e1;
+          border-radius: 12px;
+          padding: 24px;
+          text-align: center;
+          background: #f8fafc;
+          cursor: pointer;
+          transition: border-color 0.2s;
+        }
+        .pat-upload-box:hover {
+          border-color: #102f50;
+        }
+
+        /* COLUNA DIREITA: RESUMO E PREVIEW */
+        .pat-sidebar {
+          position: sticky;
+          top: 92px;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        .pat-preview-card {
+          background: #ffffff;
+          border: 1px solid #e6e1d6;
+          border-radius: 20px;
+          padding: 24px;
+          box-shadow: 0 15px 35px -10px rgba(7, 19, 38, 0.06);
+        }
+        .pat-preview-box {
+          background: #f7f5ef;
+          border: 1px dashed #cbd5e1;
+          border-radius: 12px;
+          padding: 16px;
+          text-align: center;
+          min-height: 140px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          margin-top: 12px;
+        }
+        .pat-preview-img {
+          max-width: 100%;
+          max-height: 120px;
+          object-fit: cover;
+          border-radius: 8px;
+        }
+
+        .pat-checkout-box {
+          border-top: 1px solid #e6e1d6;
+          padding-top: 20px;
+          margin-top: 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .pat-total-label {
+          font-size: 12px;
+          font-weight: 800;
+          color: #5d6b78;
+          text-transform: uppercase;
+        }
+        .pat-total-val {
+          font-size: 28px;
+          font-weight: 900;
+          color: #071326;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .pat-btn-pay {
+          width: 100%;
+          min-height: 52px;
+          border: none;
+          border-radius: 12px;
+          background: #102f50;
+          color: #ffffff;
+          font-size: 15px;
+          font-weight: 800;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          transition: background 0.2s, transform 0.1s;
+          margin-top: 20px;
+          box-shadow: 0 6px 20px rgba(16, 47, 80, 0.25);
+        }
+        .pat-btn-pay:hover {
+          background: #071326;
+          transform: translateY(-1px);
+        }
+        .pat-btn-pay:disabled {
+          opacity: 0.7;
+          cursor: default;
+          transform: none;
+        }
+
+        .pat-secure-note {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          margin-top: 12px;
+          font-size: 11.5px;
+          color: #5d6b78;
+          font-weight: 600;
+        }
+
+        .pat-error {
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          color: #991b1b;
+          padding: 12px 16px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 600;
+          margin-bottom: 20px;
+        }
+
+        @media (max-width: 1024px) {
+          .pat-layout { grid-template-columns: 1fr; }
+          .pat-sidebar { position: static; }
+          .pat-positions-grid { grid-template-columns: 1fr; }
+        }
       `}</style>
 
-      <header className="sponsor-hero">
-        <div className="sponsor-shell">
-          <span className="sponsor-kicker">Publicidade Noxvelia</span>
-          <h1>Posicione a sua marca no momento da decisão.</h1>
-          <p>Crie a sua campanha em minutos. Escolha o espaço, carregue a sua imagem e chegue a quem procura automóveis e imóveis em Portugal.</p>
-        </div>
-      </header>
-
-      <main className="sponsor-section">
-        <div className="sponsor-shell sponsor-grid">
+      <div className="pat-root">
+        <div className="pat-container">
           
-          {/* LADO ESQUERDO: O FORMULÁRIO */}
-          <section className="sponsor-panel">
-            <h2>Configurar Campanha</h2>
+          <div className="pat-header">
+            <span className="pat-eyebrow">Publicidade Direta & Visibilidade</span>
+            <h1>Destaque a sua marca no topo da Noxvelia</h1>
+            <p>AlCance milhares de compradores ativos em Portugal no setor automóvel e imobiliário com banners de alta conversão.</p>
+          </div>
+
+          {erro && <div className="pat-error">{erro}</div>}
+
+          <form onSubmit={handleCriarCampanhaECheckout} className="pat-layout">
             
-            {pagamento === 'sucesso' && <div className="sponsor-alert ok">Pagamento recebido. A campanha será ativada automaticamente assim que o Stripe confirmar.</div>}
-            {pagamento === 'cancelado' && <div className="sponsor-alert err">Pagamento cancelado. Pode ajustar a campanha e tentar novamente.</div>}
-            {feedback && <div className="sponsor-alert ok">{feedback}</div>}
-            {erro && <div className="sponsor-alert err">{erro}</div>}
-
-            <form className="sponsor-form" onSubmit={iniciarPagamento}>
+            {/* COLUNA ESQUERDA: CONFIGURAÇÃO */}
+            <div className="pat-main-config">
               
-              <div className="sponsor-field">
-                <label>Nome da marca ou campanha</label>
-                <input value={form.titulo} onChange={(e) => updateForm('titulo', e.target.value)} placeholder="Ex: Stand Silva Matosinhos" />
+              {/* PASSO 1: IDENTIDADE */}
+              <div className="pat-card">
+                <h3 className="pat-card-title"><Icon path={mdiBullhorn} size={0.9} color="#102f50" /> 1. Identidade da Campanha</h3>
+                <p className="pat-card-desc">Atribua um nome claro para identificar facilmente a sua campanha publicitária.</p>
+                
+                <label className="pat-label">Nome da Marca ou Campanha</label>
+                <input 
+                  type="text" 
+                  className="pat-input" 
+                  placeholder="Ex: Stand Silva Matosinhos / Imobiliária Prime" 
+                  value={nomeCampanha}
+                  onChange={(e) => setNomeCampanha(e.target.value)}
+                  required 
+                />
               </div>
 
-              <div>
-                <div className="sponsor-group-title" style={{ marginBottom: '8px' }}>Disposição no site</div>
-                <div className="sponsor-position-grid">
-                  {POSICOES.map((posicao) => (
-                    <button type="button" className={`sponsor-choice ${form.posicao === posicao.id ? 'is-selected' : ''}`} key={posicao.id} onClick={() => updateForm('posicao', posicao.id)}>
-                      <strong>{posicao.label}</strong>
-                      <span>{posicao.formato}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* PASSO 2: POSIÇÃO */}
+              <div className="pat-card">
+                <h3 className="pat-card-title"><Icon path={mdiImage} size={0.9} color="#102f50" /> 2. Escolha a Localização do Banner</h3>
+                <p className="pat-card-desc">Selecione onde pretende que o seu anúncio aparecido para os utilizadores.</p>
 
-              <div className="sponsor-field">
-                <label>Criativo (Imagem ou GIF)</label>
-                <div className="sponsor-upload-row">
-                  <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadCriativo} style={{ display: 'none' }} />
-                  <button type="button" className="sponsor-button secondary" onClick={() => signed ? fileRef.current?.click() : pedirLogin()} disabled={uploading}>
-                    <UploadCloud size={18} /> {uploading ? 'A carregar...' : 'Fazer Upload'}
-                  </button>
-                  <input value={form.imagemUrl} onChange={(e) => updateForm('imagemUrl', e.target.value)} placeholder="Ou cole o link da imagem/GIF aqui" style={{ flex: 1 }} />
-                </div>
-              </div>
-
-              <div className="sponsor-field">
-                <label>Link de destino (Onde o cliente vai ter ao clicar)</label>
-                <input value={form.linkDestino} onChange={(e) => updateForm('linkDestino', e.target.value)} placeholder="https://o-seu-site.pt" />
-              </div>
-
-              <div>
-                <div className="sponsor-group-title" style={{ marginBottom: '8px' }}>Duração da Campanha</div>
-                <div className="sponsor-duration-grid">
-                  {DURACOES.map((duracao) => (
-                    <button type="button" className={`sponsor-choice ${Number(form.duracaoDias) === duracao.dias ? 'is-selected' : ''}`} key={duracao.dias} onClick={() => updateForm('duracaoDias', duracao.dias)}>
-                      <strong>{duracao.label}</strong>
-                      <span>{duracao.preco}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-            </form>
-          </section>
-
-          {/* LADO DIREITO: O PREVIEW E CHECKOUT */}
-          <section className="sponsor-preview-shell">
-            <div className="sponsor-panel" style={{ padding: '24px' }}>
-              <h2 style={{ fontSize: '16px', marginBottom: '16px' }}>Pré-visualização</h2>
-              
-              <div className="sponsor-browser">
-                <div className="sponsor-browser-top">
-                  <span className="sponsor-browser-dot" />
-                  <span className="sponsor-browser-dot" />
-                  <span className="sponsor-browser-dot" />
-                </div>
-                <div className="sponsor-browser-body">
-                  <div className={previewIsSidebar ? "sponsor-mock-layout" : "sponsor-mock-list"}>
-                    <div className="sponsor-mock-card" />
-                    <div className={`sponsor-ad-preview ${previewIsSidebar ? 'sidebar' : ''}`}>
-                      <span className="sponsor-ad-label">Patrocinado</span>
-                      {form.imagemUrl ? (
-                        <img src={form.imagemUrl} alt="Preview" />
-                      ) : (
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e2e8f0', color: '#94a3b8' }}>
-                          <ImagePlus size={32} />
-                        </div>
-                      )}
-                      <div className="sponsor-ad-content">
-                        <strong>{previewTitle}</strong>
-                        <em className="sponsor-ad-link">Visitar site <ExternalLink size={12} /></em>
-                      </div>
+                <div className="pat-positions-grid">
+                  {POSICOES_BANNER.map((pos) => (
+                    <div 
+                      key={pos.id} 
+                      className={`pat-pos-option ${posicaoSelecionada === pos.id ? 'active' : ''}`}
+                      onClick={() => setPosicaoSelecionada(pos.id)}
+                    >
+                      <div className="pat-pos-title">{pos.label}</div>
+                      <div className="pat-pos-sub">{pos.desc}</div>
                     </div>
-                    <div className="sponsor-mock-card" />
+                  ))}
+                </div>
+              </div>
+
+              {/* PASSO 3: CRIATIVO E DESTINO */}
+              <div className="pat-card">
+                <h3 className="pat-card-title"><Icon path={mdiLinkVariant} size={0.9} color="#102f50" /> 3. Criativo e Link de Destino</h3>
+                <p className="pat-card-desc">Carregue a imagem ou GIF do banner e indique o link para onde o cliente será redirecionado.</p>
+
+                <div style={{ marginBottom: 20 }}>
+                  <label className="pat-label">Imagem do Banner (Upload ou URL)</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'center' }}>
+                    <input 
+                      type="text" 
+                      className="pat-input" 
+                      placeholder="https://exemplo.com/banner.webp ou faça upload ao lado" 
+                      value={imagemUrl}
+                      onChange={(e) => setImagemUrl(e.target.value)}
+                      required 
+                    />
+                    <label className="pat-btn-pay" style={{ margin: 0, padding: '0 20px', minHeight: 48, fontSize: 13, cursor: 'pointer' }}>
+                      {loadingUpload ? 'A carregar...' : 'Fazer Upload'}
+                      <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
+                    </label>
                   </div>
                 </div>
+
+                <div>
+                  <label className="pat-label">Link de Destino (Onde o cliente vai ter ao clicar)</label>
+                  <input 
+                    type="url" 
+                    className="pat-input" 
+                    placeholder="https://o-seu-site.pt ou página de stock" 
+                    value={linkDestino}
+                    onChange={(e) => setLinkDestino(e.target.value)}
+                    required 
+                  />
+                </div>
               </div>
 
-              <div className="sponsor-price-summary" style={{ marginTop: '24px' }}>
-                <span>Total a pagar</span>
-                <strong>{duracaoSelecionada.preco}</strong>
+              {/* PASSO 4: DURAÇÃO */}
+              <div className="pat-card">
+                <h3 className="pat-card-title"><Icon path={mdiCalendarClock} size={0.9} color="#102f50" /> 4. Duração da Campanha</h3>
+                <p className="pat-card-desc">Selecione o período de exibição contínua do seu patrocínio.</p>
+
+                <div className="pat-duration-grid">
+                  {DURACOES.map((dur) => (
+                    <div 
+                      key={dur.dias} 
+                      className={`pat-dur-option ${duracaoSelecionada === dur.dias ? 'active' : ''}`}
+                      onClick={() => setDuracaoSelecionada(dur.dias)}
+                    >
+                      <div className="pat-dur-days">{dur.label}</div>
+                      <div className="pat-dur-price">{(posicaoObj.precoBase * dur.mult).toFixed(2)} €</div>
+                      {dur.poupanca && <span className="pat-dur-badge">{dur.poupanca}</span>}
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <button type="button" className="sponsor-button" style={{ marginTop: '16px', background: '#d9c49c', color: '#102f50' }} onClick={iniciarPagamento} disabled={loading}>
-                {signed ? 'Finalizar Pagamento Seguro' : 'Entrar para Pagar'}
-                <ArrowRight size={18} />
-              </button>
-              <div style={{ textAlign: 'center', marginTop: '12px', fontSize: '11px', color: 'var(--cor-texto-secundario)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                <BadgeEuro size={12} /> Pagamento processado via Stripe
+            </div>
+
+            {/* COLUNA DIREITA: RESUMO E CHECKOUT */}
+            <div className="pat-sidebar">
+              <div className="pat-preview-card">
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: '#071326', margin: '0 0 4px' }}>Pré-visualização</h3>
+                <p style={{ fontSize: 12.5, color: '#5d6b78', margin: 0 }}>Como o seu banner aparecerá no portal.</p>
+
+                <div className="pat-preview-box">
+                  {imagemUrl ? (
+                    <img src={imagemUrl} alt="Preview do Banner" className="pat-preview-img" />
+                  ) : (
+                    <>
+                      <Icon path={mdiImage} size={1.8} color="#cbd5e1" style={{ marginBottom: 6 }} />
+                      <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>Insira um criativo para visualizar</span>
+                    </>
+                  )}
+                </div>
+
+                <div style={{ marginTop: 16, fontSize: 13 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, color: '#5d6b78' }}>
+                    <span>Posição:</span>
+                    <strong style={{ color: '#071326' }}>{posicaoObj.label}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#5d6b78' }}>
+                    <span>Duração:</span>
+                    <strong style={{ color: '#071326' }}>{duracaoObj.label}</strong>
+                  </div>
+                </div>
+
+                <div className="pat-checkout-box">
+                  <div>
+                    <span className="pat-total-label">Total a pagar</span>
+                    <div className="pat-total-val">{precoTotal.toFixed(2)} €</div>
+                  </div>
+                </div>
+
+                <button type="submit" className="pat-btn-pay" disabled={loadingCheckout}>
+                  {loadingCheckout ? (
+                    <>
+                      <span className="pat-spinner" style={{ width: 16, height: 16, border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'pl-spin 0.8s linear infinite' }} />
+                      A processar segurança...
+                    </>
+                  ) : (
+                    'Finalizar Pagamento Seguro →'
+                  )}
+                </button>
+
+                <div className="pat-secure-note">
+                  <Icon path={mdiLockCheck} size={0.7} color="#102f50" />
+                  Pagamento 100% encriptado e processado via Stripe
+                </div>
+
               </div>
             </div>
-          </section>
+
+          </form>
 
         </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }
