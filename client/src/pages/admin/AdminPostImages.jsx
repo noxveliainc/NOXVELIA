@@ -19,8 +19,6 @@ import {
   mdiStorefrontOutline,
   mdiVideoOutline,
   mdiViewCarouselOutline,
-  mdiViewGridOutline,
-  mdiImageFrame,
 } from '@mdi/js';
 import { getImageUrl } from '../../utils/images';
 
@@ -56,8 +54,8 @@ const STYLE_ICONS = {
   showroom: mdiStorefrontOutline,
   gallery: mdiViewCarouselOutline,
   mosaic: mdiImageMultipleOutline,
-  duo: mdiImageFrame || mdiImageMultipleOutline,
-  strip: mdiViewGridOutline || mdiViewCarouselOutline,
+  duo: mdiImageMultipleOutline,
+  strip: mdiViewCarouselOutline,
   priceTag: mdiStarFourPoints,
   editorial: mdiStorefrontOutline,
   storyPro: mdiMonitorScreenshot,
@@ -98,36 +96,36 @@ const TEMPLATE_DEFAULTS = {
   car: {
     ...CREATIVE_DEFAULTS,
     style: 'launch',
-    title: 'Novo veiculo em destaque',
+    title: 'Novo veículo em destaque',
     price: 'Sob consulta',
     location: 'Portugal',
-    badge: 'NOVO LANCAMENTO',
+    badge: 'NOVO LANÇAMENTO',
     detail1: '2026',
     detail2: '0 km',
-    detail3: 'Hibrido',
+    detail3: 'Híbrido',
     detail4: 'Pronta entrega',
     videoUrl: '',
-    cta: 'Ver veiculo em noxvelia.com',
+    cta: 'Ver veículo em noxvelia.com',
   },
   property: {
     ...CREATIVE_DEFAULTS,
     style: 'premium',
-    title: 'Imovel em destaque',
+    title: 'Imóvel em destaque',
     price: 'Sob consulta',
     location: 'Portugal',
     badge: 'NOXVELIA ESTATE',
     detail1: 'Apartamento',
     detail2: 'T2',
-    detail3: '92 m2',
-    detail4: 'Video tour',
+    detail3: '92 m²',
+    detail4: 'Vídeo tour',
     videoUrl: '',
-    cta: 'Ver imovel em noxvelia.com',
+    cta: 'Ver imóvel em noxvelia.com',
   },
   brand: {
     ...CREATIVE_DEFAULTS,
     style: 'premium',
-    title: 'Carros e imoveis no mesmo sitio',
-    subtitle: 'Pesquisa simples, contacto direto e anuncios bem apresentados.',
+    title: 'Carros e imóveis no mesmo sítio',
+    subtitle: 'Pesquisa simples, contacto direto e anúncios bem apresentados.',
     badge: 'NOXVELIA',
     cta: 'noxvelia.com',
   },
@@ -183,7 +181,7 @@ const slugify = (value = 'noxvelia-post') => String(value)
 const formatPrice = (value) => {
   const number = Number(value || 0);
   if (!Number.isFinite(number) || number <= 0) return 'Sob consulta';
-  return `${new Intl.NumberFormat('pt-PT').format(number)} EUR`;
+  return `${new Intl.NumberFormat('pt-PT').format(number)} €`;
 };
 
 const listingLocation = (anuncio) => {
@@ -194,23 +192,24 @@ const listingLocation = (anuncio) => {
 const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
   const reader = new FileReader();
   reader.onload = () => resolve(reader.result);
-  reader.onerror = () => reject(new Error('Nao foi possivel converter a imagem.'));
+  reader.onerror = () => reject(new Error('Não foi possível converter a imagem.'));
   reader.readAsDataURL(blob);
 });
 
 const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
   const reader = new FileReader();
   reader.onload = () => resolve(reader.result);
-  reader.onerror = () => reject(new Error('Nao foi possivel ler a imagem.'));
+  reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'));
   reader.readAsDataURL(file);
 });
 
 async function imageUrlToDataUrl(url) {
   const response = await fetch(url, { mode: 'cors', credentials: 'include' });
-  if (!response.ok) throw new Error('A imagem do anuncio nao ficou acessivel.');
+  if (!response.ok) throw new Error('A imagem do anúncio não ficou acessível.');
   const blob = await response.blob();
   return blobToDataUrl(blob);
 }
+
 const normalizeImageKey = (url = '') => String(url).trim().split('#')[0].split('?')[0].toLowerCase();
 
 const uniqueUrls = (urls = []) => {
@@ -357,9 +356,6 @@ function chips(items, { x, y }) {
   }).join('');
 }
 
-// Small corner strip of extra photos, used to surface additional uploaded
-// images on single-hero-photo templates (cover, launch, showroom, etc.)
-// so uploading more than one photo always has a visible effect.
 let stripCounter = 0;
 function extraPhotosStrip({ images = [], x, y, size = 62, gap = 10, align = 'left', accent: _accent = '#2ac1b4', extraCount = 0, tone = 'navy' }) {
   const list = images.slice(0, 3);
@@ -436,7 +432,7 @@ function buildListingSplitSvg({ form, imageDataUrl, galleryDataUrls = [], logoDa
   const titleY = compact ? 214 : 280;
   const titleFont = compact ? 42 : 54;
   const titleGap = compact ? 48 : 62;
-  const priceY = titleY + titleLines.length * titleGap + (compact ? 30 : 30);
+  const priceY = titleY + titleLines.length * titleGap + 30;
   const locationY = priceY + (compact ? 38 : 46);
   const extras = galleryDataUrls.slice(0, 3);
 
@@ -494,7 +490,7 @@ const videoUrlLabel = (url = '') => {
   try {
     return new URL(url).hostname.replace(/^www\./, '');
   } catch {
-    return 'video no centro';
+    return 'vídeo no centro';
   }
 };
 
@@ -508,6 +504,7 @@ const listingImages = (anuncio) => {
   const urls = rawImages.flatMap((image) => imageCandidateUrls(image));
   return uniqueUrls(urls);
 };
+
 const isLaunchVehicle = (anuncio) => {
   if (anuncio?.tipo !== 'carro') return false;
   const currentYear = new Date().getFullYear();
@@ -600,7 +597,7 @@ function buildListingShowroomSvg({ form, imageDataUrl, galleryDataUrls = [], log
     ${titleLines.map((line, index) => `<text x="${pad}" y="${titleY + index * titleGap}" font-family="Inter, Arial, sans-serif" font-size="${titleFont}" font-weight="950" fill="#071116" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
     <text x="${pad}" y="${Math.min(size.height - 98, titleY + titleLines.length * titleGap + 28)}" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800" fill="#52656a">${escapeXml(form.location)}</text>
     <g transform="translate(${pad} ${size.height - 78})">
-      <text x="0" y="0" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="900" fill="#071116">${escapeXml([form.detail1, form.detail2, form.detail3].filter(Boolean).join('  ·  '))}</text>
+      <text x="0" y="0" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="900" fill="#071116">${escapeXml([form.detail1, form.detail2, form.detail3].filter(Boolean).join(' · '))}</text>
       <text x="${photoW}" y="0" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="950" fill="${accent}">NOXVELIA</text>
     </g>
   </svg>`;
@@ -623,7 +620,7 @@ function buildListingVideoSvg({ form, imageDataUrl, logoDataUrl }) {
     ${brandMark({ x: 64, y: 60, accent, label, logoDataUrl, hidden: form.showLogo === false })}
     <g transform="translate(${size.width - (compact ? 300 : 360)} 64)">
       <rect x="0" y="0" width="${compact ? 226 : 286}" height="54" rx="27" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.16)"/>
-      <text x="28" y="35" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="2">VIDEO</text>
+      <text x="28" y="35" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="2">VÍDEO</text>
       <text x="118" y="35" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">CENTRO</text>
     </g>
     <rect x="${frameX - 18}" y="${frameY - 18}" width="${frameW + 36}" height="${frameH + 36}" rx="42" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
@@ -662,7 +659,7 @@ function buildListingGallerySvg({ form, imageDataUrl, galleryDataUrls = [], logo
       ${baseBackground({ width: size.width, height: size.height, accent })}
       ${brandMark({ x: pad, y: 52, accent, label, logoDataUrl, hidden: form.showLogo === false })}
       ${main ? photoImage({ imageDataUrl: main, focus: form.imageFocus, x: pad, y: top, width: mainW, height: mediaH, rx: 30, clipId: 'galleryMain' }) : galleryPlaceholderCard({ x: pad, y: top, width: mainW, height: mediaH, accent, label: 'Imagem principal', text: 'Carrega uma foto' })}
-      ${second ? photoImage({ imageDataUrl: second, focus: form.imageFocus, x: pad + mainW + gap, y: top, width: sideW, height: Math.round((mediaH - gap) / 2), rx: 26, clipId: 'gallerySecond' }) : galleryPlaceholderCard({ x: pad + mainW + gap, y: top, width: sideW, height: Math.round((mediaH - gap) / 2), accent, label: 'Foto 2', text: 'Sem repeticoes' })}
+      ${second ? photoImage({ imageDataUrl: second, focus: form.imageFocus, x: pad + mainW + gap, y: top, width: sideW, height: Math.round((mediaH - gap) / 2), rx: 26, clipId: 'gallerySecond' }) : galleryPlaceholderCard({ x: pad + mainW + gap, y: top, width: sideW, height: Math.round((mediaH - gap) / 2), accent, label: 'Foto 2', text: 'Sem repetições' })}
       ${third ? photoImage({ imageDataUrl: third, focus: form.imageFocus, x: pad + mainW + gap, y: top + Math.round((mediaH - gap) / 2) + gap, width: sideW, height: Math.round((mediaH - gap) / 2), rx: 26, clipId: 'galleryThird' }) : galleryPlaceholderCard({ x: pad + mainW + gap, y: top + Math.round((mediaH - gap) / 2) + gap, width: sideW, height: Math.round((mediaH - gap) / 2), accent, label: 'Foto 3', text: 'Adiciona mais fotos' })}
       <rect x="${pad}" y="${top + mediaH - 92}" width="${mainW}" height="92" rx="0" fill="rgba(3,7,18,0.68)" clip-path="url(#galleryMain)"/>
       <text x="${pad + 28}" y="${top + mediaH - 34}" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="950" fill="#ffffff">${escapeXml(form.price)}</text>
@@ -681,7 +678,7 @@ function buildListingGallerySvg({ form, imageDataUrl, galleryDataUrls = [], logo
     <rect x="0" y="0" width="${size.width}" height="${Math.round(size.height * 0.42)}" fill="#f4f7f3"/>
     ${brandMark({ x: pad, y: 58, accent, label, logoDataUrl, hidden: form.showLogo === false }).replaceAll('fill="#ffffff"', 'fill="#071116"')}
     ${main ? photoImage({ imageDataUrl: main, focus: form.imageFocus, x: pad, y: top, width: mainW, height: mainH, rx: 32, clipId: 'galleryMainTall' }) : galleryPlaceholderCard({ x: pad, y: top, width: mainW, height: mainH, accent, label: 'Imagem principal', text: 'Carrega uma foto' })}
-    ${second ? photoImage({ imageDataUrl: second, focus: form.imageFocus, x: pad, y: top + mainH + gap, width: thumbW, height: thumbH, rx: 26, clipId: 'gallerySecondTall' }) : galleryPlaceholderCard({ x: pad, y: top + mainH + gap, width: thumbW, height: thumbH, accent, label: 'Foto 2', text: 'Sem repeticoes' })}
+    ${second ? photoImage({ imageDataUrl: second, focus: form.imageFocus, x: pad, y: top + mainH + gap, width: thumbW, height: thumbH, rx: 26, clipId: 'gallerySecondTall' }) : galleryPlaceholderCard({ x: pad, y: top + mainH + gap, width: thumbW, height: thumbH, accent, label: 'Foto 2', text: 'Sem repetições' })}
     ${third ? photoImage({ imageDataUrl: third, focus: form.imageFocus, x: pad + thumbW + gap, y: top + mainH + gap, width: thumbW, height: thumbH, rx: 26, clipId: 'galleryThirdTall' }) : galleryPlaceholderCard({ x: pad + thumbW + gap, y: top + mainH + gap, width: thumbW, height: thumbH, accent, label: 'Foto 3', text: 'Adiciona mais fotos' })}
     <text x="${pad}" y="${titleStart - 46}" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="950" fill="${accent}" letter-spacing="3">${escapeXml(form.badge)}</text>
     ${titleLines.map((line, index) => `<text x="${pad}" y="${titleStart + index * 60}" font-family="Inter, Arial, sans-serif" font-size="52" font-weight="950" fill="#ffffff" letter-spacing="0">${escapeXml(line)}</text>`).join('')}
@@ -689,6 +686,7 @@ function buildListingGallerySvg({ form, imageDataUrl, galleryDataUrls = [], logo
     ${chips([form.location, form.detail1, form.detail2, form.detail3], { x: pad, y: size.height - 112 })}
   </svg>`;
 }
+
 function buildListingMosaicSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
   const { size, accent, label, titleLines } = listingMeta(form);
   const compact = size.height < 800;
@@ -719,9 +717,6 @@ function buildListingMosaicSvg({ form, imageDataUrl, galleryDataUrls = [], logoD
   </svg>`;
 }
 
-// New: two big photos side by side (e.g. exterior + interior, before/after,
-// two angles of the same car). Falls back to a placeholder card for the
-// second photo slot so the layout still looks intentional with one image.
 function buildListingDuoSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
   const { size, accent, label, titleLines } = listingMeta(form);
   const compact = size.height < 800;
@@ -748,8 +743,6 @@ function buildListingDuoSvg({ form, imageDataUrl, galleryDataUrls = [], logoData
   </svg>`;
 }
 
-// New: big hero photo up top with a horizontal filmstrip of up to four more
-// photos underneath, so a full set of listing photos reads as one creative.
 function buildListingStripSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
   const { size, accent, label, titleLines } = listingMeta(form);
   const compact = size.height < 800;
@@ -870,6 +863,7 @@ function buildListingStoryProSvg({ form, imageDataUrl, galleryDataUrls = [], log
     ${form.cta ? `<g transform="translate(${pad} ${size.height - 92})"><rect x="0" y="0" width="${size.width - pad * 2}" height="58" rx="29" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.13)"/><text x="28" y="37" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff">${escapeXml(form.cta)}</text></g>` : ''}
   </svg>`;
 }
+
 function buildListingSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl }) {
   form = normalizeCreativeForm(form);
   const selectedSize = SIZES[form.size] || SIZES.square;
@@ -889,6 +883,7 @@ function buildListingSvg({ form, imageDataUrl, galleryDataUrls = [], logoDataUrl
   if (form.style === 'cover') return buildListingCoverSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
   if (form.style === 'split') return buildListingSplitSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
   if (form.style === 'clean') return buildListingCleanSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl });
+  
   const size = selectedSize;
   const accent = form.template === 'property' ? '#3ecf8e' : '#2ac1b4';
   const label = form.template === 'property' ? 'ESTATE' : 'DRIVE';
@@ -1006,6 +1001,7 @@ function buildBrandSvg({ form, logoDataUrl }) {
   if (form.style === 'cover') return buildBrandCoverSvg({ form, logoDataUrl });
   if (form.style === 'split') return buildBrandSplitSvg({ form, logoDataUrl });
   if (form.style === 'clean') return buildBrandCleanSvg({ form, logoDataUrl });
+  
   const size = selectedSize;
   const accent = '#2ac1b4';
   const startY = Math.round(size.height * 0.32);
@@ -1029,7 +1025,7 @@ function buildBrandSvg({ form, logoDataUrl }) {
     <g transform="translate(64 ${size.height - 84})" opacity="0.86">
       <text x="0" y="0" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" fill="#dbeafe">Carros</text>
       <circle cx="92" cy="-7" r="5" fill="${accent}"/>
-      <text x="118" y="0" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" fill="#dbeafe">Imoveis</text>
+      <text x="118" y="0" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" fill="#dbeafe">Imóveis</text>
       <circle cx="222" cy="-7" r="5" fill="${accent}"/>
       <text x="248" y="0" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" fill="#dbeafe">Contacto direto</text>
     </g>
@@ -1054,7 +1050,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
     let mounted = true;
     fetch('/logo-noxvelia.png')
       .then((response) => {
-        if (!response.ok) throw new Error('Logo indisponivel.');
+        if (!response.ok) throw new Error('Logo indisponível.');
         return response.blob();
       })
       .then(blobToDataUrl)
@@ -1089,6 +1085,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
       ? buildBrandSvg({ form, logoDataUrl })
       : buildListingSvg({ form, imageDataUrl, galleryDataUrls, logoDataUrl })
   ), [form, imageDataUrl, galleryDataUrls, logoDataUrl]);
+  
   const previewUrl = useMemo(() => svgToDataUrl(svg), [svg]);
   const currentSize = SIZES[form.size] || SIZES.square;
   const outputName = `${slugify(form.title || form.badge)}-${form.style || 'premium'}-${form.size}`;
@@ -1096,6 +1093,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
   const isMultiImageStyle = form.template !== 'brand' && MULTI_IMAGE_STYLES.has(form.style);
   const galleryNeedsMoreImages = isMultiImageStyle && mediaItems.length > 0 && mediaItems.length < (form.style === 'duo' ? 2 : 3);
   const usesExtraPhotos = form.template !== 'brand' && !isMultiImageStyle && mediaItems.length > 1;
+  
   const newVehicleAds = useMemo(() => anuncios
     .filter(isLaunchVehicle)
     .sort((a, b) => {
@@ -1119,7 +1117,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
   const handleFiles = async (fileList) => {
     const files = Array.from(fileList || []).filter((file) => file.type.startsWith('image/')).slice(0, 8);
     if (!files.length) {
-      setFeedback('Escolhe uma ou mais imagens. Para video, usa o campo de URL do video.');
+      setFeedback('Escolhe uma ou mais imagens. Para vídeo, usa o campo de URL do vídeo.');
       return;
     }
     setBusy(true);
@@ -1155,9 +1153,9 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
       if (urls.every((url) => /^https?:\/\//i.test(url))) {
         applyImageSet(urls, urls.length > 1 ? `${urls.length} imagens por URL` : 'imagem por URL', { append: true });
         setImageUrlInput('');
-        setFeedback('Imagem aplicada por URL. Se o PNG falhar, usa upload direto para evitar bloqueios externos.');
+        setFeedback('Imagem aplicada por URL.');
       } else {
-        setFeedback('URL de imagem invalido.');
+        setFeedback('URL de imagem inválido.');
       }
     } finally {
       setBusy(false);
@@ -1166,7 +1164,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
 
   const pasteImageFromClipboard = async () => {
     if (!navigator.clipboard?.read) {
-      setFeedback('Este browser nao permite ler imagens da area de transferencia.');
+      setFeedback('Este browser não permite ler imagens da área de transferência.');
       return;
     }
     try {
@@ -1180,9 +1178,9 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
         setFeedback('Imagem colada.');
         return;
       }
-      setFeedback('Nao encontrei uma imagem na area de transferencia.');
+      setFeedback('Não encontrei uma imagem na área de transferência.');
     } catch {
-      setFeedback('Nao foi possivel colar a imagem. Autoriza o acesso ou usa upload.');
+      setFeedback('Não foi possível colar a imagem.');
     }
   };
 
@@ -1232,6 +1230,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
     const isCar = anuncio.tipo === 'carro';
     const template = isCar ? 'car' : 'property';
     const launch = isLaunchVehicle(anuncio);
+    
     setForm((current) => ({
       ...current,
       ...TEMPLATE_DEFAULTS[template],
@@ -1241,10 +1240,10 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
       title: anuncio.titulo || TEMPLATE_DEFAULTS[template].title,
       price: formatPrice(anuncio.preco),
       location: listingLocation(anuncio),
-      badge: options.badge || (launch && isCar ? 'NOVO LANCAMENTO' : TEMPLATE_DEFAULTS[template].badge),
-      detail1: isCar ? (anuncio.carro?.ano || '') : (anuncio.imovel?.tipoImovel || 'Imovel'),
+      badge: options.badge || (launch && isCar ? 'NOVO LANÇAMENTO' : TEMPLATE_DEFAULTS[template].badge),
+      detail1: isCar ? (anuncio.carro?.ano || '') : (anuncio.imovel?.tipoImovel || 'Imóvel'),
       detail2: isCar ? (anuncio.carro?.km ? `${new Intl.NumberFormat('pt-PT').format(anuncio.carro.km)} km` : '0 km') : (anuncio.imovel?.tipologia || ''),
-      detail3: isCar ? (anuncio.carro?.combustivel || '') : (anuncio.imovel?.area ? `${anuncio.imovel.area} m2` : ''),
+      detail3: isCar ? (anuncio.carro?.combustivel || '') : (anuncio.imovel?.area ? `${anuncio.imovel.area} m²` : ''),
       detail4: isCar ? (anuncio.carro?.tipoVeiculo || anuncio.carro?.transmissao || TEMPLATE_DEFAULTS[template].detail4 || '') : (anuncio.imovel?.estado || TEMPLATE_DEFAULTS[template].detail4 || ''),
       videoUrl: anuncio.videoUrl || anuncio.visitaVirtualUrl || current.videoUrl || '',
     }));
@@ -1254,7 +1253,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
       setImageDataUrl('');
       setGalleryDataUrls([]);
       setImageName('');
-      setFeedback('Anuncio preenchido. Sem foto principal encontrada.');
+      setFeedback('Anúncio preenchido. Sem foto principal encontrada.');
       return;
     }
 
@@ -1262,16 +1261,16 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
     try {
       const loaded = await Promise.allSettled(imageUrls.map(imageUrlToDataUrl));
       const dataUrls = uniqueDataUrls(loaded.filter((item) => item.status === 'fulfilled').map((item) => item.value));
-      if (!dataUrls.length) throw new Error('Sem imagens acessiveis.');
-      applyImageSet(dataUrls, dataUrls.length > 1 ? `${dataUrls.length} fotos do anuncio` : 'foto do anuncio');
+      if (!dataUrls.length) throw new Error('Sem imagens acessíveis.');
+      applyImageSet(dataUrls, dataUrls.length > 1 ? `${dataUrls.length} fotos do anúncio` : 'foto do anúncio');
       setFeedback(dataUrls.length > 1
-        ? `Anuncio e ${dataUrls.length} fotos unicas carregados.`
-        : 'Anuncio preenchido com 1 foto. Adiciona mais fotos manualmente se quiseres usar um modelo com varias imagens.');
+        ? `Anúncio e ${dataUrls.length} fotos carregados.`
+        : 'Anúncio preenchido com 1 foto.');
     } catch {
       setImageDataUrl('');
       setGalleryDataUrls([]);
       setImageName('');
-      setFeedback('Anuncio preenchido. Se a foto nao aparecer, carrega-a manualmente.');
+      setFeedback('Anúncio preenchido. Se a foto não aparecer, carrega-a manualmente.');
     } finally {
       setBusy(false);
     }
@@ -1300,11 +1299,11 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
       ctx.drawImage(image, 0, 0);
       URL.revokeObjectURL(objectUrl);
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 0.95));
-      if (!blob) throw new Error('Nao foi possivel gerar PNG.');
+      if (!blob) throw new Error('Não foi possível gerar PNG.');
       downloadBlob(blob, `${outputName}.png`);
       setFeedback('PNG descarregado.');
     } catch {
-      setFeedback('Nao foi possivel gerar PNG. Descarrega SVG ou troca a imagem carregada.');
+      setFeedback('Não foi possível gerar PNG. Descarrega SVG ou troca a imagem.');
     } finally {
       setBusy(false);
     }
@@ -1313,7 +1312,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
   const copyCaption = async () => {
     const text = form.template === 'brand'
       ? `${form.title}\n\n${form.subtitle}\n${form.cta}`
-      : `${form.title}\n${form.price} - ${form.location}${form.videoUrl ? `\nVideo: ${form.videoUrl}` : ''}\n${form.cta}`;
+      : `${form.title}\n${form.price} - ${form.location}${form.videoUrl ? `\nVídeo: ${form.videoUrl}` : ''}\n${form.cta}`;
     await navigator.clipboard.writeText(text);
     setFeedback('Legenda copiada.');
   };
@@ -1321,10 +1320,10 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
   const inputStyle = {
     width: '100%',
     minHeight: 40,
-    border: `1px solid ${palette.border || '#dfe8e4'}`,
+    border: `1px solid ${palette.border || '#e6e1d6'}`,
     borderRadius: 9,
-    background: palette.panelAlt || '#f8faf7',
-    color: palette.text || '#102326',
+    background: '#ffffff',
+    color: '#071326',
     padding: '9px 11px',
     fontFamily: typo.body || 'Inter, sans-serif',
     fontSize: 13,
@@ -1334,9 +1333,9 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
 
   const labelStyle = {
     display: 'block',
-    color: palette.textFaint || '#7b8b90',
+    color: '#5d6b78',
     fontFamily: typo.mono || 'monospace',
-    fontSize: 10,
+    fontSize: 10.5,
     fontWeight: 800,
     letterSpacing: '.08em',
     textTransform: 'uppercase',
@@ -1346,47 +1345,48 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
   return (
     <div className="nx-postgen">
       <style>{`
-        .nx-postgen-grid { display: grid; grid-template-columns: minmax(320px, 470px) minmax(0, 1fr); gap: 22px; align-items: start; }
-        .nx-postgen-panel { border: 1px solid ${palette.border || '#dfe8e4'}; background: ${palette.panelAlt || '#f8faf7'}; border-radius: 12px; padding: 16px; }
-        .nx-postgen-fields { display: grid; gap: 12px; }
+        .nx-postgen-grid { display: grid; grid-template-columns: minmax(320px, 470px) minmax(0, 1fr); gap: 24px; align-items: start; }
+        .nx-postgen-panel { border: 1px solid #e6e1d6; background: #ffffff; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px -10px rgba(7, 19, 38, 0.04); }
+        .nx-postgen-fields { display: grid; gap: 14px; }
         .nx-postgen-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-        .nx-postgen-preview { position: sticky; top: 18px; display: grid; place-items: center; background: #071116; border-radius: 12px; padding: 18px; border: 1px solid rgba(255,255,255,.12); min-height: 520px; }
-        .nx-postgen-preview img { display: block; width: min(100%, 700px); max-height: 780px; object-fit: contain; border-radius: 8px; box-shadow: 0 24px 80px rgba(0,0,0,.26); }
+        .nx-postgen-preview { position: sticky; top: 92px; display: grid; place-items: center; background: #071326; border-radius: 20px; padding: 24px; border: 1px solid #e6e1d6; min-height: 560px; box-shadow: 0 15px 35px -10px rgba(7, 19, 38, 0.1); }
+        .nx-postgen-preview img { display: block; width: min(100%, 700px); max-height: 780px; object-fit: contain; border-radius: 12px; box-shadow: 0 24px 80px rgba(0,0,0,.26); }
         .nx-postgen-template-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-        .nx-postgen-template { min-height: 42px; border-radius: 9px; border: 1px solid ${palette.border || '#dfe8e4'}; background: #fff; color: ${palette.textDim || '#4f646a'}; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
-        .nx-postgen-template.active { background: rgba(42,193,180,.12); border-color: rgba(42,193,180,.38); color: ${palette.text || '#102326'}; }
+        .nx-postgen-template { min-height: 44px; border-radius: 10px; border: 1px solid #e6e1d6; background: #f7f5ef; color: #5d6b78; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.2s; }
+        .nx-postgen-template.active { background: #102f50; border-color: #102f50; color: #ffffff; }
         .nx-postgen-style-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-        .nx-postgen-style { min-height: 44px; border-radius: 8px; border: 1px solid ${palette.border || '#dfe8e4'}; background: #fff; color: ${palette.textDim || '#4f646a'}; font-size: 12px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; padding: 0 10px; text-align: left; position: relative; }
-        .nx-postgen-style.active { border-color: rgba(42,193,180,.46); background: rgba(42,193,180,.12); color: ${palette.text || '#102326'}; }
-        .nx-postgen-style-multi-dot { position: absolute; top: 6px; right: 7px; width: 7px; height: 7px; border-radius: 999px; background: ${palette.green || '#168b82'}; }
-        .nx-postgen-launches { display: grid; gap: 8px; }
+        .nx-postgen-style { min-height: 44px; border-radius: 10px; border: 1px solid #e6e1d6; background: #f7f5ef; color: #5d6b78; font-size: 12px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; padding: 0 10px; text-align: left; position: relative; transition: all 0.2s; }
+        .nx-postgen-style.active { border-color: #102f50; background: rgba(16, 47, 80, 0.08); color: #102f50; }
+        .nx-postgen-style-multi-dot { position: absolute; top: 6px; right: 7px; width: 7px; height: 7px; border-radius: 999px; background: #2ac1b4; }
         .nx-postgen-launch-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-        .nx-postgen-launch-card { min-height: 66px; border-radius: 8px; border: 1px solid ${palette.border || '#dfe8e4'}; background: #fff; color: ${palette.text || '#102326'}; cursor: pointer; padding: 10px; text-align: left; display: grid; gap: 5px; }
+        .nx-postgen-launch-card { min-height: 66px; border-radius: 10px; border: 1px solid #e6e1d6; background: #f7f5ef; color: #071326; cursor: pointer; padding: 10px; text-align: left; display: grid; gap: 4px; }
         .nx-postgen-launch-card strong { font-size: 12px; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        .nx-postgen-launch-card span { color: ${palette.textFaint || '#7b8b90'}; font-size: 10px; font-family: ${typo.mono || 'monospace'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .nx-postgen-media-drop { border: 1px dashed ${palette.borderStrong || '#b9cac4'}; background: #fff; border-radius: 10px; min-height: 118px; padding: 16px; display: grid; place-items: center; gap: 8px; text-align: center; color: ${palette.textDim || '#4f646a'}; cursor: pointer; }
-        .nx-postgen-media-drop:hover { border-color: rgba(42,193,180,.55); background: rgba(42,193,180,.06); }
-        .nx-postgen-media-drop strong { max-width: 100%; color: ${palette.text || '#102326'}; font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
-        .nx-postgen-media-drop span { color: ${palette.textFaint || '#7b8b90'}; font-size: 11px; line-height: 1.4; }
+        .nx-postgen-launch-card span { color: #5d6b78; font-size: 10px; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nx-postgen-media-drop { border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: 12px; min-height: 110px; padding: 16px; display: grid; place-items: center; gap: 6px; text-align: center; color: #5d6b78; cursor: pointer; transition: border-color 0.2s; }
+        .nx-postgen-media-drop:hover { border-color: #102f50; background: #f1f5f9; }
+        .nx-postgen-media-drop strong { max-width: 100%; color: #071326; font-size: 13px; }
+        .nx-postgen-media-drop span { color: #5d6b78; font-size: 11.5px; }
         .nx-postgen-url-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-top: 8px; }
         .nx-postgen-thumbs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
-        .nx-postgen-thumb { position: relative; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 10px; border: 1px solid ${palette.borderStrong || '#b9cac4'}; background: #f5fbfa; }
+        .nx-postgen-thumb { position: relative; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 10px; border: 1px solid #e6e1d6; background: #f7f5ef; }
         .nx-postgen-thumb-main { width: 100%; height: 100%; border: 0; padding: 0; background: transparent; cursor: pointer; display: block; }
         .nx-postgen-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .nx-postgen-thumb span { position: absolute; left: 6px; bottom: 6px; max-width: calc(100% - 12px); border-radius: 999px; padding: 3px 7px; background: rgba(5, 22, 27, .78); color: #fff; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
-        .nx-postgen-thumb.active { border-color: ${palette.green || '#168b82'}; box-shadow: 0 0 0 3px rgba(42,193,180,.18); }
-        .nx-postgen-thumb-remove { position: absolute; top: 5px; right: 5px; width: 23px; height: 23px; border-radius: 999px; border: 1px solid rgba(255,255,255,.38); background: rgba(5, 22, 27, .82); color: #fff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
-        .nx-postgen-media-note { margin-top: 8px; padding: 9px 10px; border-radius: 9px; background: rgba(42,193,180,.1); color: ${palette.textDim || '#4f646a'}; font-size: 12px; font-weight: 800; line-height: 1.45; }
-        .nx-postgen-editor-card { display: grid; gap: 10px; border: 1px solid ${palette.border || '#dfe8e4'}; border-radius: 10px; background: #fff; padding: 12px; }
+        .nx-postgen-thumb span { position: absolute; left: 6px; bottom: 6px; max-width: calc(100% - 12px); border-radius: 999px; padding: 3px 7px; background: rgba(7, 19, 38, .85); color: #fff; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+        .nx-postgen-thumb.active { border-color: #102f50; box-shadow: 0 0 0 3px rgba(16, 47, 80, 0.15); }
+        .nx-postgen-thumb-remove { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; border-radius: 999px; border: none; background: rgba(7, 19, 38, 0.85); color: #fff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+        .nx-postgen-media-note { margin-top: 8px; padding: 9px 10px; border-radius: 9px; background: rgba(217, 196, 156, 0.15); color: #071326; font-size: 12px; font-weight: 700; line-height: 1.45; }
+        .nx-postgen-editor-card { display: grid; gap: 10px; border: 1px solid #e6e1d6; border-radius: 12px; background: #f7f5ef; padding: 14px; }
         .nx-postgen-toggle-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-        .nx-postgen-toggle { min-height: 36px; border-radius: 8px; border: 1px solid ${palette.border || '#dfe8e4'}; background: #f8faf7; color: ${palette.textDim || '#4f646a'}; font-size: 11px; font-weight: 900; cursor: pointer; }
-        .nx-postgen-toggle.active { border-color: rgba(42,193,180,.52); background: rgba(42,193,180,.13); color: ${palette.text || '#102326'}; }
+        .nx-postgen-toggle { min-height: 36px; border-radius: 8px; border: 1px solid #e6e1d6; background: #ffffff; color: #5d6b78; font-size: 11px; font-weight: 800; cursor: pointer; }
+        .nx-postgen-toggle.active { border-color: #102f50; background: #102f50; color: #ffffff; }
         .nx-postgen-media-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-        .nx-postgen-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
-        .nx-postgen-btn { border: 1px solid ${palette.border || '#dfe8e4'}; border-radius: 9px; min-height: 40px; padding: 0 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 900; cursor: pointer; color: ${palette.text || '#102326'}; background: #fff; }
-        .nx-postgen-btn.primary { background: ${palette.green || '#168b82'}; color: #fff; border-color: ${palette.green || '#168b82'}; }
+        .nx-postgen-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+        .nx-postgen-btn { border: 1px solid #e6e1d6; border-radius: 10px; min-height: 42px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 800; cursor: pointer; color: #071326; background: #f7f5ef; transition: background 0.2s; }
+        .nx-postgen-btn:hover { background: #ede8dc; }
+        .nx-postgen-btn.primary { background: #102f50; color: #ffffff; border-color: #102f50; }
+        .nx-postgen-btn.primary:hover { background: #071326; }
         .nx-postgen-btn:disabled { opacity: .55; cursor: wait; }
-        .nx-postgen-video-chip { position: absolute; left: 18px; bottom: 18px; display: inline-flex; align-items: center; gap: 8px; max-width: calc(100% - 36px); min-height: 34px; border-radius: 8px; background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.16); padding: 0 11px; font-size: 12px; font-weight: 900; }
+        .nx-postgen-video-chip { position: absolute; left: 24px; bottom: 24px; display: inline-flex; align-items: center; gap: 8px; max-width: calc(100% - 48px); min-height: 36px; border-radius: 10px; background: rgba(7, 19, 38, 0.85); color: #fff; border: 1px solid rgba(255,255,255,.16); padding: 0 12px; font-size: 12.5px; font-weight: 800; }
         @media (max-width: 960px) {
           .nx-postgen-grid { grid-template-columns: 1fr; }
           .nx-postgen-preview { position: relative; top: auto; min-height: 0; }
@@ -1396,12 +1396,13 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
         }
       `}</style>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 20 }}>
         <div>
-          <h2 style={{ margin: '0 0 6px', color: palette.text, fontFamily: typo.display, fontSize: 20 }}>Criativos para posts</h2>
+          <h2 style={{ margin: '0 0 4px', color: '#071326', fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: 24, fontWeight: 800 }}>Criativos para Redes Sociais</h2>
+          <p style={{ margin: 0, color: '#5d6b78', fontSize: 13.5 }}>Gere posts profissionais automáticos para o Instagram, Facebook e TikTok a partir do stock Noxvelia.</p>
         </div>
-        <span style={{ color: palette.textFaint, fontFamily: typo.mono, fontSize: 11, alignSelf: 'center' }}>
-          {currentSize.width}x{currentSize.height}px
+        <span style={{ color: '#5d6b78', fontFamily: 'monospace', fontSize: 11.5, alignSelf: 'center', background: '#f7f5ef', padding: '6px 12px', borderRadius: '100px', border: '1px solid #e6e1d6' }}>
+          {currentSize.width} × {currentSize.height} px
         </span>
       </div>
 
@@ -1412,26 +1413,26 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
               <span style={labelStyle}>Template</span>
               <div className="nx-postgen-template-row">
                 <button type="button" className={`nx-postgen-template ${form.template === 'car' ? 'active' : ''}`} onClick={() => switchTemplate('car')}>
-                  <Icon path={mdiCar} size={0.62} /> Carro
+                  <Icon path={mdiCar} size={0.65} /> Carro
                 </button>
                 <button type="button" className={`nx-postgen-template ${form.template === 'property' ? 'active' : ''}`} onClick={() => switchTemplate('property')}>
-                  <Icon path={mdiHomeOutline} size={0.62} /> Imovel
+                  <Icon path={mdiHomeOutline} size={0.65} /> Imóvel
                 </button>
                 <button type="button" className={`nx-postgen-template ${form.template === 'brand' ? 'active' : ''}`} onClick={() => switchTemplate('brand')}>
-                  <Icon path={mdiAutoFix} size={0.62} /> Marca
+                  <Icon path={mdiAutoFix} size={0.65} /> Marca
                 </button>
               </div>
             </div>
 
             <div>
-              <label style={labelStyle} htmlFor="postgen-size">Formato</label>
+              <label style={labelStyle} htmlFor="postgen-size">Formato da Imagem</label>
               <select id="postgen-size" value={form.size} onChange={(e) => update('size', e.target.value)} style={inputStyle}>
                 {Object.entries(SIZES).map(([id, size]) => <option key={id} value={id}>{size.label}</option>)}
               </select>
             </div>
 
             <div>
-              <span style={labelStyle}>Modelo visual {form.template !== 'brand' ? '(bolinha verde = usa varias fotos)' : ''}</span>
+              <span style={labelStyle}>Modelo Visual {form.template !== 'brand' ? '(ponto verde = múltiplas fotos)' : ''}</span>
               <div className="nx-postgen-style-row">
                 {Object.entries(DESIGN_STYLES)
                   .filter(([id]) => form.template !== 'brand' || ['premium', 'cover', 'split', 'clean'].includes(id))
@@ -1452,29 +1453,29 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
             {form.template !== 'brand' && (
               <>
                 <div>
-                  <label style={labelStyle} htmlFor="postgen-ad">Preencher com anuncio</label>
+                  <label style={labelStyle} htmlFor="postgen-ad">Preencher com Anúncio Existente</label>
                   <select id="postgen-ad" value={selectedAdId} onChange={(e) => applyAd(e.target.value)} style={inputStyle} disabled={busy}>
-                    <option value="">Escolher anuncio...</option>
+                    <option value="">Escolher anúncio do stock...</option>
                     {anuncios.slice(0, 120).map((ad) => (
-                      <option key={ad._id} value={ad._id}>{ad.tipo === 'carro' ? 'Drive' : 'Estate'} - {ad.titulo || 'Sem titulo'}</option>
+                      <option key={ad._id} value={ad._id}>{ad.tipo === 'carro' ? 'Drive' : 'Estate'} - {ad.titulo || 'Sem título'}</option>
                     ))}
                   </select>
                 </div>
 
                 {newVehicleAds.length > 0 && (
-                  <div className="nx-postgen-launches">
-                    <span style={labelStyle}>Veiculos novos lancados</span>
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    <span style={labelStyle}>Veículos em Destaque Recente</span>
                     <div className="nx-postgen-launch-grid">
                       {newVehicleAds.map((ad) => (
                         <button
                           key={ad._id}
                           type="button"
                           className="nx-postgen-launch-card"
-                          onClick={() => applyAd(ad._id, { style: 'launch', badge: 'NOVO LANCAMENTO' })}
+                          onClick={() => applyAd(ad._id, { style: 'launch', badge: 'NOVO LANÇAMENTO' })}
                           disabled={busy}
                         >
-                          <strong>{ad.titulo || `${ad.carro?.marca || 'Veiculo'} ${ad.carro?.modelo || ''}`}</strong>
-                          <span>{vehicleMeta(ad) || 'Novo lançamento'}</span>
+                          <strong>{ad.titulo || `${ad.carro?.marca || 'Veículo'} ${ad.carro?.modelo || ''}`}</strong>
+                          <span>{vehicleMeta(ad) || 'Destaque'}</span>
                         </button>
                       ))}
                     </div>
@@ -1484,24 +1485,24 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
             )}
 
             <div>
-              <label style={labelStyle} htmlFor="postgen-title">{form.template === 'brand' ? 'Frase principal' : 'Titulo'}</label>
+              <label style={labelStyle} htmlFor="postgen-title">{form.template === 'brand' ? 'Frase Principal' : 'Título'}</label>
               <input id="postgen-title" value={form.title} onChange={(e) => update('title', e.target.value)} style={inputStyle} />
             </div>
 
             {form.template === 'brand' ? (
               <div>
-                <label style={labelStyle} htmlFor="postgen-subtitle">Texto de apoio</label>
+                <label style={labelStyle} htmlFor="postgen-subtitle">Texto de Apoio</label>
                 <textarea id="postgen-subtitle" value={form.subtitle} onChange={(e) => update('subtitle', e.target.value)} style={{ ...inputStyle, minHeight: 78, resize: 'vertical' }} />
               </div>
             ) : (
               <>
                 <div className="nx-postgen-two">
                   <div>
-                    <label style={labelStyle} htmlFor="postgen-price">Preco</label>
+                    <label style={labelStyle} htmlFor="postgen-price">Preço</label>
                     <input id="postgen-price" value={form.price} onChange={(e) => update('price', e.target.value)} style={inputStyle} />
                   </div>
                   <div>
-                    <label style={labelStyle} htmlFor="postgen-location">Localizacao</label>
+                    <label style={labelStyle} htmlFor="postgen-location">Localização</label>
                     <input id="postgen-location" value={form.location} onChange={(e) => update('location', e.target.value)} style={inputStyle} />
                   </div>
                 </div>
@@ -1511,22 +1512,22 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                     <input id="postgen-detail1" value={form.detail1} onChange={(e) => update('detail1', e.target.value)} style={inputStyle} />
                   </div>
                   <div>
-                    <label style={labelStyle} htmlFor="postgen-detail2">{form.template === 'car' ? 'Km' : 'Tipologia'}</label>
+                    <label style={labelStyle} htmlFor="postgen-detail2">{form.template === 'car' ? 'Quilómetros' : 'Tipologia'}</label>
                     <input id="postgen-detail2" value={form.detail2} onChange={(e) => update('detail2', e.target.value)} style={inputStyle} />
                   </div>
                 </div>
                 <div className="nx-postgen-two">
                   <div>
-                    <label style={labelStyle} htmlFor="postgen-detail3">{form.template === 'car' ? 'Combustivel' : 'Area'}</label>
+                    <label style={labelStyle} htmlFor="postgen-detail3">{form.template === 'car' ? 'Combustível' : 'Área'}</label>
                     <input id="postgen-detail3" value={form.detail3} onChange={(e) => update('detail3', e.target.value)} style={inputStyle} />
                   </div>
                   <div>
-                    <label style={labelStyle} htmlFor="postgen-detail4">{form.template === 'car' ? 'Destaque' : 'Extra'}</label>
+                    <label style={labelStyle} htmlFor="postgen-detail4">{form.template === 'car' ? 'Condição' : 'Extra'}</label>
                     <input id="postgen-detail4" value={form.detail4 || ''} onChange={(e) => update('detail4', e.target.value)} style={inputStyle} />
                   </div>
                 </div>
                 <div>
-                  <label style={labelStyle} htmlFor="postgen-video">Video / Reel</label>
+                  <label style={labelStyle} htmlFor="postgen-video">Link de Vídeo / Tour (Opcional)</label>
                   <input id="postgen-video" value={form.videoUrl || ''} onChange={(e) => update('videoUrl', e.target.value)} placeholder="https://youtube.com/..." style={inputStyle} />
                 </div>
               </>
@@ -1534,11 +1535,11 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
 
             <div className="nx-postgen-two">
               <div>
-                <label style={labelStyle} htmlFor="postgen-badge">Etiqueta</label>
+                <label style={labelStyle} htmlFor="postgen-badge">Etiqueta do Post</label>
                 <input id="postgen-badge" value={form.badge} onChange={(e) => update('badge', e.target.value)} style={inputStyle} />
               </div>
               <div>
-                <label style={labelStyle} htmlFor="postgen-cta">Chamada</label>
+                <label style={labelStyle} htmlFor="postgen-cta">Chamada para Ação (CTA)</label>
                 <input id="postgen-cta" value={form.cta} onChange={(e) => update('cta', e.target.value)} style={inputStyle} />
               </div>
             </div>
@@ -1546,14 +1547,14 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
             <div className="nx-postgen-editor-card">
               {form.template !== 'brand' && (
                 <div>
-                  <label style={labelStyle} htmlFor="postgen-focus">Foco da foto</label>
+                  <label style={labelStyle} htmlFor="postgen-focus">Enquadramento da Foto</label>
                   <select id="postgen-focus" value={form.imageFocus || 'center'} onChange={(e) => update('imageFocus', e.target.value)} style={inputStyle}>
                     {IMAGE_FOCUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </select>
                 </div>
               )}
               <div>
-                <span style={labelStyle}>Elementos visiveis</span>
+                <span style={labelStyle}>Elementos Visíveis</span>
                 <div className="nx-postgen-toggle-grid">
                   {ELEMENT_TOGGLES.map((item) => (
                     <button
@@ -1567,12 +1568,12 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                   ))}
                 </div>
               </div>
-              <button type="button" className="nx-postgen-btn" onClick={resetCreativeControls}>Repor elementos</button>
+              <button type="button" className="nx-postgen-btn" onClick={resetCreativeControls}>Repor Elementos Padrão</button>
             </div>
 
             {form.template !== 'brand' && (
               <div>
-                <span style={labelStyle}>Media</span>
+                <span style={labelStyle}>Fotografias do Anúncio</span>
                 <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFile} style={{ display: 'none' }} />
                 <div
                   className="nx-postgen-media-drop"
@@ -1585,9 +1586,9 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                     if (event.key === 'Enter' || event.key === ' ') fileRef.current?.click();
                   }}
                 >
-                  <Icon path={mdiCloudUploadOutline} size={0.9} />
-                  <strong>{imageName || 'Carregar imagens'}</strong>
-                  <span>{mediaItems.length ? `${mediaItems.length} imagem${mediaItems.length > 1 ? 's' : ''} pronta${mediaItems.length > 1 ? 's' : ''}` : 'Upload ate 8, arrastar, URL ou colar imagem'}</span>
+                  <Icon path={mdiCloudUploadOutline} size={1} color="#102f50" />
+                  <strong>{imageName || 'Carregar fotografias'}</strong>
+                  <span>{mediaItems.length ? `${mediaItems.length} imagem${mediaItems.length > 1 ? 's' : ''} pronta${mediaItems.length > 1 ? 's' : ''}` : 'Arrasta ficheiros, faz upload direto ou cola da área de transferência'}</span>
                 </div>
 
                 {mediaItems.length > 0 && (
@@ -1604,7 +1605,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                           <span>{index === 0 ? 'Principal' : `Foto ${index + 1}`}</span>
                         </button>
                         <button type="button" className="nx-postgen-thumb-remove" onClick={() => removeImage(index)} title="Remover foto">
-                          <Icon path={mdiClose} size={0.48} />
+                          <Icon path={mdiClose} size={0.5} />
                         </button>
                       </div>
                     ))}
@@ -1613,12 +1614,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
 
                 {galleryNeedsMoreImages && (
                   <div className="nx-postgen-media-note">
-                    A galeria tem {mediaItems.length} imagem{mediaItems.length > 1 ? 's' : ''}. O criativo preenche os espacos vazios com molduras elegantes, sem repetir a mesma foto.
-                  </div>
-                )}
-                {usesExtraPhotos && (
-                  <div className="nx-postgen-media-note">
-                    Este modelo mostra a foto principal em destaque e as restantes {mediaItems.length - 1} num pequeno mosaico no canto. Para todas as fotos em grande, escolhe Galeria, Mosaico, Duo ou Faixa.
+                    A galeria tem {mediaItems.length} imagem{mediaItems.length > 1 ? 's' : ''}. O criativo preenche os espaços vazios com molduras elegantes e equilibradas.
                   </div>
                 )}
 
@@ -1630,7 +1626,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') loadImageFromUrl();
                     }}
-                    placeholder="URL da imagem ou varios URLs"
+                    placeholder="URL direto de imagem..."
                     style={inputStyle}
                   />
                   <button type="button" className="nx-postgen-btn" onClick={loadImageFromUrl} disabled={busy || !imageUrlInput.trim()}>
@@ -1645,7 +1641,7 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
                     <Icon path={mdiClipboardTextOutline} size={0.65} /> Colar
                   </button>
                   <button type="button" className="nx-postgen-btn" onClick={rotateImages} disabled={busy || mediaItems.length < 2}>
-                    <Icon path={mdiViewCarouselOutline} size={0.65} /> Variar ordem
+                    <Icon path={mdiViewCarouselOutline} size={0.65} /> Variar Ordem
                   </button>
                   <button type="button" className="nx-postgen-btn" onClick={clearImages} disabled={busy || !mediaItems.length}>
                     <Icon path={mdiClose} size={0.65} /> Limpar
@@ -1657,28 +1653,28 @@ export default function AdminPostImages({ anuncios = [], colors, fonts }) {
 
           <div className="nx-postgen-actions">
             <button type="button" className="nx-postgen-btn primary" onClick={downloadPng} disabled={busy}>
-              <Icon path={mdiDownload} size={0.65} /> PNG
+              <Icon path={mdiDownload} size={0.7} /> Descarregar PNG
             </button>
-            <button type="button" className="nx-postgen-btn" onClick={downloadSvg}>
-              <Icon path={mdiImageMultipleOutline} size={0.65} /> SVG
+            <button type="button" className="nx-postgen-btn" onClick={downloadSvg} disabled={busy}>
+              <Icon path={mdiImageMultipleOutline} size={0.7} /> Descarregar SVG
             </button>
             <button type="button" className="nx-postgen-btn" onClick={copyCaption}>
-              <Icon path={mdiContentCopy} size={0.65} /> Legenda
+              <Icon path={mdiContentCopy} size={0.7} /> Copiar Legenda
             </button>
           </div>
 
           {feedback && (
-            <div style={{ marginTop: 12, color: palette.textDim, fontSize: 12, lineHeight: 1.5 }}>
+            <div style={{ marginTop: 14, color: '#5d6b78', fontSize: 12.5, fontWeight: 700, lineHeight: 1.5, background: '#f7f5ef', padding: '10px 12px', borderRadius: 10, border: '1px solid #e6e1d6' }}>
               {feedback}
             </div>
           )}
         </section>
 
-        <section className="nx-postgen-preview" aria-label="Pre-visualizacao do post">
-          <img src={previewUrl} alt="Pre-visualizacao do criativo" />
+        <section className="nx-postgen-preview" aria-label="Pré-visualização do post">
+          <img src={previewUrl} alt="Pré-visualização do criativo Noxvelia" />
           {form.style === 'video' && form.videoUrl && (
             <span className="nx-postgen-video-chip">
-              <Icon path={mdiPlayCircle} size={0.62} /> {videoUrlLabel(form.videoUrl)}
+              <Icon path={mdiPlayCircle} size={0.7} color="#d9c49c" /> {videoUrlLabel(form.videoUrl)}
             </span>
           )}
         </section>
