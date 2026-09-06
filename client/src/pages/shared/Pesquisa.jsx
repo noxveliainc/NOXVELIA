@@ -6,10 +6,7 @@ import AdBanner from '../../components/AdBanner';
 import useDebounce from '../../hooks/useDebounce';
 import Fuse from 'fuse.js';
 import { Icon } from '@mdi/react';
-import { 
-  mdiMagnify, mdiFilterVariant, mdiCloseCircleOutline, 
-  mdiAlertOutline
-} from '@mdi/js';
+import { mdiMagnify, mdiFilterVariant, mdiCloseCircleOutline, mdiAlertOutline, mdiChevronUp, mdiChevronDown } from '@mdi/js';
 import { MARCAS, OPCAO_OUTRO_VEICULO, getNomesModelosComOutro, isOpcaoOutroVeiculo, rotuloOpcaoVeiculo } from '../../data/marcasModelos';
 import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 import { publishIntentState } from '../../utils/navigationState';
