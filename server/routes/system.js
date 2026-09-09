@@ -159,17 +159,27 @@ router.get('/client-issues', verificarToken, verificarAdmin, async (req, res, ne
     next(error);
   }
 });
-// Rota para receber os erros ocultos do Frontend
-router.post('/log-error', (req, res) => {
+
+// Rota unificada para receber os erros ocultos do Frontend
+router.post('/log-error', clientIssueLimiter, async (req, res) => {
   try {
     const { error, url, data } = req.body;
     
-    // O erro será escrito nos logs da VPS e poderás vê-lo com: pm2 logs noxvelia-api
-    console.log(`🔴 [ERRO FRONTEND - OCULTO] Data: ${data} | URL: ${url} | Detalhe: ${error}`);
-    
-    res.status(200).json({ success: true });
+    console.log(`🔴 [ERRO FRONTEND - OCULTO] Data: ${data || new Date().toISOString()} | URL: ${url} | Detalhe: ${error}`);
+
+    // Regista também na coleção ClientIssue para poderes auditar se necessário
+    await ClientIssue.create({
+      kind: 'runtime_error',
+      message: textLimit(error, 1000),
+      url: textLimit(url, 1200),
+      userAgent: textLimit(req.get('User-Agent'), 700),
+      fingerprint: hashValue(`runtime_error|${String(error).slice(0, 180)}|${url}`),
+      ipHash: hashValue(clientIp(req)),
+    }).catch(() => {});
+
+    return res.status(200).json({ success: true });
   } catch (err) {
-    res.status(500).json({ success: false });
+    return res.status(500).json({ success: false });
   }
 });
 
