@@ -5,22 +5,21 @@ import './index.css'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { installClientMonitoring } from './utils/clientMonitoring.js';
 
-// --- INÍCIO: SILENCIAR CONSOLA EM PRODUÇÃO ---
+// --- INÍCIO: SILENCIAR CONSOLA E MENSAGEM DE AVISO EM PRODUÇÃO ---
 if (import.meta.env.PROD) {
-  // Silencia os logs normais para visitantes
+  // Silencia os logs normais e erros técnicos reais para visitantes
   console.log = () => {};
   console.info = () => {};
   console.debug = () => {};
   console.warn = () => {};
   
-  // Intercetar erros a vermelho e enviá-los para a API
+  // Intercetar erros a vermelho e enviá-los silenciosamente para a API (VPS)
   console.error = (...args) => {
     try {
       const errorMessage = args.map(arg => 
         typeof arg === 'object' && arg instanceof Error ? arg.message : String(arg)
       ).join(' ');
 
-      // Envia silenciosamente para o backend
       fetch('/api/system/log-error', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -35,12 +34,27 @@ if (import.meta.env.PROD) {
     }
   };
 
-  // Impedir que excepções não tratadas cheguem à consola do navegador
+  // Impedir que exceções não tratadas cheguem à consola do navegador
   window.addEventListener('error', (event) => {
     event.preventDefault();
   });
+
+  // Mensagem personalizada para quem abrir a consola (F12)
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      console.clear();
+      console.log(
+        '%c⛔ Acesso Restrito',
+        'color: #ef4444; font-size: 22px; font-weight: 900; text-shadow: 1px 1px 0px #000;'
+      );
+      console.log(
+        '%cVocê não tem permissão para aceder a esta página.',
+        'color: #071326; font-size: 14px; font-weight: 700; background: #eef3f8; padding: 8px 12px; border-radius: 6px;'
+      );
+    }, 500);
+  });
 }
-// --- FIM: SILENCIAR CONSOLA ---
+// --- FIM ---
 
 const CHUNK_RELOAD_KEY = '@Noxvelia:chunk-reload';
 const CHUNK_RELOAD_WINDOW_MS = 30000;
