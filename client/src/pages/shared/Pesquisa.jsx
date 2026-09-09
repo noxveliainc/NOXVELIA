@@ -154,8 +154,8 @@ export default function Pesquisa({
 
   const marcaInicial =
     tipoSeguro === 'carro' &&
-    (MARCAS.includes(marcaUrl) ||
-      isOpcaoOutroVeiculo(marcaUrl))
+      (MARCAS.includes(marcaUrl) ||
+        isOpcaoOutroVeiculo(marcaUrl))
       ? marcaUrl
       : '';
 
@@ -660,7 +660,7 @@ export default function Pesquisa({
 
           const contagemAnuncios =
             data.totalAnuncios !==
-            undefined
+              undefined
               ? data.totalAnuncios
               : listaAnuncios.length;
 
@@ -890,13 +890,13 @@ export default function Pesquisa({
       const nova =
         lista.includes(valor)
           ? lista.filter(
-              (item) =>
-                item !== valor
-            )
+            (item) =>
+              item !== valor
+          )
           : [
-              ...lista,
-              valor
-            ];
+            ...lista,
+            valor
+          ];
 
       return {
         ...prev,
@@ -946,40 +946,40 @@ export default function Pesquisa({
   const modelosDisponiveis =
     filtros.marca
       ? (
-          isOpcaoOutroVeiculo(
+        isOpcaoOutroVeiculo(
+          filtros.marca
+        )
+          ? [
+            OPCAO_OUTRO_VEICULO
+          ]
+          : getNomesModelosComOutro(
             filtros.marca
           )
-            ? [
-                OPCAO_OUTRO_VEICULO
-              ]
-            : getNomesModelosComOutro(
-                filtros.marca
-              )
-        )
+      )
       : [];
 
   const cidadesDisponiveis =
     filtros.distrito &&
-    filtros.distrito !== 'Todos'
+      filtros.distrito !== 'Todos'
       ? DISTRITOS_CIDADES_PT[
-          filtros.distrito
-        ] || []
+      filtros.distrito
+      ] || []
       : [];
 
   const filtrosAtivos = [
     filtros.precoMin &&
-      `Desde ${formatarNumero(
-        filtros.precoMin
-      )} EUR`,
+    `Desde ${formatarNumero(
+      filtros.precoMin
+    )} EUR`,
 
     filtros.precoMax &&
-      `Até ${formatarNumero(
-        filtros.precoMax
-      )} EUR`,
+    `Até ${formatarNumero(
+      filtros.precoMax
+    )} EUR`,
 
     filtros.distrito !==
-      'Todos' &&
-      filtros.distrito,
+    'Todos' &&
+    filtros.distrito,
 
     filtros.cidade,
 
@@ -1012,49 +1012,49 @@ export default function Pesquisa({
     ),
 
     filtros.anoMin &&
-      `Ano desde ${filtros.anoMin}`,
+    `Ano desde ${filtros.anoMin}`,
 
     filtros.anoMax &&
-      `Ano até ${filtros.anoMax}`,
+    `Ano até ${filtros.anoMax}`,
 
     filtros.kmMax &&
-      `Até ${formatarNumero(
-        filtros.kmMax
-      )} km`,
+    `Até ${formatarNumero(
+      filtros.kmMax
+    )} km`,
 
     filtros.potenciaMin &&
-      `Desde ${filtros.potenciaMin} cv`,
+    `Desde ${filtros.potenciaMin} cv`,
 
     filtros.potenciaMax &&
-      `Até ${filtros.potenciaMax} cv`,
+    `Até ${filtros.potenciaMax} cv`,
 
     filtros.areaMin &&
-      `Desde ${formatarNumero(
-        filtros.areaMin
-      )} m²`,
+    `Desde ${formatarNumero(
+      filtros.areaMin
+    )} m²`,
 
     filtros.quartosMin &&
-      `${filtros.quartosMin}+ quartos`,
+    `${filtros.quartosMin}+ quartos`,
 
     filtros.garantia &&
-      'Com garantia',
+    'Com garantia',
 
     filtros.aceitaRetoma &&
-      'Aceita retoma',
+    'Aceita retoma',
 
     filtros.garagem &&
-      'Com garagem',
+    'Com garagem',
 
     filtros.tipoAnunciante ===
-      'profissional' &&
-      'Profissional',
+    'profissional' &&
+    'Profissional',
 
     filtros.tipoAnunciante ===
-      'particular' &&
-      'Particular',
+    'particular' &&
+    'Particular',
 
     searchQuery.trim() &&
-      `"${searchQuery.trim()}"`
+    `"${searchQuery.trim()}"`
   ].filter(Boolean);
 
   const limparFiltros =
@@ -1206,7 +1206,7 @@ export default function Pesquisa({
 
           (
             DISTRITOS_CIDADES_PT[
-              distrito
+            distrito
             ] || []
           ).forEach(
             (cidade) => {
@@ -1331,8 +1331,8 @@ export default function Pesquisa({
   const totalAnunciosReais =
     Number(
       totalResultados ||
-        resultados.length ||
-        0
+      resultados.length ||
+      0
     );
 
   const mostrarPublicidadeTopo =
@@ -1347,10 +1347,10 @@ export default function Pesquisa({
     filtros.cidade
       ? `em ${filtros.cidade}`
       : (
-          filtros.distrito &&
-          filtros.distrito !==
-            'Todos'
-        )
+        filtros.distrito &&
+        filtros.distrito !==
+        'Todos'
+      )
         ? `em ${filtros.distrito}`
         : 'em Portugal';
 
@@ -1379,7 +1379,7 @@ export default function Pesquisa({
     const imovelSeo =
       [
         filtros.tipologias[0] ||
-          '',
+        '',
         (
           filtros.tiposImovel ||
           []
@@ -2467,7 +2467,7 @@ export default function Pesquisa({
 
             {searchFocused &&
               sugestoesPesquisa.length >
-                0 && (
+              0 && (
                 <div className="pesquisa-suggestions">
                   {sugestoesPesquisa.map(
                     (sug) => (
@@ -2516,11 +2516,10 @@ export default function Pesquisa({
         </div>
 
         <div
-          className={`sidebar-mobile-overlay ${
-            sidebarMobileAberta
+          className={`sidebar-mobile-overlay ${sidebarMobileAberta
               ? 'open'
               : ''
-          }`}
+            }`}
           onClick={() =>
             setSidebarMobileAberta(
               false
@@ -2531,15 +2530,13 @@ export default function Pesquisa({
 
         <div className="pesquisa-layout">
           <aside
-            className={`pesquisa-sidebar ${
-              isSidebarOpen
+            className={`pesquisa-sidebar ${isSidebarOpen
                 ? ''
                 : 'collapsed'
-            } ${
-              sidebarMobileAberta
+              } ${sidebarMobileAberta
                 ? 'mobile-open'
                 : ''
-            }`}
+              }`}
             aria-label="Filtros de pesquisa"
           >
             <div className="pesquisa-sidebar-inner">
@@ -2551,21 +2548,21 @@ export default function Pesquisa({
 
                   {filtrosAtivos.length >
                     0 && (
-                    <div
-                      style={{
-                        marginTop: 4,
-                        fontSize: 11,
-                        color:
-                          '#64748b',
-                        fontWeight: 600
-                      }}
-                    >
-                      {
-                        filtrosAtivos.length
-                      }{' '}
-                      filtros ativos
-                    </div>
-                  )}
+                      <div
+                        style={{
+                          marginTop: 4,
+                          fontSize: 11,
+                          color:
+                            '#64748b',
+                          fontWeight: 600
+                        }}
+                      >
+                        {
+                          filtrosAtivos.length
+                        }{' '}
+                        filtros ativos
+                      </div>
+                    )}
                 </div>
 
                 <button
@@ -2601,7 +2598,7 @@ export default function Pesquisa({
                   <div className="pesquisa-filter-stat">
                     <strong>
                       {loading &&
-                      resultados.length ===
+                        resultados.length ===
                         0
                         ? '...'
                         : totalResultados}
@@ -2625,9 +2622,9 @@ export default function Pesquisa({
                     onKeyDown={(e) => {
                       if (
                         e.key ===
-                          'Enter' ||
+                        'Enter' ||
                         e.key ===
-                          ' '
+                        ' '
                       ) {
                         toggleFilterSection(
                           'precoLoc'
@@ -2763,12 +2760,12 @@ export default function Pesquisa({
                           disabled={
                             !filtros.distrito ||
                             filtros.distrito ===
-                              'Todos'
+                            'Todos'
                           }
                         >
                           <option value="">
                             {filtros.distrito &&
-                            filtros.distrito !==
+                              filtros.distrito !==
                               'Todos'
                               ? 'Todas as cidades'
                               : 'Escolha o distrito'}
@@ -2803,9 +2800,9 @@ export default function Pesquisa({
                     onKeyDown={(e) => {
                       if (
                         e.key ===
-                          'Enter' ||
+                        'Enter' ||
                         e.key ===
-                          ' '
+                        ' '
                       ) {
                         toggleFilterSection(
                           'especificos'
@@ -2815,7 +2812,7 @@ export default function Pesquisa({
                   >
                     <h4>
                       {tipoSeguro ===
-                      'carro'
+                        'carro'
                         ? 'Automóvel'
                         : 'Imóvel'}
                     </h4>
@@ -2834,7 +2831,7 @@ export default function Pesquisa({
                   {expandedFilters.especificos && (
                     <div className="nx-filter-accordion-body">
                       {tipoSeguro ===
-                      'carro' ? (
+                        'carro' ? (
                         <>
                           <div className="pesquisa-filter-group">
                             <div className="pesquisa-filter-title">
@@ -2949,13 +2946,12 @@ export default function Pesquisa({
                                       val
                                     }
                                     type="button"
-                                    className={`pesquisa-tag ${
-                                      filtros.combustiveis.includes(
-                                        val
-                                      )
+                                    className={`pesquisa-tag ${filtros.combustiveis.includes(
+                                      val
+                                    )
                                         ? 'active'
                                         : ''
-                                    }`}
+                                      }`}
                                     onClick={() =>
                                       toggleTag(
                                         'combustiveis',
@@ -2983,13 +2979,12 @@ export default function Pesquisa({
                                       val
                                     }
                                     type="button"
-                                    className={`pesquisa-tag ${
-                                      filtros.transmissao.includes(
-                                        val
-                                      )
+                                    className={`pesquisa-tag ${filtros.transmissao.includes(
+                                      val
+                                    )
                                         ? 'active'
                                         : ''
-                                    }`}
+                                      }`}
                                     onClick={() =>
                                       toggleTag(
                                         'transmissao',
@@ -3017,13 +3012,12 @@ export default function Pesquisa({
                                       tipo.value
                                     }
                                     type="button"
-                                    className={`pesquisa-tag ${
-                                      filtros.tipoVeiculo.includes(
-                                        tipo.value
-                                      )
+                                    className={`pesquisa-tag ${filtros.tipoVeiculo.includes(
+                                      tipo.value
+                                    )
                                         ? 'active'
                                         : ''
-                                    }`}
+                                      }`}
                                     onClick={() =>
                                       toggleTag(
                                         'tipoVeiculo',
@@ -3055,13 +3049,12 @@ export default function Pesquisa({
                                       tipo.value
                                     }
                                     type="button"
-                                    className={`pesquisa-tag ${
-                                      filtros.tiposImovel.includes(
-                                        tipo.value
-                                      )
+                                    className={`pesquisa-tag ${filtros.tiposImovel.includes(
+                                      tipo.value
+                                    )
                                         ? 'active'
                                         : ''
-                                    }`}
+                                      }`}
                                     onClick={() =>
                                       toggleTag(
                                         'tiposImovel',
@@ -3091,13 +3084,12 @@ export default function Pesquisa({
                                       val
                                     }
                                     type="button"
-                                    className={`pesquisa-tag ${
-                                      filtros.tipologias.includes(
-                                        val
-                                      )
+                                    className={`pesquisa-tag ${filtros.tipologias.includes(
+                                      val
+                                    )
                                         ? 'active'
                                         : ''
-                                    }`}
+                                      }`}
                                     onClick={() =>
                                       toggleTag(
                                         'tipologias',
@@ -3130,9 +3122,9 @@ export default function Pesquisa({
                     onKeyDown={(e) => {
                       if (
                         e.key ===
-                          'Enter' ||
+                        'Enter' ||
                         e.key ===
-                          ' '
+                        ' '
                       ) {
                         toggleFilterSection(
                           'caracteristicas'
@@ -3158,7 +3150,7 @@ export default function Pesquisa({
                   {expandedFilters.caracteristicas && (
                     <div className="nx-filter-accordion-body">
                       {tipoSeguro ===
-                      'carro' ? (
+                        'carro' ? (
                         <>
                           <div className="pesquisa-filter-group">
                             <div className="pesquisa-filter-title">
@@ -3373,9 +3365,9 @@ export default function Pesquisa({
                     onKeyDown={(e) => {
                       if (
                         e.key ===
-                          'Enter' ||
+                        'Enter' ||
                         e.key ===
-                          ' '
+                        ' '
                       ) {
                         toggleFilterSection(
                           'vendedor'
@@ -3408,19 +3400,18 @@ export default function Pesquisa({
                         <div className="pesquisa-tags">
                           <button
                             type="button"
-                            className={`pesquisa-tag ${
-                              filtros.tipoAnunciante ===
-                              'profissional'
+                            className={`pesquisa-tag ${filtros.tipoAnunciante ===
+                                'profissional'
                                 ? 'active'
                                 : ''
-                            }`}
+                              }`}
                             onClick={() =>
                               setFiltros(
                                 (f) => ({
                                   ...f,
                                   tipoAnunciante:
                                     f.tipoAnunciante ===
-                                    'profissional'
+                                      'profissional'
                                       ? ''
                                       : 'profissional'
                                 })
@@ -3432,19 +3423,18 @@ export default function Pesquisa({
 
                           <button
                             type="button"
-                            className={`pesquisa-tag ${
-                              filtros.tipoAnunciante ===
-                              'particular'
+                            className={`pesquisa-tag ${filtros.tipoAnunciante ===
+                                'particular'
                                 ? 'active'
                                 : ''
-                            }`}
+                              }`}
                             onClick={() =>
                               setFiltros(
                                 (f) => ({
                                   ...f,
                                   tipoAnunciante:
                                     f.tipoAnunciante ===
-                                    'particular'
+                                      'particular'
                                       ? ''
                                       : 'particular'
                                 })
@@ -3458,77 +3448,74 @@ export default function Pesquisa({
 
                       {tipoSeguro ===
                         'carro' && (
-                        <>
-                          <button
-                            type="button"
-                            className={`pesquisa-check-button ${
-                              filtros.garantia
-                                ? 'active'
-                                : ''
-                            }`}
-                            onClick={() =>
-                              setFiltros(
-                                (f) => ({
-                                  ...f,
-                                  garantia:
-                                    !f.garantia
-                                })
-                              )
-                            }
-                          >
-                            <span className="pesquisa-check-box" />
-                            Com garantia
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              className={`pesquisa-check-button ${filtros.garantia
+                                  ? 'active'
+                                  : ''
+                                }`}
+                              onClick={() =>
+                                setFiltros(
+                                  (f) => ({
+                                    ...f,
+                                    garantia:
+                                      !f.garantia
+                                  })
+                                )
+                              }
+                            >
+                              <span className="pesquisa-check-box" />
+                              Com garantia
+                            </button>
 
-                          <button
-                            type="button"
-                            className={`pesquisa-check-button ${
-                              filtros.aceitaRetoma
-                                ? 'active'
-                                : ''
-                            }`}
-                            onClick={() =>
-                              setFiltros(
-                                (f) => ({
-                                  ...f,
-                                  aceitaRetoma:
-                                    !f.aceitaRetoma
-                                })
-                              )
-                            }
-                            style={{
-                              marginTop: 8
-                            }}
-                          >
-                            <span className="pesquisa-check-box" />
-                            Aceita retoma
-                          </button>
-                        </>
-                      )}
+                            <button
+                              type="button"
+                              className={`pesquisa-check-button ${filtros.aceitaRetoma
+                                  ? 'active'
+                                  : ''
+                                }`}
+                              onClick={() =>
+                                setFiltros(
+                                  (f) => ({
+                                    ...f,
+                                    aceitaRetoma:
+                                      !f.aceitaRetoma
+                                  })
+                                )
+                              }
+                              style={{
+                                marginTop: 8
+                              }}
+                            >
+                              <span className="pesquisa-check-box" />
+                              Aceita retoma
+                            </button>
+                          </>
+                        )}
 
                       {tipoSeguro ===
                         'imovel' && (
-                        <button
-                          type="button"
-                          className={`pesquisa-check-button ${
-                            filtros.garagem
-                              ? 'active'
-                              : ''
-                          }`}
-                          onClick={() =>
-                            setFiltros(
-                              (f) => ({
-                                ...f,
-                                garagem:
-                                  !f.garagem
-                              })
-                            )
-                          }
-                        >
-                          <span className="pesquisa-check-box" />
-                          Com garagem
-                        </button>
-                      )}
+                          <button
+                            type="button"
+                            className={`pesquisa-check-button ${filtros.garagem
+                                ? 'active'
+                                : ''
+                              }`}
+                            onClick={() =>
+                              setFiltros(
+                                (f) => ({
+                                  ...f,
+                                  garagem:
+                                    !f.garagem
+                                })
+                              )
+                            }
+                          >
+                            <span className="pesquisa-check-box" />
+                            Com garagem
+                          </button>
+                        )}
                     </div>
                   )}
                 </div>
@@ -3559,27 +3546,27 @@ export default function Pesquisa({
 
                 {filtrosAtivos.length >
                   0 && (
-                  <button
-                    type="button"
-                    onClick={
-                      limparFiltros
-                    }
-                    style={{
-                      width: '100%',
-                      minHeight: 38,
-                      marginTop: 6,
-                      border: 0,
-                      background:
-                        'transparent',
-                      color: '#64748b',
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Limpar todos
-                  </button>
-                )}
+                    <button
+                      type="button"
+                      onClick={
+                        limparFiltros
+                      }
+                      style={{
+                        width: '100%',
+                        minHeight: 38,
+                        marginTop: 6,
+                        border: 0,
+                        background:
+                          'transparent',
+                        color: '#64748b',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Limpar todos
+                    </button>
+                  )}
               </div>
             </div>
           </aside>
@@ -3606,12 +3593,12 @@ export default function Pesquisa({
 
                 {filtrosAtivos.length >
                   0 && (
-                  <span className="mobile-filter-count">
-                    {
-                      filtrosAtivos.length
-                    }
-                  </span>
-                )}
+                    <span className="mobile-filter-count">
+                      {
+                        filtrosAtivos.length
+                      }
+                    </span>
+                  )}
               </button>
 
               <select
@@ -3641,34 +3628,34 @@ export default function Pesquisa({
 
             {filtrosAtivos.length >
               0 && (
-              <div className="pesquisa-active-filters">
-                {filtrosAtivos
-                  .slice(0, 8)
-                  .map(
-                    (
-                      filtro,
-                      index
-                    ) => (
-                      <span
-                        className="pesquisa-active-filter"
-                        key={`${filtro}-${index}`}
-                      >
-                        {filtro}
-                      </span>
-                    )
-                  )}
+                <div className="pesquisa-active-filters">
+                  {filtrosAtivos
+                    .slice(0, 8)
+                    .map(
+                      (
+                        filtro,
+                        index
+                      ) => (
+                        <span
+                          className="pesquisa-active-filter"
+                          key={`${filtro}-${index}`}
+                        >
+                          {filtro}
+                        </span>
+                      )
+                    )}
 
-                {filtrosAtivos.length >
-                  8 && (
-                  <span className="pesquisa-active-filter">
-                    +
-                    {filtrosAtivos.length -
-                      8}{' '}
-                    mais
-                  </span>
-                )}
-              </div>
-            )}
+                  {filtrosAtivos.length >
+                    8 && (
+                      <span className="pesquisa-active-filter">
+                        +
+                        {filtrosAtivos.length -
+                          8}{' '}
+                        mais
+                      </span>
+                    )}
+                </div>
+              )}
 
             <div className="pesquisa-topbar">
               <span
@@ -3679,7 +3666,7 @@ export default function Pesquisa({
                 }}
               >
                 {loading &&
-                resultados.length ===
+                  resultados.length ===
                   0
                   ? 'A procurar...'
                   : `${totalResultados} resultados encontrados`}
@@ -3737,7 +3724,7 @@ export default function Pesquisa({
             )}
 
             {loading &&
-            resultados.length ===
+              resultados.length ===
               0 ? (
               <div className="nx-skeleton-list">
                 {Array.from({
@@ -3775,16 +3762,16 @@ export default function Pesquisa({
 
                       {mostrarPublicidadeInline &&
                         (index + 1) %
-                          6 ===
-                          0 &&
+                        6 ===
+                        0 &&
                         index <
-                          resultados.length -
-                            1 && (
+                        resultados.length -
+                        1 && (
                           <AdBanner
                             mode="direct"
                             placement={
                               tipoSeguro ===
-                              'carro'
+                                'carro'
                                 ? 'feed_pesquisa_carros'
                                 : 'feed_pesquisa_imoveis'
                             }

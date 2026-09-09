@@ -159,5 +159,18 @@ router.get('/client-issues', verificarToken, verificarAdmin, async (req, res, ne
     next(error);
   }
 });
+// Rota para receber os erros ocultos do Frontend
+router.post('/log-error', (req, res) => {
+  try {
+    const { error, url, data } = req.body;
+    
+    // O erro será escrito nos logs da VPS e poderás vê-lo com: pm2 logs noxvelia-api
+    console.log(`🔴 [ERRO FRONTEND - OCULTO] Data: ${data} | URL: ${url} | Detalhe: ${error}`);
+    
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+});
 
 export default router;

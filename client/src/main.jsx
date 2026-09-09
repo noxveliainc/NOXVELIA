@@ -5,6 +5,43 @@ import './index.css'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { installClientMonitoring } from './utils/clientMonitoring.js';
 
+// --- INÍCIO: SILENCIAR CONSOLA EM PRODUÇÃO ---
+if (import.meta.env.PROD) {
+  // Silencia os logs normais para visitantes
+  console.log = () => {};
+  console.info = () => {};
+  console.debug = () => {};
+  console.warn = () => {};
+  
+  // Intercetar erros a vermelho e enviá-los para a API
+  console.error = (...args) => {
+    try {
+      const errorMessage = args.map(arg => 
+        typeof arg === 'object' && arg instanceof Error ? arg.message : String(arg)
+      ).join(' ');
+
+      // Envia silenciosamente para o backend
+      fetch('/api/system/log-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          error: errorMessage, 
+          url: window.location.href,
+          data: new Date().toISOString()
+        })
+      }).catch(() => {});
+    } catch (e) {
+      // Falhanço silencioso
+    }
+  };
+
+  // Impedir que excepções não tratadas cheguem à consola do navegador
+  window.addEventListener('error', (event) => {
+    event.preventDefault();
+  });
+}
+// --- FIM: SILENCIAR CONSOLA ---
+
 const CHUNK_RELOAD_KEY = '@Noxvelia:chunk-reload';
 const CHUNK_RELOAD_WINDOW_MS = 30000;
 
