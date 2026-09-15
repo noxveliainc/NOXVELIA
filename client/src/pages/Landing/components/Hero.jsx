@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Link2 } from 'lucide-react';
-import trackEvent from './trackEvent';
+import trackEvent from './TrackEvent';
 
 const HERO_IMG = '/noxvelia-hero-coast.webp';
 

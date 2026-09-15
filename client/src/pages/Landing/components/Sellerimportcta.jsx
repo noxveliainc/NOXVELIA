@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Link2 } from 'lucide-react';
-import trackEvent from './trackEvent';
+import trackEvent from './TrackEvent';
 
 export default function SellerImportCTA({ publicarTo, publicarState, onOpenSendListing }) {
   return (

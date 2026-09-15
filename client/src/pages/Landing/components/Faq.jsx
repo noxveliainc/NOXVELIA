@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import trackEvent from './trackEvent';
+import trackEvent from './TrackEvent';
 
 const FAQS = [
   { q: 'Publicar um anúncio é gratuito?', a: 'Sim. A publicação de anúncios na NOXVELIA é gratuita.' },

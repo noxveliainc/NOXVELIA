@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Car, Home as HomeIcon, Search, ArrowRight } from 'lucide-react';
 import { MARCAS, getModelosPorMarca } from '../../../data/marcasModelos';
 import { DISTRITOS, DISTRITOS_CIDADES_PT } from '../../../data/localizacoes';
-import trackEvent from './trackEvent';
+import trackEvent from './TrackEvent';
 
 export default function SearchSection() {
   const navigate = useNavigate();

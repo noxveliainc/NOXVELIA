@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import trackEvent from './trackEvent';
+import trackEvent from './TrackEvent';
 
 export default function FinalCTA({ publicarTo, publicarState }) {
   return (
