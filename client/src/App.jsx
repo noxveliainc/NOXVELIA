@@ -96,8 +96,6 @@ function AppShell() {
             
             {/* 🌟 ROTAS NOVAS */}
             <Route path="/stands" element={<Stands />} />
-            <Route path="/calculadoras" element={<Calculadoras />} />
-
             <Route path="/login" element={<Login />} />
             <Route path="/registo" element={<Registo />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
