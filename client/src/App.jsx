@@ -13,7 +13,11 @@ import CookieBanner from './components/CookieBanner';
 import LoadingScreen from './components/LoadingScreen';
 
 // --- PÁGINAS (lazy) ---
-const Landing        = lazy(() => import('./pages/shared/Landing'));
+// 🌟 PASTAS NOVAS ATUALIZADAS
+const Landing        = lazy(() => import('./pages/Landing/Landing'));
+const Stands         = lazy(() => import('./pages/Stands/Stands'));
+const Calculadoras   = lazy(() => import('./pages/Calculadoras')); // Adicionado para tráfego orgânico
+
 const Login          = lazy(() => import('./pages/shared/Login'));
 const Registo        = lazy(() => import('./pages/shared/Registo'));
 const ForgotPassword = lazy(() => import('./pages/shared/ForgotPassword'));
@@ -39,7 +43,6 @@ const Profissionais  = lazy(() => import('./pages/shared/Profissionais'));
 const Patrocinios    = lazy(() => import('./pages/shared/Patrocinios'));
 const StockSubmeter  = lazy(() => import('./pages/shared/StockSubmeter'));
 
-// 🌟 NOVA PÁGINA IMPORTADA
 const PoliticaPrivacidade = lazy(() => import('./pages/shared/PoliticaPrivacidade'));
 const SobreNos = lazy(() => import('./pages/shared/SobreNos'));
 
@@ -47,6 +50,7 @@ function RedirectToVendedorProfile() {
   const { id } = useParams();
   return <Navigate to={`/vendedor/${id}`} replace />;
 }
+
 function LoadingFallback() {
   return (
     <LoadingScreen label="A preparar a NOXVELIA" detail="A carregar a experiência." minHeight="60vh" />
@@ -90,6 +94,11 @@ function AppShell() {
             <Route path="/carros/marca/:marca/:modelo" element={<SeoPesquisa tipo="carro" />} />
             <Route path="/carros/em/:cidade" element={<SeoPesquisa tipo="carro" />} />
             <Route path="/imoveis/:tipologia/em/:cidade" element={<SeoPesquisa tipo="imovel" />} />
+            
+            {/* 🌟 ROTAS NOVAS */}
+            <Route path="/stands" element={<Stands />} />
+            <Route path="/calculadoras" element={<Calculadoras />} />
+
             <Route path="/login" element={<Login />} />
             <Route path="/registo" element={<Registo />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -105,7 +114,6 @@ function AppShell() {
             <Route path="/patrocinios" element={<Patrocinios />} />
             <Route path="/enviar-stock" element={<StockSubmeter />} />
             
-            {/* 🌟 ROTA DA POLÍTICA E TERMOS */}
             <Route path="/privacidade" element={<PoliticaPrivacidade />} />
             <Route path="/sobre-nos" element={<SobreNos />} />
             

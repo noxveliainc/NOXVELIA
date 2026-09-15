@@ -1,0 +1,369 @@
+/* ==========================================================================
+   NOXVELIA — LANDING PAGE (RECONSTRUÇÃO — FUNIL DE CONVERSÃO)
+   ========================================================================== */
+
+.nx-landing-root {
+  --nx-navy: var(--cor-primaria, #102f50);
+  --nx-navy-dark: var(--cor-primaria-escura, #071326);
+  --nx-ink: var(--cor-texto, #071326);
+  --nx-text: var(--cor-texto, #071326);
+  --nx-muted: var(--cor-texto-secundario, #5d6b78);
+  --nx-soft: var(--cor-fundo, #f7f5ef);
+  --nx-line: var(--cor-borda, #e6e1d6);
+  --nx-gold: var(--cor-destaque, #d9c391);
+  --nx-gold-soft: var(--cor-destaque-suave, #e9dcc0);
+  --nx-white: #fff;
+  min-height: 100vh;
+  background: var(--nx-soft);
+  color: var(--nx-text);
+  font-family: var(--nx-font-display, Inter, system-ui, sans-serif);
+  overflow-x: clip;
+}
+
+.nx-shell { width: min(1280px, calc(100% - 48px)); margin-inline: auto; }
+.nx-shell-narrow { width: min(820px, calc(100% - 48px)); margin-inline: auto; }
+
+.nx-section { padding: 80px 0; }
+.nx-bg-light { background: color-mix(in srgb, var(--nx-soft) 60%, #ffffff); }
+.nx-bg-white { background: #ffffff; }
+.nx-bg-navy { background: var(--nx-navy-dark); color: #fff; }
+.nx-bg-navy .nx-section-sub,
+.nx-bg-navy p { color: #cbd5e1; }
+.nx-bg-navy h2 { color: #fff; }
+
+.nx-gold-icon { color: var(--nx-gold); }
+
+.nx-kicker {
+  display: block; margin-bottom: 6px; color: var(--nx-gold);
+  font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .15em;
+}
+
+.nx-section-sub { color: var(--nx-muted); font-size: 15px; margin-top: 6px; max-width: 560px; }
+
+/* Reveal on scroll — substitui AOS por CSS + IntersectionObserver */
+[data-reveal] { opacity: 0; transform: translateY(18px); transition: opacity .5s ease, transform .5s ease; }
+[data-reveal].is-visible { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1; transform: none; transition: none; }
+}
+
+.nx-skeleton {
+  min-height: 180px; width: 100%; border-radius: 14px;
+  background: linear-gradient(90deg, #e8edf2 25%, #f6f8fa 50%, #e8edf2 75%);
+  background-size: 200% 100%; animation: nx-loading 1.4s infinite;
+}
+@keyframes nx-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.nx-empty-card {
+  min-height: 220px; display: grid; place-items: center; align-content: center; gap: 10px;
+  padding: 32px; background: #fff; border: 1px dashed var(--nx-line); border-radius: 16px;
+  color: var(--nx-muted); font-size: 14px; font-weight: 650; text-align: center; grid-column: 1 / -1;
+}
+
+.nx-empty-start {
+  min-height: 260px; display: grid; place-items: center; gap: 10px; text-align: center;
+  padding: 48px; background: #fff; border: 1px dashed var(--nx-line); border-radius: 16px;
+}
+.nx-empty-start h3 { font-size: 22px; font-weight: 900; color: var(--nx-ink); }
+.nx-empty-start p { color: var(--nx-muted); margin-bottom: 6px; }
+
+/* Botões partilhados */
+.nx-btn-primary, .nx-btn-cta-final {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--nx-gold); color: var(--nx-navy-dark); font-weight: 800; font-size: 14px;
+  padding: 13px 24px; border-radius: 8px; text-decoration: none; border: 0; cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.nx-btn-primary:hover, .nx-btn-cta-final:hover { transform: translateY(-1px); box-shadow: 0 10px 20px -8px rgba(217,196,156,.5); }
+
+.nx-btn-secondary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: rgba(255,255,255,.08); color: #fff; font-weight: 700; font-size: 14px;
+  padding: 13px 24px; border-radius: 8px; text-decoration: none; border: 1px solid rgba(255,255,255,.25);
+  transition: background .15s ease;
+}
+.nx-btn-secondary:hover { background: rgba(255,255,255,.16); }
+
+.nx-btn-outline {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: transparent; color: var(--nx-navy-dark); font-weight: 800; font-size: 13px;
+  padding: 11px 18px; border-radius: 8px; text-decoration: none; border: 1.5px solid var(--nx-navy-dark);
+  transition: background .15s ease, color .15s ease;
+}
+.nx-btn-outline:hover { background: var(--nx-navy-dark); color: #fff; }
+
+.nx-btn-outline-light {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: transparent; color: #fff; font-weight: 700; font-size: 14px;
+  padding: 13px 24px; border-radius: 8px; text-decoration: none; border: 1.5px solid rgba(255,255,255,.3);
+  cursor: pointer; transition: background .15s ease;
+}
+.nx-btn-outline-light:hover { background: rgba(255,255,255,.1); }
+
+.nx-btn-ghost-light {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: rgba(255,255,255,.12); color: #fff; font-weight: 700; font-size: 13px;
+  padding: 10px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,.2); cursor: pointer;
+  white-space: nowrap; transition: background .15s ease;
+}
+.nx-btn-ghost-light:hover { background: rgba(255,255,255,.2); }
+
+.nx-btn-text {
+  display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; padding: 0;
+  color: var(--nx-navy); font-weight: 800; font-size: 13px; text-decoration: none; cursor: pointer;
+}
+.nx-btn-text:hover { text-decoration: underline; }
+
+/* 1. HERO */
+.nx-hero { position: relative; min-height: 620px; background: var(--nx-navy-dark); padding-bottom: 60px; }
+.nx-hero-bg { position: absolute; inset: 0; z-index: 1; }
+.nx-hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+.nx-hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,19,38,.72) 0%, rgba(7,19,38,.92) 100%); }
+.nx-hero-content {
+  position: relative; z-index: 2; padding-top: 140px; text-align: center; color: #fff;
+  max-width: 760px; margin-inline: auto; padding-inline: 24px;
+}
+.nx-hero-content h1 {
+  font-size: clamp(38px, 5.5vw, 62px); font-weight: 900; line-height: 1.1; margin-bottom: 16px; letter-spacing: -.03em;
+}
+.nx-hero-content p { font-size: clamp(15px, 1.5vw, 18px); color: rgba(255,255,255,.8); margin-bottom: 28px; }
+.nx-hero-ctas { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.nx-hero-microcopy { font-size: 13px; color: rgba(255,255,255,.55); margin-bottom: 32px !important; }
+
+.nx-hero-import-box {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; text-align: left;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); border-radius: 14px;
+  padding: 16px 20px; backdrop-filter: blur(6px);
+}
+.nx-hero-import-text { display: flex; flex-direction: column; gap: 2px; }
+.nx-import-text { min-width: 0; }
+.nx-hero-import-text strong { font-size: 14px; color: #fff; }
+.nx-hero-import-text span { font-size: 13px; color: rgba(255,255,255,.65); }
+
+/* 2. ESCOLHA / MARKETPLACE CHOICE */
+.nx-center { text-align: center; }
+.nx-center .nx-section-sub { margin-inline: auto; }
+
+.nx-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.nx-choice-card {
+  background: #fff; border: 1px solid var(--nx-line); border-radius: 18px; padding: 36px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.nx-choice-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -20px rgba(7,19,38,.25); }
+.nx-choice-card h3 { font-size: 22px; font-weight: 900; color: var(--nx-ink); margin: 14px 0 4px; }
+.nx-choice-tag {
+  display: inline-block; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--nx-muted); margin-bottom: 12px;
+}
+.nx-choice-card > p { color: var(--nx-muted); margin-bottom: 24px; }
+.nx-choice-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+
+/* 3. SELLER IMPORT CTA */
+.nx-import-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: center; }
+.nx-import-lead { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 10px !important; }
+.nx-import-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 24px; align-items: center; }
+.nx-import-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+.nx-import-steps li { display: flex; align-items: center; gap: 16px; }
+.nx-import-steps span {
+  flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(217,196,156,.15); color: var(--nx-gold); font-weight: 900; font-size: 15px;
+  border: 1px solid rgba(217,196,156,.3);
+}
+.nx-import-steps p { font-weight: 700; color: #fff; margin: 0; }
+
+/* STOCK REAL */
+.nx-section-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 32px; gap: 16px; flex-wrap: wrap; }
+.nx-section-header h2 { font-size: 30px; font-weight: 900; color: var(--nx-ink); letter-spacing: -.02em; }
+.nx-tabs-inline { display: flex; gap: 4px; background: #fff; border: 1px solid var(--nx-line); border-radius: 10px; padding: 4px; }
+.nx-tabs-inline button {
+  border: 0; background: transparent; padding: 8px 16px; border-radius: 7px; font-weight: 700; font-size: 13px;
+  color: var(--nx-muted); cursor: pointer; transition: .2s;
+}
+.nx-tabs-inline button.active { background: var(--nx-navy-dark); color: #fff; }
+
+.nx-link-gold {
+  display: inline-flex; align-items: center; gap: 6px; color: color-mix(in srgb, var(--nx-gold) 70%, #6b5a2f); font-size: 11px;
+  font-weight: 850; text-decoration: none; text-transform: uppercase; letter-spacing: .09em; transition: .2s;
+}
+.nx-link-gold:hover { color: var(--nx-ink); gap: 9px; }
+.nx-section-footer-cta { display: flex; justify-content: center; margin-top: 32px; }
+
+.nx-oportunidades-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.nx-card-oportunidade {
+  background: #fff; border: 1px solid var(--nx-line); border-radius: 14px; overflow: hidden;
+  cursor: pointer; transition: transform .2s, box-shadow .2s; display: flex; flex-direction: column;
+  text-decoration: none; color: inherit;
+}
+.nx-card-oportunidade:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,.08); }
+.nx-card-oportunidade:focus-visible { outline: 2px solid var(--nx-gold); outline-offset: 2px; }
+.nx-card-oportunidade.is-premium { border: 2px solid var(--nx-gold); }
+.nx-card-img-wrap { position: relative; aspect-ratio: 4/3; background: var(--nx-soft); }
+.nx-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.nx-card-no-photo { width: 100%; height: 100%; display: grid; place-items: center; color: var(--nx-muted); }
+.nx-card-badge {
+  position: absolute; top: 10px; left: 10px; background: var(--nx-gold); color: var(--nx-navy-dark);
+  font-size: 9px; font-weight: 900; padding: 4px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px;
+}
+.nx-card-content { padding: 14px; display: flex; flex-direction: column; flex: 1; justify-content: space-between; }
+.nx-card-type { font-size: 9px; font-weight: 800; color: #a0aec0; letter-spacing: .1em; margin-bottom: 4px; display: block; }
+.nx-card-title { font-size: 13px; font-weight: 800; color: var(--nx-ink); margin-bottom: 8px; line-height: 1.3; }
+.nx-card-meta { font-size: 11px; color: var(--nx-muted); margin-bottom: 12px; display: block; }
+.nx-card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 10px; }
+.nx-card-price { font-size: 15px; font-weight: 900; color: var(--nx-ink); }
+.nx-card-loc { font-size: 11px; color: var(--nx-muted); }
+
+/* BENEFITS (PORQUÊ NOXVELIA) */
+.nx-trust-banner { background: var(--nx-navy-dark); color: #fff; padding: 70px 0; }
+.nx-trust-header { text-align: center; margin-bottom: 40px; }
+.nx-trust-header h2 { font-size: 32px; font-weight: 900; }
+.nx-trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.nx-trust-card { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); padding: 24px; border-radius: 12px; }
+.nx-trust-card h3 { font-size: 16px; font-weight: 800; margin: 12px 0 6px; color: #fff; }
+.nx-trust-card p { font-size: 13px; color: #a0aec0; line-height: 1.5; }
+
+/* PARTICULARES / STANDS (split layout) */
+.nx-split { display: grid; place-items: center; }
+.nx-split > div { max-width: 620px; }
+.nx-split-invert { text-align: left; }
+
+.nx-bullet-list { list-style: none; margin: 24px 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.nx-bullet-list li { display: flex; align-items: center; gap: 10px; font-weight: 650; color: var(--nx-ink); }
+.nx-bullet-list-light li { color: #e2e8f0; }
+
+/* COMO FUNCIONA */
+.nx-how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.nx-how-col { background: #fff; border: 1px solid var(--nx-line); border-radius: 16px; padding: 32px; }
+.nx-how-col h3 { font-size: 20px; font-weight: 900; margin-bottom: 20px; color: var(--nx-ink); }
+.nx-how-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.nx-how-steps li { display: flex; align-items: center; gap: 14px; font-weight: 700; color: var(--nx-ink); }
+.nx-how-steps span {
+  flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--nx-soft); color: var(--nx-navy); font-weight: 900; font-size: 13px; border: 1px solid var(--nx-line);
+}
+
+/* PESQUISA (secção própria) */
+.nx-search-floater {
+  width: min(1160px, calc(100% - 32px)); margin: 0 auto; background: #fff; border-radius: 16px; padding: 16px;
+  text-align: left;
+}
+.nx-search-floater-static { box-shadow: 0 20px 40px -24px rgba(7,19,38,.2); border: 1px solid var(--nx-line); }
+.nx-search-tabs { display: flex; gap: 8px; max-width: 380px; background: var(--nx-navy-dark); padding: 4px; border-radius: 10px; margin-bottom: 14px; }
+.nx-search-tabs button {
+  flex: 1; min-height: 46px; border: 0; border-radius: 8px; background: transparent; color: #a0aec0;
+  font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: .2s;
+}
+.nx-search-tabs button.active { background: #ffffff; color: var(--nx-navy); }
+
+.nx-search-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: center; }
+.nx-input-group { display: flex; flex-direction: column; gap: 4px; background: var(--nx-soft); border: 1px solid var(--nx-line); padding: 10px 14px; border-radius: 10px; }
+.nx-input-group label { font-size: 10px; font-weight: 800; color: var(--nx-muted); text-transform: uppercase; letter-spacing: .08em; }
+.nx-input-group select { border: 0; background: transparent; font-weight: 700; color: var(--nx-ink); outline: none; cursor: pointer; font-size: 16px; }
+@media (min-width: 769px) { .nx-input-group select { font-size: 14px; } }
+
+.nx-btn-search {
+  min-height: 54px; padding: 0 28px; background: var(--nx-navy-dark); color: #fff; border: 0; border-radius: 10px;
+  font-size: 14px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: background .2s;
+}
+.nx-btn-search:hover { background: var(--nx-navy); }
+
+.nx-search-quicklinks { display: flex; justify-content: center; gap: 28px; margin-top: 20px; flex-wrap: wrap; }
+.nx-search-quicklinks a {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--nx-navy); text-decoration: none;
+}
+.nx-search-quicklinks a:hover { text-decoration: underline; }
+
+/* FAQ */
+.nx-faq-list { display: flex; flex-direction: column; gap: 12px; }
+.nx-faq-item { background: #fff; border: 1px solid var(--nx-line); border-radius: 12px; overflow: hidden; }
+.nx-faq-question {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 18px 20px; background: transparent; border: 0; text-align: left; font-size: 15px; font-weight: 750;
+  color: var(--nx-ink); cursor: pointer;
+}
+.nx-faq-chevron { transition: transform .2s ease; color: var(--nx-muted); flex-shrink: 0; }
+.nx-faq-chevron.is-open { transform: rotate(180deg); color: var(--nx-navy); }
+.nx-faq-answer { max-height: 0; overflow: hidden; transition: max-height .25s ease; }
+.nx-faq-answer.is-open { max-height: 240px; }
+.nx-faq-answer p { padding: 0 20px 18px; color: var(--nx-muted); font-size: 14px; line-height: 1.6; margin: 0; }
+
+/* CTA FINAL */
+.nx-cta-final { background: var(--nx-navy-dark); border-top: 1px solid rgba(255,255,255,.08); padding: 60px 0; color: #fff; }
+.nx-cta-inner {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  background: color-mix(in srgb, var(--nx-navy) 55%, var(--nx-navy-dark)); border: 1px solid rgba(255,255,255,.06); padding: 34px 40px; border-radius: 16px;
+  flex-wrap: wrap;
+}
+.nx-cta-text h2 { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+.nx-cta-text p { font-size: 13px; color: #a0aec0; margin: 0; }
+.nx-cta-microcopy { margin-top: 6px !important; color: var(--nx-gold) !important; font-weight: 700; }
+.nx-cta-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* MODAL — ENVIAR ANÚNCIO */
+.nx-modal-backdrop {
+  position: fixed; inset: 0; background: rgba(7,19,38,.6); backdrop-filter: blur(3px);
+  display: grid; place-items: center; z-index: 200; padding: 20px;
+}
+.nx-modal {
+  position: relative; width: min(480px, 100%); max-height: 90vh; overflow-y: auto;
+  background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 30px 60px rgba(0,0,0,.3);
+}
+.nx-modal-close {
+  position: absolute; top: 16px; right: 16px; border: 0; background: var(--nx-soft); border-radius: 50%;
+  width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer; color: var(--nx-muted);
+}
+.nx-modal h3 { font-size: 20px; font-weight: 900; color: var(--nx-ink); margin-bottom: 6px; }
+.nx-modal-sub { color: var(--nx-muted); font-size: 13px; margin-bottom: 20px; }
+.nx-modal-form { display: flex; flex-direction: column; gap: 14px; }
+.nx-modal-field { display: flex; flex-direction: column; gap: 6px; }
+.nx-modal-field label { font-size: 12px; font-weight: 700; color: var(--nx-ink); }
+.nx-modal-field input, .nx-modal-field select, .nx-modal-field textarea {
+  border: 1px solid var(--nx-line); border-radius: 8px; padding: 10px 12px; font-size: 14px;
+  font-family: inherit; color: var(--nx-ink); outline: none;
+}
+.nx-modal-field input:focus, .nx-modal-field select:focus, .nx-modal-field textarea:focus { border-color: var(--nx-navy); }
+.nx-modal-error { color: #b91c1c; font-size: 13px; margin: 0; }
+.nx-modal-success { background: color-mix(in srgb, var(--nx-gold) 20%, #fff); border: 1px solid var(--nx-gold); padding: 16px; border-radius: 10px; color: var(--nx-navy-dark); font-weight: 650; }
+.nx-modal-submit {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--nx-navy-dark); color: #fff; border: 0; border-radius: 8px; padding: 13px; font-weight: 800; cursor: pointer;
+}
+.nx-modal-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+/* CTA STICKY MOBILE */
+.nx-mobile-sticky-cta {
+  display: none;
+  position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 150;
+  background: var(--nx-gold); color: var(--nx-navy-dark); text-align: center;
+  font-weight: 800; font-size: 14px; padding: 14px; border-radius: 12px; text-decoration: none;
+  box-shadow: 0 10px 24px -8px rgba(0,0,0,.35);
+}
+
+/* ==========================================================================
+   RESPONSIVO
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .nx-search-grid { grid-template-columns: 1fr 1fr; }
+  .nx-search-grid .nx-btn-search { grid-column: 1 / -1; }
+  .nx-oportunidades-grid, .nx-trust-grid { grid-template-columns: repeat(2, 1fr); }
+  .nx-import-grid { grid-template-columns: 1fr; gap: 32px; }
+  .nx-import-steps { flex-direction: row; flex-wrap: wrap; gap: 24px; }
+}
+
+@media (max-width: 768px) {
+  .nx-section { padding: 56px 0; }
+  .nx-hero-content { padding-top: 110px; }
+  .nx-hero-ctas { flex-direction: column; align-items: stretch; }
+  .nx-hero-ctas a, .nx-hero-ctas button { width: 100%; }
+  .nx-hero-import-box { flex-direction: column; align-items: stretch; text-align: center; }
+
+  .nx-search-grid { grid-template-columns: 1fr; }
+  .nx-oportunidades-grid, .nx-trust-grid, .nx-choice-grid, .nx-how-grid { grid-template-columns: 1fr; }
+  .nx-cta-inner { flex-direction: column; text-align: center; align-items: center; }
+  .nx-cta-actions { width: 100%; }
+  .nx-cta-actions a { flex: 1; }
+
+  .nx-import-steps { flex-direction: column; }
+  .nx-import-actions button, .nx-import-actions a { width: 100%; text-align: center; justify-content: center; }
+
+  .nx-mobile-sticky-cta { display: block; }
+}
