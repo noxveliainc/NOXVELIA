@@ -16,7 +16,6 @@ import LoadingScreen from './components/LoadingScreen';
 // 🌟 PASTAS NOVAS ATUALIZADAS
 const Landing        = lazy(() => import('./pages/Landing/Landing'));
 const Stands         = lazy(() => import('./pages/Stands/Stands'));
-const Calculadoras   = lazy(() => import('./pages/Calculadoras')); // Adicionado para tráfego orgânico
 
 const Login          = lazy(() => import('./pages/shared/Login'));
 const Registo        = lazy(() => import('./pages/shared/Registo'));
