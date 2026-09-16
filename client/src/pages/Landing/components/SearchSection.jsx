@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Car, Home as HomeIcon, Search, ArrowRight } from 'lucide-react';
 import { MARCAS, getModelosPorMarca } from '../../../data/marcasModelos2';
-import { DISTRITOS, DISTRITOS_CIDADES_PT } from '../../../data/localizacoes';
+import { DISTRITOS, DISTRITOS_CIDADES_PT } from '../../../data/temp1';
 import trackEvent from './TrackEvent';
 
 export default function SearchSection() {

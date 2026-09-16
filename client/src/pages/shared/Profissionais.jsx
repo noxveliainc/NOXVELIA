@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, BadgeCheck, Building2, Car, ExternalLink, Home, MapPin, Search, ShieldCheck, Star, Trophy, UploadCloud } from 'lucide-react';
 import Seo from '../../components/Seo';
 import api from '../../services/api';
-import { DISTRITOS } from '../../data/localizacoes';
+import { DISTRITOS } from '../../data/temp1';
 import { getImageUrl } from '../../utils/images';
 
 const formatarNumero = (valor) => new Intl.NumberFormat('pt-PT').format(valor || 0);
