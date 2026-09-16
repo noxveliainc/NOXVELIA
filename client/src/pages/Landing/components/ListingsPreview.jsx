@@ -59,11 +59,6 @@ function AnuncioCard({ anuncio }) {
   );
 }
 
-/**
- * Secção "Stock Real". Recebe os anúncios já filtrados por tipo (buscados em
- * Landing.jsx via /anuncios). Nunca inventa anúncios — se não houver nenhum
- * em nenhuma categoria, mostra o estado inicial "Estamos a começar.".
- */
 export default function ListingsPreview({ carros, imoveis, loading, publicarTo, publicarState }) {
   const [tab, setTab] = useState('carro');
   const lista = tab === 'carro' ? carros : imoveis;

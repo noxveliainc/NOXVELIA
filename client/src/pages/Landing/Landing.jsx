@@ -10,8 +10,8 @@ import { publishIntentState } from '../../utils/navigationState';
 
 import Hero from './components/Hero';
 import MarketplaceChoice from './components/MarketplaceChoice';
-import SellerImportCTA from './components/SellerImportCTA.jsx';
-import ListingsPreview from './components/ListingsPreview.jsx';
+import SellerImportCTA from './components/SellerImportCTA';
+import ListingsPreview from './components/ListingsPreview';
 import Benefits from './components/Benefits';
 import PrivateSellerSection from './components/PrivateSellerSection';
 import DealerSection from './components/DealerSection';
