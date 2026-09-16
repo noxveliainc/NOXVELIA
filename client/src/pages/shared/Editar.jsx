@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Icon } from '@mdi/react';
 import { mdiAlertCircleOutline, mdiCloudUploadOutline, mdiClose } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
-import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/temp1'; 
+import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes'; 
 import { isSupportedVideoUrl } from '../../utils/videoEmbed';
 import { juntarExtras, normalizarExtras } from '../../utils/extras';
 import { getImageUrl, normalizeUploadedImages } from '../../utils/images';

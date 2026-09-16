@@ -10,7 +10,7 @@ import {
   mdiPlus, mdiInformationOutline, mdiArrowLeft, mdiArrowRight, mdiCheck, mdiLoading
 } from '@mdi/js';
 import { MARCAS, getModelosPorMarca } from '../../data/marcasModelos';
-import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/temp1';
+import { DISTRITOS_CIDADES_PT, DISTRITOS } from '../../data/localizacoes';
 import { isSupportedVideoUrl } from '../../utils/videoEmbed';
 import { calcularQualidadeFormulario } from '../../utils/anuncioQuality';
 import { juntarExtras, normalizarExtras } from '../../utils/extras';

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { DISTRITOS_CIDADES_PT } from '../data/temp1';
+import { DISTRITOS_CIDADES_PT } from '../data/localizacoes';
 
 const COORDENADAS_DISTRITO = {
   Aveiro: [40.6405, -8.6538],

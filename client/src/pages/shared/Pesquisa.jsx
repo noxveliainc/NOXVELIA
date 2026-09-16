@@ -28,7 +28,7 @@ import {
 import {
   DISTRITOS_CIDADES_PT,
   DISTRITOS
-} from '../../data/temp1';
+} from '../../data/localizacoes';
 
 import { publishIntentState } from '../../utils/navigationState';
 import { trackFunnelEvent } from '../../utils/funnelAnalytics';
