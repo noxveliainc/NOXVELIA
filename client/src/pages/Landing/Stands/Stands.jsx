@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
-import NavbarLanding from '../Landing/NavbarLanding';
-import Footer from '../../components/Footer';
-import Seo from '../../components/Seo';
+import NavbarLanding from '../NavbarLanding';
+import Footer from '../../../components/Footer';
+import Seo from '../../../components/Seo';
 // Reutiliza os tokens de design e classes utilitárias já definidos na Landing.
 import '../Landing/Landing.css';
 
